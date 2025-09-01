@@ -71,8 +71,7 @@ NEXT_PUBLIC_API_URL="http://localhost:3001"
    npm run dev
    ```
 
-2. **Abrir no navegador:**
-   [http://localhost:3000](http://localhost:3000)
+2. **Abrir no navegador:** [http://localhost:3000](http://localhost:3000)
 
 3. **Editar arquivos:**
    - `src/app/page.tsx` - Página inicial
@@ -101,4 +100,5 @@ vercel --prod
 
 ## 🔄 Hot Reload
 
-A aplicação possui hot reload automático. Qualquer alteração nos arquivos será refletida imediatamente no navegador durante o desenvolvimento.
+A aplicação possui hot reload automático. Qualquer alteração nos arquivos será refletida
+imediatamente no navegador durante o desenvolvimento.

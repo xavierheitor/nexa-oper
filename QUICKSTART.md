@@ -101,14 +101,14 @@ npm run format:check
 
 ## 📋 **Scripts Mais Úteis**
 
-| Comando | Descrição |
-|---------|-----------|
-| `npm run setup` | Setup completo para novos desenvolvedores |
-| `npm run dev` | Inicia todas as aplicações em desenvolvimento |
+| Comando               | Descrição                                       |
+| --------------------- | ----------------------------------------------- |
+| `npm run setup`       | Setup completo para novos desenvolvedores       |
+| `npm run dev`         | Inicia todas as aplicações em desenvolvimento   |
 | `npm run db:generate` | Regenera cliente Prisma após mudanças no schema |
-| `npm run build` | Build de todas as aplicações |
-| `npm run reset` | Limpeza e reinstalação |
-| `npm run help` | Lista todos os scripts disponíveis |
+| `npm run build`       | Build de todas as aplicações                    |
+| `npm run reset`       | Limpeza e reinstalação                          |
+| `npm run help`        | Lista todos os scripts disponíveis              |
 
 ## 🎯 **Fluxos de Trabalho Comuns**
 

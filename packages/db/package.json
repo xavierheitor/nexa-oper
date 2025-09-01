@@ -36,7 +36,12 @@
     "clean": "rm -rf dist",
     "prebuild": "npm run clean"
   },
-  "keywords": ["prisma", "database", "shared", "typescript"],
+  "keywords": [
+    "prisma",
+    "database",
+    "shared",
+    "typescript"
+  ],
   "author": "",
   "license": "ISC",
   "type": "module",

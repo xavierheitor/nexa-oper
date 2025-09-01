@@ -3,9 +3,10 @@ import { PrismaClient } from '../generated/prisma';
 // Configuração do cliente Prisma
 const createPrismaClient = () => {
   const client = new PrismaClient({
-    log: process.env['NODE_ENV'] === 'development' 
-      ? ['query', 'error', 'warn'] 
-      : ['error'],
+    log:
+      process.env['NODE_ENV'] === 'development'
+        ? ['query', 'error', 'warn']
+        : ['error'],
     errorFormat: 'pretty',
   });
 

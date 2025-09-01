@@ -7,66 +7,78 @@ import type { Test } from '@nexa-oper/db';
 export async function GET() {
   try {
     const tests = await db.prisma.test.findMany();
-    
+
     return Response.json({
       success: true,
-      data: tests
+      data: tests,
     });
   } catch (error) {
-    return Response.json({
-      success: false,
-      error: 'Erro interno do servidor'
-    }, { status: 500 });
+    return Response.json(
+      {
+        success: false,
+        error: 'Erro interno do servidor',
+      },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
     const { name } = await request.json();
-    
+
     if (!name) {
-      return Response.json({
-        success: false,
-        error: 'Nome é obrigatório'
-      }, { status: 400 });
+      return Response.json(
+        {
+          success: false,
+          error: 'Nome é obrigatório',
+        },
+        { status: 400 }
+      );
     }
-    
+
     const newTest = await db.prisma.test.create({
-      data: { name }
+      data: { name },
     });
-    
-    return Response.json({
-      success: true,
-      data: newTest
-    }, { status: 201 });
+
+    return Response.json(
+      {
+        success: true,
+        data: newTest,
+      },
+      { status: 201 }
+    );
   } catch (error) {
-    return Response.json({
-      success: false,
-      error: 'Erro interno do servidor'
-    }, { status: 500 });
+    return Response.json(
+      {
+        success: false,
+        error: 'Erro interno do servidor',
+      },
+      { status: 500 }
+    );
   }
 }
 
 // 2. Server Action (Next.js 14+)
 export async function createTestAction(formData: FormData) {
   'use server';
-  
+
   try {
     const name = formData.get('name') as string;
-    
+
     if (!name) {
       throw new Error('Nome é obrigatório');
     }
-    
+
     const test = await db.prisma.test.create({
-      data: { name }
+      data: { name },
     });
-    
+
     return { success: true, data: test };
   } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Erro desconhecido' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erro desconhecido',
     };
   }
 }
@@ -75,7 +87,7 @@ export async function createTestAction(formData: FormData) {
 export async function getTests(): Promise<Test[]> {
   try {
     return await db.prisma.test.findMany({
-      orderBy: { id: 'desc' }
+      orderBy: { id: 'desc' },
     });
   } catch (error) {
     console.error('Erro ao buscar testes:', error);
@@ -89,7 +101,7 @@ export function useTests() {
   // Este é apenas um exemplo da estrutura
   return {
     getTests,
-    createTest: createTestAction
+    createTest: createTestAction,
   };
 }
 

@@ -147,4 +147,5 @@ npm run reset:hard       # Reset completo (mais agressivo)
 
 ## 🔧 **Personalização**
 
-Você pode adicionar novos scripts no `package.json` principal ou modificar os existentes conforme necessário para seu fluxo de trabalho.
+Você pode adicionar novos scripts no `package.json` principal ou modificar os existentes conforme
+necessário para seu fluxo de trabalho.

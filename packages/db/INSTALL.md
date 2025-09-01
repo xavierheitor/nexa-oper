@@ -61,7 +61,7 @@ import type { Test } from '@nexa-oper/db';
 ```typescript
 // Criar
 const newTest = await db.prisma.test.create({
-  data: { name: 'Meu Teste' }
+  data: { name: 'Meu Teste' },
 });
 
 // Buscar todos
@@ -69,18 +69,18 @@ const tests = await db.prisma.test.findMany();
 
 // Buscar por ID
 const test = await db.prisma.test.findUnique({
-  where: { id: 1 }
+  where: { id: 1 },
 });
 
 // Atualizar
 const updatedTest = await db.prisma.test.update({
   where: { id: 1 },
-  data: { name: 'Nome Atualizado' }
+  data: { name: 'Nome Atualizado' },
 });
 
 // Deletar
 const deletedTest = await db.prisma.test.delete({
-  where: { id: 1 }
+  where: { id: 1 },
 });
 ```
 

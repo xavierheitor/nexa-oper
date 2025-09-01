@@ -21,7 +21,7 @@ npm install @nexa-oper/db
 ### Importação Básica
 
 ```typescript
-import { db, prisma } from "@nexa-oper/db";
+import { db, prisma } from '@nexa-oper/db';
 
 // Usar o singleton
 const users = await db.prisma.user.findMany();
@@ -33,16 +33,16 @@ const posts = await prisma.post.findMany();
 ### Importação de Tipos
 
 ```typescript
-import type { User, Post } from "@nexa-oper/db";
+import type { User, Post } from '@nexa-oper/db';
 
 // Ou importar tipos específicos
-import type { DatabaseResult } from "@nexa-oper/db/types";
+import type { DatabaseResult } from '@nexa-oper/db/types';
 ```
 
 ### Importação do Cliente
 
 ```typescript
-import { prismaClient, closePrismaClient } from "@nexa-oper/db/client";
+import { prismaClient, closePrismaClient } from '@nexa-oper/db/client';
 
 // Para casos especiais onde você precisa de controle direto
 await closePrismaClient();
@@ -95,7 +95,7 @@ npm run studio
 
 ```typescript
 // apps/web/src/lib/db.ts
-import { db } from "@nexa-oper/db";
+import { db } from '@nexa-oper/db';
 
 export async function getUsers() {
   try {
@@ -109,7 +109,7 @@ export async function getUsers() {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Erro desconhecido",
+      error: error instanceof Error ? error.message : 'Erro desconhecido',
     };
   }
 }
