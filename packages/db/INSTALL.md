@@ -86,7 +86,7 @@ const deletedTest = await db.prisma.test.delete({
 
 ## 📁 Estrutura de Arquivos
 
-```
+```bash
 sua-app/
 ├── src/
 │   ├── lib/
