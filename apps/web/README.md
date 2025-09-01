@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Web App - Nexa Oper
 
-## Getting Started
+Aplicação web frontend da Nexa Oper, construída com Next.js 15.
 
-First, run the development server:
+## 🚀 Tecnologias
+
+- **Next.js 15** - Framework React para aplicações web
+- **TypeScript** - Linguagem de programação tipada
+- **React** - Biblioteca para interfaces de usuário
+- **Prisma** - ORM para banco de dados (via pacote compartilhado `@nexa-oper/db`)
+
+## 📦 Instalação
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Instalar dependências
+npm install
+
+# Gerar cliente Prisma (se necessário)
+npm run db:generate
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔧 Scripts Disponíveis
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Desenvolvimento
+npm run dev          # Servidor de desenvolvimento
+npm run build        # Build de produção
+npm run start        # Iniciar servidor de produção
+npm run lint         # Executar ESLint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🌐 Estrutura da Aplicação
 
-## Learn More
+```bash
+src/
+├── app/                    # App Router (Next.js 13+)
+│   ├── layout.tsx         # Layout principal
+│   ├── page.tsx           # Página inicial
+│   ├── globals.css        # Estilos globais
+│   └── favicon.ico        # Ícone da aplicação
+├── components/             # Componentes React reutilizáveis
+├── lib/                    # Utilitários e configurações
+└── types/                  # Definições de tipos TypeScript
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 🔗 Integração com Banco de Dados
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Esta aplicação utiliza o pacote compartilhado `@nexa-oper/db` para acesso ao banco de dados:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```typescript
+import { db } from '@nexa-oper/db';
 
-## Deploy on Vercel
+// Exemplo de uso em Server Components
+const users = await db.prisma.user.findMany();
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📝 Variáveis de Ambiente
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Criar arquivo `.env.local` na pasta da aplicação:
+
+```env
+DATABASE_URL="mysql://usuario:senha@localhost:3306/banco"
+NEXT_PUBLIC_API_URL="http://localhost:3001"
+```
+
+## 🚀 Desenvolvimento
+
+1. **Iniciar servidor de desenvolvimento:**
+
+   ```bash
+   npm run dev
+   ```
+
+2. **Abrir no navegador:**
+   [http://localhost:3000](http://localhost:3000)
+
+3. **Editar arquivos:**
+   - `src/app/page.tsx` - Página inicial
+   - `src/app/layout.tsx` - Layout principal
+   - `src/components/` - Componentes
+
+## 🏗️ Build e Deploy
+
+```bash
+# Build de produção
+npm run build
+
+# Iniciar servidor de produção
+npm run start
+
+# Deploy no Vercel
+vercel --prod
+```
+
+## 📚 Documentação
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [React Documentation](https://react.dev)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [Monorepo Setup](./../../README.md)
+
+## 🔄 Hot Reload
+
+A aplicação possui hot reload automático. Qualquer alteração nos arquivos será refletida imediatamente no navegador durante o desenvolvimento.

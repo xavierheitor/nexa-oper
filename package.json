@@ -1,7 +1,7 @@
 {
   "name": "nexa-oper",
   "version": "1.0.0",
-  "description": "",
+  "description": "Monorepo Nexa Oper com aplicações web, API e pacotes compartilhados",
   "private": true,
   "packageManager": "npm@10.0.0",
   "workspaces": [
@@ -12,13 +12,49 @@
     "dev": "turbo run dev --parallel",
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "clean": "turbo run clean"
+    "clean": "turbo run clean",
+    "test": "turbo run test",
+    "install:all": "npm install && npm run install:workspaces",
+    "install:workspaces": "npm install --workspaces",
+    "install:web": "npm install --workspace=apps/web",
+    "install:api": "npm install --workspace=apps/api",
+    "install:db": "npm install --workspace=packages/db",
+    "db:generate": "npm run db:generate --workspace=packages/db",
+    "db:migrate:dev": "npm run migrate:dev --workspace=packages/db",
+    "db:migrate:deploy": "npm run migrate:deploy --workspace=packages/db",
+    "db:studio": "npm run studio --workspace=packages/db",
+    "db:reset": "npm run db:reset --workspace=packages/db",
+    "web:dev": "npm run dev --workspace=apps/web",
+    "web:build": "npm run build --workspace=apps/web",
+    "web:start": "npm run start --workspace=apps/web",
+    "api:dev": "npm run start:dev --workspace=apps/api",
+    "api:build": "npm run build --workspace=apps/api",
+    "api:start": "npm run start:prod --workspace=apps/api",
+    "setup": "npm run install:all && npm run db:generate && npm run build",
+    "setup:dev": "npm run install:all && npm run db:generate && npm run dev",
+    "reset": "npm run clean && npm run install:all && npm run db:generate",
+    "reset:hard": "npm run clean && rm -rf node_modules && npm run install:all && npm run db:generate",
+    "status": "turbo run build --dry",
+    "check": "npm run lint && npm run build && npm run test",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "help": "echo '📜 Scripts disponíveis:' && echo '' && echo '🚀 Desenvolvimento:' && echo '  dev, build, lint, test, clean' && echo '' && echo '📦 Instalação:' && echo '  install:all, install:workspaces, install:web, install:api, install:db' && echo '' && echo '🗄️ Banco de Dados:' && echo '  db:generate, db:migrate:dev, db:migrate:deploy, db:studio, db:reset' && echo '' && echo '🌐 Aplicações:' && echo '  web:dev, web:build, web:start, api:dev, api:build, api:start' && echo '' && echo '🛠️ Setup:' && echo '  setup, setup:dev, reset, reset:hard' && echo '' && echo '🔍 Verificação:' && echo '  status, check, format, format:check' && echo '' && echo '🐳 Docker:' && echo '  docker:up, docker:down, docker:logs'"
   },
   "devDependencies": {
     "rimraf": "^6.0.1",
-    "turbo": "^2.0.0"
+    "turbo": "^2.0.0",
+    "prettier": "^3.0.0"
   },
-  "keywords": [],
+  "keywords": [
+    "monorepo",
+    "nextjs",
+    "nestjs",
+    "prisma",
+    "typescript"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs"

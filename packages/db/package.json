@@ -27,9 +27,11 @@
     "dev": "tsc --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "generate": "prisma generate --schema=./prisma/schema.prisma",
+    "db:generate": "prisma generate --schema=./prisma/schema.prisma",
     "migrate:dev": "prisma migrate dev --schema=./prisma/schema.prisma",
     "migrate:deploy": "prisma migrate deploy --schema=./prisma/schema.prisma",
     "studio": "prisma studio --schema=./prisma/schema.prisma",
+    "db:reset": "prisma migrate reset --schema=./prisma/schema.prisma --force",
     "postinstall": "prisma generate --schema=./prisma/schema.prisma",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean"
