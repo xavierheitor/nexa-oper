@@ -113,6 +113,7 @@ npm run format:check
 ## 🎯 **Fluxos de Trabalho Comuns**
 
 ### **Novo desenvolvedor:**
+
 ```bash
 git clone <repo>
 cd nexa-oper
@@ -121,12 +122,14 @@ npm run dev
 ```
 
 ### **Após mudanças no schema:**
+
 ```bash
 npm run db:generate
 npm run build
 ```
 
 ### **Problemas de dependências:**
+
 ```bash
 npm run reset
 # ou
@@ -134,6 +137,7 @@ npm run reset:hard
 ```
 
 ### **Deploy:**
+
 ```bash
 npm run build
 npm run web:start  # ou api:start
@@ -150,23 +154,27 @@ npm run web:start  # ou api:start
 ## 🆘 **Solução de Problemas**
 
 ### **Erro de dependências:**
+
 ```bash
 npm run reset
 ```
 
 ### **Erro de build:**
+
 ```bash
 npm run clean
 npm run build
 ```
 
 ### **Erro de banco:**
+
 ```bash
 npm run db:generate
 npm run build
 ```
 
 ### **Problemas persistentes:**
+
 ```bash
 npm run reset:hard
 ```
