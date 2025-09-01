@@ -1,8 +1,4 @@
 import { FlatCompat } from '@eslint/eslintrc';
-import nextPlugin from '@next/eslint-plugin-next';
-import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
-import reactPlugin from 'eslint-plugin-react';
-import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -14,20 +10,21 @@ const compat = new FlatCompat({
 });
 
 export default [
-  // Extend base configuration
-  ...compat.extends('../../eslint.config.js'),
-
   // Next.js specific configuration
   ...compat.extends('next/core-web-vitals'),
 
-  // React specific rules
+  // TypeScript configuration with explicit tsconfigRootDir
   {
-    plugins: {
-      react: reactPlugin,
-      'react-hooks': reactHooksPlugin,
-      'jsx-a11y': jsxA11yPlugin,
-      '@next/next': nextPlugin,
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+        project: ['./tsconfig.json'],
+      },
     },
+  },
+
+  // Project specific rules
+  {
     rules: {
       // React specific rules
       'react/jsx-uses-react': 'off',
@@ -43,7 +40,6 @@ export default [
       'react/jsx-no-duplicate-props': 'error',
       'react/jsx-no-undef': 'error',
       'react/jsx-pascal-case': 'error',
-      'react/jsx-sort-props': 'off',
       'react/jsx-uses-vars': 'error',
       'react/no-array-index-key': 'warn',
       'react/no-danger': 'warn',
@@ -57,44 +53,7 @@ export default [
       'react/no-unknown-property': 'error',
       'react/no-unsafe': 'error',
       'react/self-closing-comp': 'error',
-      'react/sort-comp': 'off',
       'react/void-dom-elements-no-children': 'error',
-
-      // React Hooks rules
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
-
-      // Next.js specific rules
-      '@next/next/no-html-link-for-pages': 'error',
-      '@next/next/no-img-element': 'warn',
-      '@next/next/no-sync-scripts': 'error',
-      '@next/next/no-unwanted-polyfillio': 'error',
-      '@next/next/no-page-custom-font': 'warn',
-      '@next/next/no-css-tags': 'warn',
-      '@next/next/no-head-element': 'error',
-      '@next/next/no-typos': 'error',
-      '@next/next/no-duplicate-head': 'error',
-      '@next/next/no-title-in-meta': 'warn',
-      '@next/next/no-before-interactive-script-outside-document': 'error',
-      '@next/next/no-document-import-in-page': 'error',
-      '@next/next/no-head-import-in-page': 'error',
-      '@next/next/no-page-import-in-page': 'error',
-      '@next/next/no-script-component-in-head': 'error',
-      '@next/next/no-styled-jsx-in-document': 'error',
-      '@next/next/no-google-font-display': 'warn',
-      '@next/next/no-page-custom-font': 'warn',
-      '@next/next/no-css-tags': 'warn',
-      '@next/next/no-head-element': 'error',
-      '@next/next/no-typos': 'error',
-      '@next/next/no-duplicate-head': 'error',
-      '@next/next/no-title-in-meta': 'warn',
-      '@next/next/no-before-interactive-script-outside-document': 'error',
-      '@next/next/no-document-import-in-page': 'error',
-      '@next/next/no-head-import-in-page': 'error',
-      '@next/next/no-page-import-in-page': 'error',
-      '@next/next/no-script-component-in-head': 'error',
-      '@next/next/no-styled-jsx-in-document': 'error',
-      '@next/next/no-google-font-display': 'warn',
     },
   },
 

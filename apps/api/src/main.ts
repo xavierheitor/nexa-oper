@@ -19,4 +19,8 @@ async function bootstrap() {
   console.log(`🚀 API rodando na porta ${port}`);
   console.log(`📱 Ambiente: ${process.env.NODE_ENV ?? 'development'}`);
 }
-bootstrap();
+
+bootstrap().catch((error) => {
+  console.error('Erro ao iniciar a API:', error);
+  process.exit(1);
+});
