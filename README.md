@@ -44,30 +44,394 @@ cd nexa-oper
 npm run setup
 ```
 
-### 2. Configuração do Banco de Dados
+### 2. Configuração de Ambiente (Variáveis .env)
 
-Criar arquivo `.env` na raiz do projeto:
+O monorepo usa uma **hierarquia com herança** para gerenciar variáveis de ambiente, centralizando configurações comuns e permitindo configurações específicas por aplicação.
 
-```env
-DATABASE_URL="mysql://usuario:senha@localhost:3306/nexa_oper"
-NODE_ENV=development
+#### 📁 Estrutura dos Arquivos de Ambiente
+
+```bash
+nexa-oper/
+├── .env                    # 🎯 VARIÁVEIS BASE (compartilhadas)
+├── apps/web/
+│   ├── .env               # 🔄 VARIÁVEIS HERDADAS (DATABASE_URL)
+│   └── .env.local         # ⚙️ CONFIGURAÇÕES ESPECÍFICAS DA WEB
+└── apps/api/
+    └── .env               # ⚙️ CONFIGURAÇÕES ESPECÍFICAS DA API
 ```
 
-### 3. Configuração das Aplicações
+#### 🎯 Arquivo `.env` da Raiz (Variáveis Base)
 
-Criar arquivo `.env.local` em `apps/web/`:
+**Localização**: `nexa-oper/.env` (raiz do monorepo)
 
+**Propósito**: Variáveis compartilhadas por todos os workspaces
+
+**Conteúdo obrigatório**:
 ```env
+# ========================================
+# CONFIGURAÇÕES BASE DO MONOREPO
+# ========================================
+
+# BANCO DE DADOS (obrigatório para Prisma)
+DATABASE_URL="mysql://usuario:senha@localhost:3306/nexa_oper"
+
+# AMBIENTE (obrigatório)
+NODE_ENV="development"
+
+# CONFIGURAÇÕES COMPARTILHADAS (opcional)
+TZ="America/Sao_Paulo"
+PRISMA_LOG_LEVEL="query,error,warn"
+```
+
+**⚠️ IMPORTANTE**: Este arquivo é usado pelo pacote `@nexa-oper/db` e deve sempre conter `DATABASE_URL`.
+
+#### 🔄 Arquivo `apps/web/.env` (Variáveis Herdadas)
+
+**Localização**: `nexa-oper/apps/web/.env`
+
+**Propósito**: Variáveis que a aplicação web precisa herdar da raiz
+
+**Conteúdo obrigatório**:
+```env
+# ========================================
+# VARIÁVEIS HERDADAS DA RAIZ
+# ========================================
+DATABASE_URL="mysql://usuario:senha@localhost:3306/nexa_oper"
+```
+
+**💡 Por que existe**: O Next.js não herda automaticamente variáveis de diretórios superiores, então precisamos copiar `DATABASE_URL` aqui.
+
+#### ⚙️ Arquivo `apps/web/.env.local` (Configurações Específicas)
+
+**Localização**: `nexa-oper/apps/web/.env.local`
+
+**Propósito**: Configurações específicas da aplicação web
+
+**Conteúdo exemplo**:
+```env
+# ========================================
+# CONFIGURAÇÕES ESPECÍFICAS DA APLICAÇÃO WEB
+# ========================================
+
+# URL da API para comunicação frontend -> backend
 NEXT_PUBLIC_API_URL="http://localhost:3001"
+
+# Configurações específicas da web (exemplos)
+NEXT_PUBLIC_APP_NAME="Nexa Oper"
+NEXT_PUBLIC_APP_VERSION="1.0.0"
 ```
 
-Criar arquivo `.env` em `apps/api/`:
+#### ⚙️ Arquivo `apps/api/.env` (Configurações Específicas)
+
+**Localização**: `nexa-oper/apps/api/.env`
+
+**Propósito**: Configurações específicas da API
+
+**Conteúdo exemplo**:
+```env
+# ========================================
+# CONFIGURAÇÕES ESPECÍFICAS DA API
+# ========================================
+
+# Porta da API (se diferente do padrão)
+PORT=3001
+
+# Configurações específicas da API (exemplos)
+API_VERSION="v1"
+CORS_ORIGIN="http://localhost:3000"
+```
+
+### 3. Fluxo de Herança das Variáveis
+
+```mermaid
+graph TD
+    A[.env da raiz] --> B[Pacote @nexa-oper/db]
+    A --> C[apps/web/.env]
+    A --> D[apps/api/.env]
+    
+    C --> E[Next.js Web App]
+    D --> F[NestJS API]
+    
+    G[apps/web/.env.local] --> E
+    H[apps/api/.env] --> F
+```
+
+**Como funciona**:
+1. **Raiz** → **Pacote DB**: Prisma usa diretamente
+2. **Raiz** → **Web App**: Via `apps/web/.env` (cópia)
+3. **Raiz** → **API**: Via herança automática do NestJS
+4. **Específicas** → **Cada App**: Via seus respectivos `.env` e `.env.local`
+
+### 4. Comandos para Configuração Rápida
+
+#### 🔧 Criar Todos os Arquivos de Uma Vez
+
+**Opção 1: Usando o arquivo de exemplo**
+```bash
+# Na raiz do monorepo
+cp .env.example .env
+# Editar .env com seus valores reais
+
+# Para a aplicação web
+echo 'DATABASE_URL="mysql://usuario:senha@localhost:3306/nexa_oper"' > apps/web/.env
+echo 'NEXT_PUBLIC_API_URL="http://localhost:3001"' > apps/web/.env.local
+
+# Para a API
+echo 'PORT=3001' > apps/api/.env
+```
+
+**Opção 2: Comandos diretos**
+```bash
+# Na raiz do monorepo
+echo 'DATABASE_URL="mysql://usuario:senha@localhost:3306/nexa_oper"' > .env
+echo 'NODE_ENV="development"' >> .env
+
+# Para a aplicação web
+echo 'DATABASE_URL="mysql://usuario:senha@localhost:3306/nexa_oper"' > apps/web/.env
+echo 'NEXT_PUBLIC_API_URL="http://localhost:3001"' > apps/web/.env.local
+
+# Para a API
+echo 'PORT=3001' > apps/api/.env
+```
+
+#### 🔍 Verificar Configuração
+
+```bash
+# Verificar estrutura dos arquivos
+echo "=== .env da raiz ===" && cat .env
+echo "=== .env da web ===" && cat apps/web/.env
+echo "=== .env.local da web ===" && cat apps/web/.env.local
+echo "=== .env da API ===" && cat apps/api/.env
+```
+
+### 5. Manutenção e Atualizações
+
+#### 🔄 Quando Alterar `DATABASE_URL`
+
+**Sempre altere em 2 lugares**:
+1. **`.env` da raiz** (para o pacote DB)
+2. **`apps/web/.env`** (para a aplicação web)
+
+```bash
+# Exemplo: mudança de banco
+# 1. Alterar na raiz
+sed -i '' 's/banco_antigo/banco_novo/g' .env
+
+# 2. Alterar na web
+sed -i '' 's/banco_antigo/banco_novo/g' apps/web/.env
+```
+
+#### 🆕 Adicionar Novas Variáveis Compartilhadas
+
+**Para variáveis usadas por múltiplas aplicações**:
+1. Adicione no `.env` da raiz
+2. Copie para `apps/web/.env` se necessário para o Next.js
+
+**Para variáveis específicas de uma aplicação**:
+1. Adicione apenas no `.env` ou `.env.local` da aplicação específica
+
+### 6. Uso das Variáveis Durante Start e Build
+
+#### 🚀 Durante o Desenvolvimento (`npm run dev`)
+
+**Aplicação Web (Next.js)**:
+- Carrega `apps/web/.env` primeiro
+- Depois carrega `apps/web/.env.local`
+- `DATABASE_URL` vem do `.env` local
+- `NEXT_PUBLIC_*` vem do `.env.local`
+
+**API (NestJS)**:
+- Carrega `apps/api/.env`
+- Herda automaticamente variáveis da raiz
+- `DATABASE_URL` vem da raiz
+- `PORT` vem do `.env` local
+
+**Pacote DB**:
+- Carrega `.env` da raiz
+- Usa `DATABASE_URL` para Prisma
+
+#### 🏗️ Durante o Build (`npm run build`)
+
+**Aplicação Web**:
+- **Build time**: Usa `DATABASE_URL` para gerar tipos Prisma
+- **Runtime**: Usa `DATABASE_URL` para conexões ao banco
+- **Static**: `NEXT_PUBLIC_*` são embutidas no bundle
+
+**API**:
+- **Build time**: Usa `DATABASE_URL` para validação
+- **Runtime**: Usa `DATABASE_URL` para conexões ao banco
+
+**Pacote DB**:
+- **Build time**: Usa `DATABASE_URL` para gerar cliente Prisma
+
+#### 📱 Durante o Runtime
+
+**Variáveis Disponíveis**:
+```typescript
+// Em apps/web (Next.js)
+process.env.DATABASE_URL        // ✅ Disponível
+process.env.NEXT_PUBLIC_API_URL // ✅ Disponível (público)
+process.env.NODE_ENV            // ✅ Disponível
+
+// Em apps/api (NestJS)
+process.env.DATABASE_URL        // ✅ Disponível
+process.env.PORT                // ✅ Disponível
+process.env.NODE_ENV            // ✅ Disponível
+
+// Em packages/db (Prisma)
+process.env.DATABASE_URL        // ✅ Disponível
+process.env.PRISMA_LOG_LEVEL    // ✅ Disponível
+```
+
+### 7. Troubleshooting de Ambiente
+
+#### ❌ Erro: "Environment variable not found: DATABASE_URL"
+
+**Causas possíveis**:
+- Arquivo `.env` da raiz não existe
+- `DATABASE_URL` não está definida
+- Aplicação web não tem `DATABASE_URL` em seu `.env`
+
+**Soluções**:
+```bash
+# 1. Verificar se existe
+ls -la .env
+
+# 2. Verificar conteúdo
+cat .env | grep DATABASE_URL
+
+# 3. Recriar se necessário
+echo 'DATABASE_URL="mysql://usuario:senha@localhost:3306/nexa_oper"' > .env
+```
+
+#### ❌ Erro: "Cannot find module '@nexa-oper/db'"
+
+**Causa**: Pacote DB não foi gerado ou instalado
+
+**Solução**:
+```bash
+# Gerar cliente Prisma
+npm run db:generate
+
+# Reinstalar dependências
+npm run install:all
+```
+
+#### 🔍 Verificar Status das Variáveis
+
+```bash
+# Verificar se as variáveis estão sendo carregadas
+cd apps/web && npm run dev
+# Deve mostrar: "Environments: .env, .env.local"
+
+cd apps/api && npm run start:dev
+# Deve conectar ao banco sem erros
+```
+
+### 8. Exemplos de Configuração por Ambiente
+
+#### 🚀 Desenvolvimento
 
 ```env
-DATABASE_URL="mysql://usuario:senha@localhost:3306/nexa_oper"
+# .env da raiz
+DATABASE_URL="mysql://dev:senha@localhost:3306/nexa_dev"
+NODE_ENV="development"
+PRISMA_LOG_LEVEL="query,error,warn"
+
+# apps/web/.env.local
+NEXT_PUBLIC_API_URL="http://localhost:3001"
+NEXT_PUBLIC_APP_ENV="development"
+
+# apps/api/.env
 PORT=3001
-NODE_ENV=development
+LOG_LEVEL="debug"
 ```
+
+#### 🏭 Produção
+
+```env
+# .env da raiz
+DATABASE_URL="mysql://prod:senha@prod-server:3306/nexa_prod"
+NODE_ENV="production"
+PRISMA_LOG_LEVEL="error"
+
+# apps/web/.env.local
+NEXT_PUBLIC_API_URL="https://api.nexaoper.com"
+NEXT_PUBLIC_APP_ENV="production"
+
+# apps/api/.env
+PORT=3001
+LOG_LEVEL="info"
+```
+
+#### 🧪 Teste
+
+```env
+# .env da raiz
+DATABASE_URL="mysql://test:senha@localhost:3306/nexa_test"
+NODE_ENV="test"
+PRISMA_LOG_LEVEL="error"
+
+# apps/web/.env.local
+NEXT_PUBLIC_API_URL="http://localhost:3001"
+NEXT_PUBLIC_APP_ENV="test"
+
+# apps/api/.env
+PORT=3001
+LOG_LEVEL="error"
+```
+
+### 9. Checklist de Configuração
+
+#### ✅ Checklist para Primeira Configuração
+
+- [ ] Criar `.env` na raiz com `DATABASE_URL` e `NODE_ENV`
+- [ ] Criar `apps/web/.env` com `DATABASE_URL`
+- [ ] Criar `apps/web/.env.local` com `NEXT_PUBLIC_API_URL`
+- [ ] Criar `apps/api/.env` com `PORT`
+- [ ] Verificar se `npm run dev` funciona sem erros
+- [ ] Verificar se `npm run build` funciona sem erros
+- [ ] Testar conexão com banco em ambas as aplicações
+
+#### ✅ Checklist para Novos Desenvolvedores
+
+- [ ] Clonar o repositório
+- [ ] Executar `npm run setup`
+- [ ] Verificar se todos os arquivos `.env` existem
+- [ ] Executar `npm run dev` para testar
+- [ ] Verificar se não há erros de `DATABASE_URL`
+
+#### ✅ Checklist para Deploy
+
+- [ ] Atualizar `DATABASE_URL` para produção
+- [ ] Atualizar `NODE_ENV` para "production"
+- [ ] Verificar se `NEXT_PUBLIC_API_URL` aponta para produção
+- [ ] Testar build: `npm run build`
+- [ ] Verificar se não há variáveis de desenvolvimento expostas
+
+### 10. Boas Práticas
+
+#### 🔒 Segurança
+
+- **Nunca commitar** arquivos `.env` no Git
+- **Sempre commitar** arquivo `.env.example` para documentar variáveis necessárias
+- Rotacione senhas de banco regularmente
+- Use variáveis diferentes para cada ambiente
+- Use `.gitignore` para excluir todos os arquivos `.env`
+
+#### 🔧 Manutenção
+
+- **Centralize** variáveis comuns na raiz
+- **Documente** todas as variáveis necessárias
+- **Valide** variáveis obrigatórias no startup
+- **Teste** configurações em todos os ambientes
+
+#### 📱 Desenvolvimento
+
+- Use `NODE_ENV=development` para logs detalhados
+- Use `PRISMA_LOG_LEVEL="query,error,warn"` para debug
+- Configure `NEXT_PUBLIC_*` apenas para variáveis seguras
+- Teste builds e runtime separadamente
 
 ## 🔄 Desenvolvimento Diário
 
