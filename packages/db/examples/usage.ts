@@ -45,9 +45,14 @@ export async function exampleDirectPrisma() {
 }
 
 // 3. Importação de tipos
-import type { Test, DatabaseResult } from '@nexa-oper/db';
+import type { Test } from '@nexa-oper/db';
 
-export async function exampleWithTypes(): Promise<DatabaseResult<Test[]>> {
+export async function exampleWithTypes(): Promise<{
+  success: boolean;
+  data?: Test[];
+  error?: string;
+  message?: string;
+}> {
   try {
     const tests: Test[] = await db.prisma.test.findMany();
 
@@ -65,7 +70,7 @@ export async function exampleWithTypes(): Promise<DatabaseResult<Test[]>> {
 }
 
 // 4. Importação do cliente configurado
-import { prismaClient, closePrismaClient } from '@nexa-oper/db/client';
+import { prismaClient } from '@nexa-oper/db/client';
 
 export async function exampleCustomClient() {
   try {
