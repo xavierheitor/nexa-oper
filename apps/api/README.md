@@ -50,10 +50,29 @@ src/
 Esta API utiliza o pacote compartilhado `@nexa-oper/db` para acesso ao banco de dados:
 
 ```typescript
-import { db } from '@nexa-oper/db';
+import { PrismaClient } from '@nexa-oper/db';
+
+const prisma = new PrismaClient();
 
 // Exemplo de uso
-const users = await db.prisma.user.findMany();
+const tests = await prisma.test.findMany();
+```
+
+### Serviço de Banco de Dados
+
+A API inclui um `DbService` que gerencia a conexão com o banco:
+
+```typescript
+import { DbService } from './db/db.service';
+
+@Injectable()
+export class MeuServico {
+  constructor(private dbService: DbService) {}
+  
+  async buscarTestes() {
+    return await this.dbService.findAllTests();
+  }
+}
 ```
 
 ## 📝 Variáveis de Ambiente

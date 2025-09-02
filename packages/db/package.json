@@ -3,29 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "description": "Pacote compartilhado de banco de dados com Prisma",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./generated/prisma/index.js",
+  "types": "./generated/prisma/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
-    },
-    "./types": {
-      "types": "./dist/types.d.ts",
-      "import": "./dist/types.js",
-      "require": "./dist/types.js"
-    },
-    "./client": {
-      "types": "./dist/client.d.ts",
-      "import": "./dist/client.js",
-      "require": "./dist/client.js"
-    }
+    ".": "./generated/prisma/index.js",
+    "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "generate": "prisma generate --schema=./prisma",
     "db:generate": "prisma generate --schema=./prisma",
     "migrate:dev": "prisma migrate dev --schema=./prisma",
@@ -33,7 +17,7 @@
     "studio": "prisma studio --schema=./prisma",
     "db:reset": "prisma migrate reset --schema=./prisma --force",
     "postinstall": "prisma generate --schema=./prisma",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf generated",
     "prebuild": "npm run clean"
   },
   "keywords": [

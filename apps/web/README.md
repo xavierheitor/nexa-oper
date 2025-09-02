@@ -48,10 +48,32 @@ src/
 Esta aplicação utiliza o pacote compartilhado `@nexa-oper/db` para acesso ao banco de dados:
 
 ```typescript
-import { db } from '@nexa-oper/db';
+import { PrismaClient } from '@nexa-oper/db';
 
 // Exemplo de uso em Server Components
-const users = await db.prisma.user.findMany();
+const prisma = new PrismaClient();
+const tests = await prisma.test.findMany();
+
+// Sempre desconectar ao finalizar
+await prisma.$disconnect();
+```
+
+### Exemplo em API Routes
+
+```typescript
+// app/api/tests/route.ts
+import { PrismaClient } from '@nexa-oper/db';
+
+export async function GET() {
+  const prisma = new PrismaClient();
+  
+  try {
+    const tests = await prisma.test.findMany();
+    return Response.json({ data: tests });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
 ```
 
 ## 📝 Variáveis de Ambiente

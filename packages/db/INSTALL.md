@@ -32,8 +32,8 @@ pnpm install
 {
   "compilerOptions": {
     "paths": {
-      "@nexa-oper/db": ["../../packages/db/src"],
-      "@nexa-oper/db/*": ["../../packages/db/src/*"]
+      "@nexa-oper/db": ["../../packages/db/generated/prisma"],
+      "@nexa-oper/db/*": ["../../packages/db/generated/prisma/*"]
     }
   }
 }
@@ -52,36 +52,41 @@ DATABASE_URL="mysql://usuario:senha@localhost:3306/banco"
 ### Importação
 
 ```typescript
-import { db, prisma } from '@nexa-oper/db';
-import type { Test } from '@nexa-oper/db';
+import { PrismaClient, Test } from '@nexa-oper/db';
 ```
 
 ### Operações CRUD
 
 ```typescript
+// Criar instância do Prisma Client
+const prisma = new PrismaClient();
+
 // Criar
-const newTest = await db.prisma.test.create({
+const newTest = await prisma.test.create({
   data: { name: 'Meu Teste' },
 });
 
 // Buscar todos
-const tests = await db.prisma.test.findMany();
+const tests = await prisma.test.findMany();
 
 // Buscar por ID
-const test = await db.prisma.test.findUnique({
+const test = await prisma.test.findUnique({
   where: { id: 1 },
 });
 
 // Atualizar
-const updatedTest = await db.prisma.test.update({
+const updatedTest = await prisma.test.update({
   where: { id: 1 },
   data: { name: 'Nome Atualizado' },
 });
 
 // Deletar
-const deletedTest = await db.prisma.test.delete({
+const deletedTest = await prisma.test.delete({
   where: { id: 1 },
 });
+
+// Sempre desconectar ao finalizar
+await prisma.$disconnect();
 ```
 
 ## 📁 Estrutura de Arquivos
@@ -94,9 +99,9 @@ sua-app/
 │   ├── app/
 │   │   └── api/
 │   │       └── tests/
-│   │           └── route.ts # Usa o db
+│   │           └── route.ts # Usa o prisma
 │   └── components/
-│       └── TestList.tsx    # Componente que usa o db
+│       └── TestList.tsx    # Componente que usa o prisma
 ├── package.json
 └── tsconfig.json
 ```
@@ -106,17 +111,17 @@ sua-app/
 ```bash
 # No pacote db
 npm run generate    # Gerar cliente Prisma
-npm run build      # Compilar TypeScript
 npm run migrate:dev # Migração de desenvolvimento
 npm run studio     # Abrir Prisma Studio
 ```
 
 ## ⚠️ Importante
 
-1. **Sempre use o singleton `db`** para operações normais
+1. **Sempre crie uma nova instância** do `PrismaClient` quando necessário
 2. **Configure a variável `DATABASE_URL`** corretamente
 3. **Execute `npm run generate`** no pacote db após mudanças no schema
 4. **O pacote é `private: true`**, então só funciona dentro do monorepo
+5. **Sempre desconecte** o cliente com `prisma.$disconnect()`
 
 ## 🆘 Solução de Problemas
 
@@ -124,16 +129,22 @@ npm run studio     # Abrir Prisma Studio
 
 - Verifique se o workspace está configurado corretamente
 - Execute `npm install` na raiz do monorepo
-- Verifique se o caminho no tsconfig.json está correto
+- Execute `npm run generate` no pacote db
 
 ### Erro: "Prisma Client not found"
 
 - Execute `npm run generate` no pacote db
 - Verifique se a pasta `generated/prisma` existe
-- Verifique se o build foi executado (`npm run build`)
+- Não é necessário executar build
 
 ### Erro de conexão com banco
 
 - Verifique a variável `DATABASE_URL`
 - Teste a conexão diretamente com o banco
 - Verifique se o banco está rodando
+
+### Erro: "Type 'Test' not found"
+
+- Execute `npm run generate` no pacote db
+- Verifique se o modelo está definido no schema Prisma
+- Verifique se o migration foi aplicado
