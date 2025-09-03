@@ -585,6 +585,9 @@ npm install <pacote> --workspace=<workspace>
 
 # Instalar dependência de desenvolvimento
 npm install <pacote> --save-dev --workspace=<workspace>
+
+# Se houver conflitos de dependências, use:
+npm install <pacote> --workspace=<workspace> --legacy-peer-deps
 ```
 
 #### 📋 Workspaces Disponíveis

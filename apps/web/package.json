@@ -12,7 +12,9 @@
     "clean": "rimraf .next"
   },
   "dependencies": {
+    "@ant-design/nextjs-registry": "^1.1.0",
     "@nexa-oper/db": "^1.0.0",
+    "antd": "^5.27.2",
     "dotenv": "^16.6.1",
     "next": "15.5.2",
     "react": "19.1.0",
