@@ -52,21 +52,25 @@ npm install eslint-plugin-import -w .
 #### 🎯 Exemplos Práticos
 
 **Instalar Ant Design na aplicação web:**
+
 ```bash
 npm install antd --workspace=apps/web
 ```
 
 **Instalar biblioteca de validação na API:**
+
 ```bash
 npm install class-validator class-transformer --workspace=apps/api
 ```
 
 **Instalar utilitários no pacote DB:**
+
 ```bash
 npm install date-fns --workspace=packages/db
 ```
 
 **Instalar ferramentas de desenvolvimento globalmente:**
+
 ```bash
 npm install @types/node -w .
 ```
@@ -90,7 +94,7 @@ npm install <pacote> --workspace=<workspace> --legacy-peer-deps
 #### 📋 Workspaces Disponíveis
 
 - `apps/web` - Aplicação Next.js
-- `apps/api` - API NestJS  
+- `apps/api` - API NestJS
 - `packages/db` - Pacote compartilhado de banco de dados
 - `.` (raiz) - Dependências globais do monorepo
 

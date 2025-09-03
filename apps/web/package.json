@@ -13,10 +13,16 @@
   },
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.1.0",
+    "@ant-design/v5-patch-for-react-19": "^1.0.3",
+    "@auth/prisma-adapter": "^2.10.0",
     "@nexa-oper/db": "^1.0.0",
+    "@next-auth/prisma-adapter": "^1.0.7",
+    "@types/bcrypt": "^6.0.0",
     "antd": "^5.27.2",
+    "bcrypt": "^6.0.0",
     "dotenv": "^16.6.1",
     "next": "15.5.2",
+    "next-auth": "^4.24.11",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },

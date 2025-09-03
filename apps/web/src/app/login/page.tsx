@@ -1,11 +1,46 @@
-'use client'
+'use client';
 
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Card, Form, Input } from 'antd';
-import Title from 'antd/es/typography/Title';
+import { App, Button, Card, Form, Input, Typography } from 'antd';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 
+const { Title } = Typography;
 
-export default function LoginPage() {
+const LoginPage: React.FC = () => {
+  const router = useRouter();
+  const [form] = Form.useForm();
+  const [formError, setFormError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { message } = App.useApp(); // <-- 👈 Aqui puxa o contexto correto
+
+  const onFinish = async (values: { username: string; password: string }) => {
+    setLoading(true);
+    setFormError(null);
+
+    try {
+      const res = await signIn('credentials', {
+        redirect: false,
+        username: values.username,
+        password: values.password,
+      });
+
+      if (res?.ok) {
+        message.success('Login realizado com sucesso!');
+        router.push('/dashboard');
+      } else {
+        // Caso de erro conhecido (401 Unauthorized)
+        setFormError('Usuário ou senha inválidos!');
+      }
+    } catch (err) {
+      console.error('Erro no login:', err);
+      message.error('Erro inesperado ao tentar fazer login. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div
       style={{
@@ -20,10 +55,10 @@ export default function LoginPage() {
           Login
         </Title>
         <Form
-          form={undefined}
-          name='login Nexa Oper'
+          form={form}
+          name='login'
           initialValues={{ remember: true }}
-          onFinish={undefined}
+          onFinish={onFinish}
           layout='vertical'
         >
           <Form.Item
@@ -42,8 +77,8 @@ export default function LoginPage() {
             name='password'
             label='Senha'
             rules={[{ required: true, message: 'Informe sua senha!' }]}
-            help={undefined} // Mostra erro no campo se houver
-            validateStatus={undefined}
+            help={formError} // Mostra erro no campo se houver
+            validateStatus={formError ? 'error' : ''}
           >
             <Input.Password
               prefix={<LockOutlined />}
@@ -53,13 +88,14 @@ export default function LoginPage() {
           </Form.Item>
 
           <Form.Item>
-            <Button type='primary' htmlType='submit' block loading={false}>
+            <Button type='primary' htmlType='submit' block loading={loading}>
               Entrar
             </Button>
           </Form.Item>
         </Form>
       </Card>
-
     </div>
-  )
-}
+  );
+};
+
+export default LoginPage;

@@ -9,6 +9,7 @@ import {
   LogoutOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu, Typography } from 'antd';
+import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
@@ -172,7 +173,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
     {
       key: 'logout',
       icon: <LogoutOutlined />,
-      label: <span onClick={() => alert('Sair')}>Sair</span>,
+      label: <span onClick={() => signOut({ callbackUrl: '/' })}>Sair</span>,
     },
   ];
 
