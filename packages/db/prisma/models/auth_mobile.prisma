@@ -1,0 +1,49 @@
+model MobileUser {
+  id       Int    @id @default(autoincrement())
+  username String @db.VarChar(255) @unique
+  password String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  mobileSession MobileSession[]
+
+  MobileToken MobileToken[]
+}
+
+model MobileSession {
+  id         String   @id @default(uuid())
+  deviceInfo String?  @db.Text
+  lastActive DateTime @default(now())
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  ativa      Boolean  @default(true)
+
+  mobileUserId Int
+  mobileUser   MobileUser @relation(fields: [mobileUserId], references: [id])
+
+  @@index([mobileUserId])
+  @@map("sessoes_mobile")
+}
+
+model MobileToken {
+  id                    Int       @id @default(autoincrement())
+  token                 String    @unique @db.VarChar(255)
+  refreshToken          String?   @unique @db.VarChar(255)
+  refreshTokenExpiresAt DateTime?
+  usuarioMobileId       String
+  expiresAt             DateTime
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  revoked               Boolean   @default(false)
+
+  mobileUserId Int
+  mobileUser   MobileUser @relation(fields: [mobileUserId], references: [id])
+
+  @@index([mobileUserId])
+  @@map("tokens_mobile")
+}

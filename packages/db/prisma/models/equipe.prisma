@@ -1,0 +1,56 @@
+model TipoEquipe {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  Equipe Equipe[]
+}
+
+model Equipe {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  tipoEquipeId Int
+  tipoEquipe   TipoEquipe @relation(fields: [tipoEquipeId], references: [id])
+
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  EquipeSupervisor EquipeSupervisor[]
+
+  Turno Turno[]
+}
+
+
+model EquipeSupervisor {
+  id Int @id @default(autoincrement())
+
+  equipeId Int
+  equipe   Equipe @relation(fields: [equipeId], references: [id])
+
+  supervisorId Int
+  supervisor   Supervisor @relation(fields: [supervisorId], references: [id])
+
+  inicio DateTime
+  fim DateTime?
+
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+}

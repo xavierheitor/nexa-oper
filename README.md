@@ -46,7 +46,8 @@ npm run setup
 
 ### 2. Configuração de Ambiente (Variáveis .env)
 
-O monorepo usa uma **hierarquia com herança** para gerenciar variáveis de ambiente, centralizando configurações comuns e permitindo configurações específicas por aplicação.
+O monorepo usa uma **hierarquia com herança** para gerenciar variáveis de ambiente, centralizando
+configurações comuns e permitindo configurações específicas por aplicação.
 
 #### 📁 Estrutura dos Arquivos de Ambiente
 
@@ -67,6 +68,7 @@ nexa-oper/
 **Propósito**: Variáveis compartilhadas por todos os workspaces
 
 **Conteúdo obrigatório**:
+
 ```env
 # ========================================
 # CONFIGURAÇÕES BASE DO MONOREPO
@@ -83,7 +85,8 @@ TZ="America/Sao_Paulo"
 PRISMA_LOG_LEVEL="query,error,warn"
 ```
 
-**⚠️ IMPORTANTE**: Este arquivo é usado pelo pacote `@nexa-oper/db` e deve sempre conter `DATABASE_URL`.
+**⚠️ IMPORTANTE**: Este arquivo é usado pelo pacote `@nexa-oper/db` e deve sempre conter
+`DATABASE_URL`.
 
 #### 🔄 Arquivo `apps/web/.env` (Variáveis Herdadas)
 
@@ -92,6 +95,7 @@ PRISMA_LOG_LEVEL="query,error,warn"
 **Propósito**: Variáveis que a aplicação web precisa herdar da raiz
 
 **Conteúdo obrigatório**:
+
 ```env
 # ========================================
 # VARIÁVEIS HERDADAS DA RAIZ
@@ -99,7 +103,8 @@ PRISMA_LOG_LEVEL="query,error,warn"
 DATABASE_URL="mysql://usuario:senha@localhost:3306/nexa_oper"
 ```
 
-**💡 Por que existe**: O Next.js não herda automaticamente variáveis de diretórios superiores, então precisamos copiar `DATABASE_URL` aqui.
+**💡 Por que existe**: O Next.js não herda automaticamente variáveis de diretórios superiores, então
+precisamos copiar `DATABASE_URL` aqui.
 
 #### ⚙️ Arquivo `apps/web/.env.local` (Configurações Específicas)
 
@@ -108,6 +113,7 @@ DATABASE_URL="mysql://usuario:senha@localhost:3306/nexa_oper"
 **Propósito**: Configurações específicas da aplicação web
 
 **Conteúdo exemplo**:
+
 ```env
 # ========================================
 # CONFIGURAÇÕES ESPECÍFICAS DA APLICAÇÃO WEB
@@ -128,6 +134,7 @@ NEXT_PUBLIC_APP_VERSION="1.0.0"
 **Propósito**: Configurações específicas da API
 
 **Conteúdo exemplo**:
+
 ```env
 # ========================================
 # CONFIGURAÇÕES ESPECÍFICAS DA API
@@ -148,15 +155,16 @@ graph TD
     A[.env da raiz] --> B[Pacote @nexa-oper/db]
     A --> C[apps/web/.env]
     A --> D[apps/api/.env]
-    
+
     C --> E[Next.js Web App]
     D --> F[NestJS API]
-    
+
     G[apps/web/.env.local] --> E
     H[apps/api/.env] --> F
 ```
 
 **Como funciona**:
+
 1. **Raiz** → **Pacote DB**: Prisma usa diretamente
 2. **Raiz** → **Web App**: Via `apps/web/.env` (cópia)
 3. **Raiz** → **API**: Via herança automática do NestJS
@@ -166,7 +174,8 @@ graph TD
 
 #### 🔧 Criar Todos os Arquivos de Uma Vez
 
-**Opção 1: Usando o arquivo de exemplo**
+##### **Opção 1: Usando o arquivo de exemplo**
+
 ```bash
 # Na raiz do monorepo
 cp .env.example .env
@@ -180,7 +189,8 @@ echo 'NEXT_PUBLIC_API_URL="http://localhost:3001"' > apps/web/.env.local
 echo 'PORT=3001' > apps/api/.env
 ```
 
-**Opção 2: Comandos diretos**
+### **Opção 2: Comandos diretos**
+
 ```bash
 # Na raiz do monorepo
 echo 'DATABASE_URL="mysql://usuario:senha@localhost:3306/nexa_oper"' > .env
@@ -209,6 +219,7 @@ echo "=== .env da API ===" && cat apps/api/.env
 #### 🔄 Quando Alterar `DATABASE_URL`
 
 **Sempre altere em 2 lugares**:
+
 1. **`.env` da raiz** (para o pacote DB)
 2. **`apps/web/.env`** (para a aplicação web)
 
@@ -224,10 +235,12 @@ sed -i '' 's/banco_antigo/banco_novo/g' apps/web/.env
 #### 🆕 Adicionar Novas Variáveis Compartilhadas
 
 **Para variáveis usadas por múltiplas aplicações**:
+
 1. Adicione no `.env` da raiz
 2. Copie para `apps/web/.env` se necessário para o Next.js
 
 **Para variáveis específicas de uma aplicação**:
+
 1. Adicione apenas no `.env` ou `.env.local` da aplicação específica
 
 ### 6. Uso das Variáveis Durante Start e Build
@@ -235,52 +248,59 @@ sed -i '' 's/banco_antigo/banco_novo/g' apps/web/.env
 #### 🚀 Durante o Desenvolvimento (`npm run dev`)
 
 **Aplicação Web (Next.js)**:
+
 - Carrega `apps/web/.env` primeiro
 - Depois carrega `apps/web/.env.local`
 - `DATABASE_URL` vem do `.env` local
 - `NEXT_PUBLIC_*` vem do `.env.local`
 
 **API (NestJS)**:
+
 - Carrega `apps/api/.env`
 - Herda automaticamente variáveis da raiz
 - `DATABASE_URL` vem da raiz
 - `PORT` vem do `.env` local
 
 **Pacote DB**:
+
 - Carrega `.env` da raiz
 - Usa `DATABASE_URL` para Prisma
 
 #### 🏗️ Durante o Build (`npm run build`)
 
 **Aplicação Web**:
+
 - **Build time**: Usa `DATABASE_URL` para gerar tipos Prisma
 - **Runtime**: Usa `DATABASE_URL` para conexões ao banco
 - **Static**: `NEXT_PUBLIC_*` são embutidas no bundle
 
 **API**:
+
 - **Build time**: Usa `DATABASE_URL` para validação
 - **Runtime**: Usa `DATABASE_URL` para conexões ao banco
 
 **Pacote DB**:
+
 - **Build time**: Usa `DATABASE_URL` para gerar cliente Prisma
 
 #### 📱 Durante o Runtime
 
 **Variáveis Disponíveis**:
+
 ```typescript
 // Em apps/web (Next.js)
-process.env.DATABASE_URL        // ✅ Disponível
-process.env.NEXT_PUBLIC_API_URL // ✅ Disponível (público)
-process.env.NODE_ENV            // ✅ Disponível
+process.env.DATABASE_URL; // ✅ Disponível
+process.env.NEXT_PUBLIC_API_URL; // ✅ Disponível (público)
+process.env.NODE_ENV; // ✅ Disponível
 
 // Em apps/api (NestJS)
-process.env.DATABASE_URL        // ✅ Disponível
-process.env.PORT                // ✅ Disponível
-process.env.NODE_ENV            // ✅ Disponível
+process.env.DATABASE_URL; // ✅ Disponível
+process.env.PORT; // ✅ Disponível
+process.env.NODE_ENV; // ✅ Disponível
 
 // Em packages/db (Prisma)
-process.env.DATABASE_URL        // ✅ Disponível
-process.env.PRISMA_LOG_LEVEL    // ✅ Disponível
+process.env.DATABASE_URL; // ✅ Disponível
+process.env.PRISMA_LOG_LEVEL; // ✅ Disponível
 ```
 
 ### 7. Troubleshooting de Ambiente
@@ -288,11 +308,13 @@ process.env.PRISMA_LOG_LEVEL    // ✅ Disponível
 #### ❌ Erro: "Environment variable not found: DATABASE_URL"
 
 **Causas possíveis**:
+
 - Arquivo `.env` da raiz não existe
 - `DATABASE_URL` não está definida
 - Aplicação web não tem `DATABASE_URL` em seu `.env`
 
 **Soluções**:
+
 ```bash
 # 1. Verificar se existe
 ls -la .env
@@ -309,6 +331,7 @@ echo 'DATABASE_URL="mysql://usuario:senha@localhost:3306/nexa_oper"' > .env
 **Causa**: Pacote DB não foi gerado ou instalado
 
 **Solução**:
+
 ```bash
 # Gerar cliente Prisma
 npm run db:generate
@@ -651,13 +674,13 @@ export async function GET() {
 
 ## 🔌 API (NestJS)
 
- Tecnologias
+Tecnologias
 
 - **NestJS** - Framework Node.js para aplicações escaláveis
 - **TypeScript** - Linguagem de programação tipada
 - **Prisma** - ORM para banco de dados (via pacote compartilhado)
 
- Estrutura
+Estrutura
 
 ```bash
 apps/api/src/
@@ -671,7 +694,7 @@ apps/api/src/
     └── db.module.ts    # Módulo de banco
 ```
 
- Uso do Banco de Dados
+Uso do Banco de Dados
 
 ```typescript
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
@@ -740,7 +763,7 @@ const newTest = await prisma.test.create({ data: { name: 'Novo' } });
 await prisma.$disconnect();
 ```
 
- Scripts Disponíveis
+Scripts Disponíveis
 
 ```bash
 # Gerar cliente Prisma

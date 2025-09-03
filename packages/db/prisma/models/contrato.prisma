@@ -1,0 +1,24 @@
+model Contrato {
+  id     Int    @id @default(autoincrement())
+  nome   String @db.VarChar(255)
+  numero String @db.VarChar(255)
+
+  dataInicio DateTime?
+  dataFim    DateTime?
+
+
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+
+  Veiculo Veiculo[]
+
+  Eletricista Eletricista[]
+
+  Equipe Equipe[]
+
+  Supervisor Supervisor[]
+}
