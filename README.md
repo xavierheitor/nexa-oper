@@ -536,17 +536,63 @@ npm run install:db
 
 ### Adicionar Novas Dependências
 
+#### 📦 Instalação em Workspaces Específicos
+
 ```bash
-# Para uma aplicação específica
-npm install <pacote> --workspace=apps/web
-npm install <pacote> --workspace=apps/api
+# Para a aplicação web (ex: instalar Ant Design)
+npm install antd --workspace=apps/web
 
-# Para um pacote específico
-npm install <pacote> --workspace=packages/db
+# Para a API (ex: instalar JWT)
+npm install @nestjs/jwt --workspace=apps/api
 
-# Para o monorepo como um todo
-npm install <pacote> -w .
+# Para o pacote DB (ex: instalar validação)
+npm install zod --workspace=packages/db
+
+# Para o monorepo como um todo (ex: ferramentas de desenvolvimento)
+npm install eslint-plugin-import -w .
 ```
+
+#### 🎯 Exemplos Práticos
+
+**Instalar Ant Design na aplicação web:**
+```bash
+npm install antd --workspace=apps/web
+```
+
+**Instalar biblioteca de validação na API:**
+```bash
+npm install class-validator class-transformer --workspace=apps/api
+```
+
+**Instalar utilitários no pacote DB:**
+```bash
+npm install date-fns --workspace=packages/db
+```
+
+**Instalar ferramentas de desenvolvimento globalmente:**
+```bash
+npm install @types/node -w .
+```
+
+#### 🔧 Scripts de Instalação Rápida
+
+```bash
+# Instalar dependência em todos os workspaces
+npm run install:all
+
+# Instalar dependência específica em workspace específico
+npm install <pacote> --workspace=<workspace>
+
+# Instalar dependência de desenvolvimento
+npm install <pacote> --save-dev --workspace=<workspace>
+```
+
+#### 📋 Workspaces Disponíveis
+
+- `apps/web` - Aplicação Next.js
+- `apps/api` - API NestJS  
+- `packages/db` - Pacote compartilhado de banco de dados
+- `.` (raiz) - Dependências globais do monorepo
 
 ## 🏗️ Build e Deploy
 
