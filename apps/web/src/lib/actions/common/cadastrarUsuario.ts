@@ -1,6 +1,6 @@
 'use server';
 
-import { dbService } from '@/lib/db/db.service';
+import { prisma } from '@/lib/db/db.service';
 import bcrypt from 'bcrypt';
 export async function cadastrarUsuario(formData: FormData) {
   const username = formData.get('username')?.toString();
@@ -15,14 +15,14 @@ export async function cadastrarUsuario(formData: FormData) {
     };
   }
 
-  const existing = await dbService.getPrisma().user.findUnique({ where: { username } });
+  const existing = await prisma.user.findUnique({ where: { username } });
   if (existing) {
     return { success: false, message: 'Usuário já existe.' };
   }
 
   const hashed = await bcrypt.hash(password, 10);
 
-  await dbService.getPrisma().user.create({
+  await prisma.user.create({
     data: {
       username,
       email: email ?? '',

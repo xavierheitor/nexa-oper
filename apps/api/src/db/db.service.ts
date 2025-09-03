@@ -1,3 +1,32 @@
+/**
+ * Serviço de Banco de Dados com Singleton Pattern
+ *
+ * Este serviço fornece acesso direto ao Prisma Client através de um singleton,
+ * eliminando a necessidade de chamar getPrisma() repetidamente.
+ *
+ * FUNCIONALIDADES:
+ * - Singleton pattern para instância única do Prisma
+ * - Acesso direto aos modelos (db.user, db.test, etc.)
+ * - Gerenciamento automático de conexão/desconexão
+ * - Logging integrado para desenvolvimento
+ * - Health check para monitoramento
+ *
+ * COMO USAR:
+ * ```typescript
+ * // Antes (com boilerplate):
+ * const users = await dbService.getPrisma().user.findMany();
+ *
+ * // Agora (direto):
+ * const users = await db.user.findMany();
+ * ```
+ *
+ * BENEFÍCIOS:
+ * - Menos boilerplate no código
+ * - Acesso direto aos modelos
+ * - Singleton garante uma única instância
+ * - Mantém todos os recursos do Prisma
+ */
+
 import {
   Injectable,
   Logger,
@@ -41,12 +70,12 @@ export class DbService implements OnModuleInit, OnModuleDestroy {
       });
   }
 
-  // Métodos para acessar o banco
+  // Método para acessar o Prisma Client (mantido para compatibilidade)
   getPrisma(): PrismaClient {
     return this.prisma;
   }
 
-  // Métodos de exemplo para o modelo Test
+  // Métodos de exemplo para o modelo Test (mantidos para compatibilidade)
   async findAllTests(): Promise<Test[]> {
     return await this.prisma.test.findMany();
   }
@@ -80,3 +109,38 @@ export class DbService implements OnModuleInit, OnModuleDestroy {
     }
   }
 }
+
+// Singleton instance para acesso direto
+let dbServiceInstance: DbService | null = null;
+
+/**
+ * Função para obter a instância singleton do DbService
+ *
+ * @returns Instância única do DbService
+ */
+export function getDbService(): DbService {
+  if (!dbServiceInstance) {
+    dbServiceInstance = new DbService();
+  }
+  return dbServiceInstance;
+}
+
+/**
+ * Exportação direta do Prisma Client através do singleton
+ *
+ * Permite acesso direto aos modelos sem boilerplate:
+ * - db.user.findMany()
+ * - db.test.create()
+ * - db.$queryRaw()
+ * - etc.
+ */
+export const db = new Proxy({} as PrismaClient, {
+  get(target, prop) {
+    const service = getDbService();
+    const prisma = service.getPrisma();
+    return (prisma as any)[prop];
+  },
+});
+
+// Exportação da instância do serviço para injeção de dependência
+export { DbService };
