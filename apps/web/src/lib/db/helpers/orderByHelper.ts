@@ -43,7 +43,7 @@
  */
 
 // Tipo para direção de ordenação
-type OrderDir = 'asc' | 'desc';
+export type OrderDir = 'asc' | 'desc';
 
 /**
  * Constrói um objeto orderBy válido para o Prisma Client

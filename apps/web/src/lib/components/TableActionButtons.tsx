@@ -155,11 +155,11 @@ import React from 'react';
 
 /**
  * Interface para ações customizadas
- *
+ * 
  * Define a estrutura de uma ação customizada que pode ser adicionada
  * aos botões de ação da tabela.
  */
-interface CustomAction<T> {
+export interface CustomAction<T> {
   key: string;                    // Chave única para identificar a ação
   label: string;                  // Texto do botão
   icon?: React.ReactNode;         // Ícone do botão (opcional)
