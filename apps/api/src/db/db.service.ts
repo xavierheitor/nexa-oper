@@ -134,13 +134,10 @@ export function getDbService(): DbService {
  * - db.$queryRaw()
  * - etc.
  */
-export const db = new Proxy({} as PrismaClient, {
+export const db: PrismaClient = new Proxy({} as PrismaClient, {
   get(target, prop) {
     const service = getDbService();
     const prisma = service.getPrisma();
     return (prisma as any)[prop];
   },
 });
-
-// Exportação da instância do serviço para injeção de dependência
-export { DbService };

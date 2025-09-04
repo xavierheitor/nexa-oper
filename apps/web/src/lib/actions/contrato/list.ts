@@ -78,7 +78,7 @@ import { handleServerAction } from '../common/actionHandler';
  * @param rawParams - Parâmetros brutos de filtro e paginação
  * @returns Resultado paginado com contratos, total e metadados
  */
-export const listContratos = (rawParams: unknown) =>
+export const listContratos = async (rawParams: unknown) =>
   handleServerAction(
     contratoFilterSchema,
     async params => {
