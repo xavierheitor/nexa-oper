@@ -1,6 +1,6 @@
-import { useThemeMode } from '@/lib/providers/ThemeProvider';
+import { useThemeMode } from '@/ui/providers/ThemeProvider';
+import { BulbFilled, BulbOutlined } from '@ant-design/icons';
 import { Switch } from 'antd';
-import { BulbOutlined, BulbFilled } from '@ant-design/icons';
 
 const ThemeToggle = () => {
   const { mode, toggleTheme } = useThemeMode();

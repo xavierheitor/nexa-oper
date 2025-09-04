@@ -1,7 +1,7 @@
 'use client';
 
-import SidebarMenu from '@/lib/components/SidebarMenu';
 import { useHydrated } from '@/lib/hooks/useHydrated';
+import SidebarMenu from '@/ui/components/SidebarMenu';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Button, Col, Layout, Row, Spin, theme } from 'antd';
 import React, { useState } from 'react';

@@ -61,7 +61,7 @@
 
 // Importações necessárias
 import { TableColumnsType } from 'antd'; // Tipos do Ant Design
-import TableActionButtons, { type CustomAction } from '../components/TableActionButtons'; // Componente de ações
+import TableActionButtons, { type CustomAction } from '../../ui/components/TableActionButtons'; // Componente de ações
 
 /**
  * Interface para ações customizadas (re-exportada para compatibilidade)
@@ -69,7 +69,7 @@ import TableActionButtons, { type CustomAction } from '../components/TableAction
  * Esta interface é re-exportada do TableActionButtons para manter
  * compatibilidade e evitar duplicação de tipos.
  */
-export type { CustomAction } from '../components/TableActionButtons';
+export type { CustomAction } from '../../ui/components/TableActionButtons';
 
 /**
  * Interface para as opções de configuração do hook
