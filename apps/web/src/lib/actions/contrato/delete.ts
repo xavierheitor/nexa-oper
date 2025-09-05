@@ -106,7 +106,7 @@ const deleteSchema = z.object({
  * @param rawData - Dados brutos contendo o ID do contrato
  * @returns Resultado da operação com o contrato marcado como excluído
  */
-export const deleteContrato = (rawData: unknown) =>
+export const deleteContrato = async (rawData: unknown) =>
   handleServerAction(
     deleteSchema,
     async ({ id }, session) => {

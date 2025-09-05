@@ -8,13 +8,14 @@
  * FUNCIONALIDADES:
  * - Validação automática de dados com Zod
  * - Verificação de autenticação obrigatória
+ * - Sinalização para redirecionamento quando não autenticado
  * - Adição automática de campos de auditoria
  * - Logging completo de operações
  * - Tratamento padronizado de erros
  * - Type safety completo com TypeScript
  *
  * COMO FUNCIONA:
- * 1. Verifica se o usuário está autenticado
+ * 1. Verifica se o usuário está autenticado (sinaliza redirecionamento se não)
  * 2. Valida os dados de entrada com o schema Zod
  * 3. Adiciona campos de auditoria baseado no tipo de ação
  * 4. Executa a lógica de negócio com logging
@@ -27,6 +28,7 @@
  * - Validação centralizada e reutilizável
  * - Logging completo para debugging
  * - Tratamento de erros padronizado
+ * - Sinalização de redirecionamento para login (UX melhorada)
  *
  * EXEMPLO DE USO:
  * ```typescript
@@ -109,10 +111,18 @@ export async function handleServerAction<TInput, TOutput>(
 
     // Se não houver sessão, retorna erro de autenticação
     if (!session) {
+      // Log da tentativa de acesso não autenticado
+      logger.warn('[AuthError] Tentativa de acesso não autenticado', {
+        entityName: options?.entityName || 'UNKNOWN_ENTITY',
+        actionType: options?.actionType || 'unknown',
+        timestamp: new Date().toISOString(),
+      });
+
+      // Retorna erro específico de autenticação
       return {
         success: false,
-        error: 'Não autenticado',
-        redirectToLogin: true, // Indica que o cliente deve redirecionar para login
+        error: 'Sessão expirada. Faça login novamente.',
+        redirectToLogin: true,
       };
     }
 

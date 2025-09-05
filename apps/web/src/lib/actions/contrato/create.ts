@@ -42,7 +42,7 @@ import { handleServerAction } from '../common/actionHandler';
  * @param rawData - Dados brutos do contrato
  * @returns Resultado da operação
  */
-export const createContrato = (rawData: unknown) =>
+export const createContrato = async (rawData: unknown) =>
   handleServerAction(
     contratoCreateSchema,
     async (data, session) => {

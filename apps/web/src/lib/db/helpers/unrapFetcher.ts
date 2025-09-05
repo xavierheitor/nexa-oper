@@ -9,6 +9,7 @@
  * - Desempacotamento automático de ActionResult
  * - Normalização de arrays simples e resultados paginados
  * - Tratamento de erros padronizado
+ * - Propagação correta de redirecionamentos Next.js
  * - Type safety completo com TypeScript genérico
  * - Compatibilidade com SWR e React Query
  * - Simplificação do consumo de APIs
@@ -17,10 +18,11 @@
  * 1. Recebe um fetcher que retorna ActionResult<T[] | PaginatedResult<T>>
  * 2. Executa o fetcher com os parâmetros fornecidos
  * 3. Verifica se a operação foi bem-sucedida
- * 4. Se houver erro, lança exceção com mensagem clara
- * 5. Se os dados forem array simples, retorna diretamente
- * 6. Se forem paginados, extrai apenas o array de dados
- * 7. Sempre retorna T[] independente do formato original
+ * 4. Se houver redirecionamento (NEXT_REDIRECT), propaga sem modificar
+ * 5. Se houver erro, lança exceção com mensagem clara
+ * 6. Se os dados forem array simples, retorna diretamente
+ * 7. Se forem paginados, extrai apenas o array de dados
+ * 8. Sempre retorna T[] independente do formato original
  *
  * BENEFÍCIOS:
  * - Abstrai complexidade de diferentes formatos de resposta
@@ -142,22 +144,36 @@ export function unwrapFetcher<T>(
   fetcher: (params?: any) => Promise<ActionResult<T[] | PaginatedResult<T>>>
 ) {
   return async (params?: any): Promise<T[]> => {
-    // Executa o fetcher original
-    const res = await fetcher(params);
+    try {
+      // Executa o fetcher original
+      const res = await fetcher(params);
 
-    // Verifica se a operação foi bem-sucedida
-    if (!res.success) {
-      throw new Error(res.error ?? 'Erro ao buscar dados.');
+      // Verifica se a operação foi bem-sucedida
+      if (!res.success) {
+        // Se é erro de autenticação, redireciona para login
+        if (res.redirectToLogin) {
+          // Usar window.location para forçar redirecionamento no cliente
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+        }
+        throw new Error(res.error ?? 'Erro ao buscar dados.');
+      }
+
+      const data = res.data;
+
+      // Se os dados são um array simples, retorna diretamente
+      if (Array.isArray(data)) {
+        return data;
+      }
+
+      // Se os dados são paginados, extrai apenas o array
+      return (data as PaginatedResult<T>).data;
+    } catch (error) {
+      // Para outros erros, trata normalmente
+      throw error instanceof Error
+        ? error
+        : new Error('Erro desconhecido ao buscar dados.');
     }
-
-    const data = res.data;
-
-    // Se os dados são um array simples, retorna diretamente
-    if (Array.isArray(data)) {
-      return data;
-    }
-
-    // Se os dados são paginados, extrai apenas o array
-    return (data as PaginatedResult<T>).data;
   };
 }

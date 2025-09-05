@@ -60,7 +60,7 @@ const idSchema = z.object({
  * @param rawData - Dados brutos contendo o ID do contrato
  * @returns Resultado da operação com o contrato encontrado ou null
  */
-export const getContrato = (rawData: unknown) =>
+export const getContrato = async (rawData: unknown) =>
   handleServerAction(
     idSchema,
     async ({ id }) => {

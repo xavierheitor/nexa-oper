@@ -80,7 +80,7 @@ import { handleServerAction } from '../common/actionHandler';
  * @param rawData - Dados brutos do contrato a ser atualizado
  * @returns Resultado da operação com o contrato atualizado
  */
-export const updateContrato = (rawData: unknown) =>
+export const updateContrato = async (rawData: unknown) =>
   handleServerAction(
     contratoUpdateSchema,
     async (data, session) => {
