@@ -18,4 +18,5 @@ export const contratoFilterSchema = z.object({
   orderBy: z.string().default('id'),
   orderDir: z.enum(['asc', 'desc']).default('asc'),
   search: z.string().optional(),
+  include: z.any().optional(),
 });

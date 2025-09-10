@@ -22,6 +22,8 @@
  */
 
 import { ContratoService } from '../ContratoService';
+import { TipoVeiculoService } from '../TipoVeiculoService';
+import { VeiculoService } from '../VeiculoService';
 import { container } from './ServiceContainer';
 
 /**
@@ -33,6 +35,8 @@ import { container } from './ServiceContainer';
 export function registerServices(): void {
   // Registra serviços de domínio
   container.register('contratoService', () => new ContratoService());
+  container.register('tipoVeiculoService', () => new TipoVeiculoService());
+  container.register('veiculoService', () => new VeiculoService());
 
   // Adicione novos serviços aqui conforme necessário
   // container.register('novoServico', () => new NovoServico());

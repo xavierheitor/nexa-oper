@@ -55,13 +55,15 @@ export abstract class AbstractCrudRepository<T, F extends PaginationParams>
    * @param orderBy - Ordenação
    * @param skip - Registros a pular
    * @param take - Registros a retornar
+   * @param include - Relacionamentos a incluir (opcional)
    * @returns Array de registros
    */
   protected abstract findMany(
     where: any,
     orderBy: any,
     skip: number,
-    take: number
+    take: number,
+    include?: any
   ): Promise<T[]>;
 
   /**
@@ -87,6 +89,9 @@ export abstract class AbstractCrudRepository<T, F extends PaginationParams>
       { deletedAt: null } // Filtro para soft delete
     );
 
+    // Extrai include dos params se existir
+    const include = (params as any).include;
+
     // Executa count e findMany em paralelo para melhor performance
     const [total, items] = await Promise.all([
       this.count(queryParams.where),
@@ -94,7 +99,8 @@ export abstract class AbstractCrudRepository<T, F extends PaginationParams>
         queryParams.where,
         queryParams.orderBy,
         queryParams.skip,
-        queryParams.take
+        queryParams.take,
+        include
       ),
     ]);
 

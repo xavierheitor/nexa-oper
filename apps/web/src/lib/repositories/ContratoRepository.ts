@@ -95,15 +95,23 @@ export class ContratoRepository extends AbstractCrudRepository<
    * @param orderBy - Ordenação
    * @param skip - Registros a pular
    * @param take - Registros a retornar
+   * @param include - Relacionamentos a incluir (opcional)
    * @returns Array de contratos
    */
   protected findMany(
     where: Prisma.ContratoWhereInput,
     orderBy: any,
     skip: number,
-    take: number
+    take: number,
+    include?: any
   ): Promise<Contrato[]> {
-    return prisma.contrato.findMany({ where, orderBy, skip, take });
+    return prisma.contrato.findMany({
+      where,
+      orderBy,
+      skip,
+      take,
+      ...(include && { include }),
+    });
   }
 
   /**

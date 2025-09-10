@@ -30,6 +30,9 @@ export interface ActionResult<T = unknown> {
 // Tipos para ordenação
 export type OrderDir = 'asc' | 'desc';
 
+// Tipos para includes/relacionamentos
+export type IncludeConfig = Record<string, boolean | Record<string, any>>;
+
 // Tipos para paginação
 export interface PaginationParams {
   page: number;
@@ -37,6 +40,7 @@ export interface PaginationParams {
   orderBy: string;
   orderDir: OrderDir;
   search?: string;
+  include?: IncludeConfig;
 }
 
 // Tipos para parâmetros paginados (versão flexível)
@@ -47,6 +51,7 @@ export interface PaginatedParams {
   orderDir?: OrderDir;
   search?: string;
   filters?: Record<string, any>;
+  include?: IncludeConfig;
 }
 
 // Tipos para resultados paginados

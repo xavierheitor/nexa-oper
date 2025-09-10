@@ -1,26 +1,156 @@
+/**
+ * Serviço para Veículos
+ *
+ * Este serviço implementa a lógica de negócio para operações
+ * relacionadas a veículos, incluindo validação, transformação
+ * de dados e integração com o repositório.
+ *
+ * FUNCIONALIDADES:
+ * - Validação de dados com Zod
+ * - Lógica de negócio centralizada
+ * - Integração com repositório
+ * - Tratamento de erros
+ * - Auditoria automática
+ * - Conversão de tipos para relacionamentos
+ *
+ * COMO USAR:
+ * ```typescript
+ * const service = new VeiculoService();
+ * const veiculo = await service.create(data, userId);
+ * const veiculos = await service.list(filterParams);
+ * ```
+ */
+
 import { Veiculo } from '@nexa-oper/db';
-import { VeiculoRepository } from '../repositories/VeiculoRepository';
+import { z } from 'zod';
+import { AbstractCrudService } from '../abstracts/AbstractCrudService';
+import {
+  VeiculoCreateInput,
+  VeiculoRepository,
+} from '../repositories/VeiculoRepository';
+import {
+  veiculoCreateSchema,
+  veiculoFilterSchema,
+  veiculoUpdateSchema,
+} from '../schemas/veiculoSchema';
+import { PaginatedResult } from '../types/common';
 
-export class VeiculoService {
-  constructor(private readonly veiculoRepository: VeiculoRepository) {}
+// Tipos derivados dos schemas
+type VeiculoCreate = z.infer<typeof veiculoCreateSchema>;
+type VeiculoUpdate = z.infer<typeof veiculoUpdateSchema>;
+type VeiculoFilter = z.infer<typeof veiculoFilterSchema>;
 
-  async create(veiculo: Veiculo, userId: number): Promise<Veiculo> {
-    return await this.veiculoRepository.create(veiculo, userId);
+export class VeiculoService extends AbstractCrudService<
+  VeiculoCreate,
+  VeiculoUpdate,
+  VeiculoFilter,
+  Veiculo
+> {
+  private veiculoRepo: VeiculoRepository;
+
+  /**
+   * Construtor do serviço
+   *
+   * Inicializa o repositório e registra o serviço no container
+   */
+  constructor() {
+    const repo = new VeiculoRepository();
+    super(repo);
+    this.veiculoRepo = repo;
   }
 
-  async update(id: number, veiculo: Veiculo, userId: number): Promise<Veiculo> {
-    return await this.veiculoRepository.update(id, veiculo, userId);
+  /**
+   * Cria um novo veículo
+   *
+   * @param data - Dados do veículo (validados pelo schema)
+   * @param userId - ID do usuário que está criando
+   * @returns Veículo criado
+   */
+  async create(data: VeiculoCreate, userId: string): Promise<Veiculo> {
+    // Converte os dados do schema para o formato do repositório
+    const createData: VeiculoCreateInput = {
+      placa: data.placa,
+      modelo: data.modelo,
+      ano: data.ano,
+      tipoVeiculoId: data.tipoVeiculoId,
+      contratoId: data.contratoId,
+    };
+
+    // Cria o veículo através do repositório com auditoria
+    return this.veiculoRepo.create(createData, userId);
   }
 
-  async delete(id: number, userId: number): Promise<Veiculo> {
-    return await this.veiculoRepository.delete(id, userId);
+  /**
+   * Atualiza um veículo existente
+   *
+   * @param data - Dados para atualização (incluindo ID)
+   * @param userId - ID do usuário que está atualizando
+   * @returns Veículo atualizado
+   */
+  async update(data: VeiculoUpdate, userId: string): Promise<Veiculo> {
+    const { id, ...updateData } = data;
+
+    // Converte os dados do schema para o formato do repositório
+    const updateInput: Partial<VeiculoCreateInput> = {
+      ...(updateData.placa && { placa: updateData.placa }),
+      ...(updateData.modelo && { modelo: updateData.modelo }),
+      ...(updateData.ano && { ano: updateData.ano }),
+      ...(updateData.tipoVeiculoId && {
+        tipoVeiculoId: updateData.tipoVeiculoId,
+      }),
+      ...(updateData.contratoId && { contratoId: updateData.contratoId }),
+    };
+
+    // Atualiza através do repositório
+    return this.veiculoRepo.update(id, updateInput, userId);
   }
 
-  async findAll(): Promise<Veiculo[]> {
-    return await this.veiculoRepository.findAll();
+  /**
+   * Exclui um veículo existente
+   *
+   * @param id - ID do veículo
+   * @param userId - ID do usuário que está excluindo
+   * @returns Veículo excluído
+   */
+  async delete(id: number, userId: string): Promise<Veiculo> {
+    return this.veiculoRepo.delete(id, userId);
   }
 
-  async findById(id: number): Promise<Veiculo | null> {
-    return await this.veiculoRepository.findById(id);
+  /**
+   * Busca um veículo por ID
+   *
+   * @param id - ID do veículo
+   * @returns Veículo encontrado ou null
+   */
+  async getById(id: number): Promise<Veiculo | null> {
+    return this.veiculoRepo.findById(id);
+  }
+
+  /**
+   * Lista veículos com paginação
+   *
+   * @param params - Parâmetros de paginação e filtro
+   * @returns Resultado paginado
+   */
+  async list(params: VeiculoFilter): Promise<PaginatedResult<Veiculo>> {
+    const { items, total } = await this.veiculoRepo.list(params);
+    const totalPages = Math.ceil(total / params.pageSize);
+
+    return {
+      data: items,
+      total,
+      totalPages,
+      page: params.page,
+      pageSize: params.pageSize,
+    };
+  }
+
+  /**
+   * Define os campos que podem ser utilizados para busca
+   *
+   * @returns Array com os nomes dos campos de busca
+   */
+  protected getSearchFields(): string[] {
+    return ['placa', 'modelo'];
   }
 }
