@@ -1,0 +1,160 @@
+/**
+ * Serviço para Eletricistas
+ *
+ * Este serviço fornece operações CRUD para a entidade Eletricista,
+ * utilizando o padrão Service e estendendo a classe abstrata AbstractCrudService.
+ *
+ * FUNCIONALIDADES:
+ * - Operações CRUD completas
+ * - Paginação automática
+ * - Busca por nome, matrícula e telefone
+ * - Soft delete com auditoria
+ * - Integração com Prisma ORM
+ *
+ * COMO USAR:
+ * ```typescript
+ * const service = new EletricistaService(new EletricistaRepository());
+ * const eletricista = await service.create({ nome: 'João da Silva', matricula: '123456', telefone: '1234567890' }, '1');
+ * const eletricista = await service.update({ id: 1, nome: 'João da Silva', matricula: '123456', telefone: '1234567890' }, '1');
+ * const eletricista = await service.delete(1, '1');
+ * const eletricista = await service.getById(1);
+ * const eletricistas = await service.list({ page: 1, pageSize: 10 });
+ * ```
+ */
+
+import { Eletricista } from '@nexa-oper/db';
+import { AbstractCrudService } from '../abstracts/AbstractCrudService';
+import { EletricistaRepository } from '../repositories/EletricistaRepository';
+import { EletricistaCreate, eletricistaCreateSchema, EletricistaFilter, EletricistaUpdate, eletricistaUpdateSchema } from '../schemas/eletricistaSchema';
+import { PaginatedResult } from '../types/common';
+
+export class EletricistaService extends AbstractCrudService<
+  EletricistaCreate,
+  EletricistaUpdate,
+  EletricistaFilter,
+  Eletricista
+> {
+  private eletricistaRepo: EletricistaRepository;
+/**
+ * Construtor do serviço
+ *
+ * Inicializa o repositório e registra o serviço no container
+ */
+  constructor() {
+    const repo = new EletricistaRepository();
+    super(repo);
+    this.eletricistaRepo = repo;
+  }
+
+  /**
+   * Cria um novo eletricista
+   *
+   * @param raw - Dados brutos do eletricista
+   * @param userId - ID do usuário que está criando
+   * @returns Eletricista criado
+   */
+  async create(raw: unknown, userId: string): Promise<Eletricista> {
+    // Valida os dados de entrada
+    const data = eletricistaCreateSchema.parse(raw);
+
+    // Adiciona campos de auditoria
+    const eletricistaData = {
+      ...data,
+      createdBy: userId,
+      createdAt: new Date(),
+    };
+
+    return this.eletricistaRepo.create(eletricistaData as any);
+  }
+
+  /**
+   * Atualiza um eletricista existente
+   *
+   * @param raw - Dados brutos do eletricista
+   * @param userId - ID do usuário que está atualizando
+   * @returns Eletricista atualizado
+   */
+  async update(raw: unknown, userId: string): Promise<Eletricista> {
+    // Valida os dados de entrada
+    const data = eletricistaUpdateSchema.parse(raw);
+
+    // Adiciona campos de auditoria
+    const eletricistaData = {
+      ...data,
+      updatedBy: userId,
+      updatedAt: new Date(),
+    };
+
+    return this.eletricistaRepo.update(data.id, eletricistaData as any, userId);
+  }
+
+  /**
+   * Exclui um eletricista existente
+   *
+   * @param id - ID do eletricista
+   * @param userId - ID do usuário que está excluindo
+   * @returns Eletricista excluído
+   */
+  async delete(id: number, userId: string): Promise<Eletricista> {
+    return this.eletricistaRepo.delete(id, userId);
+  }
+
+  /**
+   * Busca um eletricista por ID
+   *
+   * @param id - ID do eletricista
+   * @returns Eletricista encontrado ou null
+   */
+  async getById(id: number): Promise<Eletricista | null> {
+    return this.eletricistaRepo.findById(id);
+  }
+
+  /**
+   * Lista eletricistas com paginação
+   *
+   * @param params - Parâmetros de paginação e filtro
+   * @returns Resultado paginado
+   */
+  async list(params: EletricistaFilter): Promise<PaginatedResult<Eletricista>> {
+    const { items, total } = await this.eletricistaRepo.list(params);
+    const totalPages = Math.ceil(total / params.pageSize);
+
+    return {
+      data: items,
+      total,
+      totalPages,
+      page: params.page,
+      pageSize: params.pageSize,
+    };
+  }
+
+  /**
+   * Busca eletricistas por nome
+   *
+   * @param nome - Nome do eletricista
+   * @returns Array de eletricistas
+   */
+  async searchByNome(nome: string): Promise<Eletricista[]> {
+    return this.eletricistaRepo.findByNome(nome);
+  }
+
+  /**
+   * Busca eletricistas por matrícula
+   *
+   * @param matricula - Matrícula do eletricista
+   * @returns Array de eletricistas
+   */
+  async searchByMatricula(matricula: string): Promise<Eletricista[]> {
+    return this.eletricistaRepo.findByMatricula(matricula);
+  }
+
+  /**
+   * Busca eletricistas por contrato
+   *
+   * @param contratoId - ID do contrato
+   * @returns Array de eletricistas
+   */
+  async searchByContratoId(contratoId: number): Promise<Eletricista[]> {
+    return this.eletricistaRepo.findByContratoId(contratoId);
+  }
+}

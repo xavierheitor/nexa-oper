@@ -37,20 +37,20 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       label: 'Cadastro',
       children: [
         {
-          key: '/dashboard/distribuidora',
-          label: <Link href='/dashboard/distribuidora'>Distribuidora</Link>,
+          key: '/dashboard/contrato',
+          label: <Link href='/dashboard/contrato'>Contratos</Link>,
         },
         {
-          key: '/dashboard/regional',
-          label: <Link href='/dashboard/regional'>Regional</Link>,
+          key: '/dashboard/tipo-veiculo',
+          label: <Link href='/dashboard/tipo-veiculo'>Tipos de Veículo</Link>,
         },
         {
-          key: '/dashboard/centroTrabalho',
-          label: <Link href='/dashboard/centroTrabalho'>Centro de Trabalho</Link>,
+          key: '/dashboard/veiculo',
+          label: <Link href='/dashboard/veiculo'>Veículos</Link>,
         },
         {
-          key: '/dashboard/subestacao',
-          label: <Link href='/dashboard/subestacao'>Subestação</Link>,
+          key: '/dashboard/eletricista',
+          label: <Link href='/dashboard/eletricista'>Eletricista</Link>,
         },
         {
           key: '/dashboard/equipamento',

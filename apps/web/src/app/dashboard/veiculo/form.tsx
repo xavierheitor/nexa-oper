@@ -1,7 +1,7 @@
 'use client';
 
 // Importações do Ant Design e React
-import { Button, Form, Input, InputNumber, Select, Spin } from 'antd';
+import { Button, Form, Input, InputNumber, message, Select, Spin } from 'antd';
 import { useEffect, useState } from 'react';
 
 // Importações das Server Actions para buscar dados dos selects
@@ -68,6 +68,7 @@ export default function VeiculoForm({
         setContratos(contratosResponse.data?.data || []);
       } catch (error) {
         console.error('Erro ao carregar dados dos selects:', error);
+        message.error('Erro ao carregar dados dos selects');
       } finally {
         setLoadingSelects(false);
       }
