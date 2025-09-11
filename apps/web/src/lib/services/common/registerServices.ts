@@ -28,6 +28,7 @@ import { EquipeService } from '../EquipeService';
 import { TipoEquipeService } from '../TipoEquipeService';
 import { SupervisorService } from '../SupervisorService';
 import { TipoVeiculoService } from '../TipoVeiculoService';
+import { EquipeSupervisorService } from '../EquipeSupervisorService';
 import { UserService } from '../UserService';
 import { VeiculoService } from '../VeiculoService';
 import { container } from './ServiceContainer';
@@ -47,6 +48,7 @@ export function registerServices(): void {
   container.register('veiculoService', () => new VeiculoService());
   container.register('eletricistaService', () => new EletricistaService());
   container.register('supervisorService', () => new SupervisorService());
+  container.register('equipeSupervisorService', () => new EquipeSupervisorService());
   container.register('userService', () => new UserService());
   container.register('mobileUserService', () => new MobileUserService());
 
