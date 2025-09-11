@@ -1,0 +1,78 @@
+model Apr {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  AprPerguntaRelacao       AprPerguntaRelacao[]
+  AprOpcaoRespostaRelacao  AprOpcaoRespostaRelacao[]
+}
+
+model AprPergunta {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  AprPerguntaRelacao AprPerguntaRelacao[]
+}
+
+model AprPerguntaRelacao {
+  id Int @id @default(autoincrement())
+
+  aprPerguntaId Int
+  aprPergunta   AprPergunta @relation(fields: [aprPerguntaId], references: [id])
+
+  ordem Int @default(0)
+
+  aprId Int
+  apr   Apr @relation(fields: [aprId], references: [id])
+
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+}
+
+model AprOpcaoResposta {
+  id Int @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+
+  AprOpcaoRespostaRelacao AprOpcaoRespostaRelacao[]
+}
+
+model AprOpcaoRespostaRelacao {
+  id Int @id @default(autoincrement())
+
+  aprOpcaoRespostaId Int
+  aprOpcaoResposta   AprOpcaoResposta @relation(fields: [aprOpcaoRespostaId], references: [id])
+
+  aprId Int
+  apr   Apr @relation(fields: [aprId], references: [id])
+
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+}
