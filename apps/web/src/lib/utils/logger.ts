@@ -35,6 +35,7 @@
 import fs from 'fs'; // Sistema de arquivos do Node.js
 import { Session } from 'next-auth'; // Tipos de sessão do NextAuth
 import path from 'path'; // Utilitários de caminho
+import { ACTION_TYPE_LABELS } from '../types/common'; // Labels para ActionTypes
 
 // Configuração de caminhos de log
 const logPathFromEnv = process.env.LOG_PATH || './logs'; // Caminho configurável via env
@@ -163,24 +164,22 @@ export const logger = {
  */
 export async function withLogging<T>(
   session: Session,
-  actionType:
-    | 'create'
-    | 'update'
-    | 'delete'
-    | 'get'
-    | 'list'
-    | 'changePassword',
+  actionType: string, // Aceita qualquer string para flexibilidade total
   entity: string,
   input: unknown,
   logic: () => Promise<T>
 ): Promise<T> {
+  // Usa label amigável ou o tipo original
+  const actionLabel = ACTION_TYPE_LABELS[actionType] || actionType;
+
   try {
     // Executa a lógica real
     const result = await logic();
 
     // Log de sucesso com contexto completo
-    logger.action(`[${actionType.toUpperCase()}] ${entity}`, {
+    logger.action(`[${actionLabel.toUpperCase()}] ${entity}`, {
       userId: session.user.id, // ID do usuário para auditoria
+      actionType, // Tipo original da ação
       input, // Dados de entrada
       output: result, // Resultado da operação
       success: true, // Flag de sucesso
@@ -189,8 +188,9 @@ export async function withLogging<T>(
     return result;
   } catch (error) {
     // Log de erro com contexto de falha
-    logger.error(`[${actionType.toUpperCase()}] ${entity} FAILED`, {
+    logger.error(`[${actionLabel.toUpperCase()}] ${entity} FAILED`, {
       userId: session.user.id, // ID do usuário para auditoria
+      actionType, // Tipo original da ação
       input, // Dados de entrada que causaram erro
       success: false, // Flag de falha
       error: error instanceof Error ? error.message : String(error), // Mensagem de erro

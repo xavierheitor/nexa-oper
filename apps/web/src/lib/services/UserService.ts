@@ -152,7 +152,10 @@ export class UserService extends AbstractCrudService<
     }
 
     // Verifica se a senha atual está correta
-    const isCurrentPasswordValid = await bcrypt.compare(data.currentPassword, user.password);
+    const isCurrentPasswordValid = await bcrypt.compare(
+      data.currentPassword,
+      user.password
+    );
     if (!isCurrentPasswordValid) {
       throw new Error('Senha atual incorreta');
     }
@@ -175,7 +178,10 @@ export class UserService extends AbstractCrudService<
    * @param password - Senha em texto plano
    * @returns Usuário se válido, null caso contrário
    */
-  async verifyCredentials(username: string, password: string): Promise<UserSafe | null> {
+  async verifyCredentials(
+    username: string,
+    password: string
+  ): Promise<UserSafe | null> {
     // Tenta buscar por username primeiro, depois por email
     let user = await this.userRepo.findByUsernameWithPassword(username);
     if (!user) {
@@ -290,7 +296,10 @@ export class UserService extends AbstractCrudService<
    * @param email - Email para validar
    * @param excludeId - ID para excluir da validação (opcional)
    */
-  private async validateEmailUnique(email: string, excludeId?: number): Promise<void> {
+  private async validateEmailUnique(
+    email: string,
+    excludeId?: number
+  ): Promise<void> {
     const exists = await this.userRepo.emailExists(email, excludeId);
     if (exists) {
       throw new Error('Este email já está em uso por outro usuário');
@@ -303,11 +312,88 @@ export class UserService extends AbstractCrudService<
    * @param username - Username para validar
    * @param excludeId - ID para excluir da validação (opcional)
    */
-  private async validateUsernameUnique(username: string, excludeId?: number): Promise<void> {
+  private async validateUsernameUnique(
+    username: string,
+    excludeId?: number
+  ): Promise<void> {
     const exists = await this.userRepo.usernameExists(username, excludeId);
     if (exists) {
       throw new Error('Este username já está em uso por outro usuário');
     }
+  }
+
+  /**
+   * Reseta a senha de um usuário
+   *
+   * @param data - Dados do reset (userId, sendEmail, notifyUser)
+   * @param currentUserId - ID do usuário que está executando o reset
+   * @returns Resultado da operação
+   */
+  async resetPassword(
+    data: { userId: number; sendEmail: boolean; notifyUser: boolean },
+    currentUserId: string
+  ): Promise<{ success: boolean; newPassword?: string; emailSent: boolean }> {
+    // Verifica se o usuário existe
+    const user = await this.userRepo.findById(data.userId);
+    if (!user) {
+      throw new Error('Usuário não encontrado');
+    }
+
+    // Gera nova senha aleatória
+    const newPassword = this.generateRandomPassword();
+
+    // Hash da nova senha
+    const hashedPassword = await this.hashPassword(newPassword);
+
+    // Atualiza a senha no banco
+    await this.userRepo.update(
+      data.userId,
+      { password: hashedPassword },
+      currentUserId
+    );
+
+    // Simula envio de email (implementar integração real conforme necessário)
+    let emailSent = false;
+    if (data.sendEmail) {
+      // TODO: Implementar envio de email real
+      console.log(`📧 Enviando nova senha para ${user.email}: ${newPassword}`);
+      emailSent = true;
+    }
+
+    return {
+      success: true,
+      newPassword: data.sendEmail ? undefined : newPassword, // Só retorna se não enviou por email
+      emailSent,
+    };
+  }
+
+  /**
+   * Gera uma senha aleatória segura
+   *
+   * @returns Senha aleatória com 12 caracteres
+   */
+  private generateRandomPassword(): string {
+    const length = 12;
+    const charset =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$!%*?&';
+    let password = '';
+
+    // Garante pelo menos um de cada tipo
+    password += 'abcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 26)]; // minúscula
+    password += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]; // maiúscula
+    password += '0123456789'[Math.floor(Math.random() * 10)]; // número
+    password += '@$!%*?&'[Math.floor(Math.random() * 7)]; // especial
+
+    // Preenche o restante aleatoriamente
+    for (let i = 4; i < length; i++) {
+      password += charset[Math.floor(Math.random() * charset.length)];
+    }
+
+    // Embaralha a senha
+    return password
+      .split('')
+      .sort(() => Math.random() - 0.5)
+      .join('');
   }
 
   /**

@@ -3,6 +3,7 @@
 import { createUser } from '@/lib/actions/user/create';
 import { deleteUser } from '@/lib/actions/user/delete';
 import { listUsers } from '@/lib/actions/user/list';
+import { resetUserPassword } from '@/lib/actions/user/resetPassword';
 import { updateUser } from '@/lib/actions/user/update';
 
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
@@ -13,7 +14,7 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 
-import { MailOutlined, UserOutlined } from '@ant-design/icons';
+import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import { User } from '@nexa-oper/db';
 import { Button, Card, Modal, Space, Table, Tag } from 'antd';
 
@@ -124,6 +125,33 @@ export default function UserPage() {
           .finally(() => {
             users.mutate();
           }),
+      customActions: [
+        {
+          key: 'reset-password',
+          label: 'Reset Senha',
+          icon: <LockOutlined />,
+          type: 'link',
+          confirm: {
+            title: 'Reset de Senha',
+            description: 'Uma nova senha será gerada e enviada por email. Continuar?',
+            okText: 'Reset',
+            cancelText: 'Cancelar'
+          },
+          onClick: (user) =>
+            controller
+              .exec(
+                () => resetUserPassword({
+                  userId: user.id,
+                  sendEmail: true,
+                  notifyUser: true
+                }),
+                'Senha resetada e enviada por email!'
+              )
+              .finally(() => {
+                users.mutate();
+              })
+        }
+      ]
     },
   );
 

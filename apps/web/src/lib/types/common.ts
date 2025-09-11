@@ -100,14 +100,23 @@ export interface ValidationResult {
   errors?: ValidationError[];
 }
 
-// Tipos para ações do servidor
-export type ActionType =
-  | 'create'
-  | 'update'
-  | 'delete'
-  | 'get'
-  | 'list'
-  | 'changePassword';
+// Tipos base para ações do servidor
+export type BaseActionType = 'create' | 'update' | 'delete' | 'get' | 'list';
+
+// Tipo flexível que aceita qualquer string (extensível)
+export type ActionType = BaseActionType | string;
+
+// Mapeamento de labels para logging (extensível)
+export const ACTION_TYPE_LABELS: Record<string, string> = {
+  create: 'Criação',
+  update: 'Atualização',
+  delete: 'Exclusão',
+  get: 'Consulta',
+  list: 'Listagem',
+  changePassword: 'Alteração de Senha',
+  resetPassword: 'Reset de Senha',
+  // Novos tipos podem ser adicionados aqui conforme necessário
+};
 
 // Tipos para opções de ação
 export interface ActionOptions {
