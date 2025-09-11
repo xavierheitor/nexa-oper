@@ -101,7 +101,13 @@ export interface ValidationResult {
 }
 
 // Tipos para ações do servidor
-export type ActionType = 'create' | 'update' | 'delete' | 'get' | 'list';
+export type ActionType =
+  | 'create'
+  | 'update'
+  | 'delete'
+  | 'get'
+  | 'list'
+  | 'changePassword';
 
 // Tipos para opções de ação
 export interface ActionOptions {

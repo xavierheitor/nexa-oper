@@ -49,11 +49,7 @@
 import { authOptions } from '@/lib/utils/auth.config';
 import { getServerSession, Session } from 'next-auth';
 import { ZodSchema } from 'zod';
-import type {
-  ActionOptions,
-  ActionResult,
-  ActionType,
-} from '../../types/common';
+import type { ActionOptions, ActionResult } from '../../types/common';
 import { logger, withLogging } from '../../utils/logger';
 
 /**
@@ -195,7 +191,7 @@ export async function handleServerAction<TInput, TOutput>(
     // Executa a lógica de negócio com logging automático
     const result = await withLogging(
       session, // Sessão do usuário para auditoria
-      actionType as ActionType, // Tipo da ação para logging
+      actionType === 'unknown' ? 'get' : actionType, // Tipo da ação para logging
       entityName, // Nome da entidade para contexto
       input, // Dados originais para logging
       () => logic(finalInput, session) // Função que executa a lógica

@@ -163,7 +163,13 @@ export const logger = {
  */
 export async function withLogging<T>(
   session: Session,
-  actionType: 'create' | 'update' | 'delete' | 'get' | 'list',
+  actionType:
+    | 'create'
+    | 'update'
+    | 'delete'
+    | 'get'
+    | 'list'
+    | 'changePassword',
   entity: string,
   input: unknown,
   logic: () => Promise<T>
