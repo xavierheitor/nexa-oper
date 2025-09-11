@@ -140,6 +140,7 @@ export default function SupervisorPage() {
           key: 'close-today',
           label: 'Encerrar hoje',
           type: 'link',
+          visible: (item) => !(item as any).fim,
           confirm: {
             title: 'Encerrar vínculo',
             description: 'Deseja encerrar o vínculo na data de hoje?',

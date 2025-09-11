@@ -148,3 +148,8 @@ export default function EquipePage() {
   );
 }
 
+
+// TODO: criar vinculo equipe x supervisor botao de alterar supervisor, aparece um form com a data de transicao, e o supervisor selecionado, ai ele encerra o vínculo atual e cria um novo com o supervisor selecionado
+// ou seja, ao alterar o supervisor, ele encerra o vínculo atual e cria um novo com o supervisor selecionado
+// o botao de alterar supervisor deve aparecer apenas se o vínculo ja existir
+// o botao de alterar supervisor deve aparecer apenas se o vínculo ja existir

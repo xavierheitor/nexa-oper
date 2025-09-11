@@ -165,6 +165,7 @@ export interface CustomAction<T> {
   icon?: React.ReactNode;         // Ícone do botão (opcional)
   type?: 'default' | 'primary' | 'dashed' | 'link' | 'text'; // Tipo do botão
   danger?: boolean;               // Se o botão é perigoso (vermelho)
+  visible?: (record: T) => boolean; // Função para controlar visibilidade por linha
   confirm?: {                     // Configuração de confirmação (opcional)
     title: string;                // Título da confirmação
     description: string;          // Descrição da confirmação
@@ -215,18 +216,7 @@ export default function TableActionButtons<T>({
    * @returns JSX do botão com ou sem confirmação
    */
   const renderCustomAction = (action: CustomAction<T>) => {
-    const button = (
-      <Button
-        type={action.type || 'link'}
-        danger={action.danger}
-        icon={action.icon}
-        onClick={() => action.onClick(record)}
-      >
-        {action.label}
-      </Button>
-    );
-
-    // Se tem confirmação, envolve com Popconfirm
+    // Quando há confirmação configurada, o clique deve ser tratado pelo Popconfirm
     if (action.confirm) {
       return (
         <Popconfirm
@@ -236,12 +226,28 @@ export default function TableActionButtons<T>({
           cancelText={action.confirm.cancelText || 'Não'}
           onConfirm={() => action.onClick(record)}
         >
-          {button}
+          <Button
+            type={action.type || 'link'}
+            danger={action.danger}
+            icon={action.icon}
+          >
+            {action.label}
+          </Button>
         </Popconfirm>
       );
     }
 
-    return button;
+    // Sem confirmação: executa diretamente no onClick do botão
+    return (
+      <Button
+        type={action.type || 'link'}
+        danger={action.danger}
+        icon={action.icon}
+        onClick={() => action.onClick(record)}
+      >
+        {action.label}
+      </Button>
+    );
   };
 
   return (
@@ -276,11 +282,13 @@ export default function TableActionButtons<T>({
 
       {/* Ações Customizadas - Renderizadas dinamicamente */}
       {/* Mapeia cada ação customizada e renderiza o botão correspondente */}
-      {customActions?.map((action) => (
-        <React.Fragment key={action.key}>
-          {renderCustomAction(action)}
-        </React.Fragment>
-      ))}
+      {customActions
+        ?.filter((action) => (action.visible ? action.visible(record) : true))
+        .map((action) => (
+          <React.Fragment key={action.key}>
+            {renderCustomAction(action)}
+          </React.Fragment>
+        ))}
     </Space>
   );
 }
