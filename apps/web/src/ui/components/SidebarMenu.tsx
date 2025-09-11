@@ -1,13 +1,14 @@
 'use client';
 
 import {
-  BugOutlined,
+  CarOutlined,
   CheckCircleOutlined,
   DashboardOutlined,
   FileProtectOutlined,
   FormOutlined,
   LogoutOutlined,
-  UserOutlined,
+  TeamOutlined,
+  UserOutlined
 } from '@ant-design/icons';
 import { Layout, Menu, Typography } from 'antd';
 import { signOut } from 'next-auth/react';
@@ -38,24 +39,41 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       label: 'Cadastro',
       children: [
         {
+          icon: <FileProtectOutlined />,
           key: '/dashboard/contrato',
           label: <Link href='/dashboard/contrato'>Contratos</Link>,
         },
         {
-          key: '/dashboard/tipo-veiculo',
-          label: <Link href='/dashboard/tipo-veiculo'>Tipos de Veículo</Link>,
+          key: 'equipe-menu',
+          label: 'Equipe',
+          icon: <TeamOutlined />,
+          children: [
+            {
+              key: '/dashboard/tipo-equipe',
+              label: <Link href='/dashboard/tipo-equipe'>Tipos de Equipe</Link>,
+            },
+            {
+              key: '/dashboard/equipe',
+              label: <Link href='/dashboard/equipe'>Equipes</Link>,
+            },
+          ]
         },
         {
-          key: '/dashboard/tipo-equipe',
-          label: <Link href='/dashboard/tipo-equipe'>Tipos de Equipe</Link>,
-        },
-        {
-          key: '/dashboard/equipe',
-          label: <Link href='/dashboard/equipe'>Equipes</Link>,
-        },
-        {
-          key: '/dashboard/veiculo',
-          label: <Link href='/dashboard/veiculo'>Veículos</Link>,
+          key: 'veiculos-menu',
+          label: 'Veículos',
+          icon: <CarOutlined />,
+          children: [
+            {
+              key: '/dashboard/tipo-veiculo',
+              label: <Link href='/dashboard/tipo-veiculo'>Tipos de Veículo</Link>,
+            },
+            {
+              key: '/dashboard/veiculo',
+              label: (
+                <Link href='/dashboard/veiculo'>Veículos</Link>
+              ),
+            },
+          ],
         },
         {
           key: '/dashboard/eletricista',
@@ -65,73 +83,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           key: '/dashboard/supervisor',
           label: <Link href='/dashboard/supervisor'>Supervisor</Link>,
         },
-        {
-          key: '/dashboard/equipamento',
-          label: <Link href='/dashboard/equipamento'>Equipamento</Link>,
-        },
-        {
-          key: 'defeitos',
-          label: 'Defeitos',
-          icon: <BugOutlined />,
-          children: [
-            {
-              key: '/dashboard/grupoDefeitoEquipamento',
-              label: (
-                <Link href='/dashboard/grupoDefeitoEquipamento'>Grupo Defeito Equipamento</Link>
-              ),
-            },
-            {
-              key: '/dashboard/subgrupoDefeitoEquipamento',
-              label: (
-                <Link href='/dashboard/subgrupoDefeitoEquipamento'>
-                  Subgrupo Defeito Equipamento
-                </Link>
-              ),
-            },
-            {
-              key: '/dashboard/defeito',
-              label: <Link href='/dashboard/defeito'>Defeito</Link>,
-            },
-          ],
-        },
-        {
-          key: 'PMA',
-          label: 'Plano de Manutenção',
-          icon: <BugOutlined />,
-          children: [
-            {
-              key: '/dashboard/tipoManutencao',
-              label: <Link href='/dashboard/tipoManutencao'>Tipo de Manutenção</Link>,
-            },
-            {
-              key: '/dashboard/kpi',
-              label: <Link href='/dashboard/kpi'>KPI</Link>,
-            },
-            {
-              key: '/dashboard/notasPMA',
-              label: <Link href='/dashboard/notasPMA'>Notas PMA</Link>,
-            },
-          ],
-        },
-        {
-          key: 'atividades',
-          label: 'Atividades',
-          icon: <BugOutlined />,
-          children: [
-            {
-              key: '/dashboard/tipoAtividade',
-              label: <Link href='/dashboard/tipoAtividade'>Tipo de Atividade</Link>,
-            },
-            {
-              key: '/dashboard/atividade',
-              label: <Link href='/dashboard/atividade'>Atividade</Link>,
-            },
-            {
-              key: '/dashboard/atividadeAtribuicao',
-              label: <Link href='/dashboard/atividadeAtribuicao'>Atribuição de Atividade</Link>,
-            },
-          ],
-        },
+
 
         {
           key: 'apr',
@@ -162,10 +114,6 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
               label: <Link href='/dashboard/checklistPergunta'>Perguntas</Link>,
             },
           ],
-        },
-        {
-          key: '/dashboard/tecnico',
-          label: <Link href='/dashboard/tecnico'>Técnico</Link>,
         },
         {
           key: 'usuarios',
