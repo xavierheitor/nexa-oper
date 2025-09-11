@@ -50,6 +50,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           label: <Link href='/dashboard/tipo-equipe'>Tipos de Equipe</Link>,
         },
         {
+          key: '/dashboard/equipe',
+          label: <Link href='/dashboard/equipe'>Equipes</Link>,
+        },
+        {
           key: '/dashboard/veiculo',
           label: <Link href='/dashboard/veiculo'>Veículos</Link>,
         },
