@@ -27,7 +27,7 @@ import {
   contratoUpdateSchema,
 } from '@/lib/schemas/contratoSchema';
 import { Contrato } from '@nexa-oper/db';
-import z from 'zod';
+import { z } from 'zod';
 import { AbstractCrudService } from '../abstracts/AbstractCrudService';
 import { PaginatedResult } from '../types/common';
 
