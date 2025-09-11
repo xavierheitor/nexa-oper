@@ -222,7 +222,7 @@ export function useEntityData<T>(options: {
   fetcher: (params?: PaginatedParams) => Promise<PaginatedResult<T> | T[]>;
   initialParams?: Partial<PaginatedParams>;
   paginationEnabled?: boolean;
-}): any {
+}): UseEntityDataPaginated<T> | UseEntityDataSimple<T> {
   // Extrai configurações com valores padrão
   const {
     key,
@@ -242,10 +242,12 @@ export function useEntityData<T>(options: {
 
   // Log para debugging - mostra quando parâmetros mudam
   useEffect(() => {
-    console.log(
-      `[useEntityData] 🧪 Parâmetros atualizados para ${key}:`,
-      params
-    );
+    if (process.env.NODE_ENV === 'development') {
+      console.log(
+        `[useEntityData] 🧪 Parâmetros atualizados para ${key}:`,
+        params
+      );
+    }
   }, [params, key]);
 
   // Chave do SWR - inclui params apenas se paginação estiver habilitada
@@ -267,7 +269,7 @@ export function useEntityData<T>(options: {
 
   // Log para debugging - mostra dados carregados
   useEffect(() => {
-    if (data) {
+    if (process.env.NODE_ENV === 'development' && data) {
       const logResult = Array.isArray(data)
         ? { data, total: data.length, totalPages: 1 }
         : {

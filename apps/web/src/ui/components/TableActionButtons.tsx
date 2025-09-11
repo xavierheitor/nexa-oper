@@ -250,6 +250,7 @@ export default function TableActionButtons<T>({
       {onEdit && (
         <Button
           type='link'
+          aria-label='Editar'
           onClick={() => onEdit(record)}
           icon={<EditOutlined />}
         />
@@ -266,6 +267,7 @@ export default function TableActionButtons<T>({
         >
           <Button
             type='link'
+            aria-label='Excluir'
             danger
             icon={<DeleteOutlined />}
           />

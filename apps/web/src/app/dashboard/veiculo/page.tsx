@@ -203,7 +203,7 @@ export default function VeiculoPage() {
         open={controller.isOpen} // Controla se o modal está aberto
         onCancel={controller.close} // Função para fechar o modal
         footer={null} // Remove footer padrão (botões OK/Cancel)
-        destroyOnHidden // Destrói o conteúdo quando fechado (limpa estado)
+        destroyOnHidden // Destrói o conteúdo quando oculto (limpa estado)
         width={700} // Largura do modal (maior que tipo veículo pois tem mais campos)
       >
         {/* Formulário dentro do modal */}

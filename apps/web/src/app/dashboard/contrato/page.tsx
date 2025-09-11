@@ -144,7 +144,7 @@ export default function ContratoPage() {
         open={controller.isOpen} // Controla se o modal está aberto
         onCancel={controller.close} // Função para fechar o modal
         footer={null} // Remove footer padrão (botões OK/Cancel)
-        destroyOnHidden // Destrói o conteúdo quando fechado (limpa estado)
+        destroyOnHidden // Destrói o conteúdo quando oculto (limpa estado)
         width={600} // Largura do modal
       >
         {/* Formulário dentro do modal */}

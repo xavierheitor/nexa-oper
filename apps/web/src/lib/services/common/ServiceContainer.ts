@@ -187,8 +187,10 @@ export function Inject(serviceKey: string) {
     }
     target.__injectionTokens[parameterIndex] = serviceKey;
 
-    console.log(
-      `[ServiceContainer] 📝 Decorator @Inject('${serviceKey}') registrado para parâmetro ${parameterIndex}`
-    );
+    if (process.env.NODE_ENV === 'development') {
+      console.log(
+        `[ServiceContainer] 📝 Decorator @Inject('${serviceKey}') registrado para parâmetro ${parameterIndex}`
+      );
+    }
   };
 }
