@@ -23,6 +23,7 @@
 
 import { ContratoService } from '../ContratoService';
 import { EletricistaService } from '../EletricistaService';
+import { MobileUserService } from '../MobileUserService';
 import { TipoVeiculoService } from '../TipoVeiculoService';
 import { UserService } from '../UserService';
 import { VeiculoService } from '../VeiculoService';
@@ -41,6 +42,7 @@ export function registerServices(): void {
   container.register('veiculoService', () => new VeiculoService());
   container.register('eletricistaService', () => new EletricistaService());
   container.register('userService', () => new UserService());
+  container.register('mobileUserService', () => new MobileUserService());
 
   // Adicione novos serviços aqui conforme necessário
   // container.register('novoServico', () => new NovoServico());

@@ -7,6 +7,7 @@ import {
   FileProtectOutlined,
   FormOutlined,
   LogoutOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu, Typography } from 'antd';
 import { signOut } from 'next-auth/react';
@@ -155,8 +156,19 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           label: <Link href='/dashboard/tecnico'>Técnico</Link>,
         },
         {
-          key: '/dashboard/usuarioMobile',
-          label: <Link href='/dashboard/usuarioMobile'>Usuários Mobile</Link>,
+          key: 'usuarios',
+          label: 'Usuários',
+          icon: <UserOutlined />,
+          children: [
+            {
+              key: '/dashboard/usuario',
+              label: <Link href='/dashboard/usuario'>Usuários Web</Link>,
+            },
+            {
+              key: '/dashboard/usuario-mobile',
+              label: <Link href='/dashboard/usuario-mobile'>Usuários Móveis</Link>,
+            },
+          ],
         },
       ],
     },
