@@ -29,6 +29,8 @@ import { TipoEquipeService } from '../TipoEquipeService';
 import { SupervisorService } from '../SupervisorService';
 import { TipoVeiculoService } from '../TipoVeiculoService';
 import { ChecklistService } from '../ChecklistService';
+import { ChecklistTipoVeiculoVinculoService } from '../ChecklistTipoVeiculoVinculoService';
+import { ChecklistTipoEquipeVinculoService } from '../ChecklistTipoEquipeVinculoService';
 import { ChecklistPerguntaService } from '../ChecklistPerguntaService';
 import { ChecklistOpcaoRespostaService } from '../ChecklistOpcaoRespostaService';
 import { EquipeSupervisorService } from '../EquipeSupervisorService';
@@ -57,6 +59,8 @@ export function registerServices(): void {
   container.register('checklistOpcaoRespostaService', () => new ChecklistOpcaoRespostaService());
   container.register('checklistService', () => new ChecklistService());
   container.register('tipoChecklistService', () => new TipoChecklistService());
+  container.register('checklistTipoVeiculoVinculoService', () => new ChecklistTipoVeiculoVinculoService());
+  container.register('checklistTipoEquipeVinculoService', () => new ChecklistTipoEquipeVinculoService());
   container.register('userService', () => new UserService());
   container.register('mobileUserService', () => new MobileUserService());
 
