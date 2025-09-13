@@ -10,6 +10,7 @@ model TipoEquipe {
   deletedBy String?   @db.VarChar(255)
 
   Equipe Equipe[]
+  ChecklistTipoEquipeRelacao ChecklistTipoEquipeRelacao[]
 }
 
 model Equipe {

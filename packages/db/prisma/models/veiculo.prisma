@@ -10,6 +10,7 @@ model TipoVeiculo {
   deletedBy String?   @db.VarChar(255)
 
   Veiculo Veiculo[]
+  ChecklistTipoVeiculoRelacao ChecklistTipoVeiculoRelacao[]
 }
 
 model Veiculo {

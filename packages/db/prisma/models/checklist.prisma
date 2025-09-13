@@ -27,8 +27,9 @@ model Checklist {
   deletedBy String?   @db.VarChar(255)
 
   ChecklistPerguntaRelacao ChecklistPerguntaRelacao[]
-
   ChecklistOpcaoRespostaRelacao ChecklistOpcaoRespostaRelacao[]
+  ChecklistTipoVeiculoRelacao ChecklistTipoVeiculoRelacao[]
+  ChecklistTipoEquipeRelacao ChecklistTipoEquipeRelacao[]
 }
 
 model ChecklistPergunta {
@@ -93,4 +94,44 @@ model ChecklistOpcaoRespostaRelacao {
   updatedBy String?   @db.VarChar(255)
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
+}
+
+model ChecklistTipoVeiculoRelacao{
+  id Int @id @default(autoincrement())
+
+  checklistId Int
+  checklist   Checklist @relation(fields: [checklistId], references: [id])
+
+  tipoVeiculoId Int
+  tipoVeiculo   TipoVeiculo @relation(fields: [tipoVeiculoId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Índice único condicional: apenas um checklist ativo por tipo de veículo
+  @@unique([tipoVeiculoId, deletedAt], map: "unique_active_checklist_tipo_veiculo")
+}
+
+model ChecklistTipoEquipeRelacao{
+  id Int @id @default(autoincrement())
+
+  checklistId Int
+  checklist   Checklist @relation(fields: [checklistId], references: [id])
+
+  tipoEquipeId Int
+  tipoEquipe   TipoEquipe @relation(fields: [tipoEquipeId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Índice único condicional: apenas um checklist ativo por tipo de equipe
+  @@unique([tipoEquipeId, deletedAt], map: "unique_active_checklist_tipo_equipe")
 }
