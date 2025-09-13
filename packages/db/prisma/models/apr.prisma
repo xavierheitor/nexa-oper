@@ -11,6 +11,7 @@ model Apr {
 
   AprPerguntaRelacao       AprPerguntaRelacao[]
   AprOpcaoRespostaRelacao  AprOpcaoRespostaRelacao[]
+  AprTipoAtividadeRelacao AprTipoAtividadeRelacao[]
 }
 
 model AprPergunta {
@@ -75,4 +76,25 @@ model AprOpcaoRespostaRelacao {
   updatedBy String? @db.VarChar(255)
   deletedAt DateTime?
   deletedBy String? @db.VarChar(255)
+}
+
+
+model AprTipoAtividadeRelacao{
+  id Int @id @default(autoincrement())
+
+  aprId Int
+  apr   Apr @relation(fields: [aprId], references: [id])
+
+  tipoAtividadeId Int
+  tipoAtividade   TipoAtividade @relation(fields: [tipoAtividadeId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Índice único condicional: apenas um apr ativo por tipo de atividade
+  @@unique([tipoAtividadeId, deletedAt], map: "unique_active_apr_tipo_atividade")
 }

@@ -109,10 +109,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
               key: '/dashboard/tipo-checklist',
               label: <Link href='/dashboard/tipo-checklist'>Tipo de Checklist</Link>,
             },
-            {
-              key: '/dashboard/checklist-modelo',
-              label: <Link href='/dashboard/checklist-modelo'>Checklist</Link>,
-            },
+
             {
               key: '/dashboard/checklist-pergunta',
               label: <Link href='/dashboard/checklist-pergunta'>Perguntas</Link>,
@@ -120,7 +117,11 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
             {
               key: '/dashboard/checklist-opcao-resposta',
               label: <Link href='/dashboard/checklist-opcao-resposta'>Opções de Resposta</Link>,
-            }
+            },
+            {
+              key: '/dashboard/checklist-modelo',
+              label: <Link href='/dashboard/checklist-modelo'>Checklist</Link>,
+            },
           ],
         },
         {
