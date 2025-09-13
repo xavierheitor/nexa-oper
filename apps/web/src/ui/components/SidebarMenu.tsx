@@ -106,6 +106,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           label: 'Checklist',
           children: [
             {
+              key: '/dashboard/tipo-checklist',
+              label: <Link href='/dashboard/tipo-checklist'>Tipo de Checklist</Link>,
+            },
+            {
               key: '/dashboard/checklistModelo',
               label: <Link href='/dashboard/checklistModelo'>Checklist</Link>,
             },
