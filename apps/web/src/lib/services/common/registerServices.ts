@@ -23,6 +23,7 @@
 
 import { AprOpcaoRespostaService } from '../AprOpcaoRespostaService';
 import { AprPerguntaService } from '../AprPerguntaService';
+import { AprService } from '../AprService';
 import { ChecklistOpcaoRespostaService } from '../ChecklistOpcaoRespostaService';
 import { ChecklistPerguntaService } from '../ChecklistPerguntaService';
 import { ChecklistService } from '../ChecklistService';
@@ -61,15 +62,16 @@ export function registerServices(): void {
     'equipeSupervisorService',
     () => new EquipeSupervisorService()
   );
-    container.register(
-      'aprOpcaoRespostaService',
-      () => new AprOpcaoRespostaService()
-    );
-    container.register('aprPerguntaService', () => new AprPerguntaService());
-    container.register(
-      'checklistPerguntaService',
-      () => new ChecklistPerguntaService()
-    );
+  container.register(
+    'aprOpcaoRespostaService',
+    () => new AprOpcaoRespostaService()
+  );
+  container.register('aprPerguntaService', () => new AprPerguntaService());
+  container.register('aprService', () => new AprService());
+  container.register(
+    'checklistPerguntaService',
+    () => new ChecklistPerguntaService()
+  );
   container.register(
     'checklistOpcaoRespostaService',
     () => new ChecklistOpcaoRespostaService()
