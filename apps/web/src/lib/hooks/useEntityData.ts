@@ -324,7 +324,7 @@ export function useEntityData<T>(options: {
       isLoading,
       error,
       mutate,
-      mutateKey: swrKey,
+      mutateKey: swrKey as [string, PaginatedParams],
       pagination: {
         current: params.page,
         pageSize: params.pageSize,
@@ -344,6 +344,6 @@ export function useEntityData<T>(options: {
     isLoading,
     error,
     mutate,
-    mutateKey: swrKey,
+    mutateKey: key,
   };
 }

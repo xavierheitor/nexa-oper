@@ -21,24 +21,25 @@
  * ```
  */
 
+import { AprPerguntaService } from '../AprPerguntaService';
+import { ChecklistOpcaoRespostaService } from '../ChecklistOpcaoRespostaService';
+import { ChecklistPerguntaService } from '../ChecklistPerguntaService';
+import { ChecklistService } from '../ChecklistService';
+import { ChecklistTipoEquipeVinculoService } from '../ChecklistTipoEquipeVinculoService';
+import { ChecklistTipoVeiculoVinculoService } from '../ChecklistTipoVeiculoVinculoService';
 import { ContratoService } from '../ContratoService';
 import { EletricistaService } from '../EletricistaService';
-import { MobileUserService } from '../MobileUserService';
 import { EquipeService } from '../EquipeService';
-import { TipoEquipeService } from '../TipoEquipeService';
-import { SupervisorService } from '../SupervisorService';
-import { TipoVeiculoService } from '../TipoVeiculoService';
-import { ChecklistService } from '../ChecklistService';
-import { TipoAtividadeService } from '../TipoAtividadeService';
-import { ChecklistTipoVeiculoVinculoService } from '../ChecklistTipoVeiculoVinculoService';
-import { ChecklistTipoEquipeVinculoService } from '../ChecklistTipoEquipeVinculoService';
-import { ChecklistPerguntaService } from '../ChecklistPerguntaService';
-import { ChecklistOpcaoRespostaService } from '../ChecklistOpcaoRespostaService';
 import { EquipeSupervisorService } from '../EquipeSupervisorService';
+import { MobileUserService } from '../MobileUserService';
+import { SupervisorService } from '../SupervisorService';
+import { TipoAtividadeService } from '../TipoAtividadeService';
+import { TipoChecklistService } from '../TipoChecklistService';
+import { TipoEquipeService } from '../TipoEquipeService';
+import { TipoVeiculoService } from '../TipoVeiculoService';
 import { UserService } from '../UserService';
 import { VeiculoService } from '../VeiculoService';
 import { container } from './ServiceContainer';
-import { TipoChecklistService } from '../TipoChecklistService';
 
 /**
  * Registra todos os serviços no container
@@ -55,14 +56,30 @@ export function registerServices(): void {
   container.register('veiculoService', () => new VeiculoService());
   container.register('eletricistaService', () => new EletricistaService());
   container.register('supervisorService', () => new SupervisorService());
-  container.register('equipeSupervisorService', () => new EquipeSupervisorService());
-  container.register('checklistPerguntaService', () => new ChecklistPerguntaService());
-  container.register('checklistOpcaoRespostaService', () => new ChecklistOpcaoRespostaService());
+  container.register(
+    'equipeSupervisorService',
+    () => new EquipeSupervisorService()
+  );
+  container.register('aprPerguntaService', () => new AprPerguntaService());
+  container.register(
+    'checklistPerguntaService',
+    () => new ChecklistPerguntaService()
+  );
+  container.register(
+    'checklistOpcaoRespostaService',
+    () => new ChecklistOpcaoRespostaService()
+  );
   container.register('checklistService', () => new ChecklistService());
   container.register('tipoChecklistService', () => new TipoChecklistService());
   container.register('tipoAtividadeService', () => new TipoAtividadeService());
-  container.register('checklistTipoVeiculoVinculoService', () => new ChecklistTipoVeiculoVinculoService());
-  container.register('checklistTipoEquipeVinculoService', () => new ChecklistTipoEquipeVinculoService());
+  container.register(
+    'checklistTipoVeiculoVinculoService',
+    () => new ChecklistTipoVeiculoVinculoService()
+  );
+  container.register(
+    'checklistTipoEquipeVinculoService',
+    () => new ChecklistTipoEquipeVinculoService()
+  );
   container.register('userService', () => new UserService());
   container.register('mobileUserService', () => new MobileUserService());
 
