@@ -21,6 +21,7 @@
  * ```
  */
 
+import { AprOpcaoRespostaService } from '../AprOpcaoRespostaService';
 import { AprPerguntaService } from '../AprPerguntaService';
 import { ChecklistOpcaoRespostaService } from '../ChecklistOpcaoRespostaService';
 import { ChecklistPerguntaService } from '../ChecklistPerguntaService';
@@ -60,11 +61,15 @@ export function registerServices(): void {
     'equipeSupervisorService',
     () => new EquipeSupervisorService()
   );
-  container.register('aprPerguntaService', () => new AprPerguntaService());
-  container.register(
-    'checklistPerguntaService',
-    () => new ChecklistPerguntaService()
-  );
+    container.register(
+      'aprOpcaoRespostaService',
+      () => new AprOpcaoRespostaService()
+    );
+    container.register('aprPerguntaService', () => new AprPerguntaService());
+    container.register(
+      'checklistPerguntaService',
+      () => new ChecklistPerguntaService()
+    );
   container.register(
     'checklistOpcaoRespostaService',
     () => new ChecklistOpcaoRespostaService()
