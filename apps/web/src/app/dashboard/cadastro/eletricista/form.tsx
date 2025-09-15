@@ -3,7 +3,7 @@
 import { Contrato } from '@nexa-oper/db';
 import { Button, Form, Input, message, Select, Spin } from 'antd';
 import { useEffect, useState } from 'react';
-import { listContratos } from '../../../lib/actions/contrato/list';
+import { listContratos } from '../../../../lib/actions/contrato/list';
 
 // Importações do Ant Design e React
 

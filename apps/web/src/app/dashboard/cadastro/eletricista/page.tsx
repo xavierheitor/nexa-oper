@@ -16,11 +16,11 @@ import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 import { Button, Card, Modal, Table } from 'antd';
-import { createEletricista } from '../../../lib/actions/eletricista/create';
-import { deleteEletricista } from '../../../lib/actions/eletricista/delete';
-import { updateEletricista } from '../../../lib/actions/eletricista/update';
-import { ActionResult } from '../../../lib/types/common';
-import { getSelectFilter, getTextFilter } from '../../../ui/components/tableFilters';
+import { createEletricista } from '../../../../lib/actions/eletricista/create';
+import { deleteEletricista } from '../../../../lib/actions/eletricista/delete';
+import { updateEletricista } from '../../../../lib/actions/eletricista/update';
+import { ActionResult } from '../../../../lib/types/common';
+import { getSelectFilter, getTextFilter } from '../../../../ui/components/tableFilters';
 import EletricistaForm, { EletricistaFormData } from './form';
 
 export default function EletricistaPage() {

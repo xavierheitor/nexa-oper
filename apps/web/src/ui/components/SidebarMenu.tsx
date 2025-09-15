@@ -102,44 +102,44 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
    * @returns string[] - Array de chaves de menus a serem expandidos
    *
    * @example
-   * // Para rota '/dashboard/apr-modelo'
+   * // Para rota '/dashboard/cadastro/apr-modelo'
    * // Retorna: ['cadastro', 'apr']
    *
-   * // Para rota '/dashboard/equipe'  
+   * // Para rota '/dashboard/cadastro/equipe'  
    * // Retorna: ['cadastro', 'equipe-menu']
    */
   const getDefaultOpenKeys = (): string[] => {
     const openKeys: string[] = [];
 
-    // Sempre abre 'cadastro' se a rota começar com /dashboard/ (exceto dashboard raiz)
-    if (pathname.startsWith('/dashboard/') && pathname !== '/dashboard') {
+    // Sempre abre 'cadastro' se a rota começar com /dashboard/cadastro/
+    if (pathname.startsWith('/dashboard/cadastro/')) {
       openKeys.push('cadastro');
     }
 
     // Mapeamento de rotas para suas chaves de menu pai
     const routeToMenuKey: Record<string, string> = {
       // Submenus de Equipe
-      '/dashboard/tipo-equipe': 'equipe-menu',
-      '/dashboard/equipe': 'equipe-menu',
+      '/dashboard/cadastro/tipo-equipe': 'equipe-menu',
+      '/dashboard/cadastro/equipe': 'equipe-menu',
 
       // Submenus de Veículos
-      '/dashboard/tipo-veiculo': 'veiculos-menu',
-      '/dashboard/veiculo': 'veiculos-menu',
+      '/dashboard/cadastro/tipo-veiculo': 'veiculos-menu',
+      '/dashboard/cadastro/veiculo': 'veiculos-menu',
 
       // Submenus de APR
-      '/dashboard/apr-pergunta': 'apr',
-      '/dashboard/apr-opcao-resposta': 'apr',
-      '/dashboard/apr-modelo': 'apr',
+      '/dashboard/cadastro/apr-pergunta': 'apr',
+      '/dashboard/cadastro/apr-opcao-resposta': 'apr',
+      '/dashboard/cadastro/apr-modelo': 'apr',
 
       // Submenus de Checklist
-      '/dashboard/tipo-checklist': 'checklist',
-      '/dashboard/checklist-pergunta': 'checklist',
-      '/dashboard/checklist-opcao-resposta': 'checklist',
-      '/dashboard/checklist-modelo': 'checklist',
+      '/dashboard/cadastro/tipo-checklist': 'checklist',
+      '/dashboard/cadastro/checklist-pergunta': 'checklist',
+      '/dashboard/cadastro/checklist-opcao-resposta': 'checklist',
+      '/dashboard/cadastro/checklist-modelo': 'checklist',
 
       // Submenus de Usuários
-      '/dashboard/usuario': 'usuarios',
-      '/dashboard/usuario-mobile': 'usuarios',
+      '/dashboard/cadastro/usuario': 'usuarios',
+      '/dashboard/cadastro/usuario-mobile': 'usuarios',
     };
 
     // Adiciona a chave específica do submenu se existir
@@ -181,8 +181,8 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       children: [
         {
           icon: <FileProtectOutlined />,
-          key: '/dashboard/contrato',
-          label: <Link href='/dashboard/contrato'>Contratos</Link>,
+          key: '/dashboard/cadastro/contrato',
+          label: <Link href='/dashboard/cadastro/contrato'>Contratos</Link>,
         },
         {
           key: 'equipe-menu',
@@ -190,12 +190,12 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           icon: <TeamOutlined />,
           children: [
             {
-              key: '/dashboard/tipo-equipe',
-              label: <Link href='/dashboard/tipo-equipe'>Tipos de Equipe</Link>,
+              key: '/dashboard/cadastro/tipo-equipe',
+              label: <Link href='/dashboard/cadastro/tipo-equipe'>Tipos de Equipe</Link>,
             },
             {
-              key: '/dashboard/equipe',
-              label: <Link href='/dashboard/equipe'>Equipes</Link>,
+              key: '/dashboard/cadastro/equipe',
+              label: <Link href='/dashboard/cadastro/equipe'>Equipes</Link>,
             },
           ]
         },
@@ -205,28 +205,28 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           icon: <CarOutlined />,
           children: [
             {
-              key: '/dashboard/tipo-veiculo',
-              label: <Link href='/dashboard/tipo-veiculo'>Tipos de Veículo</Link>,
+              key: '/dashboard/cadastro/tipo-veiculo',
+              label: <Link href='/dashboard/cadastro/tipo-veiculo'>Tipos de Veículo</Link>,
             },
             {
-              key: '/dashboard/veiculo',
+              key: '/dashboard/cadastro/veiculo',
               label: (
-                <Link href='/dashboard/veiculo'>Veículos</Link>
+                <Link href='/dashboard/cadastro/veiculo'>Veículos</Link>
               ),
             },
           ],
         },
         {
-          key: '/dashboard/eletricista',
-          label: <Link href='/dashboard/eletricista'>Eletricista</Link>,
+          key: '/dashboard/cadastro/eletricista',
+          label: <Link href='/dashboard/cadastro/eletricista'>Eletricista</Link>,
         },
         {
-          key: '/dashboard/supervisor',
-          label: <Link href='/dashboard/supervisor'>Supervisor</Link>,
+          key: '/dashboard/cadastro/supervisor',
+          label: <Link href='/dashboard/cadastro/supervisor'>Supervisor</Link>,
         },
         {
-          key: '/dashboard/tipo-atividade',
-          label: <Link href='/dashboard/tipo-atividade'>Tipo de Atividade</Link>,
+          key: '/dashboard/cadastro/tipo-atividade',
+          label: <Link href='/dashboard/cadastro/tipo-atividade'>Tipo de Atividade</Link>,
         },
 
 
@@ -236,16 +236,16 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           label: 'APR',
           children: [
             {
-              key: '/dashboard/apr-pergunta',
-              label: <Link href='/dashboard/apr-pergunta'>Perguntas</Link>,
+              key: '/dashboard/cadastro/apr-pergunta',
+              label: <Link href='/dashboard/cadastro/apr-pergunta'>Perguntas</Link>,
             },
             {
-              key: '/dashboard/apr-opcao-resposta',
-              label: <Link href='/dashboard/apr-opcao-resposta'>Opções de Resposta</Link>,
+              key: '/dashboard/cadastro/apr-opcao-resposta',
+              label: <Link href='/dashboard/cadastro/apr-opcao-resposta'>Opções de Resposta</Link>,
             },
             {
-              key: '/dashboard/apr-modelo',
-              label: <Link href='/dashboard/apr-modelo'>Modelo</Link>,
+              key: '/dashboard/cadastro/apr-modelo',
+              label: <Link href='/dashboard/cadastro/apr-modelo'>Modelo</Link>,
             },
           ],
         },
@@ -255,21 +255,21 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           label: 'Checklist',
           children: [
             {
-              key: '/dashboard/tipo-checklist',
-              label: <Link href='/dashboard/tipo-checklist'>Tipo de Checklist</Link>,
+              key: '/dashboard/cadastro/tipo-checklist',
+              label: <Link href='/dashboard/cadastro/tipo-checklist'>Tipo de Checklist</Link>,
             },
 
             {
-              key: '/dashboard/checklist-pergunta',
-              label: <Link href='/dashboard/checklist-pergunta'>Perguntas</Link>,
+              key: '/dashboard/cadastro/checklist-pergunta',
+              label: <Link href='/dashboard/cadastro/checklist-pergunta'>Perguntas</Link>,
             },
             {
-              key: '/dashboard/checklist-opcao-resposta',
-              label: <Link href='/dashboard/checklist-opcao-resposta'>Opções de Resposta</Link>,
+              key: '/dashboard/cadastro/checklist-opcao-resposta',
+              label: <Link href='/dashboard/cadastro/checklist-opcao-resposta'>Opções de Resposta</Link>,
             },
             {
-              key: '/dashboard/checklist-modelo',
-              label: <Link href='/dashboard/checklist-modelo'>Checklist</Link>,
+              key: '/dashboard/cadastro/checklist-modelo',
+              label: <Link href='/dashboard/cadastro/checklist-modelo'>Checklist</Link>,
             },
           ],
         },
@@ -279,12 +279,12 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           icon: <UserOutlined />,
           children: [
             {
-              key: '/dashboard/usuario',
-              label: <Link href='/dashboard/usuario'>Usuários Web</Link>,
+              key: '/dashboard/cadastro/usuario',
+              label: <Link href='/dashboard/cadastro/usuario'>Usuários Web</Link>,
             },
             {
-              key: '/dashboard/usuario-mobile',
-              label: <Link href='/dashboard/usuario-mobile'>Usuários Móveis</Link>,
+              key: '/dashboard/cadastro/usuario-mobile',
+              label: <Link href='/dashboard/cadastro/usuario-mobile'>Usuários Móveis</Link>,
             },
           ],
         },
