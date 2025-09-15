@@ -222,10 +222,8 @@ export default function AprForm({ onSubmit, initialValues, loading = false }: Pr
         // Se tem ID, é edição - carrega relacionamentos atuais
         if ((initialValues as any).id) {
           const res = await getApr({ id: (initialValues as any).id });
-          console.log('APR carregada para edição:', res); // Debug log
           const data = res.data as any;
           if (data) {
-            console.log('Relacionamentos APR:', data.AprPerguntaRelacao, data.AprOpcaoRespostaRelacao); // Debug log
             // Extrai IDs dos relacionamentos para os Transfer components
             setTargetPerguntas((data.AprPerguntaRelacao || []).map((r: any) => String(r.aprPerguntaId)));
             setTargetOpcoes((data.AprOpcaoRespostaRelacao || []).map((r: any) => String(r.aprOpcaoRespostaId)));

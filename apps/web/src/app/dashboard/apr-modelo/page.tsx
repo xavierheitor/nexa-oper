@@ -46,6 +46,10 @@ import { deleteApr } from '@/lib/actions/apr/delete';
 import { getApr } from '@/lib/actions/apr/get';
 import { listAprs } from '@/lib/actions/apr/list';
 import { updateApr } from '@/lib/actions/apr/update';
+import { deleteAprTipoAtividadeVinculo } from '@/lib/actions/aprVinculo/tipoAtividade/delete';
+import { listAprTipoAtividadeVinculos } from '@/lib/actions/aprVinculo/tipoAtividade/list';
+import { setAprTipoAtividade } from '@/lib/actions/aprVinculo/tipoAtividade/set';
+import { listTiposAtividade } from '@/lib/actions/tipoAtividade/list';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
@@ -53,7 +57,8 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { Apr } from '@nexa-oper/db';
-import { Button, Card, Modal, Table, Tag } from 'antd';
+import { Button, Card, Form, Modal, Select, Spin, Table, Tag, message } from 'antd';
+import { useEffect, useState } from 'react';
 import AprForm, { AprFormData } from './form';
 
 /**
@@ -70,13 +75,16 @@ import AprForm, { AprFormData } from './form';
  * // Uso no sistema de rotas do Next.js
  * // Arquivo: app/dashboard/apr-modelo/page.tsx
  * export default AprPage;
- * 
+ *
  * // Acesso via URL: /dashboard/apr-modelo
  * ```
  */
 export default function AprPage() {
   // Controller para gerenciar estado de modais e operações CRUD
   const controller = useCrudController<Apr>('aprs');
+
+  // Controller para gerenciar vínculos APR-TipoAtividade
+  const taController = useCrudController<any>('apr-ta-vinculos');
 
   // Hook para gerenciamento de dados com paginação automática
   const aprs = useEntityData<Apr>({
@@ -95,18 +103,35 @@ export default function AprPage() {
     },
   });
 
+  // Hook para gerenciamento de vínculos APR-TipoAtividade
+  const taVinculos = useEntityData<any>({
+    key: 'apr-ta-vinculos',
+    fetcher: unwrapFetcher(listAprTipoAtividadeVinculos),
+    paginationEnabled: true,
+    initialParams: {
+      page: 1,
+      pageSize: 10,
+      orderBy: 'id',
+      orderDir: 'desc',
+      include: {
+        apr: true,
+        tipoAtividade: true,
+      },
+    },
+  });
+
   // Configuração das colunas da tabela com ações automáticas
   const columns = useTableColumnsWithActions<Apr>(
     [
       // Coluna ID
-      { 
-        title: 'ID', 
-        dataIndex: 'id', 
-        key: 'id', 
-        sorter: true, 
-        width: 80 
+      {
+        title: 'ID',
+        dataIndex: 'id',
+        key: 'id',
+        sorter: true,
+        width: 80
       },
-      
+
       // Coluna principal: Nome da APR
       {
         title: 'Nome da APR',
@@ -115,7 +140,7 @@ export default function AprPage() {
         sorter: true,
         ...getTextFilter<Apr>('nome', 'APR'),
       },
-      
+
       // Coluna: Quantidade de Perguntas vinculadas
       {
         title: 'Perguntas',
@@ -136,7 +161,7 @@ export default function AprPage() {
           return countA - countB;
         },
       },
-      
+
       // Coluna: Quantidade de Opções de Resposta vinculadas
       {
         title: 'Opções de Resposta',
@@ -157,7 +182,7 @@ export default function AprPage() {
           return countA - countB;
         },
       },
-      
+
       // Coluna de data de criação
       {
         title: 'Criado em',
@@ -176,15 +201,65 @@ export default function AprPage() {
           controller.open(result.data);
         }
       },
-      
+
       // Ação de exclusão: confirma e executa soft delete
       onDelete: (item) =>
         controller
           .exec(
-            () => deleteApr({ id: item.id }), 
+            () => deleteApr({ id: item.id }),
             'APR excluída com sucesso!'
           )
           .finally(() => aprs.mutate()),
+    }
+  );
+
+  // Configuração das colunas da tabela de vínculos APR-TipoAtividade
+  const taColumns = useTableColumnsWithActions<any>(
+    [
+      // Coluna ID
+      {
+        title: 'ID',
+        dataIndex: 'id',
+        key: 'id',
+        sorter: true,
+        width: 80
+      },
+
+      // Coluna: Tipo de Atividade
+      {
+        title: 'Tipo de Atividade',
+        dataIndex: ['tipoAtividade', 'nome'],
+        key: 'tipoAtividade',
+        sorter: true,
+      },
+
+      // Coluna: APR vinculada
+      {
+        title: 'APR Vinculada',
+        dataIndex: ['apr', 'nome'],
+        key: 'apr',
+        sorter: true,
+      },
+
+      // Coluna de data de criação
+      {
+        title: 'Vinculado em',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        sorter: true,
+        render: (date: Date) => new Date(date).toLocaleDateString('pt-BR'),
+        width: 120,
+      },
+    ],
+    {
+      // Ação de exclusão: confirma e remove vínculo
+      onDelete: (item) =>
+        taController
+          .exec(
+            () => deleteAprTipoAtividadeVinculo({ id: item.id }),
+            'Vínculo removido com sucesso!'
+          )
+          .finally(() => taVinculos.mutate()),
     }
   );
 
@@ -203,10 +278,10 @@ export default function AprPage() {
       const apr = controller.editingItem?.id
         ? await updateApr({ ...values, id: controller.editingItem.id })
         : await createApr(values);
-        
+
       return { success: true, data: apr.data };
     };
-    
+
     // Executa ação com feedback automático
     controller
       .exec(action, 'APR salva com sucesso!')
@@ -224,8 +299,8 @@ export default function AprPage() {
       <Card
         title="APRs (Análise Preliminar de Risco)"
         extra={
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             onClick={() => controller.open()}
           >
             Adicionar APR
@@ -243,6 +318,30 @@ export default function AprPage() {
         />
       </Card>
 
+      {/* Card de vínculos APR-TipoAtividade */}
+      <Card
+        title="Vínculos APR - Tipo de Atividade"
+        style={{ marginTop: 16 }}
+        extra={
+          <Button
+            type="primary"
+            onClick={() => taController.open()}
+          >
+            Adicionar Vínculo
+          </Button>
+        }
+      >
+        <Table
+          columns={taColumns}
+          dataSource={taVinculos.data}
+          loading={taVinculos.isLoading}
+          rowKey="id"
+          pagination={taVinculos.pagination}
+          onChange={taVinculos.handleTableChange}
+          scroll={{ x: 600 }}
+        />
+      </Card>
+
       {/* Modal para formulário de criação/edição */}
       <Modal
         title={controller.editingItem ? 'Editar APR' : 'Nova APR'}
@@ -255,20 +354,172 @@ export default function AprPage() {
       >
         <AprForm
           initialValues={
-            controller.editingItem 
-              ? { 
-                  id: controller.editingItem.id,
-                  nome: controller.editingItem.nome,
-                  // Os relacionamentos são carregados automaticamente pelo form
-                  perguntaIds: [],
-                  opcaoRespostaIds: []
-                } 
+            controller.editingItem
+              ? {
+                id: controller.editingItem.id,
+                nome: controller.editingItem.nome,
+                // Os relacionamentos são carregados automaticamente pelo form
+                perguntaIds: [],
+                opcaoRespostaIds: []
+              }
               : undefined
           }
           onSubmit={handleSubmit}
           loading={controller.loading}
         />
       </Modal>
+
+      {/* Modal para criação de vínculo APR-TipoAtividade */}
+      <Modal
+        title="Novo Vínculo APR - Tipo de Atividade"
+        open={taController.isOpen}
+        onCancel={taController.close}
+        footer={null}
+        destroyOnHidden
+        width={500}
+      >
+        <VinculoTAModal
+          onSaved={() => {
+            taController.close();
+            taVinculos.mutate();
+          }}
+          controllerExec={taController.exec}
+        />
+      </Modal>
     </>
+  );
+}
+
+/**
+ * Componente Modal para Vinculação APR-TipoAtividade
+ *
+ * Modal específico para criar vínculos entre APRs e Tipos de Atividade.
+ * Carrega dados necessários (APRs e Tipos de Atividade) e permite
+ * seleção via dropdowns com busca.
+ *
+ * FUNCIONALIDADES:
+ * - Carregamento automático de APRs e Tipos de Atividade
+ * - Dropdowns com busca e filtros
+ * - Validação de campos obrigatórios
+ * - Feedback de loading durante operações
+ * - Integração com Server Actions
+ * - Callback de sucesso para atualização de lista
+ *
+ * @param onSaved - Callback executado após salvar com sucesso
+ * @param controllerExec - Função do controller para executar ações
+ */
+function VinculoTAModal({
+  onSaved,
+  controllerExec
+}: {
+  onSaved: () => void;
+  controllerExec: any
+}) {
+  // Estado local do formulário
+  const [form] = Form.useForm();
+  const [tipos, setTipos] = useState<any[]>([]);
+  const [aprsData, setAprsData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  /**
+   * Carrega dados necessários para os dropdowns
+   *
+   * Executa chamadas paralelas para buscar APRs e Tipos de Atividade
+   * disponíveis para vinculação. Trata erros e gerencia estado de loading.
+   */
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+
+        // Busca paralela de APRs e Tipos de Atividade
+        const [aprsResult, tiposResult] = await Promise.all([
+          listAprs({
+            page: 1,
+            pageSize: 200,
+            orderBy: 'nome',
+            orderDir: 'asc'
+          }),
+          listTiposAtividade({
+            page: 1,
+            pageSize: 200,
+            orderBy: 'nome',
+            orderDir: 'asc'
+          }),
+        ]);
+
+        // Extrai dados dos resultados
+        setAprsData(aprsResult.data?.data || []);
+        setTipos(tiposResult.data?.data || []);
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        message.error('Erro ao carregar dados para vinculação');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  // Exibe loading enquanto carrega dados
+  if (loading) {
+    return <Spin spinning style={{ width: '100%', padding: '40px 0' }} />;
+  }
+
+  return (
+    <Form
+      form={form}
+      layout="vertical"
+      onFinish={(values: any) =>
+        controllerExec(
+          () => setAprTipoAtividade(values),
+          'Vínculo salvo com sucesso!'
+        ).finally(onSaved)
+      }
+    >
+      {/* Seleção de Tipo de Atividade */}
+      <Form.Item
+        name="tipoAtividadeId"
+        label="Tipo de Atividade"
+        rules={[{ required: true, message: 'Selecione um tipo de atividade' }]}
+      >
+        <Select
+          showSearch
+          placeholder="Selecione o tipo de atividade"
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+          options={tipos.map(tipo => ({
+            value: tipo.id,
+            label: tipo.nome
+          }))}
+        />
+      </Form.Item>
+
+      {/* Seleção de APR */}
+      <Form.Item
+        name="aprId"
+        label="APR"
+        rules={[{ required: true, message: 'Selecione uma APR' }]}
+      >
+        <Select
+          showSearch
+          placeholder="Selecione a APR"
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+          options={aprsData.map(apr => ({
+            value: apr.id,
+            label: apr.nome
+          }))}
+        />
+      </Form.Item>
+
+      {/* Botão de submit */}
+      <Form.Item>
+        <Button type="primary" htmlType="submit" block>
+          Salvar Vínculo
+        </Button>
+      </Form.Item>
+    </Form>
   );
 }
