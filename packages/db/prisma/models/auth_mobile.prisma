@@ -13,6 +13,8 @@ model MobileUser {
   mobileSession MobileSession[]
 
   MobileToken MobileToken[]
+
+  MobileContratoPermissao MobileContratoPermissao[]
 }
 
 model MobileSession {

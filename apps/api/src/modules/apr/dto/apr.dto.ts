@@ -298,7 +298,7 @@ export class PaginationMetaDto {
  */
 export class AprListResponseDto {
   /**
-   * Array de modelos APR
+   * Array de modelos APR (versão simplificada)
    */
   @ApiProperty({
     description: 'Lista de modelos APR',

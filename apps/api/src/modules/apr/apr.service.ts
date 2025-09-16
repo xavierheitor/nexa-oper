@@ -64,9 +64,14 @@ import {
  * Interface para parâmetros de consulta interna
  */
 interface FindAllParams {
+  /** Número da página */
   page: number;
+  /** Limite de itens por página */
   limit: number;
+  /** Termo de busca */
   search?: string;
+  /** Incluir campos de auditoria na resposta */
+  includeAudit?: boolean;
 }
 
 /**
@@ -136,12 +141,8 @@ export class AprService {
           select: {
             id: true,
             nome: true,
-            createdAt: true,
-            createdBy: true,
-            updatedAt: true,
-            updatedBy: true,
-            deletedAt: true,
-            deletedBy: true,
+            // Campos de auditoria excluídos por padrão para melhor performance
+            // e resposta mais limpa. Podem ser incluídos via parâmetro se necessário.
           },
         }),
 
@@ -219,12 +220,7 @@ export class AprService {
         select: {
           id: true,
           nome: true,
-          createdAt: true,
-          createdBy: true,
-          updatedAt: true,
-          updatedBy: true,
-          deletedAt: true,
-          deletedBy: true,
+          // Campos de auditoria excluídos por padrão para resposta mais limpa
         },
       });
 
