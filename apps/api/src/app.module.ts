@@ -40,6 +40,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DbModule } from './db/db.module';
 import { AprModule } from './modules/apr/apr.module';
+import { AuthModule } from './modules/auth/module/auth.module';
+import { ContractsModule } from './modules/contracts/contracts.module';
 import { LoggerMiddleware } from './utils/logger.middleware';
 
 /**
@@ -62,10 +64,13 @@ import { LoggerMiddleware } from './utils/logger.middleware';
     // Módulos de funcionalidades de negócio
     AprModule,
 
+    // Módulos de autenticação e permissões
+    AuthModule,
+    ContractsModule,
+
     // TODO: Adicionar outros módulos conforme necessário
     // ChecklistModule,
     // UserModule,
-    // AuthModule,
   ],
   controllers: [
     // Controlador principal com rotas básicas
