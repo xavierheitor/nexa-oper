@@ -1,0 +1,51 @@
+# EditorConfig para Nexa Oper
+# Garante consistência de formatação entre diferentes editores
+# Mais informações: https://editorconfig.org
+
+root = true
+
+# Configurações para todos os arquivos
+[*]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# Configurações específicas para TypeScript/JavaScript
+[*.{ts,tsx,js,jsx}]
+indent_style = space
+indent_size = 2
+max_line_length = 80
+
+# Configurações para JSON
+[*.json]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
+# Configurações para Markdown
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = 100
+
+# Configurações para YAML
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# Configurações para arquivos de configuração
+[{package.json,.prettierrc,.eslintrc*}]
+indent_style = space
+indent_size = 2
+
+# Configurações para Prisma
+[*.prisma]
+indent_style = space
+indent_size = 2
+
+# Configurações para arquivos de ambiente
+[.env*]
+indent_style = space
+indent_size = 2

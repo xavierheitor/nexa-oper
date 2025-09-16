@@ -41,6 +41,22 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-return': 'off',
       'no-console': 'off',
       'no-debugger': 'error',
+      // Configurações para compatibilidade com Prettier
+      'prettier/prettier': [
+        'error',
+        {
+          semi: true,
+          trailingComma: 'es5',
+          singleQuote: true,
+          printWidth: 80,
+          tabWidth: 2,
+          useTabs: false,
+          bracketSpacing: true,
+          bracketSameLine: false,
+          arrowParens: 'avoid',
+          endOfLine: 'lf',
+        },
+      ],
     },
-  },
+  }
 );
