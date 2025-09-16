@@ -14,15 +14,22 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 
-import { LockOutlined, MobileOutlined, UserOutlined } from '@ant-design/icons';
+import { LockOutlined, MobileOutlined, UserOutlined, LinkOutlined } from '@ant-design/icons';
 import { MobileUser } from '@nexa-oper/db';
-import { Button, Card, Modal, Space, Table, Tag } from 'antd';
+import { Button, Card, Modal, Space, Table, Tag, Tooltip } from 'antd';
 
 import MobileUserForm, { MobileUserFormData } from './form';
+import PermissoesModal from './permissoesModal';
+import React from 'react';
 
 export default function MobileUserPage() {
   // Hook para controle de operações CRUD
   const controller = useCrudController<MobileUser>('mobileUsers');
+
+  // Estados para modal de permissões
+  const [permissoesModalOpen, setPermissoesModalOpen] = React.useState(false);
+  const [selectedUserForPermissoes, setSelectedUserForPermissoes] = React.useState<MobileUser | null>(null);
+  const permissoesController = useCrudController<any>('permissoes');
 
   // Hook para busca de dados com paginação
   const mobileUsers = useEntityData<MobileUser>({
@@ -126,6 +133,16 @@ export default function MobileUserPage() {
               .finally(() => {
                 mobileUsers.mutate();
               })
+        },
+        {
+          key: 'manage-permissions',
+          label: 'Permissões',
+          icon: <LinkOutlined />,
+          type: 'link',
+          onClick: (mobileUser) => {
+            setSelectedUserForPermissoes(mobileUser);
+            setPermissoesModalOpen(true);
+          }
         }
       ]
     },
@@ -166,7 +183,7 @@ export default function MobileUserPage() {
         }
         extra={
           <Button
-            type="primary" 
+            type="primary"
             icon={<UserOutlined />}
             onClick={() => controller.open()}
           >
@@ -208,6 +225,31 @@ export default function MobileUserPage() {
           loading={controller.loading}
           isEditing={!!controller.editingItem}
         />
+      </Modal>
+
+      {/* Modal de Permissões */}
+      <Modal
+        title={`Gerenciar Permissões - ${selectedUserForPermissoes?.username || ''}`}
+        open={permissoesModalOpen}
+        onCancel={() => {
+          setPermissoesModalOpen(false);
+          setSelectedUserForPermissoes(null);
+        }}
+        footer={null}
+        destroyOnClose
+        width={800}
+        maskClosable={false}
+      >
+        {selectedUserForPermissoes && (
+          <PermissoesModal
+            mobileUserId={selectedUserForPermissoes.id}
+            mobileUserName={selectedUserForPermissoes.username}
+            onSaved={() => {
+              // Modal pode ficar aberto para adicionar mais permissões
+            }}
+            controllerExec={permissoesController.exec}
+          />
+        )}
       </Modal>
     </>
   );
