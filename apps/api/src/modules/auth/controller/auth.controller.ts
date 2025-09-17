@@ -20,8 +20,10 @@
  * @author Nexa Oper Team
  */
 
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from '../service/auth.service';
+import { LoginDto } from '../dto/login.dto';
+import { RefreshDto } from '../dto/refresh.dto';
 
 /**
  * Controlador de Autenticação Mobile
@@ -45,14 +47,18 @@ export class AuthController {
    * retornando tokens JWT para acesso às funcionalidades da API.
    *
    * FLUXO DE LOGIN:
-   * 1. Recebe credenciais (matrícula e senha)
+   * 1. Valida dados de entrada (matrícula e senha obrigatórias)
    * 2. Valida credenciais no banco de dados
    * 3. Gera tokens JWT (access e refresh)
    * 4. Retorna dados do usuário e tokens
    *
-   * @param body - Credenciais de login
-   * @param body.matricula - Matrícula do usuário
-   * @param body.senha - Senha do usuário
+   * VALIDAÇÕES:
+   * - Matrícula: obrigatória, string não vazia
+   * - Senha: obrigatória, string com mínimo 3 caracteres
+   * - Retorna 400 Bad Request para dados inválidos
+   * - Retorna 401 Unauthorized para credenciais inválidas
+   *
+   * @param loginDto - Dados de login validados
    * @returns Promise<AuthResponse> - Dados de autenticação e tokens
    *
    * @example
@@ -64,7 +70,7 @@ export class AuthController {
    *   "senha": "senha123"
    * }
    *
-   * // Resposta
+   * // Resposta de sucesso
    * {
    *   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
    *   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -76,11 +82,19 @@ export class AuthController {
    *     "matricula": "user123"
    *   }
    * }
+   *
+   * // Resposta de erro (dados inválidos)
+   * {
+   *   "statusCode": 400,
+   *   "message": ["Matrícula é obrigatória", "Senha é obrigatória"],
+   *   "error": "Bad Request"
+   * }
    * ```
    */
   @Post('login')
-  login(@Body() body: { matricula: string; senha: string }) {
-    return this.authService.validateLogin(body.matricula, body.senha);
+  @HttpCode(HttpStatus.OK)
+  login(@Body() loginDto: LoginDto) {
+    return this.authService.validateLogin(loginDto.matricula, loginDto.senha);
   }
 
   /**
@@ -91,14 +105,18 @@ export class AuthController {
    * fazer login novamente.
    *
    * FLUXO DE RENOVAÇÃO:
-   * 1. Recebe refresh token válido
+   * 1. Valida dados de entrada (refresh token obrigatório)
    * 2. Valida refresh token
    * 3. Verifica se usuário ainda existe
    * 4. Gera novos tokens JWT
    * 5. Retorna novos tokens e dados do usuário
    *
-   * @param body - Dados de renovação
-   * @param body.refreshToken - Token de renovação válido
+   * VALIDAÇÕES:
+   * - RefreshToken: obrigatório, string não vazia
+   * - Retorna 400 Bad Request para dados inválidos
+   * - Retorna 401 Unauthorized para token inválido
+   *
+   * @param refreshDto - Dados de renovação validados
    * @returns Promise<AuthResponse> - Novos tokens e dados do usuário
    *
    * @example
@@ -109,7 +127,7 @@ export class AuthController {
    *   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
    * }
    *
-   * // Resposta
+   * // Resposta de sucesso
    * {
    *   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
    *   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -121,10 +139,18 @@ export class AuthController {
    *     "matricula": "user123"
    *   }
    * }
+   *
+   * // Resposta de erro (dados inválidos)
+   * {
+   *   "statusCode": 400,
+   *   "message": ["Refresh token é obrigatório"],
+   *   "error": "Bad Request"
+   * }
    * ```
    */
   @Post('refresh')
-  refresh(@Body() body: { refreshToken: string }) {
-    return this.authService.refreshToken(body.refreshToken);
+  @HttpCode(HttpStatus.OK)
+  refresh(@Body() refreshDto: RefreshDto) {
+    return this.authService.refreshToken(refreshDto.refreshToken);
   }
 }
