@@ -1,22 +1,24 @@
 /**
- * Controlador de APR (Análise Preliminar de Risco)
+ * Controlador de APR (Análise Preliminar de Risco) - CRUD
  *
- * Este controlador gerencia todas as operações relacionadas a APRs,
- * incluindo listagem, criação, atualização e exclusão de modelos de APR.
+ * Este controlador gerencia exclusivamente as operações CRUD relacionadas
+ * aos modelos de APR, incluindo listagem paginada, criação, atualização e exclusão.
  *
  * RESPONSABILIDADES:
- * - Gerenciar endpoints de APR modelos
+ * - Gerenciar endpoints CRUD de APR modelos
  * - Validar dados de entrada via DTOs
  * - Documentar APIs via Swagger
  * - Tratar erros de forma padronizada
  * - Implementar logging estruturado
+ * - Gerenciar paginação e busca
  *
  * ROTAS DISPONÍVEIS:
- * - GET /api/apr/modelos - Lista todos os modelos de APR
+ * - GET /api/apr/modelos - Lista todos os modelos de APR (paginado)
  * - POST /api/apr/modelos - Cria novo modelo de APR
  * - GET /api/apr/modelos/:id - Busca modelo específico
  * - PUT /api/apr/modelos/:id - Atualiza modelo existente
  * - DELETE /api/apr/modelos/:id - Remove modelo (soft delete)
+ * - GET /api/apr/modelos/count - Conta total de modelos ativos
  *
  * PADRÕES IMPLEMENTADOS:
  * - Documentação Swagger completa
@@ -24,29 +26,40 @@
  * - Tipagem TypeScript rigorosa
  * - Tratamento de erros HTTP padronizado
  * - Logging de operações críticas
+ * - Paginação eficiente com metadados
  *
  * @example
  * ```bash
- * # Listar modelos APR
- * curl http://localhost:3001/api/apr/modelos
+ * # Listar modelos APR com paginação
+ * curl "http://localhost:3001/api/apr/modelos?page=1&limit=10&search=soldagem"
  *
  * # Criar novo modelo
  * curl -X POST http://localhost:3001/api/apr/modelos \
  *   -H "Content-Type: application/json" \
  *   -d '{"nome": "APR Soldagem"}'
+ *
+ * # Buscar modelo específico
+ * curl http://localhost:3001/api/apr/modelos/1
  * ```
  */
 
 import {
+  Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Logger,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -54,18 +67,30 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { AprService } from './apr.service';
-import { AprListResponseDto, AprResponseDto } from './dto/apr.dto';
+import {
+  AprListResponseDto,
+  AprResponseDto,
+  CreateAprDto,
+  UpdateAprDto,
+  AprQueryDto,
+} from './dto';
 
 /**
- * Controlador de APR (Análise Preliminar de Risco)
+ * Controlador de APR (Análise Preliminar de Risco) - CRUD
  *
- * Gerencia todos os endpoints relacionados aos modelos de APR
- * com validação, documentação e tratamento de erros completos.
+ * Gerencia exclusivamente as operações CRUD para modelos de APR,
+ * com foco em listagem paginada, criação, atualização e exclusão.
  *
  * SEGURANÇA:
  * - Todas as rotas requerem autenticação JWT
  * - Token deve ser enviado no header Authorization: Bearer <token>
  * - Retorna 401 Unauthorized para requisições não autenticadas
+ *
+ * PERFORMANCE:
+ * - Listagem paginada para otimizar performance
+ * - Busca por nome com índice otimizado
+ * - Soft delete para preservar histórico
+ * - Validações rigorosas para integridade dos dados
  */
 @ApiTags('apr')
 @ApiBearerAuth()
@@ -77,72 +102,37 @@ export class AprController {
   constructor(private readonly aprService: AprService) {}
 
   /**
-   * Retorna todos os modelos APR para sincronização mobile
+   * Lista todos os modelos APR com paginação e busca
    *
-   * Endpoint específico para clientes mobile obterem a base completa
-   * de modelos APR sem paginação.
+   * Retorna uma lista paginada de modelos APR com possibilidade
+   * de busca por nome e ordenação por data de criação.
    *
-   * @returns Lista completa de modelos APR ativos
-   */
-  @Get('modelos/sync')
-  @ApiOperation({
-    summary: 'Sincronizar modelos APR',
-    description:
-      'Retorna todos os modelos APR ativos sem paginação para sincronização mobile',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Lista de modelos APR retornada com sucesso',
-    type: AprResponseDto,
-    isArray: true,
-  })
-  async syncModelos(): Promise<AprResponseDto[]> {
-    this.logger.log('Sincronizando modelos APR para cliente mobile');
-
-    try {
-      const modelos = await this.aprService.findAllForSync();
-      this.logger.log(`Sincronização retornou ${modelos.length} modelos APR`);
-      return modelos;
-    } catch (error) {
-      this.logger.error('Erro ao sincronizar modelos APR:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Lista todos os modelos de APR
-   *
-   * Retorna uma lista paginada de todos os modelos de APR disponíveis
-   * no sistema, incluindo informações de relacionamentos se solicitado.
-   *
-   * @param page - Número da página (opcional, padrão: 1)
-   * @param limit - Itens por página (opcional, padrão: 10)
-   * @param search - Termo de busca (opcional)
+   * @param query - Parâmetros de consulta (página, limite, busca)
    * @returns Lista paginada de modelos APR
    */
   @Get('modelos')
   @ApiOperation({
-    summary: 'Listar modelos de APR',
+    summary: 'Listar modelos APR',
     description:
-      'Retorna uma lista paginada de todos os modelos de APR disponíveis',
+      'Retorna lista paginada de modelos APR com possibilidade de busca por nome',
   })
   @ApiQuery({
     name: 'page',
     required: false,
-    type: Number,
-    description: 'Número da página (padrão: 1)',
+    description: 'Número da página',
+    example: 1,
   })
   @ApiQuery({
     name: 'limit',
     required: false,
-    type: Number,
-    description: 'Itens por página (padrão: 10)',
+    description: 'Itens por página',
+    example: 10,
   })
   @ApiQuery({
     name: 'search',
     required: false,
-    type: String,
     description: 'Termo de busca por nome',
+    example: 'soldagem',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -150,117 +140,251 @@ export class AprController {
     type: AprListResponseDto,
   })
   @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Parâmetros de consulta inválidos',
+  })
+  @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Token JWT inválido ou ausente',
-    schema: {
-      example: {
-        statusCode: 401,
-        message: 'Token inválido ou expirado',
-        error: 'Unauthorized',
-      },
-    },
+    description: 'Token de autenticação inválido ou ausente',
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor',
   })
-  async findAll(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
-    @Query('search') search?: string
-  ): Promise<AprListResponseDto> {
+  async findAll(@Query() query: AprQueryDto): Promise<AprListResponseDto> {
+    const { page = 1, limit = 10, search } = query;
+
     this.logger.log(
       `Listando modelos APR - Página: ${page}, Limite: ${limit}, Busca: ${search || 'N/A'}`
     );
 
-    try {
-      const result = await this.aprService.findAll({
-        page: Math.max(1, page),
-        limit: Math.min(100, Math.max(1, limit)),
-        search,
-      });
-
-      this.logger.log(`${result.meta.total} modelos APR encontrados`);
-      return result;
-    } catch (error) {
-      this.logger.error('Erro ao listar modelos APR:', error);
-      throw error;
-    }
+    return this.aprService.findAll({
+      page,
+      limit,
+      search,
+    });
   }
 
-  // TODO: Implementar após atualizar AprService
   /**
-   * Busca modelo de APR por ID
+   * Busca modelo APR por ID
    *
-   * Retorna um modelo específico de APR baseado no ID fornecido,
-   * incluindo todos os relacionamentos.
+   * Retorna um modelo específico de APR baseado no ID fornecido.
    *
-   * @param id - ID do modelo APR
+   * @param id - ID único do modelo APR
    * @returns Modelo APR encontrado
    */
-  /*
   @Get('modelos/:id')
   @ApiOperation({
-    summary: 'Buscar modelo de APR por ID',
-    description: 'Retorna um modelo específico de APR com todos os relacionamentos'
+    summary: 'Buscar modelo APR por ID',
+    description: 'Retorna um modelo específico de APR baseado no ID',
   })
   @ApiParam({
     name: 'id',
-    type: Number,
-    description: 'ID único do modelo APR'
+    description: 'ID único do modelo APR',
+    example: 1,
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Modelo APR encontrado',
-    type: AprResponseDto
+    description: 'Modelo APR encontrado com sucesso',
+    type: AprResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Modelo APR não encontrado'
+    description: 'Modelo APR não encontrado',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'ID inválido',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token de autenticação inválido ou ausente',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Erro interno do servidor',
   })
   async findOne(
     @Param('id', ParseIntPipe) id: number
   ): Promise<AprResponseDto> {
     this.logger.log(`Buscando modelo APR por ID: ${id}`);
-
-    try {
-      const result = await this.aprService.findOne(id);
-      this.logger.log(`Modelo APR encontrado: ${result.nome}`);
-      return result;
-    } catch (error) {
-      this.logger.error(`Erro ao buscar modelo APR ${id}:`, error);
-      throw error;
-    }
-  }
-  */
-
-  // TODO: Implementar métodos CRUD completos após refatoração do service
-
-  /*
-  // Métodos comentados temporariamente - serão implementados na próxima fase
-
-  @Post('modelos')
-  async create(@Body() createAprDto: CreateAprDto): Promise<AprResponseDto> {
-    return this.aprService.create(createAprDto);
-  }
-
-  @Get('modelos/:id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<AprResponseDto> {
     return this.aprService.findOne(id);
   }
 
+  /**
+   * Cria novo modelo APR
+   *
+   * Cria um novo modelo de APR no sistema com validação
+   * de duplicatas por nome.
+   *
+   * @param createAprDto - Dados do novo modelo APR
+   * @returns Modelo APR criado
+   */
+  @Post('modelos')
+  @ApiOperation({
+    summary: 'Criar modelo APR',
+    description: 'Cria um novo modelo de APR no sistema',
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Modelo APR criado com sucesso',
+    type: AprResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Já existe um modelo APR com o mesmo nome',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Dados inválidos',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token de autenticação inválido ou ausente',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Erro interno do servidor',
+  })
+  async create(@Body() createAprDto: CreateAprDto): Promise<AprResponseDto> {
+    this.logger.log(`Criando novo modelo APR: ${createAprDto.nome}`);
+    return this.aprService.create(createAprDto);
+  }
+
+  /**
+   * Atualiza modelo APR existente
+   *
+   * Atualiza um modelo de APR existente com os novos dados,
+   * incluindo validação de duplicatas.
+   *
+   * @param id - ID do modelo APR a ser atualizado
+   * @param updateAprDto - Novos dados do modelo APR
+   * @returns Modelo APR atualizado
+   */
   @Put('modelos/:id')
+  @ApiOperation({
+    summary: 'Atualizar modelo APR',
+    description: 'Atualiza um modelo de APR existente',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único do modelo APR',
+    example: 1,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Modelo APR atualizado com sucesso',
+    type: AprResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Modelo APR não encontrado',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Já existe um modelo APR com o mesmo nome',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Dados inválidos',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token de autenticação inválido ou ausente',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Erro interno do servidor',
+  })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateAprDto: UpdateAprDto
   ): Promise<AprResponseDto> {
+    this.logger.log(`Atualizando modelo APR ${id}`);
     return this.aprService.update(id, updateAprDto);
   }
 
+  /**
+   * Remove modelo APR (soft delete)
+   *
+   * Remove logicamente um modelo de APR do sistema,
+   * preservando os dados para auditoria.
+   *
+   * @param id - ID do modelo APR a ser removido
+   * @returns void
+   */
   @Delete('modelos/:id')
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<{ message: string; id: number }> {
-    await this.aprService.remove(id);
-    return { message: 'Modelo APR removido com sucesso', id };
+  @ApiOperation({
+    summary: 'Remover modelo APR',
+    description: 'Remove logicamente um modelo de APR (soft delete)',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único do modelo APR',
+    example: 1,
+  })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Modelo APR removido com sucesso',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Modelo APR não encontrado',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'ID inválido',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token de autenticação inválido ou ausente',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Erro interno do servidor',
+  })
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    this.logger.log(`Removendo modelo APR: ${id}`);
+    return this.aprService.remove(id);
   }
-  */
+
+  /**
+   * Conta total de modelos APR ativos
+   *
+   * Retorna o número total de modelos APR ativos no sistema.
+   *
+   * @returns Número total de modelos ativos
+   */
+  @Get('modelos/count')
+  @ApiOperation({
+    summary: 'Contar modelos APR',
+    description: 'Retorna o número total de modelos APR ativos',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Contagem retornada com sucesso',
+    schema: {
+      type: 'object',
+      properties: {
+        count: {
+          type: 'number',
+          description: 'Número total de modelos APR ativos',
+          example: 25,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token de autenticação inválido ou ausente',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Erro interno do servidor',
+  })
+  async count(): Promise<{ count: number }> {
+    this.logger.log('Contando modelos APR ativos');
+    const count = await this.aprService.count();
+    return { count };
+  }
 }

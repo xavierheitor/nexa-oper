@@ -13,12 +13,14 @@
  * - Integração com banco de dados via Prisma
  *
  * FUNCIONALIDADES:
- * - Listagem paginada com busca
+ * - Listagem paginada com busca (para AprController)
  * - Criação com validação de duplicatas
  * - Atualização com auditoria
  * - Soft delete com preservação de dados
  * - Busca por ID com relacionamentos
  * - Contagem e estatísticas
+ * - Sincronização completa para mobile (para AprSyncController)
+ * - Sincronização de perguntas, opções e relações
  *
  * PADRÕES IMPLEMENTADOS:
  * - Injeção de dependência
@@ -30,17 +32,21 @@
  *
  * @example
  * ```typescript
- * // Listar modelos com paginação
+ * // Listar modelos com paginação (AprController)
  * const result = await aprService.findAll({
  *   page: 1,
  *   limit: 10,
  *   search: 'soldagem'
  * });
  *
- * // Criar novo modelo
+ * // Criar novo modelo (AprController)
  * const apr = await aprService.create({
  *   nome: 'APR Soldagem Industrial'
  * });
+ *
+ * // Sincronizar para mobile (AprSyncController)
+ * const modelos = await aprService.findAllForSync();
+ * const perguntas = await aprService.findAllPerguntasForSync();
  * ```
  */
 
@@ -55,10 +61,21 @@ import { DbService } from '../../db/db.service';
 import {
   AprListResponseDto,
   AprResponseDto,
+  AprOpcaoRespostaRelacaoSyncDto,
+  AprOpcaoRespostaSyncDto,
+  AprPerguntaRelacaoSyncDto,
+  AprPerguntaSyncDto,
+  AprTipoAtividadeRelacaoSyncDto,
   CreateAprDto,
   PaginationMetaDto,
   UpdateAprDto,
-} from './dto/apr.dto';
+} from './dto';
+import {
+  PAGINATION_CONFIG,
+  AUDIT_CONFIG,
+  ERROR_MESSAGES,
+  ORDER_CONFIG,
+} from './constants/apr.constants';
 
 /**
  * Interface para parâmetros de consulta interna
@@ -75,6 +92,18 @@ interface FindAllParams {
 }
 
 /**
+ * Interface para contexto de usuário (futura implementação)
+ */
+interface UserContext {
+  /** ID do usuário */
+  userId: string;
+  /** Nome do usuário */
+  userName: string;
+  /** Roles do usuário */
+  roles: string[];
+}
+
+/**
  * Serviço de APR (Análise Preliminar de Risco)
  *
  * Implementa toda a lógica de negócio para gerenciamento
@@ -85,6 +114,78 @@ export class AprService {
   private readonly logger = new Logger(AprService.name);
 
   constructor(private readonly db: DbService) {}
+
+  /**
+   * Valida parâmetros de paginação
+   * @private
+   */
+  private validatePaginationParams(page: number, limit: number): void {
+    if (page < 1) {
+      throw new BadRequestException(ERROR_MESSAGES.INVALID_PAGE);
+    }
+    if (limit < 1 || limit > PAGINATION_CONFIG.MAX_LIMIT) {
+      throw new BadRequestException(ERROR_MESSAGES.INVALID_LIMIT);
+    }
+  }
+
+  /**
+   * Valida ID de modelo APR
+   * @private
+   */
+  private validateAprId(id: number): void {
+    if (!id || !Number.isInteger(id) || id <= 0) {
+      throw new BadRequestException(ERROR_MESSAGES.INVALID_ID);
+    }
+  }
+
+  /**
+   * Obtém contexto do usuário atual (placeholder para futura implementação)
+   * @private
+   */
+  private getCurrentUserContext(): UserContext {
+    // TODO: Implementar extração do contexto do usuário do JWT
+    return {
+      userId: AUDIT_CONFIG.DEFAULT_USER,
+      userName: AUDIT_CONFIG.DEFAULT_USER_NAME,
+      roles: AUDIT_CONFIG.DEFAULT_ROLES,
+    };
+  }
+
+  /**
+   * Constrói cláusula WHERE para consultas
+   * @private
+   */
+  private buildWhereClause(search?: string) {
+    return {
+      deletedAt: null, // Apenas registros ativos
+      ...(search && {
+        nome: {
+          contains: search,
+          mode: 'insensitive' as const,
+        },
+      }),
+    };
+  }
+
+  /**
+   * Constrói metadados de paginação
+   * @private
+   */
+  private buildPaginationMeta(
+    total: number,
+    page: number,
+    limit: number
+  ): PaginationMetaDto {
+    const totalPages = Math.ceil(total / limit);
+    return {
+      total,
+      page,
+      limit,
+      totalPages,
+      hasPrevious: page > 1,
+      hasNext: page < totalPages,
+    };
+  }
 
   /**
    * Lista todos os modelos de APR com paginação e busca
@@ -115,17 +216,12 @@ export class AprService {
       `Buscando modelos APR - Página: ${page}, Limite: ${limit}, Busca: ${search || 'N/A'}`
     );
 
+    // Validar parâmetros
+    this.validatePaginationParams(page, limit);
+
     try {
       // Construir filtros de busca
-      const whereClause = {
-        deletedAt: null, // Apenas registros ativos
-        ...(search && {
-          nome: {
-            contains: search,
-            mode: 'insensitive' as const,
-          },
-        }),
-      };
+      const whereClause = this.buildWhereClause(search);
 
       // Calcular offset para paginação
       const skip = (page - 1) * limit;
@@ -135,7 +231,7 @@ export class AprService {
         // Buscar dados paginados
         this.db.getPrisma().apr.findMany({
           where: whereClause,
-          orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+          orderBy: ORDER_CONFIG.DEFAULT_ORDER,
           skip,
           take: limit,
           select: {
@@ -152,19 +248,8 @@ export class AprService {
         }),
       ]);
 
-      // Calcular metadados de paginação
-      const totalPages = Math.ceil(total / limit);
-      const hasPrevious = page > 1;
-      const hasNext = page < totalPages;
-
-      const meta: PaginationMetaDto = {
-        total,
-        page,
-        limit,
-        totalPages,
-        hasPrevious,
-        hasNext,
-      };
+      // Construir metadados de paginação
+      const meta = this.buildPaginationMeta(total, page, limit);
 
       const result: AprListResponseDto = {
         data: data as AprResponseDto[],
@@ -223,6 +308,195 @@ export class AprService {
   }
 
   /**
+   * Lista todas as perguntas APR para sincronização
+   */
+  async findAllPerguntasForSync(): Promise<AprPerguntaSyncDto[]> {
+    this.logger.log('Sincronizando perguntas APR - retorno completo');
+
+    try {
+      const data = await this.db.getPrisma().aprPergunta.findMany({
+        where: {
+          deletedAt: null,
+        },
+        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }, { id: 'asc' }],
+        select: {
+          id: true,
+          nome: true,
+          createdAt: true,
+          createdBy: true,
+          updatedAt: true,
+          updatedBy: true,
+          deletedAt: true,
+          deletedBy: true,
+        },
+      });
+
+      this.logger.log(
+        `Sincronização de perguntas APR retornou ${data.length} registros`
+      );
+      return data as AprPerguntaSyncDto[];
+    } catch (error) {
+      this.logger.error('Erro ao sincronizar perguntas APR:', error);
+      throw new BadRequestException('Erro ao sincronizar perguntas APR');
+    }
+  }
+
+  /**
+   * Lista todas as relações entre APR e perguntas para sincronização
+   */
+  async findAllPerguntaRelacoesForSync(): Promise<AprPerguntaRelacaoSyncDto[]> {
+    this.logger.log('Sincronizando relações APR-Perguntas - retorno completo');
+
+    try {
+      const data = await this.db.getPrisma().aprPerguntaRelacao.findMany({
+        where: {
+          deletedAt: null,
+        },
+        orderBy: ORDER_CONFIG.PERGUNTA_RELACAO_ORDER,
+        select: {
+          id: true,
+          aprId: true,
+          aprPerguntaId: true,
+          ordem: true,
+          createdAt: true,
+          createdBy: true,
+          updatedAt: true,
+          updatedBy: true,
+          deletedAt: true,
+          deletedBy: true,
+        },
+      });
+
+      this.logger.log(
+        `Sincronização de relações APR-Perguntas retornou ${data.length} registros`
+      );
+      return data as AprPerguntaRelacaoSyncDto[];
+    } catch (error) {
+      this.logger.error('Erro ao sincronizar relações APR-Perguntas:', error);
+      throw new BadRequestException(
+        'Erro ao sincronizar relações entre APR e perguntas'
+      );
+    }
+  }
+
+  /**
+   * Lista todas as opções de resposta APR para sincronização
+   */
+  async findAllOpcoesForSync(): Promise<AprOpcaoRespostaSyncDto[]> {
+    this.logger.log('Sincronizando opções de resposta APR - retorno completo');
+
+    try {
+      const data = await this.db.getPrisma().aprOpcaoResposta.findMany({
+        where: {
+          deletedAt: null,
+        },
+        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }, { id: 'asc' }],
+        select: {
+          id: true,
+          nome: true,
+          createdAt: true,
+          createdBy: true,
+          updatedAt: true,
+          updatedBy: true,
+          deletedAt: true,
+          deletedBy: true,
+        },
+      });
+
+      this.logger.log(
+        `Sincronização de opções de resposta APR retornou ${data.length} registros`
+      );
+      return data as AprOpcaoRespostaSyncDto[];
+    } catch (error) {
+      this.logger.error('Erro ao sincronizar opções de resposta APR:', error);
+      throw new BadRequestException(
+        'Erro ao sincronizar opções de resposta APR'
+      );
+    }
+  }
+
+  /**
+   * Lista todas as relações entre APR e opções de resposta para sincronização
+   */
+  async findAllOpcaoRelacoesForSync(): Promise<
+    AprOpcaoRespostaRelacaoSyncDto[]
+  > {
+    this.logger.log('Sincronizando relações APR-Opções de resposta');
+
+    try {
+      const data = await this.db.getPrisma().aprOpcaoRespostaRelacao.findMany({
+        where: {
+          deletedAt: null,
+        },
+        orderBy: ORDER_CONFIG.OPCAO_RELACAO_ORDER,
+        select: {
+          id: true,
+          aprId: true,
+          aprOpcaoRespostaId: true,
+          createdAt: true,
+          createdBy: true,
+          updatedAt: true,
+          updatedBy: true,
+          deletedAt: true,
+          deletedBy: true,
+        },
+      });
+
+      this.logger.log(
+        `Sincronização de relações APR-Opções retornou ${data.length} registros`
+      );
+      return data as AprOpcaoRespostaRelacaoSyncDto[];
+    } catch (error) {
+      this.logger.error('Erro ao sincronizar relações APR-Opções:', error);
+      throw new BadRequestException(
+        'Erro ao sincronizar relações entre APR e opções de resposta'
+      );
+    }
+  }
+
+  /**
+   * Lista todas as relações entre APR e tipos de atividade para sincronização
+   */
+  async findAllTipoAtividadeRelacoesForSync(): Promise<
+    AprTipoAtividadeRelacaoSyncDto[]
+  > {
+    this.logger.log('Sincronizando relações APR-Tipo de Atividade');
+
+    try {
+      const data = await this.db.getPrisma().aprTipoAtividadeRelacao.findMany({
+        where: {
+          deletedAt: null,
+        },
+        orderBy: ORDER_CONFIG.TIPO_ATIVIDADE_RELACAO_ORDER,
+        select: {
+          id: true,
+          aprId: true,
+          tipoAtividadeId: true,
+          createdAt: true,
+          createdBy: true,
+          updatedAt: true,
+          updatedBy: true,
+          deletedAt: true,
+          deletedBy: true,
+        },
+      });
+
+      this.logger.log(
+        `Sincronização de relações APR-Tipo de Atividade retornou ${data.length} registros`
+      );
+      return data as AprTipoAtividadeRelacaoSyncDto[];
+    } catch (error) {
+      this.logger.error(
+        'Erro ao sincronizar relações APR-Tipo de Atividade:',
+        error
+      );
+      throw new BadRequestException(
+        'Erro ao sincronizar relações entre APR e tipos de atividade'
+      );
+    }
+  }
+
+  /**
    * Busca modelo de APR por ID
    *
    * Retorna um modelo específico de APR baseado no ID fornecido,
@@ -244,11 +518,7 @@ export class AprService {
     this.logger.log(`Buscando modelo APR por ID: ${id}`);
 
     // Validar ID
-    if (!id || id <= 0) {
-      throw new BadRequestException(
-        'ID do modelo APR deve ser um número positivo'
-      );
-    }
+    this.validateAprId(id);
 
     try {
       const apr = await this.db.getPrisma().apr.findFirst({
@@ -265,7 +535,9 @@ export class AprService {
 
       if (!apr) {
         this.logger.warn(`Modelo APR não encontrado: ${id}`);
-        throw new NotFoundException(`Modelo APR com ID ${id} não encontrado`);
+        throw new NotFoundException(
+          `${ERROR_MESSAGES.APR_NOT_FOUND} com ID ${id}`
+        );
       }
 
       this.logger.log(`Modelo APR encontrado: ${apr.nome} (ID: ${id})`);
@@ -302,6 +574,7 @@ export class AprService {
    */
   async create(createAprDto: CreateAprDto): Promise<AprResponseDto> {
     const { nome } = createAprDto;
+    const userContext = this.getCurrentUserContext();
 
     this.logger.log(`Criando novo modelo APR: ${nome}`);
 
@@ -317,7 +590,7 @@ export class AprService {
       if (existingApr) {
         this.logger.warn(`Tentativa de criar modelo APR duplicado: ${nome}`);
         throw new ConflictException(
-          `Já existe um modelo APR com o nome "${nome}"`
+          `${ERROR_MESSAGES.APR_DUPLICATE} "${nome}"`
         );
       }
 
@@ -326,7 +599,7 @@ export class AprService {
         data: {
           nome: nome.trim(),
           createdAt: new Date(),
-          createdBy: 'system', // TODO: Implementar autenticação para obter usuário real
+          createdBy: userContext.userId,
         },
         select: {
           id: true,
@@ -381,15 +654,12 @@ export class AprService {
     updateAprDto: UpdateAprDto
   ): Promise<AprResponseDto> {
     const { nome } = updateAprDto;
+    const userContext = this.getCurrentUserContext();
 
     this.logger.log(`Atualizando modelo APR ${id}: ${nome || 'N/A'}`);
 
     // Validar ID
-    if (!id || id <= 0) {
-      throw new BadRequestException(
-        'ID do modelo APR deve ser um número positivo'
-      );
-    }
+    this.validateAprId(id);
 
     try {
       // Verificar se o modelo existe
@@ -401,7 +671,9 @@ export class AprService {
         this.logger.warn(
           `Tentativa de atualizar modelo APR inexistente: ${id}`
         );
-        throw new NotFoundException(`Modelo APR com ID ${id} não encontrado`);
+        throw new NotFoundException(
+          `${ERROR_MESSAGES.APR_NOT_FOUND} com ID ${id}`
+        );
       }
 
       // Se nome foi fornecido, verificar duplicatas
@@ -419,7 +691,7 @@ export class AprService {
             `Tentativa de atualizar modelo APR com nome duplicado: ${nome}`
           );
           throw new ConflictException(
-            `Já existe um modelo APR com o nome "${nome}"`
+            `${ERROR_MESSAGES.APR_DUPLICATE} "${nome}"`
           );
         }
       }
@@ -427,7 +699,7 @@ export class AprService {
       // Preparar dados de atualização
       const updateData: any = {
         updatedAt: new Date(),
-        updatedBy: 'system', // TODO: Implementar autenticação para obter usuário real
+        updatedBy: userContext.userId,
       };
 
       if (nome) {
@@ -484,13 +756,10 @@ export class AprService {
    */
   async remove(id: number): Promise<void> {
     this.logger.log(`Removendo modelo APR: ${id}`);
+    const userContext = this.getCurrentUserContext();
 
     // Validar ID
-    if (!id || id <= 0) {
-      throw new BadRequestException(
-        'ID do modelo APR deve ser um número positivo'
-      );
-    }
+    this.validateAprId(id);
 
     try {
       // Verificar se o modelo existe e está ativo
@@ -500,7 +769,9 @@ export class AprService {
 
       if (!existingApr) {
         this.logger.warn(`Tentativa de remover modelo APR inexistente: ${id}`);
-        throw new NotFoundException(`Modelo APR com ID ${id} não encontrado`);
+        throw new NotFoundException(
+          `${ERROR_MESSAGES.APR_NOT_FOUND} com ID ${id}`
+        );
       }
 
       // Realizar soft delete
@@ -508,7 +779,7 @@ export class AprService {
         where: { id },
         data: {
           deletedAt: new Date(),
-          deletedBy: 'system', // TODO: Implementar autenticação para obter usuário real
+          deletedBy: userContext.userId,
         },
       });
 
