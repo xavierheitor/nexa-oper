@@ -54,7 +54,7 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { AprService } from './apr.service';
-import { AprListResponseDto } from './dto/apr.dto';
+import { AprListResponseDto, AprResponseDto } from './dto/apr.dto';
 
 /**
  * Controlador de APR (Análise Preliminar de Risco)
@@ -75,6 +75,39 @@ export class AprController {
   private readonly logger = new Logger(AprController.name);
 
   constructor(private readonly aprService: AprService) {}
+
+  /**
+   * Retorna todos os modelos APR para sincronização mobile
+   *
+   * Endpoint específico para clientes mobile obterem a base completa
+   * de modelos APR sem paginação.
+   *
+   * @returns Lista completa de modelos APR ativos
+   */
+  @Get('modelos/sync')
+  @ApiOperation({
+    summary: 'Sincronizar modelos APR',
+    description:
+      'Retorna todos os modelos APR ativos sem paginação para sincronização mobile',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Lista de modelos APR retornada com sucesso',
+    type: AprResponseDto,
+    isArray: true,
+  })
+  async syncModelos(): Promise<AprResponseDto[]> {
+    this.logger.log('Sincronizando modelos APR para cliente mobile');
+
+    try {
+      const modelos = await this.aprService.findAllForSync();
+      this.logger.log(`Sincronização retornou ${modelos.length} modelos APR`);
+      return modelos;
+    } catch (error) {
+      this.logger.error('Erro ao sincronizar modelos APR:', error);
+      throw error;
+    }
+  }
 
   /**
    * Lista todos os modelos de APR

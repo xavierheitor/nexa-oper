@@ -184,6 +184,45 @@ export class AprService {
   }
 
   /**
+   * Lista todos os modelos APR ativos para sincronização
+   *
+   * Retorna todos os modelos ativos sem paginação para permitir
+   * que clientes mobile mantenham seus dados em sincronia.
+   *
+   * @returns Lista completa de modelos APR ativos
+   */
+  async findAllForSync(): Promise<AprResponseDto[]> {
+    this.logger.log('Sincronizando modelos APR - retorno completo');
+
+    try {
+      const data = await this.db.getPrisma().apr.findMany({
+        where: {
+          deletedAt: null,
+        },
+        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }, { id: 'asc' }],
+        select: {
+          id: true,
+          nome: true,
+          createdAt: true,
+          createdBy: true,
+          updatedAt: true,
+          updatedBy: true,
+          deletedAt: true,
+          deletedBy: true,
+        },
+      });
+
+      this.logger.log(
+        `Sincronização de modelos APR retornou ${data.length} registros`
+      );
+      return data as AprResponseDto[];
+    } catch (error) {
+      this.logger.error('Erro ao sincronizar modelos APR:', error);
+      throw new BadRequestException('Erro ao sincronizar modelos APR');
+    }
+  }
+
+  /**
    * Busca modelo de APR por ID
    *
    * Retorna um modelo específico de APR baseado no ID fornecido,
