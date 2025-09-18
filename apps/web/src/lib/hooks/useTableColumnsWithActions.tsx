@@ -83,6 +83,8 @@ interface UseTableColumnsWithActionsOptions<T> {
   onEdit?: (record: T) => void; // Callback para edição
   onDelete?: (record: T) => Promise<void> | void; // Callback para exclusão
   customActions?: CustomAction<T>[]; // Ações customizadas adicionais
+  editTooltip?: string; // Tooltip para o botão de edição
+  deleteTooltip?: string; // Tooltip para o botão de exclusão
 }
 
 /**
@@ -111,17 +113,20 @@ interface UseTableColumnsWithActionsOptions<T> {
  *   }
  * );
  *
- * // Com ações customizadas
+ * // Com ações customizadas e tooltips
  * const columns = useTableColumnsWithActions(
  *   baseColumns,
  *   {
  *     onEdit: (user) => editUser(user),
  *     onDelete: (user) => deleteUser(user.id),
+ *     editTooltip: 'Editar usuário',
+ *     deleteTooltip: 'Excluir usuário',
  *     customActions: [
  *       {
  *         key: 'view',
  *         label: 'Visualizar',
  *         type: 'link',
+ *         tooltip: 'Visualizar detalhes do usuário',
  *         onClick: (user) => viewUser(user.id)
  *       },
  *       {
@@ -129,6 +134,7 @@ interface UseTableColumnsWithActionsOptions<T> {
  *         label: 'Resetar Senha',
  *         type: 'link',
  *         danger: true,
+ *         tooltip: 'Resetar senha do usuário',
  *         confirm: {
  *           title: 'Resetar Senha',
  *           description: 'Uma nova senha será enviada por email. Continuar?',
@@ -160,6 +166,8 @@ export function useTableColumnsWithActions<T>(
           onEdit={options.onEdit} // Callback de edição
           onDelete={options.onDelete} // Callback de exclusão
           customActions={options.customActions} // Ações customizadas
+          editTooltip={options.editTooltip} // Tooltip para edição
+          deleteTooltip={options.deleteTooltip} // Tooltip para exclusão
         />
       ),
     },

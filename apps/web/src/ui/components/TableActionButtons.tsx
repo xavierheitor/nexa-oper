@@ -10,6 +10,7 @@
  * - Botões de edição e exclusão padronizados
  * - Ações customizadas ilimitadas com configuração flexível
  * - Confirmação opcional para qualquer ação
+ * - Tooltips opcionais para todos os botões
  * - Interface genérica para qualquer tipo de registro
  * - Integração com Ant Design para consistência visual
  * - Callbacks opcionais para personalização
@@ -47,6 +48,8 @@
  *         record={record}
  *         onEdit={(user) => handleEdit(user)}
  *         onDelete={(user) => handleDelete(user.id)}
+ *         editTooltip="Editar usuário"
+ *         deleteTooltip="Excluir usuário"
  *       />
  *     ),
  *   },
@@ -67,23 +70,28 @@
  *         record={record}
  *         onEdit={(product) => openEditModal(product)}
  *         onDelete={(product) => deleteProduct(product.id)}
+ *         editTooltip="Editar produto"
+ *         deleteTooltip="Excluir produto"
  *         customActions={[
  *           {
  *             key: 'view',
  *             label: 'Visualizar',
  *             type: 'link',
+ *             tooltip: 'Visualizar detalhes do produto',
  *             onClick: (product) => viewProduct(product.id)
  *           },
  *           {
  *             key: 'download',
  *             label: 'Download',
  *             type: 'link',
+ *             tooltip: { title: 'Baixar arquivo', placement: 'top' },
  *             onClick: (product) => downloadProduct(product.id)
  *           },
  *           {
  *             key: 'duplicate',
  *             label: 'Duplicar',
  *             type: 'link',
+ *             tooltip: 'Criar uma cópia deste produto',
  *             confirm: {
  *               title: 'Duplicar Produto',
  *               description: 'Deseja criar uma cópia deste produto?',
@@ -150,12 +158,12 @@
 
 // Importações necessárias
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons'; // Ícones
-import { Button, Popconfirm, Space } from 'antd'; // Componentes do Ant Design
+import { Button, Popconfirm, Space, Tooltip } from 'antd'; // Componentes do Ant Design
 import React from 'react';
 
 /**
  * Interface para ações customizadas
- * 
+ *
  * Define a estrutura de uma ação customizada que pode ser adicionada
  * aos botões de ação da tabela.
  */
@@ -166,6 +174,10 @@ export interface CustomAction<T> {
   type?: 'default' | 'primary' | 'dashed' | 'link' | 'text'; // Tipo do botão
   danger?: boolean;               // Se o botão é perigoso (vermelho)
   visible?: (record: T) => boolean; // Função para controlar visibilidade por linha
+  tooltip?: string | {            // Configuração de tooltip (opcional)
+    title: string;                // Texto do tooltip
+    placement?: 'top' | 'bottom' | 'left' | 'right' | 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom'; // Posição do tooltip
+  };
   confirm?: {                     // Configuração de confirmação (opcional)
     title: string;                // Título da confirmação
     description: string;          // Descrição da confirmação
@@ -188,6 +200,8 @@ interface TableActionButtonsProps<T> {
   onEdit?: (record: T) => void; // Callback opcional para edição
   onDelete?: (record: T) => void; // Callback opcional para exclusão
   customActions?: CustomAction<T>[]; // Ações customizadas adicionais
+  editTooltip?: string;         // Tooltip para o botão de edição
+  deleteTooltip?: string;       // Tooltip para o botão de exclusão
 }
 
 /**
@@ -205,40 +219,44 @@ export default function TableActionButtons<T>({
   onEdit,         // Callback opcional para edição
   onDelete,       // Callback opcional para exclusão
   customActions,  // Ações customizadas adicionais
+  editTooltip,    // Tooltip para o botão de edição
+  deleteTooltip,  // Tooltip para o botão de exclusão
 }: TableActionButtonsProps<T>) {
+  /**
+   * Função para renderizar um botão com tooltip opcional
+   *
+   * Esta função envolve um botão com tooltip se a configuração fornecida.
+   *
+   * @param button - Elemento do botão a ser envolvido
+   * @param tooltip - Configuração do tooltip (string ou objeto)
+   * @returns JSX do botão com ou sem tooltip
+   */
+  const renderWithTooltip = (button: React.ReactElement, tooltip?: string | { title: string; placement?: string }) => {
+    if (!tooltip) return button;
+
+    const tooltipProps = typeof tooltip === 'string'
+      ? { title: tooltip }
+      : { title: tooltip.title, placement: tooltip.placement as any };
+
+    return (
+      <Tooltip {...tooltipProps}>
+        {button}
+      </Tooltip>
+    );
+  };
+
   /**
    * Função para renderizar uma ação customizada
    *
    * Esta função cria um botão baseado na configuração da ação customizada.
    * Se a ação tiver confirmação configurada, envolve o botão com Popconfirm.
+   * Se a ação tiver tooltip configurado, envolve o botão com Tooltip.
    *
    * @param action - Ação customizada a ser renderizada
-   * @returns JSX do botão com ou sem confirmação
+   * @returns JSX do botão com ou sem confirmação e tooltip
    */
   const renderCustomAction = (action: CustomAction<T>) => {
-    // Quando há confirmação configurada, o clique deve ser tratado pelo Popconfirm
-    if (action.confirm) {
-      return (
-        <Popconfirm
-          title={action.confirm.title}
-          description={action.confirm.description}
-          okText={action.confirm.okText || 'Sim'}
-          cancelText={action.confirm.cancelText || 'Não'}
-          onConfirm={() => action.onClick(record)}
-        >
-          <Button
-            type={action.type || 'link'}
-            danger={action.danger}
-            icon={action.icon}
-          >
-            {action.label}
-          </Button>
-        </Popconfirm>
-      );
-    }
-
-    // Sem confirmação: executa diretamente no onClick do botão
-    return (
+    const button = (
       <Button
         type={action.type || 'link'}
         danger={action.danger}
@@ -248,18 +266,41 @@ export default function TableActionButtons<T>({
         {action.label}
       </Button>
     );
+
+    // Quando há confirmação configurada, envolve com Popconfirm
+    if (action.confirm) {
+      const buttonWithConfirm = (
+        <Popconfirm
+          title={action.confirm.title}
+          description={action.confirm.description}
+          okText={action.confirm.okText || 'Sim'}
+          cancelText={action.confirm.cancelText || 'Não'}
+          onConfirm={() => action.onClick(record)}
+        >
+          {button}
+        </Popconfirm>
+      );
+
+      // Aplica tooltip se configurado
+      return renderWithTooltip(buttonWithConfirm, action.tooltip);
+    }
+
+    // Sem confirmação: aplica tooltip se configurado
+    return renderWithTooltip(button, action.tooltip);
   };
 
   return (
     <Space>
       {/* Botão de Edição - Renderizado condicionalmente */}
       {onEdit && (
-        <Button
-          type='link'
-          aria-label='Editar'
-          onClick={() => onEdit(record)}
-          icon={<EditOutlined />}
-        />
+        <Tooltip title={editTooltip || 'Editar'}>
+          <Button
+            type='link'
+            aria-label='Editar'
+            onClick={() => onEdit(record)}
+            icon={<EditOutlined />}
+          />
+        </Tooltip>
       )}
 
       {/* Botão de Exclusão com Confirmação */}
@@ -271,12 +312,14 @@ export default function TableActionButtons<T>({
           cancelText='Não'                                   // Texto do botão de cancelamento
           onConfirm={() => onDelete?.(record)}              // Callback executado ao confirmar
         >
-          <Button
-            type='link'
-            aria-label='Excluir'
-            danger
-            icon={<DeleteOutlined />}
-          />
+          <Tooltip title={deleteTooltip || 'Excluir'}>
+            <Button
+              type='link'
+              aria-label='Excluir'
+              danger
+              icon={<DeleteOutlined />}
+            />
+          </Tooltip>
         </Popconfirm>
       )}
 

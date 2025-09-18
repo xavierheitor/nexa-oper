@@ -14,7 +14,7 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 
-import { LockOutlined, MobileOutlined, UserOutlined, LinkOutlined } from '@ant-design/icons';
+import { LockOutlined, MobileOutlined, UserOutlined, LinkOutlined, UserSwitchOutlined } from '@ant-design/icons';
 import { MobileUser } from '@nexa-oper/db';
 import { Button, Card, Modal, Space, Table, Tag, Tooltip } from 'antd';
 
@@ -87,15 +87,6 @@ export default function MobileUserPage() {
         render: (date: Date) => new Date(date).toLocaleDateString('pt-BR'),
         width: 120,
       },
-      {
-        title: 'Criado por',
-        dataIndex: 'createdBy',
-        key: 'createdBy',
-        width: 120,
-        render: (createdBy: string) => (
-          <Tag color="default">{createdBy}</Tag>
-        ),
-      },
     ],
     {
       onEdit: controller.open,
@@ -108,12 +99,15 @@ export default function MobileUserPage() {
           .finally(() => {
             mobileUsers.mutate();
           }),
+      editTooltip: 'Editar usuário móvel',
+      deleteTooltip: 'Excluir usuário móvel',
       customActions: [
         {
           key: 'reset-password',
-          label: 'Reset Senha',
-          icon: <LockOutlined />,
+          tooltip: 'Resetar senha do usuário móvel',
+          icon: <UserSwitchOutlined />,
           type: 'link',
+          label: '',
           confirm: {
             title: 'Reset de Senha',
             description: 'Uma nova senha será gerada e enviada via notificação push. Continuar?',
@@ -136,8 +130,9 @@ export default function MobileUserPage() {
         },
         {
           key: 'manage-permissions',
-          label: 'Permissões',
-          icon: <LinkOutlined />,
+          label: '',
+          tooltip: 'Gerenciar permissões do usuário móvel',
+          icon: <LockOutlined />,
           type: 'link',
           onClick: (mobileUser) => {
             setSelectedUserForPermissoes(mobileUser);
@@ -236,7 +231,7 @@ export default function MobileUserPage() {
           setSelectedUserForPermissoes(null);
         }}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         width={800}
         maskClosable={false}
       >
