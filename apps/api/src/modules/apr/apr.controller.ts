@@ -37,8 +37,22 @@
  * ```
  */
 
-import { Controller, Get, HttpStatus, Logger, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Logger,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { AprService } from './apr.service';
 import { AprListResponseDto } from './dto/apr.dto';
 
@@ -47,8 +61,15 @@ import { AprListResponseDto } from './dto/apr.dto';
  *
  * Gerencia todos os endpoints relacionados aos modelos de APR
  * com validação, documentação e tratamento de erros completos.
+ *
+ * SEGURANÇA:
+ * - Todas as rotas requerem autenticação JWT
+ * - Token deve ser enviado no header Authorization: Bearer <token>
+ * - Retorna 401 Unauthorized para requisições não autenticadas
  */
 @ApiTags('apr')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('apr')
 export class AprController {
   private readonly logger = new Logger(AprController.name);
@@ -96,6 +117,17 @@ export class AprController {
     type: AprListResponseDto,
   })
   @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token JWT inválido ou ausente',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Token inválido ou expirado',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor',
   })
@@ -135,29 +167,29 @@ export class AprController {
    */
   /*
   @Get('modelos/:id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Buscar modelo de APR por ID',
     description: 'Retorna um modelo específico de APR com todos os relacionamentos'
   })
-  @ApiParam({ 
-    name: 'id', 
-    type: Number, 
-    description: 'ID único do modelo APR' 
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'ID único do modelo APR'
   })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
+  @ApiResponse({
+    status: HttpStatus.OK,
     description: 'Modelo APR encontrado',
     type: AprResponseDto
   })
-  @ApiResponse({ 
-    status: HttpStatus.NOT_FOUND, 
-    description: 'Modelo APR não encontrado' 
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Modelo APR não encontrado'
   })
   async findOne(
     @Param('id', ParseIntPipe) id: number
   ): Promise<AprResponseDto> {
     this.logger.log(`Buscando modelo APR por ID: ${id}`);
-    
+
     try {
       const result = await this.aprService.findOne(id);
       this.logger.log(`Modelo APR encontrado: ${result.nome}`);
@@ -173,7 +205,7 @@ export class AprController {
 
   /*
   // Métodos comentados temporariamente - serão implementados na próxima fase
-  
+
   @Post('modelos')
   async create(@Body() createAprDto: CreateAprDto): Promise<AprResponseDto> {
     return this.aprService.create(createAprDto);
