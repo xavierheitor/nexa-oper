@@ -47,7 +47,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { db } from '../../../db/db.service';
+import { db } from '../../../../db/db.service';
 
 /**
  * Interface para permissão de contrato

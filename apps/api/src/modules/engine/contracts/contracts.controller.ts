@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Controlador de Contratos
  *
@@ -41,7 +42,6 @@ import {
   RequireAnyContractPermission,
   OptionalContractPermission,
 } from '../auth/decorator/contract-permission.decorator';
-import { GetUserContractsInfo } from '../auth/decorator/get-user-contracts.decorator';
 import { GetUsuarioMobileId } from '../auth/decorator/get-user-id-decorator';
 import { ContractPermissionsService } from '../auth/service/contract-permissions.service';
 
@@ -96,7 +96,8 @@ export class ContractsController {
     },
   })
   async getMyContracts(@GetUsuarioMobileId() userId: number) {
-    const contractsInfo = await this.contractPermissionsService.getUserContracts(userId);
+    const contractsInfo =
+      await this.contractPermissionsService.getUserContracts(userId);
 
     return {
       message: 'Contratos do usuário obtidos com sucesso',

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { MobileUsersService } from 'src/modules/mobile-users/mobile-users.service';
+import { MobileUsersService } from '../../mobile-users/mobile-users.service';
 
 /**
  * Serviço de Autenticação Mobile
@@ -101,7 +101,7 @@ export class AuthService {
     // Criar payload do JWT
     const payload = {
       sub: user.id,
-      matricula: user.username
+      matricula: user.username,
     };
 
     // Gerar tokens JWT sem expiração

@@ -40,8 +40,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DbModule } from './db/db.module';
 import { AprModule } from './modules/apr/apr.module';
-import { AuthModule } from './modules/auth/module/auth.module';
-import { ContractsModule } from './modules/contracts/contracts.module';
+import { AuthModule } from './modules/engine/auth/module/auth.module';
+import { ContractsModule } from './modules/engine/contracts/contracts.module';
 import { LoggerMiddleware } from './utils/logger.middleware';
 
 /**

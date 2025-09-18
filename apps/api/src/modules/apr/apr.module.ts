@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DbModule } from '../../db/db.module';
-import { AuthModule } from '../auth/module/auth.module';
+import { AuthModule } from '../engine/auth/module/auth.module';
 import { AprController } from './apr.controller';
 import { AprSyncController } from './apr-sync.controller';
 import { AprService } from './apr.service';

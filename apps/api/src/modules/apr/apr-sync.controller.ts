@@ -44,7 +44,7 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { JwtAuthGuard } from '../engine/auth/guard/jwt-auth.guard';
 import { AprService } from './apr.service';
 import {
   AprOpcaoRespostaRelacaoSyncDto,

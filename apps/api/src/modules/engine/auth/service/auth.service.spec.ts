@@ -50,6 +50,12 @@ describe('AuthService', () => {
         id: 1,
         username: 'testuser',
         password: 'hashedpassword',
+        createdAt: new Date(),
+        createdBy: 'system',
+        updatedAt: null,
+        updatedBy: null,
+        deletedAt: null,
+        deletedBy: null,
       };
 
       const mockTokens = {
@@ -67,7 +73,7 @@ describe('AuthService', () => {
       jest
         .spyOn(mobileUsersService, 'findByMatricula')
         .mockResolvedValue(mockUser);
-      mockedBcrypt.compare.mockResolvedValue(true);
+      mockedBcrypt.compare.mockResolvedValue(true as never);
       jest.spyOn(jwtService, 'sign').mockReturnValue('mock-token');
 
       const result = await service.validateLogin('testuser', 'password123');
@@ -106,12 +112,18 @@ describe('AuthService', () => {
         id: 1,
         username: 'testuser',
         password: 'hashedpassword',
+        createdAt: new Date(),
+        createdBy: 'system',
+        updatedAt: null,
+        updatedBy: null,
+        deletedAt: null,
+        deletedBy: null,
       };
 
       jest
         .spyOn(mobileUsersService, 'findByMatricula')
         .mockResolvedValue(mockUser);
-      mockedBcrypt.compare.mockResolvedValue(false);
+      mockedBcrypt.compare.mockResolvedValue(false as never);
 
       await expect(
         service.validateLogin('testuser', 'wrongpassword')
@@ -125,6 +137,12 @@ describe('AuthService', () => {
         id: 1,
         username: 'testuser',
         password: 'hashedpassword',
+        createdAt: new Date(),
+        createdBy: 'system',
+        updatedAt: null,
+        updatedBy: null,
+        deletedAt: null,
+        deletedBy: null,
       };
 
       const mockPayload = { sub: 1, matricula: 'testuser' };

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MobileUsersService } from './mobile-users.service';
-import { DbService } from '../../db/db.service';
+import { DbService } from '../../../db/db.service';
 
 describe('MobileUsersService', () => {
   let service: MobileUsersService;
@@ -36,6 +36,12 @@ describe('MobileUsersService', () => {
       id: 1,
       username: 'testuser',
       password: 'hashedpassword',
+      createdAt: new Date(),
+      createdBy: 'system',
+      updatedAt: null,
+      updatedBy: null,
+      deletedAt: null,
+      deletedBy: null,
     };
     const findUniqueSpy = jest
       .spyOn(dbService.getPrisma().mobileUser, 'findUnique')
@@ -54,6 +60,12 @@ describe('MobileUsersService', () => {
       id: 1,
       username: 'testuser',
       password: 'hashedpassword',
+      createdAt: new Date(),
+      createdBy: 'system',
+      updatedAt: null,
+      updatedBy: null,
+      deletedAt: null,
+      deletedBy: null,
     };
     const findUniqueSpy = jest
       .spyOn(dbService.getPrisma().mobileUser, 'findUnique')
