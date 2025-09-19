@@ -112,7 +112,7 @@ async function bootstrap(): Promise<void> {
         transform: true, // Transforma automaticamente tipos
         whitelist: true, // Remove propriedades não definidas no DTO
         forbidNonWhitelisted: true, // Rejeita propriedades extras
-        validateCustomDecorators: true, // Valida decorators customizados
+        validateCustomDecorators: false, // Desabilitado para evitar conflitos com decorators customizados
       })
     );
     logger.log('✅ Validação global de DTOs configurada');

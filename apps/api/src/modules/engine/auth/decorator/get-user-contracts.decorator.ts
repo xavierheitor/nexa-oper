@@ -22,8 +22,8 @@
 
 import { createParamDecorator, ExecutionContext, Logger } from '@nestjs/common';
 import {
-  ContractPermissionsService,
   ContractPermission,
+  getContractPermissionsService,
 } from '../service/contract-permissions.service';
 
 export const GetUserContracts = createParamDecorator(
@@ -32,8 +32,13 @@ export const GetUserContracts = createParamDecorator(
     ctx: ExecutionContext
   ): Promise<ContractPermission[]> => {
     const logger = new Logger('GetUserContracts');
+    logger.debug('GetUserContracts decorator chamado');
+
     const request = ctx.switchToHttp().getRequest();
     const user = request.user;
+
+    logger.debug(`User object: ${JSON.stringify(user)}`);
+    logger.debug(`User ID: ${user?.id}`);
 
     if (!user || !user.id) {
       logger.warn('Usuário não autenticado tentando obter contratos');
@@ -44,13 +49,16 @@ export const GetUserContracts = createParamDecorator(
       // Verificar se já está no cache da requisição
       if (request.userContracts) {
         logger.debug(`Cache hit para contratos do usuário ${user.id}`);
+        logger.debug(
+          `Contratos do cache: ${JSON.stringify(request.userContracts)}`
+        );
         return request.userContracts;
       }
 
-      // Obter serviço de permissões do container de injeção de dependência
-      const contractPermissionsService = request.app?.get(
-        ContractPermissionsService
-      );
+      // Obter serviço de permissões via singleton
+      logger.debug('Buscando ContractPermissionsService...');
+      const contractPermissionsService = getContractPermissionsService();
+
       if (!contractPermissionsService) {
         logger.error(
           'ContractPermissionsService não encontrado no container de DI'
@@ -58,8 +66,16 @@ export const GetUserContracts = createParamDecorator(
         return [];
       }
 
+      logger.debug(
+        `ContractPermissionsService encontrado: ${!!contractPermissionsService}`
+      );
+
       // Buscar contratos do usuário
+      logger.debug(`Chamando getUserContracts para usuário ${user.id}...`);
       const result = await contractPermissionsService.getUserContracts(user.id);
+
+      logger.debug(`Resultado getUserContracts: ${JSON.stringify(result)}`);
+      logger.debug(`Contratos retornados: ${result.contracts?.length || 0}`);
 
       // Cache no contexto da requisição
       request.userContracts = result.contracts;
@@ -70,6 +86,7 @@ export const GetUserContracts = createParamDecorator(
       return result.contracts;
     } catch (error) {
       logger.error(`Erro ao obter contratos do usuário ${user.id}:`, error);
+      logger.error(`Stack trace:`, error.stack);
       return [];
     }
   }
@@ -101,10 +118,9 @@ export const GetUserContractsInfo = createParamDecorator(
         return request.userContractsInfo;
       }
 
-      // Obter serviço de permissões do container de injeção de dependência
-      const contractPermissionsService = request.app?.get(
-        ContractPermissionsService
-      );
+      // Obter serviço de permissões via singleton
+      const contractPermissionsService = getContractPermissionsService();
+
       if (!contractPermissionsService) {
         logger.warn(
           'ContractPermissionsService não encontrado no container de DI, retornando dados vazios'
@@ -117,6 +133,7 @@ export const GetUserContractsInfo = createParamDecorator(
 
       // Cache no contexto da requisição
       request.userContractsInfo = result;
+      request.contractPermissionsService = contractPermissionsService;
 
       logger.log(
         `Injetadas informações de ${result.total} contratos para usuário ${user.id}`

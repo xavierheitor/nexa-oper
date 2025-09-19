@@ -185,6 +185,9 @@ export class ContractPermissionsService {
           mobileUserId: userId,
           contratoId: contractId,
           deletedAt: null,
+          contrato: {
+            deletedAt: null, // Filtrar contratos deletados também
+          },
         },
         select: {
           id: true,
@@ -235,6 +238,9 @@ export class ContractPermissionsService {
         where: {
           mobileUserId: userId,
           deletedAt: null,
+          contrato: {
+            deletedAt: null, // Filtrar contratos deletados também
+          },
         },
         include: {
           contrato: {
@@ -310,6 +316,9 @@ export class ContractPermissionsService {
           mobileUserId: userId,
           contratoId: { in: contractIds },
           deletedAt: null,
+          contrato: {
+            deletedAt: null, // Filtrar contratos deletados também
+          },
         },
         select: {
           id: true,
@@ -353,4 +362,21 @@ export class ContractPermissionsService {
       `Cache limpo para usuário ${userId} (${keysToDelete.length} entradas removidas)`
     );
   }
+}
+
+// Singleton helper para uso em contextos fora do Nest DI
+let contractPermissionsServiceInstance: ContractPermissionsService | null =
+  null;
+
+/**
+ * Obtém instância singleton do ContractPermissionsService.
+ *
+ * Útil em cenários onde não é possível injetar o serviço via Nest DI,
+ * como decorators personalizados.
+ */
+export function getContractPermissionsService(): ContractPermissionsService {
+  if (!contractPermissionsServiceInstance) {
+    contractPermissionsServiceInstance = new ContractPermissionsService();
+  }
+  return contractPermissionsServiceInstance;
 }

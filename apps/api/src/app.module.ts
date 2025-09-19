@@ -43,6 +43,7 @@ import { AprModule } from './modules/apr/apr.module';
 import { AuthModule } from './modules/engine/auth/module/auth.module';
 import { ContractsModule } from './modules/engine/contracts/contracts.module';
 import { ChecklistModule } from './modules/checklist/checklist.module';
+import { VeiculoModule } from './modules/veiculo/veiculo.module';
 import { LoggerMiddleware } from './utils/logger.middleware';
 
 /**
@@ -65,6 +66,7 @@ import { LoggerMiddleware } from './utils/logger.middleware';
     // Módulos de funcionalidades de negócio
     AprModule,
     ChecklistModule,
+    VeiculoModule,
 
     // Módulos de autenticação e permissões
     AuthModule,
