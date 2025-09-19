@@ -42,6 +42,7 @@ import { DbModule } from './db/db.module';
 import { AprModule } from './modules/apr/apr.module';
 import { AuthModule } from './modules/engine/auth/module/auth.module';
 import { ContractsModule } from './modules/engine/contracts/contracts.module';
+import { ChecklistModule } from './modules/checklist/checklist.module';
 import { LoggerMiddleware } from './utils/logger.middleware';
 
 /**
@@ -63,13 +64,13 @@ import { LoggerMiddleware } from './utils/logger.middleware';
 
     // Módulos de funcionalidades de negócio
     AprModule,
+    ChecklistModule,
 
     // Módulos de autenticação e permissões
     AuthModule,
     ContractsModule,
 
     // TODO: Adicionar outros módulos conforme necessário
-    // ChecklistModule,
     // UserModule,
   ],
   controllers: [
