@@ -7,7 +7,7 @@ import { EletricistaService } from './eletricista.service';
 
 @Module({
   imports: [DbModule, AuthModule],
-  controllers: [EletricistaController, EletricistaSyncController],
+  controllers: [EletricistaSyncController, EletricistaController],
   providers: [EletricistaService],
   exports: [EletricistaService],
 })

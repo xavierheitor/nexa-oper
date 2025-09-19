@@ -20,6 +20,7 @@ import {
   EletricistaListResponseDto,
   EletricistaQueryDto,
   EletricistaResponseDto,
+  EletricistaSyncDto,
   PaginationMetaDto,
   UpdateEletricistaDto,
 } from './dto';
@@ -90,7 +91,9 @@ export class EletricistaService {
     allowedContracts?: ContractPermission[]
   ): number[] | null {
     this.logger.debug('=== INÍCIO extractAllowedContractIds ===');
-    this.logger.debug(`allowedContracts recebido: ${JSON.stringify(allowedContracts)}`);
+    this.logger.debug(
+      `allowedContracts recebido: ${JSON.stringify(allowedContracts)}`
+    );
     this.logger.debug(`Tipo: ${typeof allowedContracts}`);
     this.logger.debug(`É array: ${Array.isArray(allowedContracts)}`);
 
@@ -99,11 +102,15 @@ export class EletricistaService {
       return null;
     }
 
-    this.logger.debug(`Quantidade de contratos para processar: ${allowedContracts.length}`);
+    this.logger.debug(
+      `Quantidade de contratos para processar: ${allowedContracts.length}`
+    );
 
     const contractIds = allowedContracts
       .map((contract, index) => {
-        this.logger.debug(`Processando contrato ${index + 1}: ${JSON.stringify(contract)}`);
+        this.logger.debug(
+          `Processando contrato ${index + 1}: ${JSON.stringify(contract)}`
+        );
         this.logger.debug(`contract?.contratoId: ${contract?.contratoId}`);
         this.logger.debug(`Tipo do contratoId: ${typeof contract?.contratoId}`);
         return contract?.contratoId;
@@ -630,17 +637,21 @@ export class EletricistaService {
    */
   async findAllForSync(
     allowedContracts?: ContractPermission[]
-  ): Promise<any[]> {
+  ): Promise<EletricistaSyncDto[]> {
     this.logger.debug('=== INÍCIO DO MÉTODO findAllForSync ===');
     this.logger.debug(`Timestamp: ${new Date().toISOString()}`);
     this.logger.debug(`Método: ${this.findAllForSync.name}`);
     this.logger.debug(`Service: ${EletricistaService.name}`);
 
     this.logger.debug('=== PARÂMETROS RECEBIDOS NO SERVICE ===');
-    this.logger.debug(`allowedContracts recebido: ${JSON.stringify(allowedContracts)}`);
+    this.logger.debug(
+      `allowedContracts recebido: ${JSON.stringify(allowedContracts)}`
+    );
     this.logger.debug(`Tipo de allowedContracts: ${typeof allowedContracts}`);
     this.logger.debug(`É array: ${Array.isArray(allowedContracts)}`);
-    this.logger.debug(`Quantidade de contratos: ${allowedContracts?.length || 0}`);
+    this.logger.debug(
+      `Quantidade de contratos: ${allowedContracts?.length || 0}`
+    );
 
     this.logger.log(
       `Sincronizando eletricistas para ${allowedContracts?.length || 0} contratos`
@@ -648,8 +659,12 @@ export class EletricistaService {
 
     this.logger.debug('=== EXTRAINDO IDs DOS CONTRATOS ===');
     const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
-    this.logger.debug(`allowedContractIds extraídos: ${JSON.stringify(allowedContractIds)}`);
-    this.logger.debug(`Tipo de allowedContractIds: ${typeof allowedContractIds}`);
+    this.logger.debug(
+      `allowedContractIds extraídos: ${JSON.stringify(allowedContractIds)}`
+    );
+    this.logger.debug(
+      `Tipo de allowedContractIds: ${typeof allowedContractIds}`
+    );
     this.logger.debug(`É array: ${Array.isArray(allowedContractIds)}`);
     this.logger.debug(`Quantidade de IDs: ${allowedContractIds?.length || 0}`);
 
@@ -671,8 +686,12 @@ export class EletricistaService {
         };
       }
 
-      this.logger.debug(`Where clause construída: ${JSON.stringify(whereClause)}`);
-      this.logger.debug(`ORDER_CONFIG.SYNC_ORDER: ${JSON.stringify(ORDER_CONFIG.SYNC_ORDER)}`);
+      this.logger.debug(
+        `Where clause construída: ${JSON.stringify(whereClause)}`
+      );
+      this.logger.debug(
+        `ORDER_CONFIG.SYNC_ORDER: ${JSON.stringify(ORDER_CONFIG.SYNC_ORDER)}`
+      );
 
       this.logger.debug('=== EXECUTANDO QUERY NO BANCO ===');
       this.logger.debug('Chamando db.getPrisma().eletricista.findMany...');
@@ -684,14 +703,18 @@ export class EletricistaService {
 
       this.logger.debug('=== RESULTADO DA QUERY ===');
       this.logger.debug(`Query executada com sucesso`);
-      this.logger.debug(`Quantidade de eletricistas retornados: ${eletricistas.length}`);
+      this.logger.debug(
+        `Quantidade de eletricistas retornados: ${eletricistas.length}`
+      );
       this.logger.debug(`Tipo do resultado: ${typeof eletricistas}`);
       this.logger.debug(`É array: ${Array.isArray(eletricistas)}`);
 
       if (eletricistas.length > 0) {
         this.logger.debug('=== DETALHES DOS ELETRICISTAS ===');
         eletricistas.forEach((eletricista, index) => {
-          this.logger.debug(`Eletricista ${index + 1}: ${JSON.stringify(eletricista)}`);
+          this.logger.debug(
+            `Eletricista ${index + 1}: ${JSON.stringify(eletricista)}`
+          );
         });
       }
 

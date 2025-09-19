@@ -18,6 +18,7 @@ import { GetUserContracts } from '../engine/auth/decorator/get-user-contracts.de
 import { ContractPermission } from '../engine/auth/service/contract-permissions.service';
 import { SyncAuditRemoverInterceptor } from '../../shared/interceptors';
 import { EletricistaService } from './eletricista.service';
+import { EletricistaSyncDto } from './dto';
 
 @ApiTags('eletricistas-sync')
 @ApiBearerAuth()
@@ -43,20 +44,7 @@ export class EletricistaSyncController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de eletricistas retornada com sucesso',
-    schema: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'number' },
-          nome: { type: 'string' },
-          matricula: { type: 'string' },
-          telefone: { type: 'string' },
-          estado: { type: 'string' },
-          contratoId: { type: 'number' },
-        },
-      },
-    },
+    type: [EletricistaSyncDto],
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
@@ -68,7 +56,7 @@ export class EletricistaSyncController {
   })
   async sync(
     @GetUserContracts() allowedContracts: ContractPermission[]
-  ): Promise<any[]> {
+  ): Promise<EletricistaSyncDto[]> {
     this.logger.debug('=== INÍCIO DO MÉTODO sync ===');
     this.logger.debug(`Timestamp: ${new Date().toISOString()}`);
     this.logger.debug(`Método: ${this.sync.name}`);
