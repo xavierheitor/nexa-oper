@@ -1,10 +1,12 @@
 # Constantes Compartilhadas
 
-Este diretório contém constantes que são utilizadas por múltiplos módulos da aplicação, promovendo reutilização de código e facilitando a manutenção.
+Este diretório contém constantes que são utilizadas por múltiplos módulos da aplicação, promovendo
+reutilização de código e facilitando a manutenção.
 
 ## Estrutura
 
 ### `shared.constants.ts`
+
 Contém as constantes comuns a todos os módulos:
 
 - **PAGINATION_CONFIG**: Configurações de paginação (limites, página padrão)
@@ -17,6 +19,7 @@ Contém as constantes comuns a todos os módulos:
 ## Como Usar
 
 ### Importando Constantes Compartilhadas
+
 ```typescript
 import {
   PAGINATION_CONFIG,
@@ -28,13 +31,18 @@ import {
 ```
 
 ### Constantes Específicas do Módulo
+
 Cada módulo mantém suas constantes específicas com prefixo:
+
 - APR: `APR_VALIDATION_CONFIG`, `APR_ORDER_CONFIG`
 - Checklist: `CHECKLIST_VALIDATION_CONFIG`, `CHECKLIST_ORDER_CONFIG`
 - Veículo: `VEICULO_VALIDATION_CONFIG`
 
 ### Compatibilidade
-Os módulos re-exportam as constantes compartilhadas para manter compatibilidade com código existente:
+
+Os módulos re-exportam as constantes compartilhadas para manter compatibilidade com código
+existente:
+
 ```typescript
 // Re-export das constantes compartilhadas para manter compatibilidade
 export { AUDIT_CONFIG, CACHE_CONFIG } from '../../../shared/constants';
@@ -50,11 +58,13 @@ export { AUDIT_CONFIG, CACHE_CONFIG } from '../../../shared/constants';
 ## Adicionando Novas Constantes
 
 ### Para Constantes Comuns
+
 1. Adicione no `shared.constants.ts`
 2. Documente o propósito da constante
 3. Considere se realmente é comum a todos os módulos
 
 ### Para Constantes Específicas
+
 1. Adicione no arquivo de constantes do módulo específico
 2. Use prefixo do módulo (ex: `APR_`, `CHECKLIST_`, `VEICULO_`)
 3. Re-export se necessário para compatibilidade

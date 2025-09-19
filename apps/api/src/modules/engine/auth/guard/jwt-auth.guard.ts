@@ -26,6 +26,7 @@ import {
   Injectable,
   ExecutionContext,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -37,6 +38,7 @@ import { AuthGuard } from '@nestjs/passport';
  */
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
+  private readonly logger = new Logger(JwtAuthGuard.name);
   /**
    * Verifica se a requisição pode ser ativada (autenticada)
    *
@@ -47,12 +49,18 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
    * @returns Promise<boolean> - true se pode prosseguir com autenticação
    */
   canActivate(context: ExecutionContext) {
-    console.log('[JWT GUARD] Verificando autenticação...');
+    this.logger.debug('=== INÍCIO JwtAuthGuard canActivate ===');
+    this.logger.debug(`Timestamp: ${new Date().toISOString()}`);
+    this.logger.debug(`Context type: ${context.getType()}`);
 
     const request = context.switchToHttp().getRequest();
-    console.log('[JWT GUARD] Headers:', request.headers);
+    this.logger.debug(`Request URL: ${request.url}`);
+    this.logger.debug(`Request method: ${request.method}`);
+    this.logger.debug(`Headers: ${JSON.stringify(request.headers)}`);
+    this.logger.debug(`Authorization header: ${request.headers.authorization}`);
 
     // Delegar verificação para o AuthGuard do Passport
+    this.logger.debug('Delegando verificação para AuthGuard do Passport...');
     return super.canActivate(context);
   }
 
@@ -71,16 +79,29 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
    * @throws {UnauthorizedException} Quando autenticação falha
    */
   handleRequest(err: any, user: any, info: any) {
-    console.log('[JWT GUARD] Erro:', err);
-    console.log('[JWT GUARD] Usuário:', user);
-    console.log('[JWT GUARD] Info:', info);
+    this.logger.debug('=== INÍCIO JwtAuthGuard handleRequest ===');
+    this.logger.debug(`Timestamp: ${new Date().toISOString()}`);
+    this.logger.debug(`Erro: ${JSON.stringify(err)}`);
+    this.logger.debug(`Usuário: ${JSON.stringify(user)}`);
+    this.logger.debug(`Info: ${JSON.stringify(info)}`);
+    this.logger.debug(`Tipo do erro: ${typeof err}`);
+    this.logger.debug(`Tipo do usuário: ${typeof user}`);
+    this.logger.debug(`Tipo da info: ${typeof info}`);
 
     // Verificar se houve erro ou se usuário não foi encontrado
     if (err || !user) {
+      this.logger.error('=== AUTENTICAÇÃO FALHOU ===');
+      this.logger.error(
+        `Erro na autenticação: ${err?.message || 'Usuário não encontrado'}`
+      );
+      this.logger.error(`Stack trace: ${err?.stack}`);
       throw err ?? new UnauthorizedException('Token inválido ou expirado');
     }
 
     // Retornar dados do usuário autenticado
+    this.logger.debug('=== AUTENTICAÇÃO BEM-SUCEDIDA ===');
+    this.logger.debug(`Usuário autenticado: ${JSON.stringify(user)}`);
+    this.logger.debug('=== FIM JwtAuthGuard handleRequest ===');
     return user;
   }
 }

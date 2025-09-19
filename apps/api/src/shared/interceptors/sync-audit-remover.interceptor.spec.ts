@@ -22,22 +22,23 @@ describe('SyncAuditRemoverInterceptor', () => {
     } as ExecutionContext;
 
     mockCallHandler = {
-      handle: () => of({
-        id: 1,
-        nome: 'APR Teste',
-        createdAt: '2024-01-15T10:30:00.000Z',
-        createdBy: 'user123',
-        updatedAt: '2024-01-20T09:00:00.000Z',
-        updatedBy: 'user456',
-        deletedAt: null,
-        deletedBy: null,
-      }),
+      handle: () =>
+        of({
+          id: 1,
+          nome: 'APR Teste',
+          createdAt: '2024-01-15T10:30:00.000Z',
+          createdBy: 'user123',
+          updatedAt: '2024-01-20T09:00:00.000Z',
+          updatedBy: 'user456',
+          deletedAt: null,
+          deletedBy: null,
+        }),
     } as CallHandler;
   });
 
-  it('deve remover campos de auditoria de rotas sync', (done) => {
+  it('deve remover campos de auditoria de rotas sync', done => {
     interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-      next: (result) => {
+      next: result => {
         expect(result).toEqual({
           id: 1,
           nome: 'APR Teste',
@@ -53,7 +54,7 @@ describe('SyncAuditRemoverInterceptor', () => {
     });
   });
 
-  it('não deve processar rotas que não são sync', (done) => {
+  it('não deve processar rotas que não são sync', done => {
     mockExecutionContext = {
       switchToHttp: () => ({
         getRequest: () => ({
@@ -74,7 +75,7 @@ describe('SyncAuditRemoverInterceptor', () => {
     } as CallHandler;
 
     interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-      next: (result) => {
+      next: result => {
         expect(result).toEqual(originalData);
         expect(result.createdAt).toBeDefined();
         expect(result.createdBy).toBeDefined();
@@ -83,7 +84,7 @@ describe('SyncAuditRemoverInterceptor', () => {
     });
   });
 
-  it('deve processar arrays de objetos', (done) => {
+  it('deve processar arrays de objetos', done => {
     const arrayData = [
       {
         id: 1,
@@ -104,7 +105,7 @@ describe('SyncAuditRemoverInterceptor', () => {
     } as CallHandler;
 
     interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-      next: (result) => {
+      next: result => {
         expect(result).toHaveLength(2);
         expect(result[0]).toEqual({ id: 1, nome: 'APR 1' });
         expect(result[1]).toEqual({ id: 2, nome: 'APR 2' });
@@ -115,7 +116,7 @@ describe('SyncAuditRemoverInterceptor', () => {
     });
   });
 
-  it('deve processar objetos aninhados', (done) => {
+  it('deve processar objetos aninhados', done => {
     const nestedData = {
       id: 1,
       nome: 'APR Teste',
@@ -134,7 +135,7 @@ describe('SyncAuditRemoverInterceptor', () => {
     } as CallHandler;
 
     interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-      next: (result) => {
+      next: result => {
         expect(result).toEqual({
           id: 1,
           nome: 'APR Teste',
