@@ -29,7 +29,16 @@
  * ```
  */
 
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Delete,
+  HttpStatus,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -292,6 +301,64 @@ export class ContractsController {
       message: 'Nenhum contrato específico solicitado',
       userId,
       note: 'Este endpoint funciona sem especificar um contrato',
+    };
+  }
+
+  /**
+   * Invalida o cache de permissões para o usuário atual
+   */
+  @Delete('cache')
+  @ApiOperation({
+    summary: 'Invalidar cache de permissões',
+    description:
+      'Remove o cache de permissões do usuário atual para forçar atualização',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Cache invalidado com sucesso',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        userId: { type: 'number' },
+        timestamp: { type: 'string' },
+      },
+    },
+  })
+  invalidateCache(@GetUsuarioMobileId() userId: number) {
+    this.contractPermissionsService.invalidateUserCache(userId);
+    return {
+      message: 'Cache de permissões invalidado com sucesso',
+      userId,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Invalida todo o cache de permissões (apenas para desenvolvimento)
+   */
+  @Delete('cache/all')
+  @ApiOperation({
+    summary: 'Invalidar todo o cache de permissões',
+    description:
+      'Remove todo o cache de permissões (apenas para desenvolvimento)',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Todo o cache foi invalidado com sucesso',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        timestamp: { type: 'string' },
+      },
+    },
+  })
+  invalidateAllCache() {
+    this.contractPermissionsService.invalidateAllCache();
+    return {
+      message: 'Todo o cache de permissões foi invalidado com sucesso',
+      timestamp: new Date().toISOString(),
     };
   }
 }

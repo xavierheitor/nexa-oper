@@ -107,8 +107,8 @@ export class ContractPermissionsService {
     { data: any; timestamp: number }
   >();
 
-  /** TTL do cache em milissegundos (5 minutos) */
-  private readonly CACHE_TTL = 5 * 60 * 1000;
+  /** TTL do cache em milissegundos (30 segundos para desenvolvimento) */
+  private readonly CACHE_TTL = 30 * 1000;
 
   /**
    * Construtor do ContractPermissionsService
@@ -116,6 +116,37 @@ export class ContractPermissionsService {
    * Inicializa o serviço com configurações padrão de cache e logging.
    */
   constructor() {}
+
+  /**
+   * Invalida o cache de permissões para um usuário específico
+   *
+   * @param userId - ID do usuário para invalidar cache
+   */
+  invalidateUserCache(userId: number): void {
+    const cacheKey = `user_contracts:${userId}`;
+    this.permissionCache.delete(cacheKey);
+    this.logger.log(`Cache invalidado para usuário ${userId}`);
+  }
+
+  /**
+   * Invalida todo o cache de permissões
+   */
+  invalidateAllCache(): void {
+    this.permissionCache.clear();
+    this.logger.log('Todo o cache de permissões foi invalidado');
+  }
+
+  /**
+   * Limpa cache expirado automaticamente
+   */
+  private cleanExpiredCache(): void {
+    const now = Date.now();
+    for (const [key, value] of this.permissionCache.entries()) {
+      if (now - value.timestamp > this.CACHE_TTL) {
+        this.permissionCache.delete(key);
+      }
+    }
+  }
 
   /**
    * Verifica se um usuário tem permissão para acessar um contrato específico
@@ -222,6 +253,9 @@ export class ContractPermissionsService {
    * @returns Lista de contratos permitidos
    */
   async getUserContracts(userId: number): Promise<UserContractsResponse> {
+    // Limpar cache expirado antes de verificar
+    this.cleanExpiredCache();
+
     const cacheKey = `user_contracts:${userId}`;
 
     // Verificar cache primeiro
