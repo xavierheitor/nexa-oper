@@ -26,6 +26,6 @@ import { AprService } from './apr.service';
   imports: [DbModule, AuthModule],
   providers: [AprService],
   exports: [AprService],
-  controllers: [AprController, AprSyncController],
+  controllers: [AprSyncController, AprController],
 })
 export class AprModule {}

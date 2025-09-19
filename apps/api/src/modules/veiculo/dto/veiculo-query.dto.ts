@@ -15,7 +15,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { VALIDATION_CONFIG } from '../constants/veiculo.constants';
+import { VEICULO_VALIDATION_CONFIG } from '../constants/veiculo.constants';
 
 /**
  * DTO para parâmetros de consulta de veículos
@@ -50,12 +50,12 @@ export class VeiculoQueryDto {
   @ApiPropertyOptional({
     description: 'Termo de busca (placa ou modelo)',
     example: 'ABC',
-    maxLength: VALIDATION_CONFIG.MAX_SEARCH_LENGTH,
+    maxLength: 100,
   })
   @IsOptional()
   @IsString({ message: 'Busca deve ser uma string' })
-  @MaxLength(VALIDATION_CONFIG.MAX_SEARCH_LENGTH, {
-    message: `Busca deve ter no máximo ${VALIDATION_CONFIG.MAX_SEARCH_LENGTH} caracteres`,
+  @MaxLength(100, {
+    message: 'Busca deve ter no máximo 100 caracteres',
   })
   @Transform(({ value }) => value?.trim())
   search?: string;

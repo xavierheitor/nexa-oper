@@ -13,10 +13,7 @@ import {
   Length,
   MaxLength,
 } from 'class-validator';
-import {
-  ELETRICISTA_VALIDATION_CONFIG,
-  VALIDATION_CONFIG,
-} from '../constants/eletricista.constants';
+import { ELETRICISTA_VALIDATION_CONFIG } from '../constants/eletricista.constants';
 
 export class EletricistaQueryDto {
   @ApiPropertyOptional({
@@ -47,8 +44,8 @@ export class EletricistaQueryDto {
   })
   @IsOptional()
   @IsString({ message: 'Busca deve ser uma string' })
-  @MaxLength(VALIDATION_CONFIG.MAX_SEARCH_LENGTH, {
-    message: `Busca deve ter no máximo ${VALIDATION_CONFIG.MAX_SEARCH_LENGTH} caracteres`,
+  @MaxLength(100, {
+    message: 'Busca deve ter no máximo 100 caracteres',
   })
   @Transform(({ value }) => value?.trim())
   search?: string;

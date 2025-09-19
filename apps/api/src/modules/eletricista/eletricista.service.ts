@@ -9,9 +9,28 @@ import {
 import { DbService } from '../../db/db.service';
 import { ContractPermission } from '../engine/auth/service/contract-permissions.service';
 import {
-  AUDIT_CONFIG,
+  extractAllowedContractIds as sharedExtractAllowedContractIds,
+  ensureContractPermission as sharedEnsureContractPermission,
+} from '../engine/auth/utils/contract-helpers';
+import {
+  buildPaginationMeta,
+  validatePaginationParams,
+} from '../../shared/utils/pagination';
+import {
+  validateId,
+  validateOptionalId,
+  validateTelefoneFormat,
+  validateEstadoFormat,
+} from '../../shared/utils/validation';
+import {
+  getDefaultUserContext,
+  createAuditData,
+  updateAuditData,
+  deleteAuditData,
+} from '../../shared/utils/audit';
+import { ERROR_MESSAGES } from '../../shared/constants/errors';
+import {
   ELETRICISTA_VALIDATION_CONFIG,
-  ERROR_MESSAGES,
   ORDER_CONFIG,
   PAGINATION_CONFIG,
 } from './constants/eletricista.constants';
@@ -46,95 +65,42 @@ export class EletricistaService {
   constructor(private readonly db: DbService) {}
 
   private validatePaginationParams(page: number, limit: number): void {
-    if (page < 1) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_PAGE);
-    }
-
-    if (limit < 1 || limit > PAGINATION_CONFIG.MAX_LIMIT) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_LIMIT);
-    }
+    validatePaginationParams(page, limit);
   }
 
   private validateEletricistaId(id: number): void {
-    if (!id || !Number.isInteger(id) || id <= 0) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_ID);
-    }
+    validateId(id, 'ID do eletricista');
   }
 
   private validateEstado(estado?: string): void {
-    if (
-      estado !== undefined &&
-      estado.length !== ELETRICISTA_VALIDATION_CONFIG.UF_LENGTH
-    ) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_UF_LENGTH);
+    if (estado !== undefined) {
+      validateEstadoFormat(estado);
     }
   }
 
   private validateContratoId(contratoId?: number): void {
-    if (
-      contratoId !== undefined &&
-      (!Number.isInteger(contratoId) || contratoId <= 0)
-    ) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_CONTRATO_ID);
-    }
+    validateOptionalId(contratoId, 'ID do contrato');
   }
 
   private getCurrentUserContext(): UserContext {
-    return {
-      userId: AUDIT_CONFIG.DEFAULT_USER,
-      userName: AUDIT_CONFIG.DEFAULT_USER_NAME,
-      roles: AUDIT_CONFIG.DEFAULT_ROLES,
-    };
+    return getDefaultUserContext();
   }
 
   private extractAllowedContractIds(
     allowedContracts?: ContractPermission[]
   ): number[] | null {
-    this.logger.debug('=== INÍCIO extractAllowedContractIds ===');
-    this.logger.debug(
-      `allowedContracts recebido: ${JSON.stringify(allowedContracts)}`
-    );
-    this.logger.debug(`Tipo: ${typeof allowedContracts}`);
-    this.logger.debug(`É array: ${Array.isArray(allowedContracts)}`);
-
-    if (!allowedContracts) {
-      this.logger.debug('allowedContracts é null/undefined, retornando null');
-      return null;
-    }
-
-    this.logger.debug(
-      `Quantidade de contratos para processar: ${allowedContracts.length}`
-    );
-
-    const contractIds = allowedContracts
-      .map((contract, index) => {
-        this.logger.debug(
-          `Processando contrato ${index + 1}: ${JSON.stringify(contract)}`
-        );
-        this.logger.debug(`contract?.contratoId: ${contract?.contratoId}`);
-        this.logger.debug(`Tipo do contratoId: ${typeof contract?.contratoId}`);
-        return contract?.contratoId;
-      })
-      .filter((id, index) => {
-        const isValid = typeof id === 'number' && id > 0;
-        this.logger.debug(`ID ${index + 1}: ${id} - Válido: ${isValid}`);
-        return isValid;
-      });
-
-    this.logger.debug(`IDs extraídos: ${JSON.stringify(contractIds)}`);
-    this.logger.debug(`Quantidade de IDs válidos: ${contractIds.length}`);
-    this.logger.debug('=== FIM extractAllowedContractIds ===');
-
-    return contractIds;
+    return sharedExtractAllowedContractIds(allowedContracts);
   }
 
   private ensureContractPermission(
     contratoId: number,
     allowedContractIds: number[] | null
   ): void {
-    if (allowedContractIds && !allowedContractIds.includes(contratoId)) {
-      throw new ForbiddenException(ERROR_MESSAGES.FORBIDDEN_CONTRACT);
-    }
+    sharedEnsureContractPermission(
+      contratoId,
+      allowedContractIds,
+      ERROR_MESSAGES.FORBIDDEN_CONTRACT
+    );
   }
 
   private buildWhereClause(
@@ -191,15 +157,7 @@ export class EletricistaService {
     page: number,
     limit: number
   ): PaginationMetaDto {
-    const totalPages = Math.ceil(total / limit) || 1;
-    return {
-      total,
-      page,
-      limit,
-      totalPages,
-      hasPrevious: page > 1,
-      hasNext: page < totalPages,
-    };
+    return buildPaginationMeta(total, page, limit);
   }
 
   private async ensureContratoExists(contratoId: number): Promise<void> {
@@ -409,8 +367,7 @@ export class EletricistaService {
           telefone: telefone.trim(),
           estado: estado.toUpperCase(),
           contrato: { connect: { id: contratoId } },
-          createdAt: new Date(),
-          createdBy: userContext.userId,
+          ...createAuditData(userContext),
         },
         select: {
           id: true,
@@ -506,8 +463,7 @@ export class EletricistaService {
           ...(contratoId && {
             contrato: { connect: { id: contratoId } },
           }),
-          updatedAt: new Date(),
-          updatedBy: userContext.userId,
+          ...updateAuditData(userContext),
         },
         select: {
           id: true,
@@ -571,10 +527,7 @@ export class EletricistaService {
 
       await this.db.getPrisma().eletricista.update({
         where: { id },
-        data: {
-          deletedAt: new Date(),
-          deletedBy: userContext.userId,
-        },
+        data: deleteAuditData(userContext),
       });
 
       this.logger.log(`Eletricista ${id} removido com sucesso (soft delete)`);

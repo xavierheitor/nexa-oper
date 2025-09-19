@@ -5,7 +5,7 @@
  * específicas do módulo responsável por gerenciar eletricistas.
  */
 
-import { COMMON_ERROR_MESSAGES } from '../../../shared/constants';
+import { ERROR_MESSAGES as SHARED_ERRORS } from '../../../shared/constants/errors';
 
 /**
  * Configurações de validação específicas para eletricistas
@@ -16,41 +16,85 @@ export const ELETRICISTA_VALIDATION_CONFIG = {
   /** Tamanho máximo do nome */
   MAX_NOME_LENGTH: 255,
   /** Tamanho mínimo da matrícula */
-  MIN_MATRICULA_LENGTH: 1,
+  MIN_MATRICULA_LENGTH: 3,
   /** Tamanho máximo da matrícula */
-  MAX_MATRICULA_LENGTH: 255,
+  MAX_MATRICULA_LENGTH: 20,
   /** Tamanho mínimo do telefone */
   MIN_TELEFONE_LENGTH: 1,
   /** Tamanho máximo do telefone */
   MAX_TELEFONE_LENGTH: 255,
   /** Tamanho exato da UF */
   UF_LENGTH: 2,
+  /** Estados válidos */
+  VALID_ESTADOS: [
+    'AC',
+    'AL',
+    'AP',
+    'AM',
+    'BA',
+    'CE',
+    'DF',
+    'ES',
+    'GO',
+    'MA',
+    'MT',
+    'MS',
+    'MG',
+    'PA',
+    'PB',
+    'PR',
+    'PE',
+    'PI',
+    'RJ',
+    'RN',
+    'RS',
+    'RO',
+    'RR',
+    'SC',
+    'SP',
+    'SE',
+    'TO',
+  ],
 } as const;
 
-// Re-export das constantes compartilhadas utilizadas pelo módulo
-export {
-  PAGINATION_CONFIG,
-  AUDIT_CONFIG,
-  CACHE_CONFIG,
-  VALIDATION_CONFIG,
-  ORDER_CONFIG,
-} from '../../../shared/constants';
+/**
+ * Configurações de paginação específicas do Eletricista
+ */
+export const PAGINATION_CONFIG = {
+  DEFAULT_PAGE: 1,
+  DEFAULT_LIMIT: 10,
+  MAX_LIMIT: 100,
+} as const;
+
+/**
+ * Configurações de ordenação específicas do Eletricista
+ */
+export const ORDER_CONFIG = {
+  DEFAULT_ORDER: {
+    createdAt: 'desc' as const,
+  },
+  SYNC_ORDER: {
+    updatedAt: 'desc' as const,
+  },
+} as const;
 
 /**
  * Mensagens de erro específicas do módulo
  */
 export const ERROR_MESSAGES = {
-  INVALID_ID: 'ID do eletricista deve ser um número inteiro positivo',
-  INVALID_CONTRATO_ID: 'ID do contrato deve ser um número inteiro positivo',
-  INVALID_UF_LENGTH: `Estado deve possuir ${ELETRICISTA_VALIDATION_CONFIG.UF_LENGTH} caracteres`,
-  NOME_REQUIRED: 'Nome do eletricista é obrigatório',
-  MATRICULA_REQUIRED: 'Matricula do eletricista é obrigatória',
-  TELEFONE_REQUIRED: 'Telefone do eletricista é obrigatório',
-  CONTRATO_NOT_FOUND: 'Contrato informado não foi localizado',
+  // Mensagens específicas do eletricista (sobrescrevem as compartilhadas)
+  MATRICULA_DUPLICATE: 'Já existe um eletricista cadastrado com esta matrícula',
   ELETRICISTA_NOT_FOUND: 'Eletricista não encontrado',
-  MATRICULA_DUPLICATE: 'Já existe um eletricista cadastrado com esta matricula',
-  FORBIDDEN_CONTRACT:
-    'Você não tem permissão para acessar eletricistas deste contrato',
-  // Mensagens comuns
-  ...COMMON_ERROR_MESSAGES,
+  NOME_TOO_SHORT: `Nome deve ter pelo menos ${ELETRICISTA_VALIDATION_CONFIG.MIN_NOME_LENGTH} caractere`,
+  NOME_TOO_LONG: `Nome deve ter no máximo ${ELETRICISTA_VALIDATION_CONFIG.MAX_NOME_LENGTH} caracteres`,
+  MATRICULA_TOO_SHORT: `Matrícula deve ter pelo menos ${ELETRICISTA_VALIDATION_CONFIG.MIN_MATRICULA_LENGTH} caracteres`,
+  MATRICULA_TOO_LONG: `Matrícula deve ter no máximo ${ELETRICISTA_VALIDATION_CONFIG.MAX_MATRICULA_LENGTH} caracteres`,
+} as const;
+
+/**
+ * Mensagens de erro completas (específicas + compartilhadas)
+ */
+export const COMPLETE_ERROR_MESSAGES = {
+  ...SHARED_ERRORS,
+  ...ERROR_MESSAGES,
 } as const;

@@ -45,11 +45,28 @@ import {
 import { DbService } from '../../db/db.service';
 import { ContractPermission } from '../engine/auth/service/contract-permissions.service';
 import {
-  AUDIT_CONFIG,
-  ERROR_MESSAGES,
-  ORDER_CONFIG,
-  PAGINATION_CONFIG,
-} from './constants/veiculo.constants';
+  extractAllowedContractIds as sharedExtractAllowedContractIds,
+  ensureContractPermission as sharedEnsureContractPermission,
+} from '../engine/auth/utils/contract-helpers';
+import {
+  buildPaginationMeta,
+  validatePaginationParams,
+  calculateOffset,
+} from '../../shared/utils/pagination';
+import {
+  validateId,
+  validateOptionalId,
+  validatePlacaFormat,
+  validateAno,
+} from '../../shared/utils/validation';
+import {
+  getDefaultUserContext,
+  createAuditData,
+  updateAuditData,
+  deleteAuditData,
+} from '../../shared/utils/audit';
+import { ERROR_MESSAGES } from '../../shared/constants/errors';
+import { ORDER_CONFIG, PAGINATION_CONFIG } from './constants/veiculo.constants';
 import {
   CreateVeiculoDto,
   PaginationMetaDto,
@@ -92,56 +109,35 @@ export class VeiculoService {
    * Valida parâmetros de paginação
    */
   private validatePaginationParams(page: number, limit: number): void {
-    if (page < 1) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_PAGE);
-    }
-    if (limit < 1 || limit > PAGINATION_CONFIG.MAX_LIMIT) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_LIMIT);
-    }
+    validatePaginationParams(page, limit);
   }
 
   /**
    * Valida ID de veículo
    */
   private validateVeiculoId(id: number): void {
-    if (!id || !Number.isInteger(id) || id <= 0) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_ID);
-    }
+    validateId(id, 'ID do veículo');
   }
 
   /**
    * Valida ID de tipo de veículo
    */
   private validateTipoVeiculoId(tipoVeiculoId?: number): void {
-    if (
-      tipoVeiculoId !== undefined &&
-      (!Number.isInteger(tipoVeiculoId) || tipoVeiculoId <= 0)
-    ) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_TIPO_VEICULO_ID);
-    }
+    validateOptionalId(tipoVeiculoId, 'ID do tipo de veículo');
   }
 
   /**
    * Valida ID de contrato
    */
   private validateContratoId(contratoId?: number): void {
-    if (
-      contratoId !== undefined &&
-      (!Number.isInteger(contratoId) || contratoId <= 0)
-    ) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_CONTRATO_ID);
-    }
+    validateOptionalId(contratoId, 'ID do contrato');
   }
 
   /**
-   * Obtém contexto do usuário (placeholder até integração com JWT)
+   * Obtém contexto do usuário
    */
   private getCurrentUserContext(): UserContext {
-    return {
-      userId: AUDIT_CONFIG.DEFAULT_USER,
-      userName: AUDIT_CONFIG.DEFAULT_USER_NAME,
-      roles: AUDIT_CONFIG.DEFAULT_ROLES,
-    };
+    return getDefaultUserContext();
   }
 
   /**
@@ -150,15 +146,7 @@ export class VeiculoService {
   private extractAllowedContractIds(
     allowedContracts?: ContractPermission[]
   ): number[] | null {
-    if (!allowedContracts) {
-      return null;
-    }
-
-    const contractIds = allowedContracts
-      .map(contract => contract?.contratoId)
-      .filter((id): id is number => typeof id === 'number' && id > 0);
-
-    return contractIds;
+    return sharedExtractAllowedContractIds(allowedContracts);
   }
 
   /**
@@ -168,9 +156,11 @@ export class VeiculoService {
     contratoId: number,
     allowedContractIds: number[] | null
   ): void {
-    if (allowedContractIds && !allowedContractIds.includes(contratoId)) {
-      throw new ForbiddenException(ERROR_MESSAGES.FORBIDDEN_CONTRACT);
-    }
+    sharedEnsureContractPermission(
+      contratoId,
+      allowedContractIds,
+      ERROR_MESSAGES.FORBIDDEN_CONTRACT
+    );
   }
 
   /**
@@ -226,15 +216,7 @@ export class VeiculoService {
     page: number,
     limit: number
   ): PaginationMetaDto {
-    const totalPages = Math.ceil(total / limit);
-    return {
-      total,
-      page,
-      limit,
-      totalPages,
-      hasPrevious: page > 1,
-      hasNext: page < totalPages,
-    };
+    return buildPaginationMeta(total, page, limit);
   }
 
   /**
@@ -394,15 +376,23 @@ export class VeiculoService {
     allowedContracts?: ContractPermission[]
   ): Promise<VeiculoSyncDto[]> {
     this.logger.log('Sincronizando veículos para cliente mobile');
-    this.logger.debug(`Contratos recebidos no service: ${JSON.stringify(allowedContracts)}`);
-    this.logger.debug(`Tipo dos contratos no service: ${typeof allowedContracts}`);
+    this.logger.debug(
+      `Contratos recebidos no service: ${JSON.stringify(allowedContracts)}`
+    );
+    this.logger.debug(
+      `Tipo dos contratos no service: ${typeof allowedContracts}`
+    );
     this.logger.debug(`É array no service: ${Array.isArray(allowedContracts)}`);
 
     const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
-    this.logger.debug(`IDs de contratos extraídos: ${JSON.stringify(allowedContractIds)}`);
+    this.logger.debug(
+      `IDs de contratos extraídos: ${JSON.stringify(allowedContractIds)}`
+    );
 
     if (allowedContractIds && allowedContractIds.length === 0) {
-      this.logger.warn('Nenhum contrato permitido encontrado, retornando array vazio');
+      this.logger.warn(
+        'Nenhum contrato permitido encontrado, retornando array vazio'
+      );
       return [];
     }
 
@@ -414,7 +404,9 @@ export class VeiculoService {
         }),
       };
 
-      this.logger.debug(`Where clause para busca: ${JSON.stringify(whereClause)}`);
+      this.logger.debug(
+        `Where clause para busca: ${JSON.stringify(whereClause)}`
+      );
 
       const data = await this.db.getPrisma().veiculo.findMany({
         where: whereClause,
@@ -438,7 +430,9 @@ export class VeiculoService {
       this.logger.log(
         `Sincronização de veículos retornou ${data.length} registros`
       );
-      this.logger.debug(`Dados retornados: ${JSON.stringify(data.slice(0, 2))}...`);
+      this.logger.debug(
+        `Dados retornados: ${JSON.stringify(data.slice(0, 2))}...`
+      );
       return data as VeiculoSyncDto[];
     } catch (error) {
       this.logger.error('Erro ao sincronizar veículos:', error);
@@ -544,8 +538,7 @@ export class VeiculoService {
           ano,
           tipoVeiculo: { connect: { id: tipoVeiculoId } },
           contrato: { connect: { id: contratoId } },
-          createdAt: new Date(),
-          createdBy: userContext.userId,
+          ...createAuditData(userContext),
         },
         select: {
           id: true,
@@ -648,8 +641,7 @@ export class VeiculoService {
           ...(contratoId && {
             contrato: { connect: { id: contratoId } },
           }),
-          updatedAt: new Date(),
-          updatedBy: userContext.userId,
+          ...updateAuditData(userContext),
         },
         select: {
           id: true,
@@ -723,10 +715,7 @@ export class VeiculoService {
 
       await this.db.getPrisma().veiculo.update({
         where: { id },
-        data: {
-          deletedAt: new Date(),
-          deletedBy: userContext.userId,
-        },
+        data: deleteAuditData(userContext),
       });
 
       this.logger.log(`Veículo ${id} removido com sucesso (soft delete)`);

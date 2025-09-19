@@ -26,6 +26,6 @@ import { ChecklistService } from './checklist.service';
   imports: [DbModule, AuthModule],
   providers: [ChecklistService],
   exports: [ChecklistService],
-  controllers: [ChecklistController, ChecklistSyncController],
+  controllers: [ChecklistSyncController, ChecklistController],
 })
 export class ChecklistModule {}
