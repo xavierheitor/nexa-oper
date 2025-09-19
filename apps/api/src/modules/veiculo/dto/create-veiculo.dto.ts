@@ -36,7 +36,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { VALIDATION_CONFIG } from '../constants/veiculo.constants';
+import { VEICULO_VALIDATION_CONFIG } from '../constants/veiculo.constants';
 
 /**
  * DTO para criação de novo veículo
@@ -48,16 +48,16 @@ export class CreateVeiculoDto {
   @ApiProperty({
     description: 'Placa do veículo (sem máscara)',
     example: 'ABC1D23',
-    minLength: VALIDATION_CONFIG.MIN_PLACA_LENGTH,
-    maxLength: VALIDATION_CONFIG.MAX_PLACA_LENGTH,
+    minLength: VEICULO_VALIDATION_CONFIG.MIN_PLACA_LENGTH,
+    maxLength: VEICULO_VALIDATION_CONFIG.MAX_PLACA_LENGTH,
   })
   @IsString({ message: 'Placa deve ser uma string' })
   @IsNotEmpty({ message: 'Placa é obrigatória' })
-  @MinLength(VALIDATION_CONFIG.MIN_PLACA_LENGTH, {
-    message: `Placa deve ter pelo menos ${VALIDATION_CONFIG.MIN_PLACA_LENGTH} caractere`,
+  @MinLength(VEICULO_VALIDATION_CONFIG.MIN_PLACA_LENGTH, {
+    message: `Placa deve ter pelo menos ${VEICULO_VALIDATION_CONFIG.MIN_PLACA_LENGTH} caractere`,
   })
-  @MaxLength(VALIDATION_CONFIG.MAX_PLACA_LENGTH, {
-    message: `Placa deve ter no máximo ${VALIDATION_CONFIG.MAX_PLACA_LENGTH} caracteres`,
+  @MaxLength(VEICULO_VALIDATION_CONFIG.MAX_PLACA_LENGTH, {
+    message: `Placa deve ter no máximo ${VEICULO_VALIDATION_CONFIG.MAX_PLACA_LENGTH} caracteres`,
   })
   @Transform(({ value }) => value?.trim().toUpperCase())
   placa: string;
@@ -68,16 +68,16 @@ export class CreateVeiculoDto {
   @ApiProperty({
     description: 'Modelo do veículo',
     example: 'Caminhão Basculante',
-    minLength: VALIDATION_CONFIG.MIN_MODELO_LENGTH,
-    maxLength: VALIDATION_CONFIG.MAX_MODELO_LENGTH,
+    minLength: VEICULO_VALIDATION_CONFIG.MIN_MODELO_LENGTH,
+    maxLength: VEICULO_VALIDATION_CONFIG.MAX_MODELO_LENGTH,
   })
   @IsString({ message: 'Modelo deve ser uma string' })
   @IsNotEmpty({ message: 'Modelo é obrigatório' })
-  @MinLength(VALIDATION_CONFIG.MIN_MODELO_LENGTH, {
-    message: `Modelo deve ter pelo menos ${VALIDATION_CONFIG.MIN_MODELO_LENGTH} caractere`,
+  @MinLength(VEICULO_VALIDATION_CONFIG.MIN_MODELO_LENGTH, {
+    message: `Modelo deve ter pelo menos ${VEICULO_VALIDATION_CONFIG.MIN_MODELO_LENGTH} caractere`,
   })
-  @MaxLength(VALIDATION_CONFIG.MAX_MODELO_LENGTH, {
-    message: `Modelo deve ter no máximo ${VALIDATION_CONFIG.MAX_MODELO_LENGTH} caracteres`,
+  @MaxLength(VEICULO_VALIDATION_CONFIG.MAX_MODELO_LENGTH, {
+    message: `Modelo deve ter no máximo ${VEICULO_VALIDATION_CONFIG.MAX_MODELO_LENGTH} caracteres`,
   })
   @Transform(({ value }) => value?.trim())
   modelo: string;
@@ -88,16 +88,16 @@ export class CreateVeiculoDto {
   @ApiProperty({
     description: 'Ano de fabricação do veículo',
     example: 2024,
-    minimum: VALIDATION_CONFIG.MIN_ANO,
-    maximum: VALIDATION_CONFIG.MAX_ANO,
+    minimum: VEICULO_VALIDATION_CONFIG.MIN_ANO,
+    maximum: VEICULO_VALIDATION_CONFIG.MAX_ANO,
   })
   @Type(() => Number)
   @IsInt({ message: 'Ano deve ser um número inteiro' })
-  @Min(VALIDATION_CONFIG.MIN_ANO, {
-    message: `Ano deve ser no mínimo ${VALIDATION_CONFIG.MIN_ANO}`,
+  @Min(VEICULO_VALIDATION_CONFIG.MIN_ANO, {
+    message: `Ano deve ser no mínimo ${VEICULO_VALIDATION_CONFIG.MIN_ANO}`,
   })
-  @Max(VALIDATION_CONFIG.MAX_ANO, {
-    message: `Ano deve ser no máximo ${VALIDATION_CONFIG.MAX_ANO}`,
+  @Max(VEICULO_VALIDATION_CONFIG.MAX_ANO, {
+    message: `Ano deve ser no máximo ${VEICULO_VALIDATION_CONFIG.MAX_ANO}`,
   })
   ano: number;
 

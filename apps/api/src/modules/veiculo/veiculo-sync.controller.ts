@@ -6,7 +6,14 @@
  * do usuário autenticado.
  */
 
-import { Controller, Get, HttpStatus, Logger, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Logger,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -16,12 +23,14 @@ import {
 import { JwtAuthGuard } from '../engine/auth/guard/jwt-auth.guard';
 import { GetUserContracts } from '../engine/auth/decorator/get-user-contracts.decorator';
 import { ContractPermission } from '../engine/auth/service/contract-permissions.service';
+import { SyncAuditRemoverInterceptor } from '../../shared/interceptors';
 import { VeiculoService } from './veiculo.service';
 import { VeiculoSyncDto } from './dto';
 
 @ApiTags('veiculos-sync')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(SyncAuditRemoverInterceptor)
 @Controller('veiculos/sync')
 export class VeiculoSyncController {
   private readonly logger = new Logger(VeiculoSyncController.name);

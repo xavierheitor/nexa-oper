@@ -74,6 +74,7 @@ import {
   PAGINATION_CONFIG,
   AUDIT_CONFIG,
   ERROR_MESSAGES,
+  APR_ORDER_CONFIG_COMPAT,
   ORDER_CONFIG,
 } from './constants/apr.constants';
 
@@ -352,7 +353,7 @@ export class AprService {
         where: {
           deletedAt: null,
         },
-        orderBy: ORDER_CONFIG.PERGUNTA_RELACAO_ORDER,
+        orderBy: APR_ORDER_CONFIG_COMPAT.PERGUNTA_RELACAO_ORDER,
         select: {
           id: true,
           aprId: true,
@@ -428,7 +429,7 @@ export class AprService {
         where: {
           deletedAt: null,
         },
-        orderBy: ORDER_CONFIG.OPCAO_RELACAO_ORDER,
+        orderBy: APR_ORDER_CONFIG_COMPAT.OPCAO_RELACAO_ORDER,
         select: {
           id: true,
           aprId: true,
@@ -467,7 +468,7 @@ export class AprService {
         where: {
           deletedAt: null,
         },
-        orderBy: ORDER_CONFIG.TIPO_ATIVIDADE_RELACAO_ORDER,
+        orderBy: APR_ORDER_CONFIG_COMPAT.TIPO_ATIVIDADE_RELACAO_ORDER,
         select: {
           id: true,
           aprId: true,

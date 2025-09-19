@@ -21,7 +21,14 @@
  * - GET /api/checklist/sync/tipos-equipe/relacoes - Sincronizar relações Checklist-TipoEquipe
  */
 
-import { Controller, Get, HttpStatus, Logger, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Logger,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -29,6 +36,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../engine/auth/guard/jwt-auth.guard';
+import { SyncAuditRemoverInterceptor } from '../../shared/interceptors';
 import { ChecklistService } from './checklist.service';
 import {
   ChecklistOpcaoRespostaRelacaoSyncDto,
@@ -46,6 +54,7 @@ import {
 @ApiTags('checklist-sync')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(SyncAuditRemoverInterceptor)
 @Controller('checklist/sync')
 export class ChecklistSyncController {
   private readonly logger = new Logger(ChecklistSyncController.name);

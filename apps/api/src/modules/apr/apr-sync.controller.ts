@@ -37,7 +37,14 @@
  * ```
  */
 
-import { Controller, Get, HttpStatus, Logger, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Logger,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import {
   ApiOperation,
   ApiResponse,
@@ -45,6 +52,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../engine/auth/guard/jwt-auth.guard';
+import { SyncAuditRemoverInterceptor } from '../../shared/interceptors';
 import { AprService } from './apr.service';
 import {
   AprOpcaoRespostaRelacaoSyncDto,
@@ -74,6 +82,7 @@ import {
 @ApiTags('apr-sync')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(SyncAuditRemoverInterceptor)
 @Controller('apr/sync')
 export class AprSyncController {
   private readonly logger = new Logger(AprSyncController.name);

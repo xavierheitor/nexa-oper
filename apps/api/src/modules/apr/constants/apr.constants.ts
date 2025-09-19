@@ -5,7 +5,7 @@
  * do módulo APR. Constantes comuns estão em shared/constants.
  */
 
-import { COMMON_ERROR_MESSAGES } from '../../../shared/constants';
+import { COMMON_ERROR_MESSAGES, ORDER_CONFIG } from '../../../shared/constants';
 
 /**
  * Configurações de validação específicas do APR
@@ -18,7 +18,11 @@ export const APR_VALIDATION_CONFIG = {
 } as const;
 
 // Re-export das constantes compartilhadas para manter compatibilidade
-export { AUDIT_CONFIG, CACHE_CONFIG } from '../../../shared/constants';
+export {
+  PAGINATION_CONFIG,
+  AUDIT_CONFIG,
+  CACHE_CONFIG,
+} from '../../../shared/constants';
 
 /**
  * Mensagens de erro específicas do APR
@@ -59,3 +63,11 @@ export const APR_ORDER_CONFIG = {
 
 // Re-export das constantes compartilhadas para manter compatibilidade
 export { ORDER_CONFIG } from '../../../shared/constants';
+
+/**
+ * Ordenações específicas do APR (compatibilidade)
+ */
+export const APR_ORDER_CONFIG_COMPAT = {
+  ...ORDER_CONFIG,
+  ...APR_ORDER_CONFIG,
+} as const;

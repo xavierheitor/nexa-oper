@@ -74,8 +74,9 @@ import {
 import {
   AUDIT_CONFIG,
   ERROR_MESSAGES,
-  ORDER_CONFIG,
+  CHECKLIST_ORDER_CONFIG_COMPAT,
   PAGINATION_CONFIG,
+  ORDER_CONFIG,
 } from './constants/checklist.constants';
 
 /**
@@ -366,7 +367,7 @@ export class ChecklistService {
         where: {
           deletedAt: null,
         },
-        orderBy: ORDER_CONFIG.PERGUNTA_RELACAO_ORDER,
+        orderBy: CHECKLIST_ORDER_CONFIG_COMPAT.PERGUNTA_RELACAO_ORDER,
         select: {
           id: true,
           checklistId: true,
@@ -450,7 +451,7 @@ export class ChecklistService {
           where: {
             deletedAt: null,
           },
-          orderBy: ORDER_CONFIG.OPCAO_RELACAO_ORDER,
+          orderBy: CHECKLIST_ORDER_CONFIG_COMPAT.OPCAO_RELACAO_ORDER,
           select: {
             id: true,
             checklistId: true,
@@ -494,7 +495,7 @@ export class ChecklistService {
           where: {
             deletedAt: null,
           },
-          orderBy: ORDER_CONFIG.TIPO_VEICULO_RELACAO_ORDER,
+          orderBy: CHECKLIST_ORDER_CONFIG_COMPAT.TIPO_VEICULO_RELACAO_ORDER,
           select: {
             id: true,
             checklistId: true,
@@ -538,7 +539,7 @@ export class ChecklistService {
           where: {
             deletedAt: null,
           },
-          orderBy: ORDER_CONFIG.TIPO_EQUIPE_RELACAO_ORDER,
+          orderBy: CHECKLIST_ORDER_CONFIG_COMPAT.TIPO_EQUIPE_RELACAO_ORDER,
           select: {
             id: true,
             checklistId: true,

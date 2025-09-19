@@ -26,7 +26,12 @@ export const VEICULO_VALIDATION_CONFIG = {
 } as const;
 
 // Re-export das constantes compartilhadas para manter compatibilidade
-export { AUDIT_CONFIG, CACHE_CONFIG } from '../../../shared/constants';
+export {
+  PAGINATION_CONFIG,
+  AUDIT_CONFIG,
+  CACHE_CONFIG,
+  VALIDATION_CONFIG,
+} from '../../../shared/constants';
 
 /**
  * Mensagens de erro específicas do Veículo
