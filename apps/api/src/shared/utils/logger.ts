@@ -24,7 +24,13 @@ export enum LogLevel {
 export const LOG_CONFIG = {
   // Reduzir verbosidade em produção
   PRODUCTION_LEVELS: [LogLevel.ERROR, LogLevel.WARN, LogLevel.LOG],
-  DEVELOPMENT_LEVELS: [LogLevel.ERROR, LogLevel.WARN, LogLevel.LOG, LogLevel.DEBUG, LogLevel.VERBOSE],
+  DEVELOPMENT_LEVELS: [
+    LogLevel.ERROR,
+    LogLevel.WARN,
+    LogLevel.LOG,
+    LogLevel.DEBUG,
+    LogLevel.VERBOSE,
+  ],
 
   // Prefixos padronizados
   PREFIXES: {
@@ -86,7 +92,11 @@ export class StandardLogger extends Logger {
   /**
    * Log de início de operação
    */
-  operationStart(operation: string, params?: Record<string, any>, context?: string): void {
+  operationStart(
+    operation: string,
+    params?: Record<string, any>,
+    context?: string
+  ): void {
     const paramsStr = params ? ` - Parâmetros: ${JSON.stringify(params)}` : '';
     this.operation(`Iniciando ${operation}${paramsStr}`, context);
   }
@@ -116,8 +126,15 @@ export class StandardLogger extends Logger {
   /**
    * Log de permissão de contrato
    */
-  contractPermission(contratoId: number, allowed: boolean, context?: string): void {
-    this.auth(`Contrato ${contratoId}: ${allowed ? 'permitido' : 'negado'}`, context);
+  contractPermission(
+    contratoId: number,
+    allowed: boolean,
+    context?: string
+  ): void {
+    this.auth(
+      `Contrato ${contratoId}: ${allowed ? 'permitido' : 'negado'}`,
+      context
+    );
   }
 }
 
@@ -138,7 +155,11 @@ export function shouldLogDebug(): boolean {
 /**
  * Formata mensagem de log com timestamp
  */
-export function formatLogMessage(level: LogLevel, message: string, context?: string): string {
+export function formatLogMessage(
+  level: LogLevel,
+  message: string,
+  context?: string
+): string {
   const timestamp = new Date().toISOString();
   const contextStr = context ? `[${context}]` : '';
   return `${timestamp} ${level.toUpperCase()} ${contextStr} ${message}`;

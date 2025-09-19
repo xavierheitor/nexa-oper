@@ -13,23 +13,33 @@ import { VALIDATION_ERRORS } from '../constants/errors';
  */
 export function validateId(id: number, fieldName = 'ID'): void {
   if (!id || !Number.isInteger(id) || id <= 0) {
-    throw new BadRequestException(`${fieldName} deve ser um número inteiro positivo`);
+    throw new BadRequestException(
+      `${fieldName} deve ser um número inteiro positivo`
+    );
   }
 }
 
 /**
  * Valida se um ID opcional é válido quando fornecido
  */
-export function validateOptionalId(id: number | undefined, fieldName = 'ID'): void {
+export function validateOptionalId(
+  id: number | undefined,
+  fieldName = 'ID'
+): void {
   if (id !== undefined && (!Number.isInteger(id) || id <= 0)) {
-    throw new BadRequestException(`${fieldName} deve ser um número inteiro positivo`);
+    throw new BadRequestException(
+      `${fieldName} deve ser um número inteiro positivo`
+    );
   }
 }
 
 /**
  * Valida se uma string não está vazia após trim
  */
-export function validateRequiredString(value: string | undefined, fieldName: string): void {
+export function validateRequiredString(
+  value: string | undefined,
+  fieldName: string
+): void {
   if (!value || value.trim().length === 0) {
     throw new BadRequestException(`${fieldName} é obrigatório`);
   }
@@ -45,11 +55,15 @@ export function validateStringLength(
   maxLength: number
 ): void {
   if (value.length < minLength) {
-    throw new BadRequestException(`${fieldName} deve ter pelo menos ${minLength} caracteres`);
+    throw new BadRequestException(
+      `${fieldName} deve ter pelo menos ${minLength} caracteres`
+    );
   }
 
   if (value.length > maxLength) {
-    throw new BadRequestException(`${fieldName} deve ter no máximo ${maxLength} caracteres`);
+    throw new BadRequestException(
+      `${fieldName} deve ter no máximo ${maxLength} caracteres`
+    );
   }
 }
 
@@ -89,7 +103,9 @@ export function validateEstadoFormat(estado: string): void {
 export function validateAno(ano: number): void {
   const currentYear = new Date().getFullYear();
   if (!Number.isInteger(ano) || ano < 1900 || ano > currentYear + 1) {
-    throw new BadRequestException(`Ano deve estar entre 1900 e ${currentYear + 1}`);
+    throw new BadRequestException(
+      `Ano deve estar entre 1900 e ${currentYear + 1}`
+    );
   }
 }
 

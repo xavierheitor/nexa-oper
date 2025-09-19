@@ -19,7 +19,8 @@ export const VALIDATION_ERRORS = {
   // IDs
   INVALID_ID: 'ID deve ser um número inteiro positivo',
   INVALID_CONTRATO_ID: 'ID do contrato deve ser um número inteiro positivo',
-  INVALID_TIPO_VEICULO_ID: 'ID do tipo de veículo deve ser um número inteiro positivo',
+  INVALID_TIPO_VEICULO_ID:
+    'ID do tipo de veículo deve ser um número inteiro positivo',
 
   // Campos obrigatórios
   NOME_REQUIRED: 'Nome é obrigatório',

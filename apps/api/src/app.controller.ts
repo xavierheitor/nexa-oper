@@ -161,7 +161,9 @@ export class AppController {
     description: 'Versão retornada com sucesso',
   })
   getVersion(): { version: string } {
-    this.logger.log('Solicitação de versão da aplicação');
+    this.logger.log(
+      'Solicitação de versão da aplicação - watch mode funcionando!'
+    );
     return this.appService.getVersion();
   }
 }

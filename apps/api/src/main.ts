@@ -76,6 +76,7 @@ async function bootstrap(): Promise<void> {
     // Criar aplicação NestJS
     const app = await NestFactory.create(AppModule, {
       logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+      abortOnError: false, // Evita crash em caso de erro durante inicialização
     });
 
     // Configurar parsing de requisições com limite generoso
@@ -142,6 +143,31 @@ async function bootstrap(): Promise<void> {
     app.setGlobalPrefix('api');
     app.enableShutdownHooks();
     logger.log('✅ Prefixo global "api" configurado');
+
+    // Configurar graceful shutdown
+    const gracefulShutdown = async (signal: string) => {
+      logger.log(`🔄 Recebido sinal ${signal}. Iniciando graceful shutdown...`);
+
+      try {
+        await app.close();
+        logger.log('✅ Aplicação finalizada com sucesso');
+        process.exit(0);
+      } catch (error) {
+        logger.error('❌ Erro durante graceful shutdown:', error);
+        process.exit(1);
+      }
+    };
+
+    // Registrar handlers de shutdown
+    process.on('SIGTERM', () => {
+      void gracefulShutdown('SIGTERM');
+    });
+    process.on('SIGINT', () => {
+      void gracefulShutdown('SIGINT');
+    });
+    process.on('SIGHUP', () => {
+      void gracefulShutdown('SIGHUP');
+    });
 
     // Inicializar servidor
     const port = process.env.PORT ?? 3001;

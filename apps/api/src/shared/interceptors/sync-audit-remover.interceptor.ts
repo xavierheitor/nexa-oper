@@ -132,7 +132,7 @@ export class SyncAuditRemoverInterceptor implements NestInterceptor {
         `Campos de auditoria a remover: ${this.AUDIT_FIELDS.join(', ')}`
       );
       this.AUDIT_FIELDS.forEach(field => {
-        if (cleanedData.hasOwnProperty(field)) {
+        if (Object.prototype.hasOwnProperty.call(cleanedData, field)) {
           this.logger.debug(
             `Removendo campo de auditoria: ${field} = ${cleanedData[field]}`
           );

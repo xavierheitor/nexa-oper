@@ -30,14 +30,6 @@ module.exports = {
     ],
   },
 
-  // Arquivos para coletar cobertura de código
-  collectCoverageFrom: [
-    '**/*.(t|j)s',
-    '!**/*.spec.ts',
-    '!**/*.interface.ts',
-    '!**/node_modules/**',
-  ],
-
   // Diretório para relatórios de cobertura
   coverageDirectory: '../coverage',
 
@@ -72,7 +64,7 @@ module.exports = {
   },
 
   // Arquivos de setup executados após o ambiente ser configurado
-  setupFilesAfterEnv: [],
+  setupFilesAfterEnv: ['<rootDir>/test-setup.ts'],
 
   // Padrões de arquivos/diretórios a serem ignorados
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
@@ -87,5 +79,22 @@ module.exports = {
   extensionsToTreatAsEsm: [],
 
   // Configuração verbose para logs detalhados
-  verbose: true,
+  verbose: false,
+
+  // Configurações para evitar conflitos com logs do NestJS
+  silent: false,
+
+  // Configuração para capturar logs
+  collectCoverageFrom: [
+    '**/*.(t|j)s',
+    '!**/*.spec.ts',
+    '!**/*.interface.ts',
+    '!**/node_modules/**',
+    '!**/test-setup.ts',
+  ],
+
+  // Configuração para evitar problemas com stdout/stderr
+  testEnvironmentOptions: {
+    NODE_ENV: 'test',
+  },
 };

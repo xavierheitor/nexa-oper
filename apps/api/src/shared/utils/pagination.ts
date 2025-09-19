@@ -27,7 +27,10 @@ export function validatePaginationParams(page: number, limit: number): void {
     throw new BadRequestException('Página deve ser maior que 0');
   }
 
-  if (limit < PAGINATION_DEFAULTS.MIN_LIMIT || limit > PAGINATION_DEFAULTS.MAX_LIMIT) {
+  if (
+    limit < PAGINATION_DEFAULTS.MIN_LIMIT ||
+    limit > PAGINATION_DEFAULTS.MAX_LIMIT
+  ) {
     throw new BadRequestException(
       `Limite deve estar entre ${PAGINATION_DEFAULTS.MIN_LIMIT} e ${PAGINATION_DEFAULTS.MAX_LIMIT}`
     );
