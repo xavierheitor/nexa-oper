@@ -47,6 +47,7 @@ import { VeiculoModule } from '@modules/veiculo/veiculo.module';
 import { EletricistaModule } from '@modules/eletricista/eletricista.module';
 import { LoggerMiddleware } from '@common/middleware/logger.middleware';
 import { EquipeModule } from './modules/equipe';
+import { AtividadeModule } from './modules/atividade';
 
 /**
  * Módulo raiz da aplicação
@@ -71,6 +72,7 @@ import { EquipeModule } from './modules/equipe';
     VeiculoModule,
     EletricistaModule,
     EquipeModule,
+    AtividadeModule,
 
     // Módulos de autenticação e permissões
     AuthModule,
