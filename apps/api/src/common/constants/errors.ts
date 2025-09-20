@@ -56,6 +56,7 @@ export const NOT_FOUND_ERRORS = {
   TIPO_EQUIPE_NOT_FOUND: 'Tipo de equipe não encontrado',
   EQUIPE_NOT_FOUND: 'Equipe não encontrada',
   TIPO_ATIVIDADE_NOT_FOUND: 'Tipo de atividade não encontrado',
+  TURNO_NOT_FOUND: 'Turno não encontrado',
   CHECKLIST_NOT_FOUND: 'Checklist não encontrado',
   APR_NOT_FOUND: 'Modelo APR não encontrado',
   PERGUNTA_NOT_FOUND: 'Pergunta não encontrada',

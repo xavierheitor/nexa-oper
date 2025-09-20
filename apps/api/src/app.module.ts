@@ -48,6 +48,7 @@ import { EletricistaModule } from '@modules/eletricista/eletricista.module';
 import { LoggerMiddleware } from '@common/middleware/logger.middleware';
 import { EquipeModule } from './modules/equipe';
 import { AtividadeModule } from './modules/atividade';
+import { TurnoModule } from './modules/turno';
 
 /**
  * Módulo raiz da aplicação
@@ -73,6 +74,7 @@ import { AtividadeModule } from './modules/atividade';
     EletricistaModule,
     EquipeModule,
     AtividadeModule,
+    TurnoModule,
 
     // Módulos de autenticação e permissões
     AuthModule,
