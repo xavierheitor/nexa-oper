@@ -69,15 +69,32 @@ export class ChecklistTipoEquipeRelacaoRepository extends AbstractCrudRepository
     checklistId: number,
     userId: string
   ): Promise<ChecklistTipoEquipeRelacao> {
+    // Buscar o tipo do checklist que está sendo vinculado
+    const checklist = await prisma.checklist.findUnique({
+      where: { id: checklistId },
+      select: { tipoChecklistId: true },
+    });
+
+    if (!checklist) {
+      throw new Error('Checklist não encontrado');
+    }
+
+    // Soft delete de checklists do mesmo tipo já vinculados a esta equipe
     await prisma.checklistTipoEquipeRelacao.updateMany({
-      where: { tipoEquipeId, deletedAt: null },
+      where: {
+        tipoEquipeId,
+        tipoChecklistId: checklist.tipoChecklistId,
+        deletedAt: null,
+      },
       data: { deletedAt: new Date(), deletedBy: userId },
     });
 
+    // Criar nova relação
     return prisma.checklistTipoEquipeRelacao.create({
       data: {
         checklist: { connect: { id: checklistId } },
         tipoEquipe: { connect: { id: tipoEquipeId } },
+        tipoChecklist: { connect: { id: checklist.tipoChecklistId } },
         createdAt: new Date(),
         createdBy: userId,
       },

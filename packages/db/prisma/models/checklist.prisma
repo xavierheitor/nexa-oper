@@ -10,6 +10,8 @@ model TipoChecklist {
   deletedBy String?   @db.VarChar(255)
 
   Checklist Checklist[]
+
+  ChecklistTipoEquipeRelacao ChecklistTipoEquipeRelacao[]
 }
 
 model Checklist {
@@ -125,6 +127,10 @@ model ChecklistTipoEquipeRelacao{
   tipoEquipeId Int
   tipoEquipe   TipoEquipe @relation(fields: [tipoEquipeId], references: [id])
 
+  // NOVO CAMPO: referência direta ao tipo de checklist
+  tipoChecklistId Int
+  tipoChecklist   TipoChecklist @relation(fields: [tipoChecklistId], references: [id])
+
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
   updatedAt DateTime? @updatedAt
@@ -132,6 +138,7 @@ model ChecklistTipoEquipeRelacao{
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  // Índice único condicional: apenas um checklist ativo por tipo de equipe
-  @@unique([tipoEquipeId, deletedAt], map: "unique_active_checklist_tipo_equipe")
+  // UNIQUE KEY: permite múltiplos checklists por tipo de equipe,
+  // mas não permite checklists do mesmo tipo ativos simultaneamente
+  @@unique([tipoEquipeId, tipoChecklistId, deletedAt], map: "unique_active_checklist_tipo_por_equipe")
 }
