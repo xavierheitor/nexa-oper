@@ -46,6 +46,7 @@ import { ChecklistModule } from '@modules/checklist/checklist.module';
 import { VeiculoModule } from '@modules/veiculo/veiculo.module';
 import { EletricistaModule } from '@modules/eletricista/eletricista.module';
 import { LoggerMiddleware } from '@common/middleware/logger.middleware';
+import { EquipeModule } from './modules/equipe';
 
 /**
  * Módulo raiz da aplicação
@@ -69,6 +70,7 @@ import { LoggerMiddleware } from '@common/middleware/logger.middleware';
     ChecklistModule,
     VeiculoModule,
     EletricistaModule,
+    EquipeModule,
 
     // Módulos de autenticação e permissões
     AuthModule,

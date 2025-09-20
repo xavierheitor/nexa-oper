@@ -45,8 +45,83 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as express from 'express';
 import { NextFunction, Request, Response } from 'express';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from '@common/filters/all-exceptions.filter';
+
+const execAsync = promisify(exec);
+
+/**
+ * Verifica se a porta está em uso
+ * @param port - Porta a ser verificada
+ * @returns True se a porta estiver em uso
+ */
+async function isPortInUse(port: number): Promise<boolean> {
+  try {
+    const { stdout } = await execAsync(`lsof -ti:${port}`);
+    return stdout.trim().length > 0;
+  } catch {
+    // Se não encontrar processos, a porta está livre
+    return false;
+  }
+}
+
+/**
+ * Mata processos que estão usando a porta
+ * @param port - Porta a ser liberada
+ */
+async function killPortProcesses(port: number): Promise<void> {
+  try {
+    const { stdout } = await execAsync(`lsof -ti:${port}`);
+    const pids = stdout
+      .trim()
+      .split('\n')
+      .filter(pid => pid.length > 0);
+
+    if (pids.length > 0) {
+      console.log(
+        `🔄 Encontrados ${pids.length} processo(s) usando a porta ${port}`
+      );
+
+      for (const pid of pids) {
+        try {
+          await execAsync(`kill -9 ${pid}`);
+          console.log(`✅ Processo ${pid} finalizado`);
+        } catch (error) {
+          console.log(`⚠️  Erro ao finalizar processo ${pid}:`, error.message);
+        }
+      }
+
+      // Aguardar um pouco para garantir que a porta foi liberada
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  } catch {
+    console.log(`ℹ️  Nenhum processo encontrado na porta ${port}`);
+  }
+}
+
+/**
+ * Limpa a porta antes da inicialização
+ * @param port - Porta a ser limpa
+ */
+async function cleanupPort(port: number): Promise<void> {
+  console.log(`🔍 Verificando porta ${port}...`);
+
+  if (await isPortInUse(port)) {
+    console.log(`⚠️  Porta ${port} está em uso. Liberando...`);
+    await killPortProcesses(port);
+
+    // Verificar novamente
+    if (await isPortInUse(port)) {
+      throw new Error(`Falha ao liberar porta ${port}`);
+    } else {
+      console.log(`✅ Porta ${port} liberada com sucesso`);
+    }
+  } else {
+    console.log(`✅ Porta ${port} está livre`);
+  }
+}
 
 /**
  * Função principal de inicialização da aplicação
@@ -72,6 +147,10 @@ async function bootstrap(): Promise<void> {
 
   try {
     logger.log('🚀 Iniciando aplicação Nexa Oper API...');
+
+    // Limpar porta antes da inicialização
+    const port = parseInt(process.env.PORT ?? '3001', 10);
+    await cleanupPort(port);
 
     // Criar aplicação NestJS
     const app = await NestFactory.create(AppModule, {
@@ -170,7 +249,6 @@ async function bootstrap(): Promise<void> {
     });
 
     // Inicializar servidor
-    const port = process.env.PORT ?? 3001;
     await app.listen(port);
 
     // Logging final de sucesso
