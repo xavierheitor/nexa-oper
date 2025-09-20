@@ -15,7 +15,6 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { VEICULO_VALIDATION_CONFIG } from '../constants/veiculo.constants';
 
 /**
  * DTO para parâmetros de consulta de veículos

@@ -13,8 +13,5 @@ export {
 export { VeiculoListResponseDto } from './veiculo-list-response.dto';
 export { VeiculoQueryDto } from './veiculo-query.dto';
 
-// DTOs de paginação
-export { PaginationMetaDto } from './pagination-meta.dto';
-
 // DTOs de sincronização
 export { VeiculoSyncDto } from './veiculo-sync.dto';

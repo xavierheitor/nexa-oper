@@ -12,15 +12,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DbService } from './db/db.service';
+import { DatabaseService } from '@database/database.service';
 
 /**
- * Mock do DbService para testes isolados
+ * Mock do DatabaseService para testes isolados
  *
  * Simula o comportamento do serviço de banco de dados
  * sem necessidade de conexão real durante os testes.
  */
-const mockDbService = {
+const mockDatabaseService = {
   healthCheck: jest.fn().mockResolvedValue(true),
 };
 
@@ -40,8 +40,8 @@ describe('AppController', () => {
       providers: [
         AppService,
         {
-          provide: DbService,
-          useValue: mockDbService,
+          provide: DatabaseService,
+          useValue: mockDatabaseService,
         },
       ],
     }).compile();
@@ -84,7 +84,7 @@ describe('AppController', () => {
 
     it('should handle database connection failure', async () => {
       // Mock falha na conexão do banco
-      mockDbService.healthCheck.mockResolvedValueOnce(false);
+      mockDatabaseService.healthCheck.mockResolvedValueOnce(false);
 
       const result = await appController.getHealthCheck();
 

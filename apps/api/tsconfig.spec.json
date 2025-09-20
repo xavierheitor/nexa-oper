@@ -21,7 +21,24 @@
     "noImplicitAny": true,
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["jest", "node"]
+    "types": [
+      "jest",
+      "node"
+    ],
+    "paths": {
+      "@app/*": [
+        "src/*"
+      ],
+      "@common/*": [
+        "src/common/*"
+      ],
+      "@modules/*": [
+        "src/modules/*"
+      ],
+      "@database/*": [
+        "src/database/*"
+      ]
+    }
   },
   "include": [
     "src/**/*.spec.ts",

@@ -9,24 +9,25 @@ integração com o sistema de permissões de contrato.
 ```bash
 veiculo/
 ├── constants/
-│   ├── veiculo.constants.ts          # Constantes do módulo
-│   └── index.ts                      # Exportações de constantes
+│   ├── veiculo.constants.ts               # Constantes do módulo
+│   └── index.ts                           # Exportações de constantes
 ├── controllers/
-│   └── index.ts                      # Exportações de controllers
+│   ├── veiculo.controller.ts              # Controller CRUD (Web)
+│   ├── veiculo-sync.controller.ts         # Controller de sincronização (Mobile)
+│   └── index.ts                           # Exportações de controllers
+├── services/
+│   ├── veiculo.service.ts                 # Serviço com regras de negócio
+│   └── index.ts                           # Exportações de serviços
 ├── dto/
-│   ├── create-veiculo.dto.ts         # DTO para criação
-│   ├── update-veiculo.dto.ts         # DTO para atualização
-│   ├── veiculo-response.dto.ts       # DTO de resposta individual
-│   ├── veiculo-list-response.dto.ts  # DTO de resposta paginada
-│   ├── veiculo-query.dto.ts          # DTO de parâmetros de consulta
-│   ├── pagination-meta.dto.ts        # DTO de metadados de paginação
-│   ├── veiculo-sync.dto.ts           # DTO para sincronização mobile
-│   └── index.ts                      # Exportações de DTOs
-├── veiculo.controller.ts             # Controller CRUD (Web)
-├── veiculo-sync.controller.ts        # Controller de sincronização (Mobile)
-├── veiculo.service.ts                # Serviço com regras de negócio
-├── veiculo.module.ts                 # Módulo principal
-└── README.md                         # Esta documentação
+│   ├── create-veiculo.dto.ts              # DTO para criação
+│   ├── update-veiculo.dto.ts              # DTO para atualização
+│   ├── veiculo-response.dto.ts            # DTO de resposta individual
+│   ├── veiculo-list-response.dto.ts       # DTO de resposta paginada
+│   ├── veiculo-query.dto.ts               # DTO de parâmetros de consulta
+│   ├── veiculo-sync.dto.ts                # DTO para sincronização mobile
+│   └── index.ts                           # Exportações de DTOs
+├── veiculo.module.ts                      # Módulo principal
+└── README.md                              # Esta documentação
 ```
 
 ## 🎯 Controllers
@@ -66,7 +67,7 @@ Responsável por toda a lógica de negócio de veículos:
 
 - **CreateVeiculoDto / UpdateVeiculoDto** — Entrada validada para criação e atualização.
 - **VeiculoResponseDto** — Estrutura das respostas individuais com relacionamentos (tipo e contrato).
-- **VeiculoListResponseDto** — Listas paginadas com metadados completos.
+- **VeiculoListResponseDto** — Listas paginadas com metadados completos (via `@common/dto/pagination-meta.dto`).
 - **VeiculoQueryDto** — Parâmetros de listagem (página, busca, filtros por tipo e contrato).
 - **VeiculoSyncDto** — Dados completos para sincronização mobile.
 

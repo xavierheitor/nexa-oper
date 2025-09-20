@@ -15,7 +15,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsDate, IsOptional, IsString } from 'class-validator';
 import { ChecklistResponseDto } from './checklist-response.dto';
-import { PaginationMetaDto } from './pagination-meta.dto';
+import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
 
 /**
  * DTO para resposta de lista paginada de checklists

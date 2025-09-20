@@ -8,4 +8,3 @@ export { EletricistaQueryDto } from './eletricista-query.dto';
 export { EletricistaResponseDto } from './eletricista-response.dto';
 export { EletricistaListResponseDto } from './eletricista-list-response.dto';
 export { EletricistaSyncDto } from './eletricista-sync.dto';
-export { PaginationMetaDto } from './pagination-meta.dto';

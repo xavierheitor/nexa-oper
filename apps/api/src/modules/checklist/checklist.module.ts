@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { DbModule } from '../../db/db.module';
-import { AuthModule } from '../engine/auth/module/auth.module';
-import { ChecklistController } from './checklist.controller';
-import { ChecklistSyncController } from './checklist-sync.controller';
-import { ChecklistService } from './checklist.service';
+import { DatabaseModule } from '@database/database.module';
+import { AuthModule } from '@modules/engine/auth/auth.module';
+import { ChecklistController } from './controllers/checklist.controller';
+import { ChecklistSyncController } from './controllers/checklist-sync.controller';
+import { ChecklistService } from './services/checklist.service';
 
 /**
  * Módulo de Checklists
@@ -19,11 +19,11 @@ import { ChecklistService } from './checklist.service';
  * - ChecklistService: Lógica de negócio centralizada
  *
  * IMPORTS:
- * - DbModule: Acesso ao banco de dados via Prisma
+ * - DatabaseModule: Acesso ao banco de dados via Prisma
  * - AuthModule: Autenticação e autorização
  */
 @Module({
-  imports: [DbModule, AuthModule],
+  imports: [DatabaseModule, AuthModule],
   providers: [ChecklistService],
   exports: [ChecklistService],
   controllers: [ChecklistSyncController, ChecklistController],

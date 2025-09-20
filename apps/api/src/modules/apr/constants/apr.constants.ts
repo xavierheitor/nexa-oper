@@ -2,10 +2,10 @@
  * Constantes do módulo APR (Análise Preliminar de Risco)
  *
  * Este arquivo centraliza todas as constantes específicas
- * do módulo APR. Constantes comuns estão em shared/constants.
+ * do módulo APR. Constantes comuns estão em common/constants.
  */
 
-import { COMMON_ERROR_MESSAGES, ORDER_CONFIG } from '../../../shared/constants';
+import { COMMON_ERROR_MESSAGES, ORDER_CONFIG } from '@common/constants';
 
 /**
  * Configurações de validação específicas do APR
@@ -22,7 +22,7 @@ export {
   PAGINATION_CONFIG,
   AUDIT_CONFIG,
   CACHE_CONFIG,
-} from '../../../shared/constants';
+} from '@common/constants';
 
 /**
  * Mensagens de erro específicas do APR
@@ -62,7 +62,7 @@ export const APR_ORDER_CONFIG = {
 } as const;
 
 // Re-export das constantes compartilhadas para manter compatibilidade
-export { ORDER_CONFIG } from '../../../shared/constants';
+export { ORDER_CONFIG } from '@common/constants';
 
 /**
  * Ordenações específicas do APR (compatibilidade)

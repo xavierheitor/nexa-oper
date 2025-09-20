@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { DbModule } from '../../db/db.module';
-import { AuthModule } from '../engine/auth/module/auth.module';
-import { VeiculoController } from './veiculo.controller';
-import { VeiculoSyncController } from './veiculo-sync.controller';
-import { VeiculoService } from './veiculo.service';
+import { DatabaseModule } from '@database/database.module';
+import { AuthModule } from '@modules/engine/auth/auth.module';
+import { VeiculoController } from './controllers/veiculo.controller';
+import { VeiculoSyncController } from './controllers/veiculo-sync.controller';
+import { VeiculoService } from './services/veiculo.service';
 
 /**
  * Módulo de Veículos
@@ -13,7 +13,7 @@ import { VeiculoService } from './veiculo.service';
  * integração com permissões de contrato.
  */
 @Module({
-  imports: [DbModule, AuthModule],
+  imports: [DatabaseModule, AuthModule],
   controllers: [VeiculoSyncController, VeiculoController],
   providers: [VeiculoService],
   exports: [VeiculoService],

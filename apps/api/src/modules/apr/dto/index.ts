@@ -11,7 +11,6 @@
  * - AprResponseDto: Para respostas de modelos individuais
  * - AprListResponseDto: Para respostas de listas paginadas
  * - AprQueryDto: Para parâmetros de consulta
- * - PaginationMetaDto: Para metadados de paginação
  * - DTOs de sincronização para perguntas, opções e relacionamentos
  */
 
@@ -23,8 +22,6 @@ export { AprListResponseDto } from './apr-list-response.dto';
 export { AprQueryDto } from './apr-query.dto';
 
 // DTOs de paginação
-export { PaginationMetaDto } from './pagination-meta.dto';
-
 // DTOs de sincronização
 export { AprPerguntaSyncDto } from './apr-pergunta-sync.dto';
 export { AprPerguntaRelacaoSyncDto } from './apr-pergunta-relacao-sync.dto';

@@ -1,5 +1,5 @@
 import { ForbiddenException } from '@nestjs/common';
-import { ContractPermission } from '../service/contract-permissions.service';
+import { ContractPermission } from '../services/contract-permissions.service';
 
 /**
  * Extrai IDs de contratos permitidos a partir da lista de permissões.
@@ -12,7 +12,7 @@ export function extractAllowedContractIds(
   if (typeof allowedContracts === 'undefined') return null;
   if (!Array.isArray(allowedContracts)) return [];
   if (allowedContracts.length === 0) return [];
-  return allowedContracts.map((c) => c.contratoId);
+  return allowedContracts.map(c => c.contratoId);
 }
 
 /**
@@ -27,5 +27,3 @@ export function ensureContractPermission(
     throw new ForbiddenException(forbiddenMessage);
   }
 }
-
-

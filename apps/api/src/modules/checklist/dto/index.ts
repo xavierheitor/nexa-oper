@@ -11,7 +11,6 @@
  * - ChecklistResponseDto: Para respostas individuais
  * - ChecklistListResponseDto: Para respostas paginadas
  * - ChecklistQueryDto: Para parâmetros de consulta
- * - PaginationMetaDto: Para metadados de paginação
  * - DTOs de sincronização para perguntas, opções e relacionamentos
  */
 
@@ -24,9 +23,6 @@ export {
 } from './checklist-response.dto';
 export { ChecklistListResponseDto } from './checklist-list-response.dto';
 export { ChecklistQueryDto } from './checklist-query.dto';
-
-// DTOs de paginação
-export { PaginationMetaDto } from './pagination-meta.dto';
 
 // DTOs de sincronização
 export { ChecklistPerguntaSyncDto } from './checklist-pergunta-sync.dto';

@@ -31,7 +31,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { AppInfoResponse, HealthCheckResponse } from './app.controller';
-import { DbService } from './db/db.service';
+import { DatabaseService } from '@database/database.service';
 
 /**
  * Serviço principal da aplicação
@@ -43,7 +43,7 @@ import { DbService } from './db/db.service';
 export class AppService {
   private readonly logger = new Logger(AppService.name);
 
-  constructor(private readonly dbService: DbService) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   /**
    * Retorna informações básicas da aplicação
@@ -105,7 +105,7 @@ export class AppService {
 
     try {
       // Verificar conectividade com banco de dados
-      const isDatabaseHealthy = await this.dbService.healthCheck();
+      const isDatabaseHealthy = await this.databaseService.healthCheck();
 
       // Coletar métricas de memória
       const memoryUsage = process.memoryUsage();

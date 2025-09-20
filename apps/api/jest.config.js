@@ -39,6 +39,10 @@ module.exports = {
   // Mapeamento de módulos para resolução de imports
   moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/$1',
+    '^@app/(.*)$': '<rootDir>/$1',
+    '^@common/(.*)$': '<rootDir>/common/$1',
+    '^@modules/(.*)$': '<rootDir>/modules/$1',
+    '^@database/(.*)$': '<rootDir>/database/$1',
   },
 
   // Timeout para testes

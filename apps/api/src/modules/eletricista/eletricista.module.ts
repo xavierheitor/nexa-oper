@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { DbModule } from '../../db/db.module';
-import { AuthModule } from '../engine/auth/module/auth.module';
-import { EletricistaController } from './eletricista.controller';
-import { EletricistaSyncController } from './eletricista-sync.controller';
-import { EletricistaService } from './eletricista.service';
+import { DatabaseModule } from '@database/database.module';
+import { AuthModule } from '@modules/engine/auth/auth.module';
+import { EletricistaController } from './controllers/eletricista.controller';
+import { EletricistaSyncController } from './controllers/eletricista-sync.controller';
+import { EletricistaService } from './services/eletricista.service';
 
 @Module({
-  imports: [DbModule, AuthModule],
+  imports: [DatabaseModule, AuthModule],
   controllers: [EletricistaSyncController, EletricistaController],
   providers: [EletricistaService],
   exports: [EletricistaService],

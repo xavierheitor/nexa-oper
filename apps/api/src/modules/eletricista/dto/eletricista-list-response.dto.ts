@@ -6,7 +6,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsDate, IsOptional, IsString } from 'class-validator';
 import { EletricistaResponseDto } from './eletricista-response.dto';
-import { PaginationMetaDto } from './pagination-meta.dto';
+import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
 
 export class EletricistaListResponseDto {
   @ApiProperty({

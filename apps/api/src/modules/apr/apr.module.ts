@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { DbModule } from '../../db/db.module';
-import { AuthModule } from '../engine/auth/module/auth.module';
-import { AprController } from './apr.controller';
-import { AprSyncController } from './apr-sync.controller';
-import { AprService } from './apr.service';
+import { DatabaseModule } from '@database/database.module';
+import { AuthModule } from '@modules/engine/auth/auth.module';
+import { AprController } from './controllers/apr.controller';
+import { AprSyncController } from './controllers/apr-sync.controller';
+import { AprService } from './services/apr.service';
 
 /**
  * Módulo de APR (Análise Preliminar de Risco)
@@ -19,11 +19,11 @@ import { AprService } from './apr.service';
  * - AprService: Lógica de negócio centralizada
  *
  * IMPORTS:
- * - DbModule: Acesso ao banco de dados via Prisma
+ * - DatabaseModule: Acesso ao banco de dados via Prisma
  * - AuthModule: Autenticação e autorização
  */
 @Module({
-  imports: [DbModule, AuthModule],
+  imports: [DatabaseModule, AuthModule],
   providers: [AprService],
   exports: [AprService],
   controllers: [AprSyncController, AprController],

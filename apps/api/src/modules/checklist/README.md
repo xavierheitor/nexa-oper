@@ -8,29 +8,30 @@ incluindo operações CRUD completas e sincronização para clientes mobile.
 ```bash
 checklist/
 ├── constants/
-│   ├── checklist.constants.ts        # Constantes centralizadas do módulo
-│   └── index.ts                      # Exportações de constantes
+│   ├── checklist.constants.ts             # Constantes centralizadas do módulo
+│   └── index.ts                           # Exportações de constantes
 ├── controllers/
-│   └── index.ts                      # Exportações de controllers
+│   ├── checklist.controller.ts            # Controller CRUD (Web)
+│   ├── checklist-sync.controller.ts       # Controller de sincronização (Mobile)
+│   └── index.ts                           # Exportações de controllers
+├── services/
+│   ├── checklist.service.ts               # Serviço com regras de negócio
+│   └── index.ts                           # Exportações de serviços
 ├── dto/
-│   ├── create-checklist.dto.ts       # DTO para criação
-│   ├── update-checklist.dto.ts       # DTO para atualização
-│   ├── checklist-response.dto.ts     # DTO para respostas individuais
-│   ├── checklist-list-response.dto.ts# DTO para listas paginadas
-│   ├── checklist-query.dto.ts        # DTO para parâmetros de consulta
-│   ├── pagination-meta.dto.ts        # DTO para metadados de paginação
-│   ├── checklist-pergunta-sync.dto.ts            # DTO para sincronização de perguntas
+│   ├── create-checklist.dto.ts            # DTO para criação
+│   ├── update-checklist.dto.ts            # DTO para atualização
+│   ├── checklist-response.dto.ts          # DTO para respostas individuais
+│   ├── checklist-list-response.dto.ts     # DTO para listas paginadas
+│   ├── checklist-query.dto.ts             # DTO para parâmetros de consulta
+│   ├── checklist-pergunta-sync.dto.ts     # DTO para sincronização de perguntas
 │   ├── checklist-pergunta-relacao-sync.dto.ts    # DTO para relações Checklist-Perguntas
 │   ├── checklist-opcao-resposta-sync.dto.ts      # DTO para opções de resposta
 │   ├── checklist-opcao-resposta-relacao-sync.dto.ts # DTO para relações Checklist-Opções
 │   ├── checklist-tipo-veiculo-relacao-sync.dto.ts   # DTO para relações Checklist-TipoVeículo
 │   ├── checklist-tipo-equipe-relacao-sync.dto.ts    # DTO para relações Checklist-TipoEquipe
-│   └── index.ts                      # Exportações de DTOs
-├── checklist.controller.ts           # Controller CRUD (Web)
-├── checklist-sync.controller.ts      # Controller de sincronização (Mobile)
-├── checklist.service.ts              # Serviço com lógica de negócio
-├── checklist.module.ts               # Módulo principal
-└── README.md                         # Esta documentação
+│   └── index.ts                           # Exportações de DTOs
+├── checklist.module.ts                    # Módulo principal
+└── README.md                              # Esta documentação
 ```
 
 ## 🎯 Controllers
@@ -84,7 +85,7 @@ Serviço centralizado com toda a lógica de negócio:
 - **ChecklistResponseDto:** Estrutura de resposta individual
 - **ChecklistListResponseDto:** Estrutura de resposta paginada
 - **ChecklistQueryDto:** Parâmetros de consulta (página, limite, busca, tipo)
-- **PaginationMetaDto:** Metadados de paginação
+- **PaginationMetaDto:** Metadados de paginação (fornecido por `@common/dto/pagination-meta.dto`)
 
 ### DTOs de Sincronização
 

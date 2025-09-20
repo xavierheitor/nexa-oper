@@ -46,7 +46,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as express from 'express';
 import { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
-import { AllExceptionsFilter } from './utils/all-exceptions.filter';
+import { AllExceptionsFilter } from '@common/filters/all-exceptions.filter';
 
 /**
  * Função principal de inicialização da aplicação

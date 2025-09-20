@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { MobileUsersService } from './mobile-users.service';
-import { DbModule } from '../../../db/db.module';
+import { MobileUsersService } from './services/mobile-users.service';
+import { DatabaseModule } from '@database/database.module';
 
 @Module({
-  imports: [DbModule],
+  imports: [DatabaseModule],
   providers: [MobileUsersService],
   exports: [MobileUsersService],
 })

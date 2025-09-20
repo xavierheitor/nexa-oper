@@ -5,7 +5,7 @@
  * módulos, controladores, serviços e middlewares da API.
  *
  * ARQUITETURA MODULAR:
- * - DbModule: Gerenciamento de conexão com banco de dados
+ * - DatabaseModule: Gerenciamento de conexão com banco de dados
  * - AprModule: Funcionalidades de Análise Preliminar de Risco
  * - AppController: Rotas básicas (health check, info)
  * - AppService: Lógica de negócio básica da aplicação
@@ -28,7 +28,7 @@
  * @example
  * ```typescript
  * // Adicionando novo módulo
- * imports: [DbModule, AprModule, ChecklistModule, UserModule]
+ * imports: [DatabaseModule, AprModule, ChecklistModule, UserModule]
  *
  * // Adicionando middleware específico
  * consumer.apply(AuthMiddleware).forRoutes('protected/*');
@@ -38,14 +38,14 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DbModule } from './db/db.module';
-import { AprModule } from './modules/apr/apr.module';
-import { AuthModule } from './modules/engine/auth/module/auth.module';
-import { ContractsModule } from './modules/engine/contracts/contracts.module';
-import { ChecklistModule } from './modules/checklist/checklist.module';
-import { VeiculoModule } from './modules/veiculo/veiculo.module';
-import { EletricistaModule } from './modules/eletricista/eletricista.module';
-import { LoggerMiddleware } from './utils/logger.middleware';
+import { DatabaseModule } from '@database/database.module';
+import { AprModule } from '@modules/apr/apr.module';
+import { AuthModule } from '@modules/engine/auth/auth.module';
+import { ContractsModule } from '@modules/engine/contracts/contracts.module';
+import { ChecklistModule } from '@modules/checklist/checklist.module';
+import { VeiculoModule } from '@modules/veiculo/veiculo.module';
+import { EletricistaModule } from '@modules/eletricista/eletricista.module';
+import { LoggerMiddleware } from '@common/middleware/logger.middleware';
 
 /**
  * Módulo raiz da aplicação
@@ -62,7 +62,7 @@ import { LoggerMiddleware } from './utils/logger.middleware';
 @Module({
   imports: [
     // Módulo de banco de dados - deve ser importado primeiro
-    DbModule,
+    DatabaseModule,
 
     // Módulos de funcionalidades de negócio
     AprModule,

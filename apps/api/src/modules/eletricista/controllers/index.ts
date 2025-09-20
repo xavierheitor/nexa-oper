@@ -1,1 +1,1 @@
-export { EletricistaController } from '../eletricista.controller';
+export { EletricistaController } from './eletricista.controller';

@@ -8,28 +8,29 @@ CRUD e sincronização para clientes mobile.
 ```bash
 apr/
 ├── constants/
-│   ├── apr.constants.ts    # Constantes centralizadas
-│   └── index.ts           # Exportações de constantes
+│   ├── apr.constants.ts         # Constantes centralizadas
+│   └── index.ts                 # Exportações de constantes
 ├── controllers/
-│   └── index.ts           # Exportações de controllers
+│   ├── apr.controller.ts        # Controller CRUD (Web)
+│   ├── apr-sync.controller.ts   # Controller de sincronização (Mobile)
+│   └── index.ts                 # Exportações de controllers
+├── services/
+│   ├── apr.service.ts           # Regras de negócio de APR
+│   └── index.ts                 # Exportações de serviços
 ├── dto/
-│   ├── create-apr.dto.ts  # DTO para criação
-│   ├── update-apr.dto.ts  # DTO para atualização
-│   ├── apr-response.dto.ts # DTO para respostas
+│   ├── create-apr.dto.ts        # DTO para criação
+│   ├── update-apr.dto.ts        # DTO para atualização
+│   ├── apr-response.dto.ts      # DTO para respostas
 │   ├── apr-list-response.dto.ts # DTO para listas paginadas
-│   ├── apr-query.dto.ts   # DTO para parâmetros de consulta
-│   ├── pagination-meta.dto.ts # DTO para metadados de paginação
+│   ├── apr-query.dto.ts         # DTO para parâmetros de consulta
 │   ├── apr-pergunta-sync.dto.ts # DTO para sincronização de perguntas
 │   ├── apr-pergunta-relacao-sync.dto.ts # DTO para relações APR-Perguntas
-│   ├── apr-opcao-resposta-sync.dto.ts # DTO para opções de resposta
+│   ├── apr-opcao-resposta-sync.dto.ts   # DTO para opções de resposta
 │   ├── apr-opcao-resposta-relacao-sync.dto.ts # DTO para relações APR-Opções
 │   ├── apr-tipo-atividade-relacao-sync.dto.ts # DTO para relações APR-TipoAtividade
-│   └── index.ts           # Exportações de DTOs
-├── apr.controller.ts      # Controller CRUD (Web)
-├── apr-sync.controller.ts # Controller de sincronização (Mobile)
-├── apr.service.ts         # Serviço com lógica de negócio
-├── apr.module.ts          # Módulo principal
-└── README.md              # Esta documentação
+│   └── index.ts                 # Exportações de DTOs
+├── apr.module.ts                # Módulo principal
+└── README.md                    # Esta documentação
 ```
 
 ## 🎯 Controllers
@@ -97,7 +98,7 @@ Serviço centralizado com toda a lógica de negócio:
 - **AprResponseDto:** Estrutura de resposta individual
 - **AprListResponseDto:** Estrutura de resposta paginada
 - **AprQueryDto:** Parâmetros de consulta (página, limite, busca)
-- **PaginationMetaDto:** Metadados de paginação
+- **PaginationMetaDto:** Metadados de paginação (importado de `@common/dto/pagination-meta.dto`)
 
 ### DTOs de Sincronização
 
