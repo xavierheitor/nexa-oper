@@ -49,6 +49,7 @@ import { LoggerMiddleware } from '@common/middleware/logger.middleware';
 import { EquipeModule } from './modules/equipe';
 import { AtividadeModule } from './modules/atividade';
 import { TurnoModule } from './modules/turno';
+import { TipoVeiculoModule } from './modules/tipo-veiculo/tipo-veiculo.module';
 
 /**
  * Módulo raiz da aplicação
@@ -71,6 +72,7 @@ import { TurnoModule } from './modules/turno';
     AprModule,
     ChecklistModule,
     VeiculoModule,
+    TipoVeiculoModule,
     EletricistaModule,
     EquipeModule,
     AtividadeModule,
