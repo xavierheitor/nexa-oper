@@ -50,6 +50,7 @@ import { EquipeModule } from './modules/equipe';
 import { AtividadeModule } from './modules/atividade';
 import { TurnoModule } from './modules/turno';
 import { TipoVeiculoModule } from './modules/tipo-veiculo/tipo-veiculo.module';
+import { TipoEquipeModule } from './modules/tipo-equipe/tipo-equipe.module';
 
 /**
  * Módulo raiz da aplicação
@@ -73,6 +74,7 @@ import { TipoVeiculoModule } from './modules/tipo-veiculo/tipo-veiculo.module';
     ChecklistModule,
     VeiculoModule,
     TipoVeiculoModule,
+    TipoEquipeModule,
     EletricistaModule,
     EquipeModule,
     AtividadeModule,
