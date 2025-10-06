@@ -19,7 +19,7 @@
  *   - Contratos
  *   - Equipe (submenu: Tipos, Equipes)
  *   - Veículos (submenu: Tipos, Veículos)
- *   - Eletricista, Supervisor, Tipo de Atividade
+ *   - Eletricista, Supervisor, Tipo de Atividade, Base
  *   - APR (submenu: Perguntas, Opções, Modelo)
  *   - Checklist (submenu: Tipo, Perguntas, Opções, Modelo)
  *   - Usuários (submenu: Web, Móveis)
@@ -34,7 +34,7 @@
  *
  * EXEMPLO DE USO:
  * ```typescript
- * <SidebarMenu 
+ * <SidebarMenu
  *   collapsed={sidebarCollapsed}
  *   onCollapseChange={setSidebarCollapsed}
  * />
@@ -105,7 +105,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
    * // Para rota '/dashboard/cadastro/apr-modelo'
    * // Retorna: ['cadastro', 'apr']
    *
-   * // Para rota '/dashboard/cadastro/equipe'  
+   * // Para rota '/dashboard/cadastro/equipe'
    * // Retorna: ['cadastro', 'equipe-menu']
    */
   const getDefaultOpenKeys = (): string[] => {
@@ -227,6 +227,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
         {
           key: '/dashboard/cadastro/tipo-atividade',
           label: <Link href='/dashboard/cadastro/tipo-atividade'>Tipo de Atividade</Link>,
+        },
+        {
+          key: '/dashboard/cadastro/base',
+          label: <Link href='/dashboard/cadastro/base'>Base</Link>,
         },
 
 
