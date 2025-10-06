@@ -33,6 +33,7 @@ model Veiculo {
   deletedBy String?   @db.VarChar(255)
 
   VeiculoOdometro VeiculoOdometro[]
+  VeiculoBaseHistorico VeiculoBaseHistorico[]
 
   Turno Turno[]
 }

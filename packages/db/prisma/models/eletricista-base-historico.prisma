@@ -1,0 +1,45 @@
+/**
+ * Modelo para Histórico de Bases de Eletricistas
+ *
+ * Este modelo rastreia todas as transferências de eletricistas entre bases,
+ * mantendo um histórico completo de onde cada eletricista esteve e quando.
+ *
+ * CASOS DE USO:
+ * - Rastrear transferências de eletricistas entre bases
+ * - Auditoria de movimentações
+ * - Relatórios de histórico de bases
+ * - Controle de localização atual e passada
+ */
+
+model EletricistaBaseHistorico {
+  id Int @id @default(autoincrement())
+
+  // Relacionamentos principais
+  eletricistaId Int
+  eletricista   Eletricista @relation(fields: [eletricistaId], references: [id])
+
+  baseId Int
+  base   Base @relation(fields: [baseId], references: [id])
+
+  // Controle de período
+  dataInicio DateTime // Quando o eletricista chegou nesta base
+  dataFim    DateTime? // Quando o eletricista saiu desta base (null = ainda está na base)
+
+  // Motivo da transferência
+  motivo String? @db.VarChar(500) // Motivo da transferência (opcional)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+
+  // Índices para performance
+  @@index([eletricistaId])
+  @@index([baseId])
+  @@index([dataInicio])
+  @@index([dataFim])
+  @@index([eletricistaId, dataInicio])
+}

@@ -23,6 +23,8 @@ model Contrato {
   Supervisor Supervisor[]
 
   MobileContratoPermissao MobileContratoPermissao[]
+
+  Base Base[]
 }
 
 model MobileContratoPermissao {

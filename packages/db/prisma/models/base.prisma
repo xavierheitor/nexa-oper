@@ -1,9 +1,9 @@
-model Eletricista {
+model Base{
   id Int @id @default(autoincrement())
   nome String @db.VarChar(255)
-  matricula String @db.VarChar(255)
-  telefone String @db.VarChar(255)
-  estado String @db.VarChar(2)
+
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
 
   createdAt DateTime @default(now())
   createdBy String @db.VarChar(255)
@@ -12,10 +12,7 @@ model Eletricista {
   deletedAt DateTime?
   deletedBy String? @db.VarChar(255)
 
-  contratoId Int
-  contrato Contrato @relation(fields: [contratoId], references: [id])
-
-
-  TurnoEletricistas TurnoEletricista[]
+  // Relacionamentos com históricos
   EletricistaBaseHistorico EletricistaBaseHistorico[]
+  VeiculoBaseHistorico VeiculoBaseHistorico[]
 }

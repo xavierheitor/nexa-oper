@@ -69,7 +69,8 @@ import { TipoEquipeModule } from './modules/tipo-equipe/tipo-equipe.module';
     // Módulo de banco de dados - deve ser importado primeiro
     DatabaseModule,
 
-    // Módulos de funcionalidades de negócio
+    // Módulos de funcionalidade
+    //  de negócio
     AprModule,
     ChecklistModule,
     VeiculoModule,
