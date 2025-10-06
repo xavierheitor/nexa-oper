@@ -1,35 +1,45 @@
 'use client';
 
-// Importações do Ant Design e React
+import { useState } from 'react';
 
 // Importações das Server Actions para buscar dados dos selects
 import { listEletricistas } from '@/lib/actions/eletricista/list';
 
 // Tipos do Prisma
-import { Eletricista } from '@nexa-oper/db';
-
-// Importações do Prisma
+import { Base, Eletricista } from '@nexa-oper/db';
 
 // Importações do hook e utilitários da aplicação
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
-import { Button, Card, Modal, Table } from 'antd';
+import { App, Button, Card, Modal, Table, Tag } from 'antd';
+import { SwapOutlined } from '@ant-design/icons';
 import { createEletricista } from '../../../../lib/actions/eletricista/create';
 import { deleteEletricista } from '../../../../lib/actions/eletricista/delete';
+import { transferEletricistaBase } from '../../../../lib/actions/eletricista/transferBase';
 import { updateEletricista } from '../../../../lib/actions/eletricista/update';
 import { ActionResult } from '../../../../lib/types/common';
+import TransferBaseModal from '../../../../ui/components/TransferBaseModal';
 import { getSelectFilter, getTextFilter } from '../../../../ui/components/tableFilters';
 import EletricistaForm, { EletricistaFormData } from './form';
+
+type EletricistaWithBase = Eletricista & { baseAtual?: Base | null };
 
 export default function EletricistaPage() {
   // Hook para controlar operações CRUD (modal, loading, execução de ações)
   // O parâmetro 'eletricistas' é a chave usada para revalidar o cache SWR
-  const controller = useCrudController<Eletricista>('eletricistas');
+  const controller = useCrudController<EletricistaWithBase>('eletricistas');
+  // Hook para gerenciar mensagens
+  const { message } = App.useApp();
+  // Estado para controlar a transferência de base
+  const [transferTarget, setTransferTarget] = useState<EletricistaWithBase | null>(null);
+  // Estado para controlar o loading da transferência de base
+  const [isTransferLoading, setIsTransferLoading] = useState(false);
+
 
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
-  const eletricistas = useEntityData<Eletricista>({
+  const eletricistas = useEntityData<EletricistaWithBase>({
     key: 'eletricistas', // Chave única para o cache SWR
     fetcher: unwrapFetcher(listEletricistas), // Função que busca os dados (Server Action)
     paginationEnabled: true, // Habilita paginação
@@ -43,10 +53,10 @@ export default function EletricistaPage() {
       },
     },
   });
-  
+
 
   // Configuração das colunas da tabela com ações integradas
-  const columns = useTableColumnsWithActions<Eletricista>(
+  const columns = useTableColumnsWithActions<EletricistaWithBase>(
     [
       // Coluna ID - simples, apenas para referência
       {
@@ -91,6 +101,20 @@ export default function EletricistaPage() {
           { text: 'Inativo', value: 'inativo' }
         ]), // Adiciona filtro de seleção
       },
+      // Coluna Base Atual
+      {
+        title: 'Base Atual',
+        dataIndex: 'baseAtual',
+        key: 'baseAtual',
+        render: (baseAtual: any) => {
+          return baseAtual ? (
+            <Tag color="green">{baseAtual.nome}</Tag>
+          ) : (
+            <Tag color="red">Sem lotação</Tag>
+          );
+        },
+        width: 120,
+      },
     ],
     {
       onEdit: controller.open,
@@ -103,6 +127,20 @@ export default function EletricistaPage() {
           .finally(() => {
             eletricistas.mutate(); // Revalida os dados da tabela após exclusão
           }),
+
+      // Ações customizadas
+      customActions: [
+        {
+          key: 'transfer-base',
+          label: 'Transferir Base',
+          type: 'link',
+          icon: <SwapOutlined />,
+          tooltip: 'Transferir eletricista para outra base',
+          onClick: (record) => {
+            setTransferTarget(record);
+          },
+        },
+      ],
     },
   );
 
@@ -110,13 +148,19 @@ export default function EletricistaPage() {
   const handleSubmit = async (values: EletricistaFormData) => {
     // Cria uma ação assíncrona que será executada pelo controller
     const action = async (): Promise<ActionResult<Eletricista>> => {
+      const payload = {
+        ...values,
+        contratoId: Number(values.contratoId),
+        baseId: Number(values.baseId),
+      };
+
       // Verifica se estamos editando (tem item selecionado) ou criando
       const eletricista = controller.editingItem?.id
         ? await updateEletricista({
-          ...values, // Dados do formulário
+          ...payload, // Dados do formulário normalizados
           id: controller.editingItem.id,
         })
-        : await createEletricista(values); // Apenas dados do formulário para criação
+        : await createEletricista(payload); // Apenas dados do formulário para criação
 
       // Retorna o resultado no formato esperado pelo controller
       return { success: true, data: eletricista.data };
@@ -126,7 +170,47 @@ export default function EletricistaPage() {
     controller.exec(action, 'Eletricista salvo com sucesso!').finally(() => {
       eletricistas.mutate(); // Revalida os dados da tabela após salvar
     });
-  }
+  };
+
+  const closeTransferModal = () => {
+    if (isTransferLoading) {
+      return;
+    }
+    setTransferTarget(null);
+  };
+
+  const handleTransferBase = async ({ novaBaseId, motivo }: { novaBaseId: number; motivo?: string }) => {
+    if (!transferTarget) {
+      return;
+    }
+
+    setIsTransferLoading(true);
+
+    try {
+      const result = await transferEletricistaBase({
+        eletricistaId: transferTarget.id,
+        novaBaseId: Number(novaBaseId),
+        motivo,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Não foi possível transferir a base.');
+      }
+
+      message.success('Eletricista transferido com sucesso!');
+      setTransferTarget(null);
+      eletricistas.mutate();
+    } catch (error) {
+      const normalizedError =
+        error instanceof Error ? error : new Error('Erro ao transferir base do eletricista.');
+
+      message.error(normalizedError.message);
+      throw normalizedError;
+    } finally {
+      setIsTransferLoading(false);
+    }
+  };
+
 
   // Tratamento de erro - exibe mensagem se houver problema ao carregar dados
   if (eletricistas.error) {
@@ -147,7 +231,7 @@ export default function EletricistaPage() {
         }
       >
         {/* Tabela principal com dados dos eletricistas */}
-        <Table<Eletricista>
+        <Table<EletricistaWithBase>
           columns={columns} // Colunas configuradas acima
           dataSource={eletricistas.data} // Dados vindos do useEntityData
           loading={eletricistas.isLoading} // Estado de loading
@@ -175,11 +259,21 @@ export default function EletricistaPage() {
             telefone: controller.editingItem.telefone,
             estado: controller.editingItem.estado,
             contratoId: controller.editingItem.contratoId,
+            baseId: controller.editingItem.baseAtual?.id,
           } : undefined} // Se criando, deixa campos vazios
           onSubmit={handleSubmit} // Função que processa o submit
           loading={controller.loading} // Estado de loading para desabilitar botões
         />
       </Modal>
+
+      <TransferBaseModal
+        open={!!transferTarget}
+        onClose={closeTransferModal}
+        onTransfer={handleTransferBase}
+        title={transferTarget ? `Transferir ${transferTarget.nome}` : 'Transferir Base'}
+        loading={isTransferLoading}
+      />
+
     </>
   );
 }

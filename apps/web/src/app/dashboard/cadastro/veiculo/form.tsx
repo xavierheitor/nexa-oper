@@ -6,10 +6,11 @@ import { useEffect, useState } from 'react';
 
 // Importações das Server Actions para buscar dados dos selects
 import { listContratos } from '@/lib/actions/contrato/list';
+import { listBases } from '@/lib/actions/base/list';
 import { listTiposVeiculo } from '@/lib/actions/tipoVeiculo/list';
 
 // Tipos do Prisma
-import { Contrato, TipoVeiculo } from '@nexa-oper/db';
+import { Base, Contrato, TipoVeiculo } from '@nexa-oper/db';
 
 // Interface que define a estrutura dos dados do formulário
 // Deve corresponder aos campos que serão enviados para a Server Action
@@ -19,6 +20,7 @@ export interface VeiculoFormData {
   ano: number; // Campo obrigatório
   tipoVeiculoId: number; // Campo obrigatório - ID do tipo de veículo
   contratoId: number; // Campo obrigatório - ID do contrato
+  baseId: number; // Campo obrigatório - ID da base
 }
 
 // Interface que define as props aceitas pelo componente
@@ -40,6 +42,7 @@ export default function VeiculoForm({
   // Estados para armazenar os dados dos selects
   const [tiposVeiculo, setTiposVeiculo] = useState<TipoVeiculo[]>([]);
   const [contratos, setContratos] = useState<Contrato[]>([]);
+  const [bases, setBases] = useState<Base[]>([]);
   const [loadingSelects, setLoadingSelects] = useState(true);
 
   // Effect para carregar os dados dos selects ao montar o componente
@@ -48,8 +51,8 @@ export default function VeiculoForm({
       try {
         setLoadingSelects(true);
 
-        // Carrega tipos de veículo e contratos em paralelo
-        const [tiposResponse, contratosResponse] = await Promise.all([
+        // Carrega tipos de veículo, contratos e bases em paralelo
+        const [tiposResponse, contratosResponse, basesResponse] = await Promise.all([
           listTiposVeiculo({
             page: 1,
             pageSize: 100, // Carrega todos os tipos disponíveis
@@ -62,10 +65,17 @@ export default function VeiculoForm({
             orderBy: 'nome',
             orderDir: 'asc',
           }),
+          listBases({
+            page: 1,
+            pageSize: 100, // Carrega todas as bases disponíveis
+            orderBy: 'nome',
+            orderDir: 'asc',
+          }),
         ]);
 
         setTiposVeiculo(tiposResponse.data?.data || []);
         setContratos(contratosResponse.data?.data || []);
+        setBases(basesResponse.data?.data || []);
       } catch (error) {
         console.error('Erro ao carregar dados dos selects:', error);
         message.error('Erro ao carregar dados dos selects');
@@ -203,6 +213,28 @@ export default function VeiculoForm({
           options={contratos.map(contrato => ({
             value: contrato.id,
             label: `${contrato.nome} (${contrato.numero})`,
+          }))}
+        />
+      </Form.Item>
+
+      {/* Campo Base */}
+      <Form.Item
+        name="baseId" // Nome do campo
+        label="Base" // Label do campo
+        rules={[
+          { required: true, message: 'Base é obrigatória' }
+        ]}
+      >
+        <Select
+          placeholder="Selecione a base"
+          loading={loadingSelects}
+          showSearch // Permite busca dentro do select
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+          options={bases.map(base => ({
+            value: base.id,
+            label: base.nome,
           }))}
         />
       </Form.Item>

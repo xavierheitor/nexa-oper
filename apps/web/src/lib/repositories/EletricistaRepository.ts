@@ -40,13 +40,50 @@ export class EletricistaRepository extends AbstractCrudRepository<
    * @param userId - ID do usuário que está criando (opcional)
    * @returns Eletricista criado
    */
-  create(data: EletricistaCreate, userId?: string): Promise<Eletricista> {
-    return prisma.eletricista.create({
-      data: {
-        ...data,
-        createdBy: userId || '',
-        createdAt: new Date(),
-      },
+  async create(
+    data: EletricistaCreate,
+    userId?: string,
+    baseIdInput?: number
+  ): Promise<Eletricista> {
+    const { baseId: dataBaseId, ...eletricistaData } = data as EletricistaCreate & {
+      baseId?: number;
+    };
+
+    const rawBaseId = baseIdInput ?? dataBaseId;
+    const normalizedBaseId =
+      rawBaseId === undefined || rawBaseId === null
+        ? undefined
+        : Number(rawBaseId);
+
+    if (normalizedBaseId !== undefined && Number.isNaN(normalizedBaseId)) {
+      throw new Error('Base inválida para eletricista.');
+    }
+    const createdBy = (eletricistaData as any).createdBy || userId || '';
+    const createdAt = (eletricistaData as any).createdAt || new Date();
+
+    return prisma.$transaction(async tx => {
+      const eletricista = await tx.eletricista.create({
+        data: {
+          ...eletricistaData,
+          createdBy,
+          createdAt,
+        },
+      });
+
+      if (typeof normalizedBaseId === 'number') {
+        await tx.eletricistaBaseHistorico.create({
+          data: {
+            eletricistaId: eletricista.id,
+            baseId: normalizedBaseId,
+            dataInicio: new Date(),
+            motivo: 'Lotação inicial',
+            createdBy,
+            createdAt: new Date(),
+          },
+        });
+      }
+
+      return eletricista;
     });
   }
 
@@ -58,14 +95,75 @@ export class EletricistaRepository extends AbstractCrudRepository<
    * @param userId - ID do usuário que está atualizando (opcional)
    * @returns Eletricista atualizado
    */
-  update(id: number, data: EletricistaUpdate, userId?: string): Promise<Eletricista> {
-    return prisma.eletricista.update({
-      where: { id },
-      data: {
-        ...data,
-        updatedBy: userId || '',
-        updatedAt: new Date(),
-      },
+  async update(
+    id: number,
+    data: EletricistaUpdate,
+    userId?: string,
+    baseIdInput?: number
+  ): Promise<Eletricista> {
+    const { baseId: dataBaseId, id: _ignoredId, ...eletricistaData } = data as EletricistaUpdate & {
+      baseId?: number;
+    } & { id: number };
+
+    const rawBaseId = baseIdInput ?? dataBaseId;
+    const normalizedBaseId =
+      rawBaseId === undefined || rawBaseId === null
+        ? undefined
+        : Number(rawBaseId);
+
+    if (normalizedBaseId !== undefined && Number.isNaN(normalizedBaseId)) {
+      throw new Error('Base inválida para eletricista.');
+    }
+    const updatedBy = (eletricistaData as any).updatedBy || userId || '';
+    const updatedAt = (eletricistaData as any).updatedAt || new Date();
+
+    return prisma.$transaction(async tx => {
+      const eletricista = await tx.eletricista.update({
+        where: { id },
+        data: {
+          ...eletricistaData,
+          updatedBy,
+          updatedAt,
+        },
+      });
+
+      if (typeof normalizedBaseId === 'number') {
+        const currentBase = await tx.eletricistaBaseHistorico.findFirst({
+          where: {
+            eletricistaId: id,
+            dataFim: null,
+          },
+          orderBy: {
+            dataInicio: 'desc',
+          },
+        });
+
+        if (!currentBase || currentBase.baseId !== normalizedBaseId) {
+          if (currentBase) {
+            await tx.eletricistaBaseHistorico.update({
+              where: { id: currentBase.id },
+              data: {
+                dataFim: new Date(),
+                updatedBy,
+                updatedAt: new Date(),
+              },
+            });
+          }
+
+          await tx.eletricistaBaseHistorico.create({
+            data: {
+              eletricistaId: id,
+              baseId: normalizedBaseId,
+              dataInicio: new Date(),
+              motivo: 'Alteração de lotação via edição',
+              createdBy: updatedBy,
+              createdAt: new Date(),
+            },
+          });
+        }
+      }
+
+      return eletricista;
     });
   }
 
@@ -117,14 +215,53 @@ export class EletricistaRepository extends AbstractCrudRepository<
    * @param include - Relacionamentos a incluir (opcional)
    * @returns Array de eletricistas
    */
-  protected findMany(where: any, orderBy: any, skip: number, take: number, include?: any): Promise<Eletricista[]> {
-    return prisma.eletricista.findMany({
+  protected async findMany(
+    where: any,
+    orderBy: any,
+    skip: number,
+    take: number,
+    include?: any
+  ): Promise<Eletricista[]> {
+    const eletricistas = await prisma.eletricista.findMany({
       where,
       orderBy,
       skip,
       take,
       ...(include && { include }),
     });
+
+    // Para cada eletricista, buscar sua base atual
+    const eletricistasWithBase = await Promise.all(
+      eletricistas.map(async eletricista => {
+        try {
+          const currentBase = await prisma.eletricistaBaseHistorico.findFirst({
+            where: {
+              eletricistaId: eletricista.id,
+              dataFim: null, // Base ativa
+            },
+            include: {
+              base: true,
+            },
+          });
+
+          return {
+            ...eletricista,
+            baseAtual: currentBase?.base || null,
+          };
+        } catch (error) {
+          console.error(
+            `Erro ao buscar base para eletricista ${eletricista.id}:`,
+            error
+          );
+          return {
+            ...eletricista,
+            baseAtual: null,
+          };
+        }
+      })
+    );
+
+    return eletricistasWithBase;
   }
 
   /**
@@ -144,7 +281,9 @@ export class EletricistaRepository extends AbstractCrudRepository<
    * @returns Array de eletricistas
    */
   findByContratoId(contratoId: number): Promise<Eletricista[]> {
-    return prisma.eletricista.findMany({ where: { contratoId, deletedAt: null } });
+    return prisma.eletricista.findMany({
+      where: { contratoId, deletedAt: null },
+    });
   }
 
   /**
@@ -164,6 +303,8 @@ export class EletricistaRepository extends AbstractCrudRepository<
    * @returns Array de eletricistas
    */
   findByMatricula(matricula: string): Promise<Eletricista[]> {
-    return prisma.eletricista.findMany({ where: { matricula, deletedAt: null } });
+    return prisma.eletricista.findMany({
+      where: { matricula, deletedAt: null },
+    });
   }
 }

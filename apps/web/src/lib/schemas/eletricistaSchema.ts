@@ -19,6 +19,7 @@ export const eletricistaCreateSchema = z.object({
   telefone: z.string().min(1, 'Telefone é obrigatório').max(255, 'Telefone deve ter no máximo 255 caracteres'),
   estado: z.string().min(1, 'Estado é obrigatório').max(2, 'Estado deve ter no máximo 2 caracteres'),
   contratoId: z.number().int('Contrato é obrigatório'),
+  baseId: z.number().int('Base é obrigatória').optional(),
 });
 
 export const eletricistaUpdateSchema = eletricistaCreateSchema.extend({

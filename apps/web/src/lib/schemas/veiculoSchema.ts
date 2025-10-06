@@ -6,6 +6,7 @@ export const veiculoCreateSchema = z.object({
   ano: z.number().int(),
   tipoVeiculoId: z.number().int(),
   contratoId: z.number().int(),
+  baseId: z.number().int().optional(),
 });
 
 export const veiculoUpdateSchema = veiculoCreateSchema.extend({

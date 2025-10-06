@@ -1,9 +1,12 @@
 'use client';
 
+import { useState } from 'react';
+
 // Importações das Server Actions específicas do veículo
 import { createVeiculo } from '@/lib/actions/veiculo/create';
 import { deleteVeiculo } from '@/lib/actions/veiculo/delete';
 import { listVeiculos } from '@/lib/actions/veiculo/list';
+import { transferVeiculoBase } from '@/lib/actions/veiculo/transferBase';
 import { updateVeiculo } from '@/lib/actions/veiculo/update';
 
 // Importações dos hooks e utilitários da aplicação
@@ -14,22 +17,30 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 
 // Importações de tipos e utilitários
 import { ActionResult } from '@/lib/types/common';
+import TransferBaseModal from '@/ui/components/TransferBaseModal';
 import { getTextFilter } from '@/ui/components/tableFilters';
 
 // Importações do Prisma e Ant Design
-import { Veiculo } from '@nexa-oper/db';
-import { Button, Card, Modal, Table, Tag } from 'antd';
+import { Base, Veiculo } from '@nexa-oper/db';
+import { App, Button, Card, Modal, Table, Tag } from 'antd';
+import { SwapOutlined } from '@ant-design/icons';
 
 // Importação do formulário local
 import VeiculoForm, { VeiculoFormData } from './form';
 
+type VeiculoWithBase = Veiculo & { baseAtual?: Base | null };
+
 export default function VeiculoPage() {
   // Hook para controlar operações CRUD (modal, loading, execução de ações)
   // O parâmetro 'veiculos' é a chave usada para revalidar o cache SWR
-  const controller = useCrudController<Veiculo>('veiculos');
+  const controller = useCrudController<VeiculoWithBase>('veiculos');
+  const { message } = App.useApp();
+  const [transferTarget, setTransferTarget] = useState<VeiculoWithBase | null>(null);
+  const [isTransferLoading, setIsTransferLoading] = useState(false);
+
 
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
-  const veiculos = useEntityData<Veiculo>({
+  const veiculos = useEntityData<VeiculoWithBase>({
     key: 'veiculos', // Chave única para o cache SWR
     fetcher: unwrapFetcher(listVeiculos), // Função que busca os dados (Server Action)
     paginationEnabled: true, // Habilita paginação
@@ -53,7 +64,7 @@ export default function VeiculoPage() {
   });
 
   // Configuração das colunas da tabela com ações integradas
-  const columns = useTableColumnsWithActions<Veiculo>(
+  const columns = useTableColumnsWithActions<VeiculoWithBase>(
     [
       // Coluna ID - simples, apenas para referência
       {
@@ -69,7 +80,7 @@ export default function VeiculoPage() {
         dataIndex: 'placa',
         key: 'placa',
         sorter: true, // Permite ordenação
-        ...getTextFilter<Veiculo>('placa', 'placa do veículo'), // Adiciona filtro de busca textual
+        ...getTextFilter<VeiculoWithBase>('placa', 'placa do veículo'), // Adiciona filtro de busca textual
         render: (placa: string) => (
           <Tag color="blue" style={{ fontFamily: 'monospace', fontSize: '12px' }}>
             {placa}
@@ -83,7 +94,7 @@ export default function VeiculoPage() {
         dataIndex: 'modelo',
         key: 'modelo',
         sorter: true,
-        ...getTextFilter<Veiculo>('modelo', 'modelo do veículo'),
+        ...getTextFilter<VeiculoWithBase>('modelo', 'modelo do veículo'),
       },
       // Coluna Ano
       {
@@ -99,7 +110,7 @@ export default function VeiculoPage() {
         title: 'Tipo',
         dataIndex: ['tipoVeiculo', 'nome'], // Acessa o campo nome do relacionamento tipoVeiculo
         sorter: true,
-        ...getTextFilter<Veiculo>('tipoVeiculoId', 'tipo de veículo'),
+        ...getTextFilter<VeiculoWithBase>('tipoVeiculoId', 'tipo de veículo'),
         key: 'tipoVeiculo',
         render: (nome: string) => nome || '-',
         width: 120,
@@ -117,6 +128,20 @@ export default function VeiculoPage() {
         },
         width: 200,
       },
+      // Coluna Base Atual
+      {
+        title: 'Base Atual',
+        dataIndex: 'baseAtual',
+        key: 'baseAtual',
+        render: (baseAtual: any) => {
+          return baseAtual ? (
+            <Tag color="green">{baseAtual.nome}</Tag>
+          ) : (
+            <Tag color="red">Sem lotação</Tag>
+          );
+        },
+        width: 120,
+      },
       // Coluna Data de Criação - formatada para exibição
       {
         title: 'Criado em',
@@ -127,7 +152,7 @@ export default function VeiculoPage() {
         width: 120,
       },
     ],
-    // Configuração das ações da tabela (botões Editar/Excluir)
+    // Configuração das ações da tabela (botões Editar/Excluir/Transferir)
     {
       // Ação de edição - abre o modal com o item selecionado
       onEdit: controller.open,
@@ -142,6 +167,20 @@ export default function VeiculoPage() {
           .finally(() => {
             veiculos.mutate(); // Revalida os dados da tabela após exclusão
           }),
+
+      // Ações customizadas
+      customActions: [
+        {
+          key: 'transfer-base',
+          label: 'Transferir Base',
+          type: 'link',
+          icon: <SwapOutlined />,
+          tooltip: 'Transferir veículo para outra base',
+          onClick: (record) => {
+            setTransferTarget(record);
+          },
+        },
+      ],
     },
   );
 
@@ -149,13 +188,20 @@ export default function VeiculoPage() {
   const handleSubmit = async (values: VeiculoFormData) => {
     // Cria uma ação assíncrona que será executada pelo controller
     const action = async (): Promise<ActionResult<Veiculo>> => {
+      const payload = {
+        ...values,
+        tipoVeiculoId: Number(values.tipoVeiculoId),
+        contratoId: Number(values.contratoId),
+        baseId: Number(values.baseId),
+      };
+
       // Verifica se estamos editando (tem item selecionado) ou criando
       const veiculo = controller.editingItem?.id
         ? await updateVeiculo({
-          ...values, // Dados do formulário
+          ...payload, // Dados do formulário normalizados
           id: controller.editingItem.id, // ID do item sendo editado
         })
-        : await createVeiculo(values); // Apenas dados do formulário para criação
+        : await createVeiculo(payload); // Apenas dados do formulário para criação
 
       // Retorna o resultado no formato esperado pelo controller
       return { success: true, data: veiculo.data };
@@ -166,6 +212,46 @@ export default function VeiculoPage() {
       veiculos.mutate(); // Revalida os dados da tabela após salvar
     });
   };
+
+  const closeTransferModal = () => {
+    if (isTransferLoading) {
+      return;
+    }
+    setTransferTarget(null);
+  };
+
+  const handleTransferBase = async ({ novaBaseId, motivo }: { novaBaseId: number; motivo?: string }) => {
+    if (!transferTarget) {
+      return;
+    }
+
+    setIsTransferLoading(true);
+
+    try {
+      const result = await transferVeiculoBase({
+        veiculoId: transferTarget.id,
+        novaBaseId: Number(novaBaseId),
+        motivo,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Não foi possível transferir a base.');
+      }
+
+      message.success('Veículo transferido com sucesso!');
+      setTransferTarget(null);
+      veiculos.mutate();
+    } catch (error) {
+      const normalizedError =
+        error instanceof Error ? error : new Error('Erro ao transferir base do veículo.');
+
+      message.error(normalizedError.message);
+      throw normalizedError;
+    } finally {
+      setIsTransferLoading(false);
+    }
+  };
+
 
   // Tratamento de erro - exibe mensagem se houver problema ao carregar dados
   if (veiculos.error) {
@@ -186,7 +272,7 @@ export default function VeiculoPage() {
         }
       >
         {/* Tabela principal com dados dos veículos */}
-        <Table<Veiculo>
+        <Table<VeiculoWithBase>
           columns={columns} // Colunas configuradas acima
           dataSource={veiculos.data} // Dados vindos do useEntityData
           loading={veiculos.isLoading} // Estado de loading
@@ -208,18 +294,29 @@ export default function VeiculoPage() {
       >
         {/* Formulário dentro do modal */}
         <VeiculoForm
-          initialValues={controller.editingItem ? {
-            // Se editando, pré-popula com dados do item selecionado
-            placa: controller.editingItem.placa,
-            modelo: controller.editingItem.modelo,
-            ano: controller.editingItem.ano,
-            tipoVeiculoId: (controller.editingItem as any).tipoVeiculoId,
-            contratoId: (controller.editingItem as any).contratoId,
-          } : undefined} // Se criando, deixa campos vazios
+          initialValues={controller.editingItem
+            ? {
+              placa: controller.editingItem.placa,
+              modelo: controller.editingItem.modelo,
+              ano: controller.editingItem.ano,
+              tipoVeiculoId: controller.editingItem.tipoVeiculoId,
+              contratoId: controller.editingItem.contratoId,
+              baseId: controller.editingItem.baseAtual?.id,
+            }
+            : undefined} // Se criando, deixa campos vazios
           onSubmit={handleSubmit} // Função que processa o submit
           loading={controller.loading} // Estado de loading para desabilitar botões
         />
       </Modal>
+
+      <TransferBaseModal
+        open={!!transferTarget}
+        onClose={closeTransferModal}
+        onTransfer={handleTransferBase}
+        title={transferTarget ? `Transferir ${transferTarget.placa}` : 'Transferir Base'}
+        loading={isTransferLoading}
+      />
+
     </>
   );
 }

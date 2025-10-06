@@ -1,8 +1,9 @@
 'use client';
 
-import { Contrato } from '@nexa-oper/db';
+import { Base, Contrato } from '@nexa-oper/db';
 import { Button, Form, Input, message, Select, Spin } from 'antd';
 import { useEffect, useState } from 'react';
+import { listBases } from '../../../../lib/actions/base/list';
 import { listContratos } from '../../../../lib/actions/contrato/list';
 
 // Importações do Ant Design e React
@@ -15,6 +16,7 @@ export interface EletricistaFormData {
   telefone: string; // Campo obrigatório
   estado: string; // Campo obrigatório
   contratoId: number; // Campo obrigatório
+  baseId: number; // Campo obrigatório
 }
 
 // Interface que define as props aceitas pelo componente
@@ -39,6 +41,7 @@ export default function EletricistaForm({
 
   // Estados para armazenar os dados dos selects
   const [contratos, setContratos] = useState<Contrato[]>([]);
+  const [bases, setBases] = useState<Base[]>([]);
   const [loadingSelects, setLoadingSelects] = useState(true);
 
   // Effect para carregar os dados dos selects ao montar o componente
@@ -47,9 +50,15 @@ export default function EletricistaForm({
       try {
         setLoadingSelects(true);
 
-        // Carrega contratos em paralelo
-        const [contratosResponse] = await Promise.all([
+        // Carrega contratos e bases em paralelo
+        const [contratosResponse, basesResponse] = await Promise.all([
           listContratos({
+            page: 1,
+            pageSize: 100,
+            orderBy: 'nome',
+            orderDir: 'asc',
+          }),
+          listBases({
             page: 1,
             pageSize: 100,
             orderBy: 'nome',
@@ -58,6 +67,7 @@ export default function EletricistaForm({
         ]);
 
         setContratos(contratosResponse.data?.data || []);
+        setBases(basesResponse.data?.data || []);
       } catch (error) {
         console.error('Erro ao carregar dados dos selects:', error);
         message.error('Erro ao carregar dados dos selects');
@@ -96,11 +106,11 @@ export default function EletricistaForm({
         label="Nome do Eletricista" // Label exibido acima do campo
         rules={[
           // Regras de validação do campo
-          { required: true, message: 'Nome é obrigatório' }, // Campo obrigatório 
+          { required: true, message: 'Nome é obrigatório' }, // Campo obrigatório
           { min: 1, max: 255, message: 'Nome deve ter entre 1 e 255 caracteres' } // Validação de tamanho
         ]}
       >
-        <Input autoFocus // Foco automático no campo quando o formulário abre 
+        <Input autoFocus // Foco automático no campo quando o formulário abre
           placeholder="Digite o nome do eletricista" />
       </Form.Item>
       {/* Campo Matrícula do Eletricista */}
@@ -149,6 +159,17 @@ export default function EletricistaForm({
         ]}
       >
         <Select placeholder="Selecione o contrato" loading={loadingSelects} showSearch filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())} options={contratos.map(contrato => ({ value: contrato.id, label: contrato.nome }))} />
+      </Form.Item>
+      {/* Campo Base */}
+      <Form.Item
+        name="baseId" // Nome do campo (deve corresponder à interface EletricistaFormData)
+        label="Base" // Label exibido acima do campo
+        rules={[
+          // Regras de validação do campo
+          { required: true, message: 'Base é obrigatória' }
+        ]}
+      >
+        <Select placeholder="Selecione a base" loading={loadingSelects} showSearch filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())} options={bases.map(base => ({ value: base.id, label: base.nome }))} />
       </Form.Item>
       {/* Botão de Submit */}
       <Form.Item>

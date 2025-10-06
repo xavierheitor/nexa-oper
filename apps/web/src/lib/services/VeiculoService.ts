@@ -68,12 +68,21 @@ export class VeiculoService extends AbstractCrudService<
    */
   async create(data: VeiculoCreate, userId: string): Promise<Veiculo> {
     // Converte os dados do schema para o formato do repositório
+    const { baseId, ...veiculoCore } = data;
+    const normalizedBaseId =
+      baseId === undefined || baseId === null ? undefined : Number(baseId);
+
+    if (normalizedBaseId === undefined || Number.isNaN(normalizedBaseId)) {
+      throw new Error('Base é obrigatória');
+    }
+
     const createData: VeiculoCreateInput = {
-      placa: data.placa,
-      modelo: data.modelo,
-      ano: data.ano,
-      tipoVeiculoId: data.tipoVeiculoId,
-      contratoId: data.contratoId,
+      placa: veiculoCore.placa,
+      modelo: veiculoCore.modelo,
+      ano: veiculoCore.ano,
+      tipoVeiculoId: veiculoCore.tipoVeiculoId,
+      contratoId: veiculoCore.contratoId,
+      baseId: normalizedBaseId,
     };
 
     // Cria o veículo através do repositório com auditoria
@@ -89,16 +98,24 @@ export class VeiculoService extends AbstractCrudService<
    */
   async update(data: VeiculoUpdate, userId: string): Promise<Veiculo> {
     const { id, ...updateData } = data;
+    const { baseId, ...veiculoCore } = updateData;
+    const normalizedBaseId =
+      baseId === undefined || baseId === null ? undefined : Number(baseId);
+
+    if (normalizedBaseId !== undefined && Number.isNaN(normalizedBaseId)) {
+      throw new Error('Base inválida');
+    }
 
     // Converte os dados do schema para o formato do repositório
     const updateInput: Partial<VeiculoCreateInput> = {
-      ...(updateData.placa && { placa: updateData.placa }),
-      ...(updateData.modelo && { modelo: updateData.modelo }),
-      ...(updateData.ano && { ano: updateData.ano }),
-      ...(updateData.tipoVeiculoId && {
-        tipoVeiculoId: updateData.tipoVeiculoId,
+      ...(veiculoCore.placa && { placa: veiculoCore.placa }),
+      ...(veiculoCore.modelo && { modelo: veiculoCore.modelo }),
+      ...(veiculoCore.ano && { ano: veiculoCore.ano }),
+      ...(veiculoCore.tipoVeiculoId && {
+        tipoVeiculoId: veiculoCore.tipoVeiculoId,
       }),
-      ...(updateData.contratoId && { contratoId: updateData.contratoId }),
+      ...(veiculoCore.contratoId && { contratoId: veiculoCore.contratoId }),
+      ...(normalizedBaseId !== undefined && { baseId: normalizedBaseId }),
     };
 
     // Atualiza através do repositório

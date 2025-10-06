@@ -14,6 +14,7 @@ export type VeiculoCreateInput = {
   ano: number;
   tipoVeiculoId: number;
   contratoId: number;
+  baseId?: number;
 };
 
 // Tipo para dados de atualização
@@ -21,10 +22,7 @@ export type VeiculoUpdateInput = VeiculoCreateInput & {
   id: number;
 };
 
-export class VeiculoRepository extends AbstractCrudRepository<
-  Veiculo,
-  VeiculoFilter
-> {
+export class VeiculoRepository extends AbstractCrudRepository<Veiculo, VeiculoFilter> {
   /**
    * Converte dados de entrada para o formato Prisma
    *
@@ -34,7 +32,7 @@ export class VeiculoRepository extends AbstractCrudRepository<
    * - Também adicionamos campos de auditoria automaticamente
    */
   private toPrismaCreateData(
-    data: VeiculoCreateInput,
+    data: Omit<VeiculoCreateInput, 'baseId'>,
     userId?: string
   ): Prisma.VeiculoCreateInput {
     return {
@@ -48,10 +46,35 @@ export class VeiculoRepository extends AbstractCrudRepository<
     };
   }
 
-  create(data: VeiculoCreateInput, userId?: string): Promise<Veiculo> {
-    // Agora é mais simples - apenas converte e cria
-    return prisma.veiculo.create({
-      data: this.toPrismaCreateData(data, userId),
+  async create(data: VeiculoCreateInput, userId?: string): Promise<Veiculo> {
+    const { baseId, ...veiculoData } = data;
+
+    const normalizedBaseId =
+      baseId === undefined || baseId === null ? undefined : Number(baseId);
+
+    if (normalizedBaseId !== undefined && Number.isNaN(normalizedBaseId)) {
+      throw new Error('Base inválida para veículo.');
+    }
+
+    return prisma.$transaction(async tx => {
+      const veiculo = await tx.veiculo.create({
+        data: this.toPrismaCreateData(veiculoData, userId),
+      });
+
+      if (typeof normalizedBaseId === 'number') {
+        await tx.veiculoBaseHistorico.create({
+          data: {
+            veiculoId: veiculo.id,
+            baseId: normalizedBaseId,
+            dataInicio: new Date(),
+            motivo: 'Lotação inicial',
+            createdBy: userId || '',
+            createdAt: new Date(),
+          },
+        });
+      }
+
+      return veiculo;
     });
   }
 
@@ -59,7 +82,7 @@ export class VeiculoRepository extends AbstractCrudRepository<
    * Converte dados de atualização para o formato Prisma
    */
   private toPrismaUpdateData(
-    data: Partial<VeiculoCreateInput>,
+    data: Partial<Omit<VeiculoCreateInput, 'baseId'>>,
     userId?: string
   ): Prisma.VeiculoUpdateInput {
     return {
@@ -77,15 +100,63 @@ export class VeiculoRepository extends AbstractCrudRepository<
     };
   }
 
-  update(
+  async update(
     id: number,
     data: Partial<VeiculoCreateInput>,
     userId?: string
   ): Promise<Veiculo> {
-    // Agora é mais simples - apenas converte e atualiza
-    return prisma.veiculo.update({
-      where: { id },
-      data: this.toPrismaUpdateData(data, userId),
+    const { baseId, ...veiculoData } = data;
+
+    const normalizedBaseId =
+      baseId === undefined || baseId === null ? undefined : Number(baseId);
+
+    if (normalizedBaseId !== undefined && Number.isNaN(normalizedBaseId)) {
+      throw new Error('Base inválida para veículo.');
+    }
+
+    return prisma.$transaction(async tx => {
+      const veiculo = await tx.veiculo.update({
+        where: { id },
+        data: this.toPrismaUpdateData(veiculoData, userId),
+      });
+
+      if (typeof normalizedBaseId === 'number') {
+        const currentBase = await tx.veiculoBaseHistorico.findFirst({
+          where: {
+            veiculoId: id,
+            dataFim: null,
+          },
+          orderBy: {
+            dataInicio: 'desc',
+          },
+        });
+
+        if (!currentBase || currentBase.baseId !== normalizedBaseId) {
+          if (currentBase) {
+            await tx.veiculoBaseHistorico.update({
+              where: { id: currentBase.id },
+              data: {
+                dataFim: new Date(),
+                updatedBy: userId || '',
+                updatedAt: new Date(),
+              },
+            });
+          }
+
+          await tx.veiculoBaseHistorico.create({
+            data: {
+              veiculoId: id,
+              baseId: normalizedBaseId,
+              dataInicio: new Date(),
+              motivo: 'Alteração de lotação via edição',
+              createdBy: userId || '',
+              createdAt: new Date(),
+            },
+          });
+        }
+      }
+
+      return veiculo;
     });
   }
   delete(id: any, userId: string): Promise<Veiculo> {
@@ -100,20 +171,53 @@ export class VeiculoRepository extends AbstractCrudRepository<
   protected getSearchFields(): string[] {
     return ['placa', 'modelo', 'ano'];
   }
-  protected findMany(
+  protected async findMany(
     where: any,
     orderBy: any,
     skip: number,
     take: number,
     include?: any
   ): Promise<Veiculo[]> {
-    return prisma.veiculo.findMany({
+    const veiculos = await prisma.veiculo.findMany({
       where,
       orderBy,
       skip,
       take,
       ...(include && { include }),
     });
+
+    // Para cada veículo, buscar sua base atual
+    const veiculosWithBase = await Promise.all(
+      veiculos.map(async veiculo => {
+        try {
+          const currentBase = await prisma.veiculoBaseHistorico.findFirst({
+            where: {
+              veiculoId: veiculo.id,
+              dataFim: null, // Base ativa
+            },
+            include: {
+              base: true,
+            },
+          });
+
+          return {
+            ...veiculo,
+            baseAtual: currentBase?.base || null,
+          };
+        } catch (error) {
+          console.error(
+            `Erro ao buscar base para veículo ${veiculo.id}:`,
+            error
+          );
+          return {
+            ...veiculo,
+            baseAtual: null,
+          };
+        }
+      })
+    );
+
+    return veiculosWithBase;
   }
   protected count(where: Prisma.VeiculoWhereInput): Promise<number> {
     return prisma.veiculo.count({ where });

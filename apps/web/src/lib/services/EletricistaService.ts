@@ -57,14 +57,26 @@ export class EletricistaService extends AbstractCrudService<
     // Valida os dados de entrada
     const data = eletricistaCreateSchema.parse(raw);
 
+    const { baseId, ...eletricistaCoreData } = data;
+    const normalizedBaseId =
+      baseId === undefined || baseId === null ? undefined : Number(baseId);
+
+    if (normalizedBaseId === undefined || Number.isNaN(normalizedBaseId)) {
+      throw new Error('Base é obrigatória');
+    }
+
     // Adiciona campos de auditoria
     const eletricistaData = {
-      ...data,
+      ...eletricistaCoreData,
       createdBy: userId,
       createdAt: new Date(),
     };
 
-    return this.eletricistaRepo.create(eletricistaData as any);
+    return this.eletricistaRepo.create(
+      eletricistaData as any,
+      userId,
+      normalizedBaseId
+    );
   }
 
   /**
@@ -78,14 +90,27 @@ export class EletricistaService extends AbstractCrudService<
     // Valida os dados de entrada
     const data = eletricistaUpdateSchema.parse(raw);
 
+    const { baseId, ...eletricistaCoreData } = data;
+    const normalizedBaseId =
+      baseId === undefined || baseId === null ? undefined : Number(baseId);
+
+    if (normalizedBaseId !== undefined && Number.isNaN(normalizedBaseId)) {
+      throw new Error('Base inválida');
+    }
+
     // Adiciona campos de auditoria
     const eletricistaData = {
-      ...data,
+      ...eletricistaCoreData,
       updatedBy: userId,
       updatedAt: new Date(),
     };
 
-    return this.eletricistaRepo.update(data.id, eletricistaData as any, userId);
+    return this.eletricistaRepo.update(
+      eletricistaCoreData.id,
+      eletricistaData as any,
+      userId,
+      normalizedBaseId
+    );
   }
 
   /**
