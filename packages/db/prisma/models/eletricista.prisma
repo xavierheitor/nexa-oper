@@ -18,5 +18,4 @@ model Eletricista {
 
   TurnoEletricistas TurnoEletricista[]
   EletricistaBaseHistorico EletricistaBaseHistorico[]
-  EscalaAlocacao EscalaAlocacao[]
 }
