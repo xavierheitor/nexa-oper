@@ -43,6 +43,18 @@ src/
 └── types/                  # Definições de tipos TypeScript
 ```
 
+### 🗓️ Gestão de Escalas
+
+O fluxo completo para administração das escalas de eletricistas está
+disponível em `/dashboard/cadastro/escala`. A tela combina:
+
+- **Tabela paginada** com filtros e ações de edição/remoção
+- **Formulário modal** para criar/editar escalas com definição de horários
+- **Drawer de alocações** para vincular eletricistas e gerar agendas
+
+> Consulte também o índice geral em [`DOCUMENTATION_INDEX.md`](../../DOCUMENTATION_INDEX.md)
+> para encontrar rapidamente outros guias e manuais relacionados.
+
 ## 🔗 Integração com Banco de Dados
 
 Esta aplicação utiliza o pacote compartilhado `@nexa-oper/db` para acesso ao banco de dados:

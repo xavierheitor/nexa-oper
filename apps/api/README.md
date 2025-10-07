@@ -45,6 +45,10 @@ src/
 └── main.ts             # Ponto de entrada
 ```
 
+### Módulos Destacados
+
+- **Escalas** – `/modules/escala` concentra o cadastro de padrões de escala (espanhola, 4x2 etc.), atribuição de eletricistas e geração de agenda automática integrada à abertura de turnos. Consulte o [README do módulo](./src/modules/escala/README.md) para exemplos.
+
 ## 🔗 Integração com Banco de Dados
 
 Esta API utiliza o pacote compartilhado `@nexa-oper/db` para acesso ao banco de dados:

@@ -44,6 +44,7 @@
 'use client';
 
 import {
+  CalendarOutlined,
   CarOutlined,
   CheckCircleOutlined,
   DashboardOutlined,
@@ -140,6 +141,9 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       // Submenus de Usuários
       '/dashboard/cadastro/usuario': 'usuarios',
       '/dashboard/cadastro/usuario-mobile': 'usuarios',
+
+      // Escalas
+      '/dashboard/cadastro/escala': 'cadastro',
     };
 
     // Adiciona a chave específica do submenu se existir
@@ -183,6 +187,11 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           icon: <FileProtectOutlined />,
           key: '/dashboard/cadastro/contrato',
           label: <Link href='/dashboard/cadastro/contrato'>Contratos</Link>,
+        },
+        {
+          icon: <CalendarOutlined />,
+          key: '/dashboard/cadastro/escala',
+          label: <Link href='/dashboard/cadastro/escala'>Escalas</Link>,
         },
         {
           key: 'equipe-menu',
