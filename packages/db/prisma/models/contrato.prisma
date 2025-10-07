@@ -25,6 +25,8 @@ model Contrato {
   MobileContratoPermissao MobileContratoPermissao[]
 
   Base Base[]
+
+  Escala Escala[]
 }
 
 model MobileContratoPermissao {
