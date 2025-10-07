@@ -1,8 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Prisma schema for Nexa Oper domain
+//
+// This file centralizes the database structure that is shared between the
+// backend (NestJS) and any other services consuming the Prisma client. The
+// models defined here were carefully documented to make onboarding easier and
+// to explain the reasoning behind the scheduling system introduced in this
+// iteration.
 
 generator client {
   provider = "prisma-client-js"
@@ -12,4 +14,200 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+/// Basic test table used by scaffolding commands and health checks.
+model Test {
+  /// Unique identifier generated automatically.
+  id   Int    @id @default(autoincrement())
+  /// Name provided by the requester when seeding data for quick tests.
+  name String @db.VarChar(191)
+
+  @@map("tests")
+}
+
+/// Contracts group assets, teams and collaborators under the same commercial agreement.
+model Contrato {
+  /// Primary key of the contract entry.
+  id Int @id @default(autoincrement())
+  /// Human friendly contract name displayed across the platform.
+  nome String @db.VarChar(191)
+  /// External contract number/code used by the business team.
+  numero String @db.VarChar(191)
+
+  /// Audit information about record creation.
+  createdAt DateTime @default(now())
+  createdBy String   @db.VarChar(64)
+  /// Audit information for the last update (nullable until the first update).
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(64)
+  /// Soft-delete metadata. When `deletedAt` is not null the record is considered inactive.
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(64)
+
+  /// Relationship with electricians allocated to this contract.
+  eletricistas Eletricista[]
+  /// Relationship with shift scales that belong to the same contract context.
+  escalas Escala[]
+
+  @@map("contratos")
+  @@index([numero], name: "contratos_numero_idx")
+}
+
+/// Electricians are the core collaborators scheduled into the rosters.
+model Eletricista {
+  /// Unique numeric identifier for the collaborator.
+  id Int @id @default(autoincrement())
+  /// Collaborator full name.
+  nome String @db.VarChar(191)
+  /// Registration/matricula code used internally by the operations team.
+  matricula String @db.VarChar(64)
+  /// Phone contact.
+  telefone String @db.VarChar(32)
+  /// Brazilian state (UF) where the electrician is based.
+  estado String @db.VarChar(2)
+
+  /// Contract relationship that defines permissions and cost center.
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+  /// Audit metadata for lifecycle management.
+  createdAt DateTime @default(now())
+  createdBy String   @db.VarChar(64)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(64)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(64)
+
+  /// Schedules that include this electrician in their rotation.
+  escalas EscalaAlocacao[]
+
+  @@map("eletricistas")
+  @@unique([matricula], name: "eletricistas_matricula_key")
+  @@index([contratoId], name: "eletricistas_contrato_idx")
+}
+
+/// Enumerates the supported vehicle groups to better dimension the crew size.
+enum EscalaVeiculoTipo {
+  /// Passenger vehicles (cars, SUVs etc.).
+  CARRO
+  /// Utility trucks that usually demand bigger crews.
+  CAMINHAO
+  /// Generic bucket for any other asset category.
+  OUTRO
+}
+
+/// Shift scale template that defines the rotation rules for each team.
+model Escala {
+  /// Unique identifier of the shift scale.
+  id Int @id @default(autoincrement())
+  /// Name displayed in the administrative panels (e.g. "Escala Espanhola").
+  nome String @db.VarChar(191)
+  /// Optional description where coordinators can highlight nuances.
+  descricao String? @db.Text
+  /// Optional unique code used for integrations or spreadsheets.
+  codigo String? @unique(map: "escalas_codigo_key") @db.VarChar(64)
+
+  /// Defines the default contract associated with the scale for permission checks.
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+  /// Specifies the recommended vehicle type for this roster (car, truck...).
+  tipoVeiculo EscalaVeiculoTipo?
+  /// Number of days that compose the full cycle. Example: 14 for the Spanish schedule.
+  diasCiclo Int
+  /// Minimum electricians required to open a shift that follows this schedule.
+  minimoEletricistas Int
+  /// Optional maximum electricians allowed when opening a shift.
+  maximoEletricistas Int?
+  /// Anchor date that marks the beginning of the rotation cycle.
+  inicioCiclo DateTime
+  /// Flag controlling if the scale is still active/available to the operation team.
+  ativo Boolean @default(true)
+
+  /// Audit fields reused by every administrative record.
+  createdAt DateTime @default(now())
+  createdBy String   @db.VarChar(64)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(64)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(64)
+
+  /// Daily/slot definitions that compose the cycle.
+  horarios EscalaHorario[]
+
+  @@map("escalas")
+  @@index([contratoId], name: "escalas_contrato_idx")
+  @@index([ativo], name: "escalas_ativo_idx")
+}
+
+/// Detailed slot within the scale cycle (equivalent to a working day or shift).
+model EscalaHorario {
+  /// Primary key of the schedule slot.
+  id Int @id @default(autoincrement())
+  /// Foreign key referencing the parent scale template.
+  escalaId Int
+  escala   Escala @relation(fields: [escalaId], references: [id], onDelete: Cascade)
+
+  /// Index of the day inside the cycle (starts at zero).
+  indiceCiclo Int
+  /// Optional ISO day of week (0 = Sunday, 6 = Saturday) to help building reports.
+  diaSemana Int?
+  /// HH:mm string representing when the shift is expected to start.
+  horaInicio String? @db.VarChar(5)
+  /// HH:mm string representing when the shift is expected to finish.
+  horaFim String? @db.VarChar(5)
+  /// Number of electricians that must be allocated to this slot.
+  eletricistasNecessarios Int
+  /// When true, the slot represents a rest day within the cycle.
+  folga Boolean @default(false)
+  /// Optional label (morning, night, reserva técnica...).
+  etiqueta String? @db.VarChar(64)
+  /// Offset applied when calculating rotating assignments.
+  rotacaoOffset Int @default(0)
+
+  /// Audit metadata for lifecycle.
+  createdAt DateTime @default(now())
+  createdBy String   @db.VarChar(64)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(64)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(64)
+
+  /// Collaborator assignments that belong to this slot definition.
+  alocacoes EscalaAlocacao[]
+
+  @@map("escala_horarios")
+  @@index([escalaId, indiceCiclo], name: "escala_horarios_escala_indice_idx")
+}
+
+/// Links electricians to schedule slots enabling automated rotations.
+model EscalaAlocacao {
+  /// Identifier of the allocation entry.
+  id Int @id @default(autoincrement())
+  /// Parent schedule slot reference.
+  escalaHorarioId Int
+  horario         EscalaHorario @relation(fields: [escalaHorarioId], references: [id], onDelete: Cascade)
+  /// Electrician attached to the rotation.
+  eletricistaId Int
+  eletricista   Eletricista @relation(fields: [eletricistaId], references: [id], onDelete: Restrict)
+  /// Order used to calculate who should work in each day.
+  ordemRotacao Int @default(0)
+  /// Enables temporary allocations valid only during a specific period.
+  vigenciaInicio DateTime?
+  vigenciaFim DateTime?
+  /// Whether this allocation is active.
+  ativo Boolean @default(true)
+
+  /// Audit data for traceability.
+  createdAt DateTime @default(now())
+  createdBy String   @db.VarChar(64)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(64)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(64)
+
+  @@map("escala_alocacoes")
+  @@index([escalaHorarioId], name: "escala_alocacoes_horario_idx")
+  @@index([eletricistaId], name: "escala_alocacoes_eletricista_idx")
 }

@@ -127,6 +127,11 @@ Interface → Hooks → Actions → Services → Repositories → Prisma → Dat
 - Otimização de queries
 - Lazy loading
 
+### **🗓️ Escalas e Jornada**
+
+- [Módulo Escalas (API)](./apps/api/src/modules/escala/README.md) – Cadastro de padrões (escala espanhola, 4x2), alocação de eletricistas e geração de agenda automática.
+- [Gestão de Escalas (Web)](./apps/web/src/app/dashboard/cadastro/escala/page.tsx) – Interface para criar escalas, gerenciar horários e definir alocações diretamente no painel.
+
 ## 🛠️ Ferramentas e Tecnologias
 
 ### **Frontend**

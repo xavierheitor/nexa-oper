@@ -941,6 +941,7 @@ npm run status
 - **apps/web/README.md** - Documentação da aplicação web
 - **apps/api/README.md** - Documentação da API
 - **packages/db/README.md** - Documentação do pacote DB
+- **apps/api/src/modules/escala/README.md** - Manual completo do módulo de escalas (padrões como escala espanhola e 4x2)
 
 ## 🔗 Links Úteis
 
