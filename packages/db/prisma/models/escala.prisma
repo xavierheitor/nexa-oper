@@ -1,0 +1,390 @@
+/// =========================
+/// Enums
+/// =========================
+enum ModoRepeticao {
+  CICLO_DIAS
+  SEMANA_DEPENDENTE
+}
+
+enum DiaSemana {
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+  SABADO
+  DOMINGO
+}
+
+enum StatusTrabalho {
+  TRABALHO
+  FOLGA
+}
+
+enum StatusEscalaEquipePeriodo {
+  RASCUNHO
+  EM_APROVACAO
+  PUBLICADA
+  ARQUIVADA
+}
+
+enum EstadoSlot {
+  TRABALHO
+  FOLGA
+  BLOQUEADO_CALENDARIO
+  EXCECAO
+}
+
+enum OrigemAtribuicao {
+  GERACAO
+  MANUAL
+  REMANEJAMENTO
+}
+
+enum StatusAtribuicaoPlanejada {
+  ATIVO
+  REMOVIDO
+}
+
+enum TipoIndisponibilidade {
+  FERIAS
+  LICENCA
+  SUSPENSAO
+  MEDICO
+  TREINAMENTO
+  OUTRO
+}
+
+enum EventoCoberturaTipo {
+  FALTA
+  SUPRIMENTO
+  TROCA
+}
+
+enum EventoCoberturaResultado {
+  COBERTO
+  VAGA_DESCOBERTA
+}
+
+/// =========================
+/// Catálogos / Regras
+/// =========================
+
+model PapelEquipe {
+  id    Int     @id @default(autoincrement())
+  nome  String  @db.VarChar(255)
+  ativo Boolean @default(true)
+
+  // Metadados opcionais
+  exigeHabilitacao Boolean @default(false)
+  prioridadeEscala Int? // menor = maior prioridade
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  ComposicaoMinimaEquipe ComposicaoMinimaEquipe[]
+  Atribuicoes            AtribuicaoEletricista[]
+
+  ComposicaoMinimaTipoEscala ComposicaoMinimaTipoEscala[]
+
+  EscalaEquipePeriodoComposicaoMinima EscalaEquipePeriodoComposicaoMinima[]
+}
+
+model ComposicaoMinimaEquipe {
+  id Int @id @default(autoincrement())
+
+  equipeId Int
+  equipe   Equipe @relation(fields: [equipeId], references: [id])
+
+  papelId Int
+  papel   PapelEquipe @relation(fields: [papelId], references: [id])
+
+  quantidadeMinima Int
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([equipeId, papelId])
+}
+
+/// ====== Enums já enviados antes (mantêm-se iguais) ======
+/// ModoRepeticao, DiaSemana, StatusTrabalho, StatusEscalaEquipePeriodo,
+/// EstadoSlot, OrigemAtribuicao, StatusAtribuicaoPlanejada,
+/// TipoIndisponibilidade, EventoCoberturaTipo, EventoCoberturaResultado
+/// PapelEquipe, etc.
+
+/// =========================
+/// Catálogo de Tipos de Escala (ajustado)
+/// =========================
+model TipoEscala {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  // Define apenas padrão T/F (sem horário)
+  modoRepeticao        ModoRepeticao
+  cicloDias            Int? // se CICLO_DIAS
+  periodicidadeSemanas Int? // se SEMANA_DEPENDENTE
+
+  // NOVO: regra simples de composição total (ex.: 4x2 requer 3; Espanhola requer 2)
+  minEletricistasPorTurno Int?
+
+  ativo       Boolean @default(true)
+  observacoes String? @db.VarChar(1000)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Padrões de T/F
+  CicloPosicoes  TipoEscalaCicloPosicao[]
+  SemanaMascaras TipoEscalaSemanaMascara[]
+
+  // Regras por papel (opcional — se quiser exigir líder/motorista etc.)
+  ComposicaoPorPapel ComposicaoMinimaTipoEscala[]
+
+  // Uso
+  EscalasEquipePeriodo EscalaEquipePeriodo[]
+}
+
+model TipoEscalaCicloPosicao {
+  id           Int        @id @default(autoincrement())
+  tipoEscalaId Int
+  tipoEscala   TipoEscala @relation(fields: [tipoEscalaId], references: [id])
+
+  posicao Int
+  status  StatusTrabalho
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([tipoEscalaId, posicao])
+}
+
+model TipoEscalaSemanaMascara {
+  id           Int        @id @default(autoincrement())
+  tipoEscalaId Int
+  tipoEscala   TipoEscala @relation(fields: [tipoEscalaId], references: [id])
+
+  semanaIndex Int // 0..(periodicidadeSemanas-1)
+  dia         DiaSemana
+  status      StatusTrabalho
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([tipoEscalaId, semanaIndex, dia])
+}
+
+/// =========================
+/// Composição mínima dependente do Tipo de Escala
+/// =========================
+model ComposicaoMinimaTipoEscala {
+  id Int @id @default(autoincrement())
+
+  tipoEscalaId Int
+  tipoEscala   TipoEscala @relation(fields: [tipoEscalaId], references: [id])
+
+  papelId Int
+  papel   PapelEquipe @relation(fields: [papelId], references: [id])
+
+  quantidadeMinima Int
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([tipoEscalaId, papelId])
+}
+
+/// =========================
+/// Configuração da Equipe por Período (sem mudanças aqui)
+/// =========================
+model EscalaEquipePeriodo {
+  id Int @id @default(autoincrement())
+
+  equipeId Int
+  equipe   Equipe @relation(fields: [equipeId], references: [id])
+
+  periodoInicio DateTime
+  periodoFim    DateTime
+
+  tipoEscalaId Int
+  tipoEscala   TipoEscala @relation(fields: [tipoEscalaId], references: [id])
+
+  status StatusEscalaEquipePeriodo @default(RASCUNHO)
+  versao Int                       @default(1)
+
+  observacoes String? @db.VarChar(1000)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  Slots SlotEscala[]
+
+  // NOVO: override de composição mínima por período (se necessário)
+  ComposicaoOverride EscalaEquipePeriodoComposicaoMinima[]
+
+  @@index([equipeId, periodoInicio])
+  @@index([tipoEscalaId])
+}
+
+/// Override por período (caso a equipe precise ajustar a regra do tipo)
+model EscalaEquipePeriodoComposicaoMinima {
+  id Int @id @default(autoincrement())
+
+  escalaEquipePeriodoId Int
+  escalaEquipePeriodo   EscalaEquipePeriodo @relation(fields: [escalaEquipePeriodoId], references: [id])
+
+  papelId Int
+  papel   PapelEquipe @relation(fields: [papelId], references: [id])
+
+  quantidadeMinima Int
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([escalaEquipePeriodoId, papelId])
+}
+
+model AtribuicaoEletricista {
+  id Int @id @default(autoincrement())
+
+  slotEscalaId Int
+  slotEscala   SlotEscala @relation(fields: [slotEscalaId], references: [id])
+
+  eletricistaId Int
+  eletricista   Eletricista @relation(fields: [eletricistaId], references: [id])
+
+  papelId Int
+  papel   PapelEquipe @relation(fields: [papelId], references: [id])
+
+  origem          OrigemAtribuicao          @default(GERACAO)
+  statusPlanejado StatusAtribuicaoPlanejada @default(ATIVO)
+  observacoes     String?                   @db.VarChar(1000)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Relacionamento inverso com eventos de cobertura (quando este planejado faltou)
+  CoberturasComoPlanejado EventoCobertura[] @relation("CoberturaPlanejado")
+
+  @@unique([slotEscalaId, eletricistaId]) // evita o mesmo eletricista 2x no mesmo dia
+  @@index([papelId])
+}
+
+model EventoCobertura {
+  id Int @id @default(autoincrement())
+
+  slotEscalaId Int
+  slotEscala   SlotEscala @relation(fields: [slotEscalaId], references: [id])
+
+  // Quem faltou (opcional em alguns casos de remanejamento)
+  eletricistaPlanejadoId Int?
+  eletricistaPlanejado   AtribuicaoEletricista? @relation("CoberturaPlanejado", fields: [eletricistaPlanejadoId], references: [id])
+
+  // Quem cobriu (pode ser alguém de folga/sem escala/mesma ou outra equipe)
+  eletricistaCobrindoId Int?
+  eletricistaCobrindo   Eletricista? @relation(fields: [eletricistaCobrindoId], references: [id])
+
+  tipo          EventoCoberturaTipo
+  resultado     EventoCoberturaResultado
+  justificativa String?                  @db.VarChar(1000)
+
+  registradoEm DateTime @default(now())
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@index([slotEscalaId])
+  @@index([eletricistaCobrindoId])
+  @@index([eletricistaPlanejadoId])
+}
+
+model SlotEscala {
+  id Int @id @default(autoincrement())
+
+  escalaEquipePeriodoId Int
+  escalaEquipePeriodo   EscalaEquipePeriodo @relation(fields: [escalaEquipePeriodoId], references: [id])
+
+  data   DateTime
+  estado EstadoSlot
+
+  // Horários previstos herdados da vigência da equipe para a data (se estado = TRABALHO)
+  inicioPrevisto String? @db.VarChar(8) // "HH:MM:SS"
+  fimPrevisto    String? @db.VarChar(8) // "HH:MM:SS"
+
+  anotacoesDia String? @db.VarChar(1000)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  Atribuicoes AtribuicaoEletricista[]
+  Coberturas  EventoCobertura[]
+
+  @@unique([escalaEquipePeriodoId, data]) // 1 dia por período/equipe
+  @@index([data])
+}
+
+model EquipeHorarioVigencia {
+  id Int @id @default(autoincrement())
+
+  equipeId Int
+  equipe   Equipe @relation(fields: [equipeId], references: [id])
+
+  inicioTurnoHora String  @db.VarChar(8) // "HH:MM:SS"
+  duracaoHoras    Decimal @db.Decimal(5, 2) // ex.: 8.00, 12.00
+
+  vigenciaInicio DateTime
+  vigenciaFim    DateTime?
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@index([equipeId, vigenciaInicio])
+}

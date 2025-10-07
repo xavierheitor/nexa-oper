@@ -32,7 +32,7 @@ import { ChecklistTipoEquipeVinculoService } from '../ChecklistTipoEquipeVinculo
 import { ChecklistTipoVeiculoVinculoService } from '../ChecklistTipoVeiculoVinculoService';
 import { ContratoService } from '../ContratoService';
 import { EletricistaService } from '../EletricistaService';
-import { EscalaService } from '../EscalaService';
+// import { EscalaService } from '../EscalaService'; // COMENTADO - Substituído pelo novo módulo de Escalas
 import { EquipeService } from '../EquipeService';
 import { EquipeSupervisorService } from '../EquipeSupervisorService';
 import { MobileUserService } from '../MobileUserService';
@@ -44,6 +44,10 @@ import { TipoEquipeService } from '../TipoEquipeService';
 import { TipoVeiculoService } from '../TipoVeiculoService';
 import { UserService } from '../UserService';
 import { VeiculoService } from '../VeiculoService';
+// Módulo de Escalas
+import { PapelEquipeService } from '../escala/PapelEquipeService';
+import { TipoEscalaService } from '../escala/TipoEscalaService';
+import { EscalaEquipePeriodoService } from '../escala/EscalaEquipePeriodoService';
 import { container } from './ServiceContainer';
 
 /**
@@ -61,7 +65,7 @@ export function registerServices(): void {
   container.register('tipoVeiculoService', () => new TipoVeiculoService());
   container.register('veiculoService', () => new VeiculoService());
   container.register('eletricistaService', () => new EletricistaService());
-  container.register('escalaService', () => new EscalaService());
+  // container.register('escalaService', () => new EscalaService()); // COMENTADO - Substituído pelo novo módulo
   container.register('supervisorService', () => new SupervisorService());
   container.register(
     'equipeSupervisorService',
@@ -98,6 +102,14 @@ export function registerServices(): void {
   );
   container.register('userService', () => new UserService());
   container.register('mobileUserService', () => new MobileUserService());
+
+  // Módulo de Escalas
+  container.register('papelEquipeService', () => new PapelEquipeService());
+  container.register('tipoEscalaService', () => new TipoEscalaService());
+  container.register(
+    'escalaEquipePeriodoService',
+    () => new EscalaEquipePeriodoService()
+  );
 
   // Adicione novos serviços aqui conforme necessário
   // container.register('novoServico', () => new NovoServico());

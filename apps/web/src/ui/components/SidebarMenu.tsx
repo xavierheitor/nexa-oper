@@ -127,6 +127,11 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       '/dashboard/cadastro/tipo-veiculo': 'veiculos-menu',
       '/dashboard/cadastro/veiculo': 'veiculos-menu',
 
+      // Submenus de Escalas
+      '/dashboard/cadastro/papel-equipe': 'escalas-menu',
+      '/dashboard/cadastro/escala-equipe-periodo': 'escalas-menu',
+      '/dashboard/cadastro/tipo-escala': 'escalas-menu',
+
       // Submenus de APR
       '/dashboard/cadastro/apr-pergunta': 'apr',
       '/dashboard/cadastro/apr-opcao-resposta': 'apr',
@@ -189,9 +194,23 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           label: <Link href='/dashboard/cadastro/contrato'>Contratos</Link>,
         },
         {
+          key: 'escalas-menu',
+          label: 'Escalas',
           icon: <CalendarOutlined />,
-          key: '/dashboard/cadastro/escala',
-          label: <Link href='/dashboard/cadastro/escala'>Escalas</Link>,
+          children: [
+            {
+              key: '/dashboard/cadastro/papel-equipe',
+              label: <Link href='/dashboard/cadastro/papel-equipe'>Papéis de Equipe</Link>,
+            },
+            {
+              key: '/dashboard/cadastro/escala-equipe-periodo',
+              label: <Link href='/dashboard/cadastro/escala-equipe-periodo'>Períodos de Escala</Link>,
+            },
+            {
+              key: '/dashboard/cadastro/tipo-escala',
+              label: <Link href='/dashboard/cadastro/tipo-escala'>Tipos de Escala</Link>,
+            },
+          ]
         },
         {
           key: 'equipe-menu',

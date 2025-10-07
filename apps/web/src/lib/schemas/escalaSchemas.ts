@@ -1,0 +1,477 @@
+/**
+ * Schemas de Validação para Escalas
+ *
+ * Define regras de validação e tipos TypeScript para todas as
+ * operações do módulo de escalas usando Zod.
+ *
+ * ENTIDADES COBERTAS:
+ * - PapelEquipe
+ * - TipoEscala (com ciclos e máscaras)
+ * - ComposicaoMinimaTipoEscala
+ * - EscalaEquipePeriodo
+ * - EscalaEquipePeriodoComposicaoMinima
+ * - SlotEscala
+ * - AtribuicaoEletricista
+ * - EquipeHorarioVigencia
+ * - EventoCobertura
+ * - RestricaoIndisponibilidade
+ *
+ * SCHEMAS ESPECIAIS:
+ * - Geração de Slots
+ * - Validações de composição
+ * - Operações de cobertura
+ */
+
+import { z } from 'zod';
+
+// ============================================
+// ENUMS
+// ============================================
+
+export const ModoRepeticaoEnum = z.enum(['CICLO_DIAS', 'SEMANA_DEPENDENTE']);
+export const DiaSemanaEnum = z.enum(['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO', 'DOMINGO']);
+export const StatusTrabalhoEnum = z.enum(['TRABALHO', 'FOLGA']);
+export const StatusEscalaEquipePeriodoEnum = z.enum(['RASCUNHO', 'EM_APROVACAO', 'PUBLICADA', 'ARQUIVADA']);
+export const EstadoSlotEnum = z.enum(['TRABALHO', 'FOLGA', 'BLOQUEADO_CALENDARIO', 'EXCECAO']);
+export const OrigemAtribuicaoEnum = z.enum(['GERACAO', 'MANUAL', 'REMANEJAMENTO']);
+export const StatusAtribuicaoPlanejadaEnum = z.enum(['ATIVO', 'REMOVIDO']);
+export const TipoIndisponibilidadeEnum = z.enum(['FERIAS', 'LICENCA', 'SUSPENSAO', 'MEDICO', 'TREINAMENTO', 'OUTRO']);
+export const EventoCoberturaTipoEnum = z.enum(['FALTA', 'SUPRIMENTO', 'TROCA']);
+export const EventoCoberturaResultadoEnum = z.enum(['COBERTO', 'VAGA_DESCOBERTA']);
+
+// ============================================
+// PAPEL EQUIPE
+// ============================================
+
+export const papelEquipeCreateSchema = z.object({
+  nome: z.string().min(1, 'Nome é obrigatório').max(255),
+  ativo: z.boolean().optional().default(true),
+  exigeHabilitacao: z.boolean().optional().default(false),
+  prioridadeEscala: z.number().int().optional(),
+});
+
+export const papelEquipeUpdateSchema = papelEquipeCreateSchema.extend({
+  id: z.number().int().positive(),
+});
+
+export const papelEquipeFilterSchema = z.object({
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  orderBy: z.string(),
+  orderDir: z.enum(['asc', 'desc']),
+  search: z.string().optional(),
+  ativo: z.boolean().optional(),
+  include: z.any().optional(),
+});
+
+// ============================================
+// TIPO ESCALA
+// ============================================
+
+export const tipoEscalaCreateSchema = z.object({
+  nome: z.string().min(1, 'Nome é obrigatório').max(255),
+  modoRepeticao: ModoRepeticaoEnum,
+  cicloDias: z.number().int().positive().optional(),
+  periodicidadeSemanas: z.number().int().positive().optional(),
+  minEletricistasPorTurno: z.number().int().min(0).optional(),
+  ativo: z.boolean().optional().default(true),
+  observacoes: z.string().max(1000).optional(),
+}).refine(
+  data => {
+    // Se CICLO_DIAS, cicloDias é obrigatório
+    if (data.modoRepeticao === 'CICLO_DIAS') {
+      return data.cicloDias != null && data.cicloDias > 0;
+    }
+    // Se SEMANA_DEPENDENTE, periodicidadeSemanas é obrigatório
+    if (data.modoRepeticao === 'SEMANA_DEPENDENTE') {
+      return data.periodicidadeSemanas != null && data.periodicidadeSemanas > 0;
+    }
+    return true;
+  },
+  {
+    message: 'cicloDias é obrigatório para CICLO_DIAS e periodicidadeSemanas para SEMANA_DEPENDENTE',
+    path: ['modoRepeticao'],
+  }
+);
+
+export const tipoEscalaUpdateSchema = z.object({
+  id: z.number().int().positive(),
+  nome: z.string().min(1, 'Nome é obrigatório').max(255),
+  modoRepeticao: ModoRepeticaoEnum,
+  cicloDias: z.number().int().positive().optional(),
+  periodicidadeSemanas: z.number().int().positive().optional(),
+  minEletricistasPorTurno: z.number().int().min(0).optional(),
+  ativo: z.boolean().optional().default(true),
+  observacoes: z.string().max(1000).optional(),
+}).refine(
+  data => {
+    if (data.modoRepeticao === 'CICLO_DIAS') {
+      return data.cicloDias != null && data.cicloDias > 0;
+    }
+    if (data.modoRepeticao === 'SEMANA_DEPENDENTE') {
+      return data.periodicidadeSemanas != null && data.periodicidadeSemanas > 0;
+    }
+    return true;
+  },
+  {
+    message: 'cicloDias é obrigatório para CICLO_DIAS e periodicidadeSemanas para SEMANA_DEPENDENTE',
+    path: ['modoRepeticao'],
+  }
+);
+
+export const tipoEscalaFilterSchema = z.object({
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  orderBy: z.string(),
+  orderDir: z.enum(['asc', 'desc']),
+  search: z.string().optional(),
+  ativo: z.boolean().optional(),
+  modoRepeticao: ModoRepeticaoEnum.optional(),
+  include: z.any().optional(),
+});
+
+// ============================================
+// TIPO ESCALA - CICLO POSIÇÃO
+// ============================================
+
+export const tipoEscalaCicloPosicaoCreateSchema = z.object({
+  tipoEscalaId: z.number().int().positive(),
+  posicao: z.number().int().min(0),
+  status: StatusTrabalhoEnum,
+});
+
+export const tipoEscalaCicloPosicaoUpdateSchema = tipoEscalaCicloPosicaoCreateSchema.extend({
+  id: z.number().int().positive(),
+});
+
+// ============================================
+// TIPO ESCALA - SEMANA MÁSCARA
+// ============================================
+
+export const tipoEscalaSemanaMascaraCreateSchema = z.object({
+  tipoEscalaId: z.number().int().positive(),
+  semanaIndex: z.number().int().min(0),
+  dia: DiaSemanaEnum,
+  status: StatusTrabalhoEnum,
+});
+
+export const tipoEscalaSemanaMascaraUpdateSchema = tipoEscalaSemanaMascaraCreateSchema.extend({
+  id: z.number().int().positive(),
+});
+
+// ============================================
+// COMPOSIÇÃO MÍNIMA - TIPO ESCALA
+// ============================================
+
+export const composicaoMinimaTipoEscalaCreateSchema = z.object({
+  tipoEscalaId: z.number().int().positive(),
+  papelId: z.number().int().positive(),
+  quantidadeMinima: z.number().int().min(0),
+});
+
+export const composicaoMinimaTipoEscalaUpdateSchema = composicaoMinimaTipoEscalaCreateSchema.extend({
+  id: z.number().int().positive(),
+});
+
+// ============================================
+// ESCALA EQUIPE PERÍODO
+// ============================================
+
+export const escalaEquipePeriodoCreateSchema = z.object({
+  equipeId: z.number().int().positive('Equipe é obrigatória'),
+  periodoInicio: z.coerce.date(),
+  periodoFim: z.coerce.date(),
+  tipoEscalaId: z.number().int().positive('Tipo de escala é obrigatório'),
+  observacoes: z.string().max(1000).optional(),
+}).refine(
+  data => data.periodoFim >= data.periodoInicio,
+  {
+    message: 'Período fim deve ser maior ou igual ao período início',
+    path: ['periodoFim'],
+  }
+);
+
+export const escalaEquipePeriodoUpdateSchema = z.object({
+  id: z.number().int().positive(),
+  equipeId: z.number().int().positive('Equipe é obrigatória'),
+  periodoInicio: z.coerce.date(),
+  periodoFim: z.coerce.date(),
+  tipoEscalaId: z.number().int().positive('Tipo de escala é obrigatório'),
+  observacoes: z.string().max(1000).optional(),
+  status: StatusEscalaEquipePeriodoEnum.optional(),
+  versao: z.number().int().positive().optional(),
+}).refine(
+  data => data.periodoFim >= data.periodoInicio,
+  {
+    message: 'Período fim deve ser maior ou igual ao período início',
+    path: ['periodoFim'],
+  }
+);
+
+export const escalaEquipePeriodoFilterSchema = z.object({
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  orderBy: z.string(),
+  orderDir: z.enum(['asc', 'desc']),
+  search: z.string().optional(),
+  equipeId: z.number().int().positive().optional(),
+  tipoEscalaId: z.number().int().positive().optional(),
+  status: StatusEscalaEquipePeriodoEnum.optional(),
+  periodoInicio: z.coerce.date().optional(),
+  periodoFim: z.coerce.date().optional(),
+  include: z.any().optional(),
+});
+
+// ============================================
+// ESCALA EQUIPE PERÍODO - COMPOSIÇÃO OVERRIDE
+// ============================================
+
+export const escalaEquipePeriodoComposicaoMinimaCreateSchema = z.object({
+  escalaEquipePeriodoId: z.number().int().positive(),
+  papelId: z.number().int().positive(),
+  quantidadeMinima: z.number().int().min(0),
+});
+
+export const escalaEquipePeriodoComposicaoMinimaUpdateSchema = escalaEquipePeriodoComposicaoMinimaCreateSchema.extend({
+  id: z.number().int().positive(),
+});
+
+// ============================================
+// SLOT ESCALA
+// ============================================
+
+export const slotEscalaCreateSchema = z.object({
+  escalaEquipePeriodoId: z.number().int().positive(),
+  data: z.coerce.date(),
+  estado: EstadoSlotEnum,
+  inicioPrevisto: z.string().regex(/^\d{2}:\d{2}:\d{2}$/).optional(),
+  fimPrevisto: z.string().regex(/^\d{2}:\d{2}:\d{2}$/).optional(),
+  anotacoesDia: z.string().max(1000).optional(),
+}).refine(
+  data => {
+    // Se TRABALHO, horários devem ser preenchidos
+    if (data.estado === 'TRABALHO') {
+      return data.inicioPrevisto != null && data.fimPrevisto != null;
+    }
+    return true;
+  },
+  {
+    message: 'Horários são obrigatórios quando o estado é TRABALHO',
+    path: ['estado'],
+  }
+);
+
+export const slotEscalaUpdateSchema = z.object({
+  id: z.number().int().positive(),
+  escalaEquipePeriodoId: z.number().int().positive(),
+  data: z.coerce.date(),
+  estado: EstadoSlotEnum,
+  inicioPrevisto: z.string().regex(/^\d{2}:\d{2}:\d{2}$/).optional(),
+  fimPrevisto: z.string().regex(/^\d{2}:\d{2}:\d{2}$/).optional(),
+  anotacoesDia: z.string().max(1000).optional(),
+}).refine(
+  data => {
+    if (data.estado === 'TRABALHO') {
+      return data.inicioPrevisto != null && data.fimPrevisto != null;
+    }
+    return true;
+  },
+  {
+    message: 'Horários são obrigatórios quando o estado é TRABALHO',
+    path: ['estado'],
+  }
+);
+
+// ============================================
+// ATRIBUIÇÃO ELETRICISTA
+// ============================================
+
+export const atribuicaoEletricistaCreateSchema = z.object({
+  slotEscalaId: z.number().int().positive('Slot é obrigatório'),
+  eletricistaId: z.number().int().positive('Eletricista é obrigatório'),
+  papelId: z.number().int().positive('Papel é obrigatório'),
+  origem: OrigemAtribuicaoEnum.optional().default('MANUAL'),
+  statusPlanejado: StatusAtribuicaoPlanejadaEnum.optional().default('ATIVO'),
+  observacoes: z.string().max(1000).optional(),
+});
+
+export const atribuicaoEletricistaUpdateSchema = atribuicaoEletricistaCreateSchema.extend({
+  id: z.number().int().positive(),
+});
+
+export const atribuicaoEletricistaBulkSchema = z.object({
+  atribuicoes: z.array(atribuicaoEletricistaCreateSchema),
+});
+
+// ============================================
+// EQUIPE HORÁRIO VIGÊNCIA
+// ============================================
+
+export const equipeHorarioVigenciaCreateSchema = z.object({
+  equipeId: z.number().int().positive('Equipe é obrigatória'),
+  inicioTurnoHora: z.string().regex(/^\d{2}:\d{2}:\d{2}$/, 'Formato deve ser HH:MM:SS'),
+  duracaoHoras: z.coerce.number().positive('Duração deve ser positiva'),
+  vigenciaInicio: z.coerce.date(),
+  vigenciaFim: z.coerce.date().optional(),
+}).refine(
+  data => !data.vigenciaFim || data.vigenciaFim >= data.vigenciaInicio,
+  {
+    message: 'Vigência fim deve ser maior ou igual à vigência início',
+    path: ['vigenciaFim'],
+  }
+);
+
+export const equipeHorarioVigenciaUpdateSchema = z.object({
+  id: z.number().int().positive(),
+  equipeId: z.number().int().positive('Equipe é obrigatória'),
+  inicioTurnoHora: z.string().regex(/^\d{2}:\d{2}:\d{2}$/, 'Formato deve ser HH:MM:SS'),
+  duracaoHoras: z.coerce.number().positive('Duração deve ser positiva'),
+  vigenciaInicio: z.coerce.date(),
+  vigenciaFim: z.coerce.date().optional(),
+}).refine(
+  data => !data.vigenciaFim || data.vigenciaFim >= data.vigenciaInicio,
+  {
+    message: 'Vigência fim deve ser maior ou igual à vigência início',
+    path: ['vigenciaFim'],
+  }
+);
+
+// ============================================
+// EVENTO COBERTURA
+// ============================================
+
+export const eventoCoberturaCreateSchema = z.object({
+  slotEscalaId: z.number().int().positive(),
+  eletricistaPlanejadoId: z.number().int().positive().optional(),
+  eletricistaCobrindoId: z.number().int().positive().optional(),
+  tipo: EventoCoberturaTipoEnum,
+  resultado: EventoCoberturaResultadoEnum,
+  justificativa: z.string().max(1000).optional(),
+  registradoEm: z.coerce.date().optional(),
+});
+
+export const eventoCoberturaUpdateSchema = eventoCoberturaCreateSchema.extend({
+  id: z.number().int().positive(),
+});
+
+// ============================================
+// SCHEMAS ESPECIAIS - AÇÕES
+// ============================================
+
+/**
+ * Schema para geração de slots
+ */
+export const gerarSlotsSchema = z.object({
+  escalaEquipePeriodoId: z.number().int().positive('ID do período é obrigatório'),
+  mode: z.enum(['full', 'fromDate']),
+  fromDate: z.coerce.date().optional(),
+}).refine(
+  data => data.mode !== 'fromDate' || data.fromDate != null,
+  {
+    message: 'fromDate é obrigatório quando mode é fromDate',
+    path: ['fromDate'],
+  }
+);
+
+/**
+ * Schema para publicar período
+ */
+export const publicarPeriodoSchema = z.object({
+  escalaEquipePeriodoId: z.number().int().positive(),
+  validarComposicao: z.boolean().optional().default(true),
+});
+
+/**
+ * Schema para arquivar período
+ */
+export const arquivarPeriodoSchema = z.object({
+  escalaEquipePeriodoId: z.number().int().positive(),
+  motivo: z.string().max(1000).optional(),
+});
+
+/**
+ * Schema para duplicar período
+ */
+export const duplicarPeriodoSchema = z.object({
+  escalaEquipePeriodoId: z.number().int().positive(),
+  novoPeriodoInicio: z.coerce.date(),
+  novoPeriodoFim: z.coerce.date(),
+  copiarAtribuicoes: z.boolean().optional().default(false),
+}).refine(
+  data => data.novoPeriodoFim >= data.novoPeriodoInicio,
+  {
+    message: 'Novo período fim deve ser maior ou igual ao novo período início',
+    path: ['novoPeriodoFim'],
+  }
+);
+
+/**
+ * Schema para validar composição mínima
+ */
+export const validarComposicaoSchema = z.object({
+  slotEscalaId: z.number().int().positive(),
+  atribuicoes: z.array(z.object({
+    papelId: z.number().int().positive(),
+    quantidade: z.number().int().min(0),
+  })),
+});
+
+// ============================================
+// EXPORTAÇÃO DE TIPOS
+// ============================================
+
+// PapelEquipe
+export type PapelEquipeCreate = z.infer<typeof papelEquipeCreateSchema>;
+export type PapelEquipeUpdate = z.infer<typeof papelEquipeUpdateSchema>;
+export type PapelEquipeFilter = z.infer<typeof papelEquipeFilterSchema>;
+
+// TipoEscala
+export type TipoEscalaCreate = z.infer<typeof tipoEscalaCreateSchema>;
+export type TipoEscalaUpdate = z.infer<typeof tipoEscalaUpdateSchema>;
+export type TipoEscalaFilter = z.infer<typeof tipoEscalaFilterSchema>;
+
+// TipoEscalaCicloPosicao
+export type TipoEscalaCicloPosicaoCreate = z.infer<typeof tipoEscalaCicloPosicaoCreateSchema>;
+export type TipoEscalaCicloPosicaoUpdate = z.infer<typeof tipoEscalaCicloPosicaoUpdateSchema>;
+
+// TipoEscalaSemanaMascara
+export type TipoEscalaSemanaMascaraCreate = z.infer<typeof tipoEscalaSemanaMascaraCreateSchema>;
+export type TipoEscalaSemanaMascaraUpdate = z.infer<typeof tipoEscalaSemanaMascaraUpdateSchema>;
+
+// ComposicaoMinimaTipoEscala
+export type ComposicaoMinimaTipoEscalaCreate = z.infer<typeof composicaoMinimaTipoEscalaCreateSchema>;
+export type ComposicaoMinimaTipoEscalaUpdate = z.infer<typeof composicaoMinimaTipoEscalaUpdateSchema>;
+
+// EscalaEquipePeriodo
+export type EscalaEquipePeriodoCreate = z.infer<typeof escalaEquipePeriodoCreateSchema>;
+export type EscalaEquipePeriodoUpdate = z.infer<typeof escalaEquipePeriodoUpdateSchema>;
+export type EscalaEquipePeriodoFilter = z.infer<typeof escalaEquipePeriodoFilterSchema>;
+
+// EscalaEquipePeriodoComposicaoMinima
+export type EscalaEquipePeriodoComposicaoMinimaCreate = z.infer<typeof escalaEquipePeriodoComposicaoMinimaCreateSchema>;
+export type EscalaEquipePeriodoComposicaoMinimaUpdate = z.infer<typeof escalaEquipePeriodoComposicaoMinimaUpdateSchema>;
+
+// SlotEscala
+export type SlotEscalaCreate = z.infer<typeof slotEscalaCreateSchema>;
+export type SlotEscalaUpdate = z.infer<typeof slotEscalaUpdateSchema>;
+
+// AtribuicaoEletricista
+export type AtribuicaoEletricistaCreate = z.infer<typeof atribuicaoEletricistaCreateSchema>;
+export type AtribuicaoEletricistaUpdate = z.infer<typeof atribuicaoEletricistaUpdateSchema>;
+export type AtribuicaoEletricistaBulk = z.infer<typeof atribuicaoEletricistaBulkSchema>;
+
+// EquipeHorarioVigencia
+export type EquipeHorarioVigenciaCreate = z.infer<typeof equipeHorarioVigenciaCreateSchema>;
+export type EquipeHorarioVigenciaUpdate = z.infer<typeof equipeHorarioVigenciaUpdateSchema>;
+
+// EventoCobertura
+export type EventoCoberturaCreate = z.infer<typeof eventoCoberturaCreateSchema>;
+export type EventoCoberturaUpdate = z.infer<typeof eventoCoberturaUpdateSchema>;
+
+// Actions
+export type GerarSlotsInput = z.infer<typeof gerarSlotsSchema>;
+export type PublicarPeriodoInput = z.infer<typeof publicarPeriodoSchema>;
+export type ArquivarPeriodoInput = z.infer<typeof arquivarPeriodoSchema>;
+export type DuplicarPeriodoInput = z.infer<typeof duplicarPeriodoSchema>;
+export type ValidarComposicaoInput = z.infer<typeof validarComposicaoSchema>;
+

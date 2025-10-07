@@ -49,7 +49,6 @@ import { LoggerMiddleware } from '@common/middleware/logger.middleware';
 import { EquipeModule } from './modules/equipe';
 import { AtividadeModule } from './modules/atividade';
 import { TurnoModule } from './modules/turno';
-import { EscalaModule } from './modules/escala';
 import { TipoVeiculoModule } from './modules/tipo-veiculo/tipo-veiculo.module';
 import { TipoEquipeModule } from './modules/tipo-equipe/tipo-equipe.module';
 
@@ -81,7 +80,6 @@ import { TipoEquipeModule } from './modules/tipo-equipe/tipo-equipe.module';
     EquipeModule,
     AtividadeModule,
     TurnoModule,
-    EscalaModule,
 
     // Módulos de autenticação e permissões
     AuthModule,

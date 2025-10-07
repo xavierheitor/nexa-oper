@@ -13,3 +13,1177 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+// From prisma/models/apr.prisma
+model Apr {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  AprPerguntaRelacao       AprPerguntaRelacao[]
+  AprOpcaoRespostaRelacao  AprOpcaoRespostaRelacao[]
+  AprTipoAtividadeRelacao AprTipoAtividadeRelacao[]
+}
+
+model AprPergunta {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  AprPerguntaRelacao AprPerguntaRelacao[]
+}
+
+model AprPerguntaRelacao {
+  id Int @id @default(autoincrement())
+
+  aprPerguntaId Int
+  aprPergunta   AprPergunta @relation(fields: [aprPerguntaId], references: [id])
+
+  ordem Int @default(0)
+
+  aprId Int
+  apr   Apr @relation(fields: [aprId], references: [id])
+
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+}
+
+model AprOpcaoResposta {
+  id Int @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+
+  AprOpcaoRespostaRelacao AprOpcaoRespostaRelacao[]
+}
+
+model AprOpcaoRespostaRelacao {
+  id Int @id @default(autoincrement())
+
+  aprOpcaoRespostaId Int
+  aprOpcaoResposta   AprOpcaoResposta @relation(fields: [aprOpcaoRespostaId], references: [id])
+
+  aprId Int
+  apr   Apr @relation(fields: [aprId], references: [id])
+
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+}
+
+
+model AprTipoAtividadeRelacao{
+  id Int @id @default(autoincrement())
+
+  aprId Int
+  apr   Apr @relation(fields: [aprId], references: [id])
+
+  tipoAtividadeId Int
+  tipoAtividade   TipoAtividade @relation(fields: [tipoAtividadeId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Índice único condicional: apenas um apr ativo por tipo de atividade
+  @@unique([tipoAtividadeId, deletedAt], map: "unique_active_apr_tipo_atividade")
+}
+// From prisma/models/atividade.prisma
+model TipoAtividade {
+  id Int @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  AprTipoAtividadeRelacao AprTipoAtividadeRelacao[]
+
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+}
+// From prisma/models/auth_mobile.prisma
+model MobileUser {
+  id       Int    @id @default(autoincrement())
+  username String @db.VarChar(255) @unique
+  password String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  mobileSession MobileSession[]
+
+  MobileToken MobileToken[]
+
+  MobileContratoPermissao MobileContratoPermissao[]
+}
+
+model MobileSession {
+  id         String   @id @default(uuid())
+  deviceInfo String?  @db.Text
+  lastActive DateTime @default(now())
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  ativa      Boolean  @default(true)
+
+  mobileUserId Int
+  mobileUser   MobileUser @relation(fields: [mobileUserId], references: [id])
+
+  @@index([mobileUserId])
+  @@map("sessoes_mobile")
+}
+
+model MobileToken {
+  id                    Int       @id @default(autoincrement())
+  token                 String    @unique @db.VarChar(255)
+  refreshToken          String?   @unique @db.VarChar(255)
+  refreshTokenExpiresAt DateTime?
+  usuarioMobileId       String
+  expiresAt             DateTime
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  revoked               Boolean   @default(false)
+
+  mobileUserId Int
+  mobileUser   MobileUser @relation(fields: [mobileUserId], references: [id])
+
+  @@index([mobileUserId])
+  @@map("tokens_mobile")
+}
+
+// From prisma/models/auth_web.prisma
+model User {
+  id       Int    @id @default(autoincrement())
+  nome     String @db.VarChar(255)
+  email    String @db.VarChar(255) @unique
+  username String @db.VarChar(255) @unique
+  password String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  Session Session[]
+  Account Account[]
+
+  @@index([username])
+  @@index([email])
+  RoleUser RoleUser[]
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  userId Int
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("contas")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  expires      DateTime
+
+  userId Int
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessoes")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("tokens_verificacao")
+}
+
+
+model Role {
+  id Int @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+
+  RoleUser RoleUser[]
+}
+
+model RoleUser {
+  id Int @id @default(autoincrement())
+
+  userId Int
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  roleId Int
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+}
+// From prisma/models/base.prisma
+model Base{
+  id Int @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+
+  // Relacionamentos com históricos
+  EletricistaBaseHistorico EletricistaBaseHistorico[]
+  VeiculoBaseHistorico VeiculoBaseHistorico[]
+}
+
+// From prisma/models/checklist.prisma
+model TipoChecklist {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  Checklist Checklist[]
+
+  ChecklistTipoEquipeRelacao ChecklistTipoEquipeRelacao[]
+}
+
+model Checklist {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  tipoChecklistId Int
+  tipoChecklist   TipoChecklist @relation(fields: [tipoChecklistId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  ChecklistPerguntaRelacao ChecklistPerguntaRelacao[]
+  ChecklistOpcaoRespostaRelacao ChecklistOpcaoRespostaRelacao[]
+  ChecklistTipoVeiculoRelacao ChecklistTipoVeiculoRelacao[]
+  ChecklistTipoEquipeRelacao ChecklistTipoEquipeRelacao[]
+}
+
+model ChecklistPergunta {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  ChecklistPerguntaRelacao ChecklistPerguntaRelacao[]
+}
+
+model ChecklistPerguntaRelacao {
+  id Int @id @default(autoincrement())
+
+  checklistPerguntaId Int
+  checklistPergunta   ChecklistPergunta @relation(fields: [checklistPerguntaId], references: [id])
+
+  checklistId Int
+  checklist   Checklist @relation(fields: [checklistId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+}
+
+model ChecklistOpcaoResposta {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  geraPendencia Boolean @default(false)
+
+  checklistOpcaoRespostaRelacao ChecklistOpcaoRespostaRelacao[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+}
+
+model ChecklistOpcaoRespostaRelacao {
+  id Int @id @default(autoincrement())
+
+  checklistOpcaoRespostaId Int
+  checklistOpcaoResposta   ChecklistOpcaoResposta @relation(fields: [checklistOpcaoRespostaId], references: [id])
+
+  checklistId Int
+  checklist   Checklist @relation(fields: [checklistId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+}
+
+model ChecklistTipoVeiculoRelacao{
+  id Int @id @default(autoincrement())
+
+  checklistId Int
+  checklist   Checklist @relation(fields: [checklistId], references: [id])
+
+  tipoVeiculoId Int
+  tipoVeiculo   TipoVeiculo @relation(fields: [tipoVeiculoId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Índice único condicional: apenas um checklist ativo por tipo de veículo
+  @@unique([tipoVeiculoId, deletedAt], map: "unique_active_checklist_tipo_veiculo")
+}
+
+model ChecklistTipoEquipeRelacao{
+  id Int @id @default(autoincrement())
+
+  checklistId Int
+  checklist   Checklist @relation(fields: [checklistId], references: [id])
+
+  tipoEquipeId Int
+  tipoEquipe   TipoEquipe @relation(fields: [tipoEquipeId], references: [id])
+
+  // NOVO CAMPO: referência direta ao tipo de checklist
+  tipoChecklistId Int
+  tipoChecklist   TipoChecklist @relation(fields: [tipoChecklistId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // UNIQUE KEY: permite múltiplos checklists por tipo de equipe,
+  // mas não permite checklists do mesmo tipo ativos simultaneamente
+  @@unique([tipoEquipeId, tipoChecklistId, deletedAt], map: "unique_active_checklist_tipo_por_equipe")
+}
+
+// From prisma/models/contrato.prisma
+model Contrato {
+  id     Int    @id @default(autoincrement())
+  nome   String @db.VarChar(255)
+  numero String @db.VarChar(255)
+
+  dataInicio DateTime?
+  dataFim    DateTime?
+
+
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+
+  Veiculo Veiculo[]
+
+  Eletricista Eletricista[]
+
+  Equipe Equipe[]
+
+  Supervisor Supervisor[]
+
+  MobileContratoPermissao MobileContratoPermissao[]
+
+  Base Base[]
+
+}
+
+model MobileContratoPermissao {
+  id Int @id @default(autoincrement())
+
+  contratoId Int
+  contrato Contrato @relation(fields: [contratoId], references: [id])
+
+  mobileUserId Int
+  mobileUser MobileUser @relation(fields: [mobileUserId], references: [id])
+
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+}
+
+// From prisma/models/eletricista-base-historico.prisma
+/**
+ * Modelo para Histórico de Bases de Eletricistas
+ *
+ * Este modelo rastreia todas as transferências de eletricistas entre bases,
+ * mantendo um histórico completo de onde cada eletricista esteve e quando.
+ *
+ * CASOS DE USO:
+ * - Rastrear transferências de eletricistas entre bases
+ * - Auditoria de movimentações
+ * - Relatórios de histórico de bases
+ * - Controle de localização atual e passada
+ */
+
+model EletricistaBaseHistorico {
+  id Int @id @default(autoincrement())
+
+  // Relacionamentos principais
+  eletricistaId Int
+  eletricista   Eletricista @relation(fields: [eletricistaId], references: [id])
+
+  baseId Int
+  base   Base @relation(fields: [baseId], references: [id])
+
+  // Controle de período
+  dataInicio DateTime // Quando o eletricista chegou nesta base
+  dataFim    DateTime? // Quando o eletricista saiu desta base (null = ainda está na base)
+
+  // Motivo da transferência
+  motivo String? @db.VarChar(500) // Motivo da transferência (opcional)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+
+  // Índices para performance
+  @@index([eletricistaId])
+  @@index([baseId])
+  @@index([dataInicio])
+  @@index([dataFim])
+  @@index([eletricistaId, dataInicio])
+}
+
+// From prisma/models/eletricista.prisma
+model Eletricista {
+  id        Int    @id @default(autoincrement())
+  nome      String @db.VarChar(255)
+  matricula String @db.VarChar(255)
+  telefone  String @db.VarChar(255)
+  estado    String @db.VarChar(2)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+  TurnoEletricistas        TurnoEletricista[]
+  EletricistaBaseHistorico EletricistaBaseHistorico[]
+
+  AtribuicaoEletricista AtribuicaoEletricista[]
+
+  EventoCobertura EventoCobertura[]
+}
+
+// From prisma/models/equipe.prisma
+model TipoEquipe {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  Equipe                     Equipe[]
+  ChecklistTipoEquipeRelacao ChecklistTipoEquipeRelacao[]
+}
+
+model Equipe {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  tipoEquipeId Int
+  tipoEquipe   TipoEquipe @relation(fields: [tipoEquipeId], references: [id])
+
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  EquipeSupervisor EquipeSupervisor[]
+
+  Turno Turno[]
+
+  ComposicaoMinimaEquipe ComposicaoMinimaEquipe[]
+
+  EscalaEquipePeriodo EscalaEquipePeriodo[]
+
+  EquipeHorarioVigencia EquipeHorarioVigencia[]
+}
+
+model EquipeSupervisor {
+  id Int @id @default(autoincrement())
+
+  equipeId Int
+  equipe   Equipe @relation(fields: [equipeId], references: [id])
+
+  supervisorId Int
+  supervisor   Supervisor @relation(fields: [supervisorId], references: [id])
+
+  inicio DateTime
+  fim    DateTime?
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+}
+
+// From prisma/models/escala.prisma
+/// =========================
+/// Enums
+/// =========================
+enum ModoRepeticao {
+  CICLO_DIAS
+  SEMANA_DEPENDENTE
+}
+
+enum DiaSemana {
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+  SABADO
+  DOMINGO
+}
+
+enum StatusTrabalho {
+  TRABALHO
+  FOLGA
+}
+
+enum StatusEscalaEquipePeriodo {
+  RASCUNHO
+  EM_APROVACAO
+  PUBLICADA
+  ARQUIVADA
+}
+
+enum EstadoSlot {
+  TRABALHO
+  FOLGA
+  BLOQUEADO_CALENDARIO
+  EXCECAO
+}
+
+enum OrigemAtribuicao {
+  GERACAO
+  MANUAL
+  REMANEJAMENTO
+}
+
+enum StatusAtribuicaoPlanejada {
+  ATIVO
+  REMOVIDO
+}
+
+enum TipoIndisponibilidade {
+  FERIAS
+  LICENCA
+  SUSPENSAO
+  MEDICO
+  TREINAMENTO
+  OUTRO
+}
+
+enum EventoCoberturaTipo {
+  FALTA
+  SUPRIMENTO
+  TROCA
+}
+
+enum EventoCoberturaResultado {
+  COBERTO
+  VAGA_DESCOBERTA
+}
+
+/// =========================
+/// Catálogos / Regras
+/// =========================
+
+model PapelEquipe {
+  id    Int     @id @default(autoincrement())
+  nome  String  @db.VarChar(255)
+  ativo Boolean @default(true)
+
+  // Metadados opcionais
+  exigeHabilitacao Boolean @default(false)
+  prioridadeEscala Int? // menor = maior prioridade
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  ComposicaoMinimaEquipe ComposicaoMinimaEquipe[]
+  Atribuicoes            AtribuicaoEletricista[]
+
+  ComposicaoMinimaTipoEscala ComposicaoMinimaTipoEscala[]
+
+  EscalaEquipePeriodoComposicaoMinima EscalaEquipePeriodoComposicaoMinima[]
+}
+
+model ComposicaoMinimaEquipe {
+  id Int @id @default(autoincrement())
+
+  equipeId Int
+  equipe   Equipe @relation(fields: [equipeId], references: [id])
+
+  papelId Int
+  papel   PapelEquipe @relation(fields: [papelId], references: [id])
+
+  quantidadeMinima Int
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([equipeId, papelId])
+}
+
+/// ====== Enums já enviados antes (mantêm-se iguais) ======
+/// ModoRepeticao, DiaSemana, StatusTrabalho, StatusEscalaEquipePeriodo,
+/// EstadoSlot, OrigemAtribuicao, StatusAtribuicaoPlanejada,
+/// TipoIndisponibilidade, EventoCoberturaTipo, EventoCoberturaResultado
+/// PapelEquipe, etc.
+
+/// =========================
+/// Catálogo de Tipos de Escala (ajustado)
+/// =========================
+model TipoEscala {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  // Define apenas padrão T/F (sem horário)
+  modoRepeticao        ModoRepeticao
+  cicloDias            Int? // se CICLO_DIAS
+  periodicidadeSemanas Int? // se SEMANA_DEPENDENTE
+
+  // NOVO: regra simples de composição total (ex.: 4x2 requer 3; Espanhola requer 2)
+  minEletricistasPorTurno Int?
+
+  ativo       Boolean @default(true)
+  observacoes String? @db.VarChar(1000)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Padrões de T/F
+  CicloPosicoes  TipoEscalaCicloPosicao[]
+  SemanaMascaras TipoEscalaSemanaMascara[]
+
+  // Regras por papel (opcional — se quiser exigir líder/motorista etc.)
+  ComposicaoPorPapel ComposicaoMinimaTipoEscala[]
+
+  // Uso
+  EscalasEquipePeriodo EscalaEquipePeriodo[]
+}
+
+model TipoEscalaCicloPosicao {
+  id           Int        @id @default(autoincrement())
+  tipoEscalaId Int
+  tipoEscala   TipoEscala @relation(fields: [tipoEscalaId], references: [id])
+
+  posicao Int
+  status  StatusTrabalho
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([tipoEscalaId, posicao])
+}
+
+model TipoEscalaSemanaMascara {
+  id           Int        @id @default(autoincrement())
+  tipoEscalaId Int
+  tipoEscala   TipoEscala @relation(fields: [tipoEscalaId], references: [id])
+
+  semanaIndex Int // 0..(periodicidadeSemanas-1)
+  dia         DiaSemana
+  status      StatusTrabalho
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([tipoEscalaId, semanaIndex, dia])
+}
+
+/// =========================
+/// Composição mínima dependente do Tipo de Escala
+/// =========================
+model ComposicaoMinimaTipoEscala {
+  id Int @id @default(autoincrement())
+
+  tipoEscalaId Int
+  tipoEscala   TipoEscala @relation(fields: [tipoEscalaId], references: [id])
+
+  papelId Int
+  papel   PapelEquipe @relation(fields: [papelId], references: [id])
+
+  quantidadeMinima Int
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([tipoEscalaId, papelId])
+}
+
+/// =========================
+/// Configuração da Equipe por Período (sem mudanças aqui)
+/// =========================
+model EscalaEquipePeriodo {
+  id Int @id @default(autoincrement())
+
+  equipeId Int
+  equipe   Equipe @relation(fields: [equipeId], references: [id])
+
+  periodoInicio DateTime
+  periodoFim    DateTime
+
+  tipoEscalaId Int
+  tipoEscala   TipoEscala @relation(fields: [tipoEscalaId], references: [id])
+
+  status StatusEscalaEquipePeriodo @default(RASCUNHO)
+  versao Int                       @default(1)
+
+  observacoes String? @db.VarChar(1000)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  Slots SlotEscala[]
+
+  // NOVO: override de composição mínima por período (se necessário)
+  ComposicaoOverride EscalaEquipePeriodoComposicaoMinima[]
+
+  @@index([equipeId, periodoInicio])
+  @@index([tipoEscalaId])
+}
+
+/// Override por período (caso a equipe precise ajustar a regra do tipo)
+model EscalaEquipePeriodoComposicaoMinima {
+  id Int @id @default(autoincrement())
+
+  escalaEquipePeriodoId Int
+  escalaEquipePeriodo   EscalaEquipePeriodo @relation(fields: [escalaEquipePeriodoId], references: [id])
+
+  papelId Int
+  papel   PapelEquipe @relation(fields: [papelId], references: [id])
+
+  quantidadeMinima Int
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([escalaEquipePeriodoId, papelId])
+}
+
+model AtribuicaoEletricista {
+  id Int @id @default(autoincrement())
+
+  slotEscalaId Int
+  slotEscala   SlotEscala @relation(fields: [slotEscalaId], references: [id])
+
+  eletricistaId Int
+  eletricista   Eletricista @relation(fields: [eletricistaId], references: [id])
+
+  papelId Int
+  papel   PapelEquipe @relation(fields: [papelId], references: [id])
+
+  origem          OrigemAtribuicao          @default(GERACAO)
+  statusPlanejado StatusAtribuicaoPlanejada @default(ATIVO)
+  observacoes     String?                   @db.VarChar(1000)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Relacionamento inverso com eventos de cobertura (quando este planejado faltou)
+  CoberturasComoPlanejado EventoCobertura[] @relation("CoberturaPlanejado")
+
+  @@unique([slotEscalaId, eletricistaId]) // evita o mesmo eletricista 2x no mesmo dia
+  @@index([papelId])
+}
+
+model EventoCobertura {
+  id Int @id @default(autoincrement())
+
+  slotEscalaId Int
+  slotEscala   SlotEscala @relation(fields: [slotEscalaId], references: [id])
+
+  // Quem faltou (opcional em alguns casos de remanejamento)
+  eletricistaPlanejadoId Int?
+  eletricistaPlanejado   AtribuicaoEletricista? @relation("CoberturaPlanejado", fields: [eletricistaPlanejadoId], references: [id])
+
+  // Quem cobriu (pode ser alguém de folga/sem escala/mesma ou outra equipe)
+  eletricistaCobrindoId Int?
+  eletricistaCobrindo   Eletricista? @relation(fields: [eletricistaCobrindoId], references: [id])
+
+  tipo          EventoCoberturaTipo
+  resultado     EventoCoberturaResultado
+  justificativa String?                  @db.VarChar(1000)
+
+  registradoEm DateTime @default(now())
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@index([slotEscalaId])
+  @@index([eletricistaCobrindoId])
+  @@index([eletricistaPlanejadoId])
+}
+
+model SlotEscala {
+  id Int @id @default(autoincrement())
+
+  escalaEquipePeriodoId Int
+  escalaEquipePeriodo   EscalaEquipePeriodo @relation(fields: [escalaEquipePeriodoId], references: [id])
+
+  data   DateTime
+  estado EstadoSlot
+
+  // Horários previstos herdados da vigência da equipe para a data (se estado = TRABALHO)
+  inicioPrevisto String? @db.VarChar(8) // "HH:MM:SS"
+  fimPrevisto    String? @db.VarChar(8) // "HH:MM:SS"
+
+  anotacoesDia String? @db.VarChar(1000)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  Atribuicoes AtribuicaoEletricista[]
+  Coberturas  EventoCobertura[]
+
+  @@unique([escalaEquipePeriodoId, data]) // 1 dia por período/equipe
+  @@index([data])
+}
+
+model EquipeHorarioVigencia {
+  id Int @id @default(autoincrement())
+
+  equipeId Int
+  equipe   Equipe @relation(fields: [equipeId], references: [id])
+
+  inicioTurnoHora String  @db.VarChar(8) // "HH:MM:SS"
+  duracaoHoras    Decimal @db.Decimal(5, 2) // ex.: 8.00, 12.00
+
+  vigenciaInicio DateTime
+  vigenciaFim    DateTime?
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@index([equipeId, vigenciaInicio])
+}
+
+// From prisma/models/supervisor.prisma
+model Supervisor {
+  id Int @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+
+  EquipeSupervisor EquipeSupervisor[]
+}
+// From prisma/models/teste.prisma
+model Test {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(255)
+}
+
+// From prisma/models/turno.prisma
+model Turno {
+  id Int @id @default(autoincrement())
+
+  dataSolicitacao DateTime
+  dataInicio      DateTime
+  dataFim         DateTime?
+
+  veiculoId Int
+  veiculo   Veiculo @relation(fields: [veiculoId], references: [id])
+
+  equipeId Int
+  equipe   Equipe @relation(fields: [equipeId], references: [id])
+
+  dispositivo String @db.VarChar(255)
+
+  kmInicio Int
+  KmFim    Int?
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  TurnoEletricistas TurnoEletricista[]
+}
+
+model TurnoEletricista {
+  id Int @id @default(autoincrement())
+
+  turnoId Int
+  turno   Turno @relation(fields: [turnoId], references: [id])
+
+  eletricistaId Int
+  eletricista   Eletricista @relation(fields: [eletricistaId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@map("TurnoEletricistas")
+}
+
+// From prisma/models/veiculo-base-historico.prisma
+/**
+ * Modelo para Histórico de Bases de Veículos
+ *
+ * Este modelo rastreia todas as transferências de veículos entre bases,
+ * mantendo um histórico completo de onde cada veículo esteve e quando.
+ *
+ * CASOS DE USO:
+ * - Rastrear transferências de veículos entre bases
+ * - Auditoria de movimentações
+ * - Relatórios de histórico de bases
+ * - Controle de localização atual e passada
+ */
+
+model VeiculoBaseHistorico {
+  id Int @id @default(autoincrement())
+
+  // Relacionamentos principais
+  veiculoId Int
+  veiculo   Veiculo @relation(fields: [veiculoId], references: [id])
+
+  baseId Int
+  base   Base @relation(fields: [baseId], references: [id])
+
+  // Controle de período
+  dataInicio DateTime // Quando o veículo chegou nesta base
+  dataFim    DateTime? // Quando o veículo saiu desta base (null = ainda está na base)
+
+  // Motivo da transferência
+  motivo String? @db.VarChar(500) // Motivo da transferência (opcional)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  createdBy String @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String? @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String? @db.VarChar(255)
+
+  // Índices para performance
+  @@index([veiculoId])
+  @@index([baseId])
+  @@index([dataInicio])
+  @@index([dataFim])
+  @@index([veiculoId, dataInicio])
+}
+
+// From prisma/models/veiculo.prisma
+model TipoVeiculo {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  Veiculo Veiculo[]
+  ChecklistTipoVeiculoRelacao ChecklistTipoVeiculoRelacao[]
+}
+
+model Veiculo {
+  id     Int    @id @default(autoincrement())
+  placa  String @db.VarChar(8)
+  modelo String @db.VarChar(255)
+  ano    Int
+
+  tipoVeiculoId Int
+  tipoVeiculo   TipoVeiculo @relation(fields: [tipoVeiculoId], references: [id])
+
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  VeiculoOdometro VeiculoOdometro[]
+  VeiculoBaseHistorico VeiculoBaseHistorico[]
+
+  Turno Turno[]
+}
+
+model VeiculoOdometro {
+  id    Int      @id @default(autoincrement())
+  valor Int
+  data  DateTime
+
+  veiculoId Int
+  veiculo   Veiculo @relation(fields: [veiculoId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+}
+
