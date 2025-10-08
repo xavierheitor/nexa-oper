@@ -219,6 +219,20 @@ export type EventoCobertura = $Result.DefaultSelection<Prisma.$EventoCoberturaPa
  */
 export type EquipeHorarioVigencia = $Result.DefaultSelection<Prisma.$EquipeHorarioVigenciaPayload>
 /**
+ * Model HorarioAberturaCatalogo
+ * ===============================================
+ * Catálogo de Horários de Abertura (presets)
+ * ===============================================
+ */
+export type HorarioAberturaCatalogo = $Result.DefaultSelection<Prisma.$HorarioAberturaCatalogoPayload>
+/**
+ * Model EquipeTurnoHistorico
+ * ===================================================
+ * Histórico de Horário de Turno por Equipe (snapshot)
+ * ===================================================
+ */
+export type EquipeTurnoHistorico = $Result.DefaultSelection<Prisma.$EquipeTurnoHistoricoPayload>
+/**
  * Model Supervisor
  * 
  */
@@ -909,6 +923,26 @@ export class PrismaClient<
   get equipeHorarioVigencia(): Prisma.EquipeHorarioVigenciaDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.horarioAberturaCatalogo`: Exposes CRUD operations for the **HorarioAberturaCatalogo** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more HorarioAberturaCatalogos
+    * const horarioAberturaCatalogos = await prisma.horarioAberturaCatalogo.findMany()
+    * ```
+    */
+  get horarioAberturaCatalogo(): Prisma.HorarioAberturaCatalogoDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.equipeTurnoHistorico`: Exposes CRUD operations for the **EquipeTurnoHistorico** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more EquipeTurnoHistoricos
+    * const equipeTurnoHistoricos = await prisma.equipeTurnoHistorico.findMany()
+    * ```
+    */
+  get equipeTurnoHistorico(): Prisma.EquipeTurnoHistoricoDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.supervisor`: Exposes CRUD operations for the **Supervisor** model.
     * Example usage:
     * ```ts
@@ -1466,6 +1500,8 @@ export namespace Prisma {
     SlotEscala: 'SlotEscala',
     EventoCobertura: 'EventoCobertura',
     EquipeHorarioVigencia: 'EquipeHorarioVigencia',
+    HorarioAberturaCatalogo: 'HorarioAberturaCatalogo',
+    EquipeTurnoHistorico: 'EquipeTurnoHistorico',
     Supervisor: 'Supervisor',
     Test: 'Test',
     Turno: 'Turno',
@@ -1492,7 +1528,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "apr" | "aprPergunta" | "aprPerguntaRelacao" | "aprOpcaoResposta" | "aprOpcaoRespostaRelacao" | "aprTipoAtividadeRelacao" | "tipoAtividade" | "mobileUser" | "mobileSession" | "mobileToken" | "user" | "account" | "session" | "verificationToken" | "role" | "roleUser" | "base" | "tipoChecklist" | "checklist" | "checklistPergunta" | "checklistPerguntaRelacao" | "checklistOpcaoResposta" | "checklistOpcaoRespostaRelacao" | "checklistTipoVeiculoRelacao" | "checklistTipoEquipeRelacao" | "contrato" | "mobileContratoPermissao" | "eletricistaBaseHistorico" | "eletricista" | "tipoEquipe" | "equipe" | "equipeSupervisor" | "tipoEscala" | "tipoEscalaCicloPosicao" | "tipoEscalaSemanaMascara" | "escalaEquipePeriodo" | "slotEscala" | "eventoCobertura" | "equipeHorarioVigencia" | "supervisor" | "test" | "turno" | "turnoEletricista" | "veiculoBaseHistorico" | "tipoVeiculo" | "veiculo" | "veiculoOdometro"
+      modelProps: "apr" | "aprPergunta" | "aprPerguntaRelacao" | "aprOpcaoResposta" | "aprOpcaoRespostaRelacao" | "aprTipoAtividadeRelacao" | "tipoAtividade" | "mobileUser" | "mobileSession" | "mobileToken" | "user" | "account" | "session" | "verificationToken" | "role" | "roleUser" | "base" | "tipoChecklist" | "checklist" | "checklistPergunta" | "checklistPerguntaRelacao" | "checklistOpcaoResposta" | "checklistOpcaoRespostaRelacao" | "checklistTipoVeiculoRelacao" | "checklistTipoEquipeRelacao" | "contrato" | "mobileContratoPermissao" | "eletricistaBaseHistorico" | "eletricista" | "tipoEquipe" | "equipe" | "equipeSupervisor" | "tipoEscala" | "tipoEscalaCicloPosicao" | "tipoEscalaSemanaMascara" | "escalaEquipePeriodo" | "slotEscala" | "eventoCobertura" | "equipeHorarioVigencia" | "horarioAberturaCatalogo" | "equipeTurnoHistorico" | "supervisor" | "test" | "turno" | "turnoEletricista" | "veiculoBaseHistorico" | "tipoVeiculo" | "veiculo" | "veiculoOdometro"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4070,6 +4106,138 @@ export namespace Prisma {
           }
         }
       }
+      HorarioAberturaCatalogo: {
+        payload: Prisma.$HorarioAberturaCatalogoPayload<ExtArgs>
+        fields: Prisma.HorarioAberturaCatalogoFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.HorarioAberturaCatalogoFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HorarioAberturaCatalogoPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.HorarioAberturaCatalogoFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HorarioAberturaCatalogoPayload>
+          }
+          findFirst: {
+            args: Prisma.HorarioAberturaCatalogoFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HorarioAberturaCatalogoPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.HorarioAberturaCatalogoFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HorarioAberturaCatalogoPayload>
+          }
+          findMany: {
+            args: Prisma.HorarioAberturaCatalogoFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HorarioAberturaCatalogoPayload>[]
+          }
+          create: {
+            args: Prisma.HorarioAberturaCatalogoCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HorarioAberturaCatalogoPayload>
+          }
+          createMany: {
+            args: Prisma.HorarioAberturaCatalogoCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.HorarioAberturaCatalogoDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HorarioAberturaCatalogoPayload>
+          }
+          update: {
+            args: Prisma.HorarioAberturaCatalogoUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HorarioAberturaCatalogoPayload>
+          }
+          deleteMany: {
+            args: Prisma.HorarioAberturaCatalogoDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.HorarioAberturaCatalogoUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.HorarioAberturaCatalogoUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HorarioAberturaCatalogoPayload>
+          }
+          aggregate: {
+            args: Prisma.HorarioAberturaCatalogoAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateHorarioAberturaCatalogo>
+          }
+          groupBy: {
+            args: Prisma.HorarioAberturaCatalogoGroupByArgs<ExtArgs>
+            result: $Utils.Optional<HorarioAberturaCatalogoGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.HorarioAberturaCatalogoCountArgs<ExtArgs>
+            result: $Utils.Optional<HorarioAberturaCatalogoCountAggregateOutputType> | number
+          }
+        }
+      }
+      EquipeTurnoHistorico: {
+        payload: Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>
+        fields: Prisma.EquipeTurnoHistoricoFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.EquipeTurnoHistoricoFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeTurnoHistoricoPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.EquipeTurnoHistoricoFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeTurnoHistoricoPayload>
+          }
+          findFirst: {
+            args: Prisma.EquipeTurnoHistoricoFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeTurnoHistoricoPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.EquipeTurnoHistoricoFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeTurnoHistoricoPayload>
+          }
+          findMany: {
+            args: Prisma.EquipeTurnoHistoricoFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeTurnoHistoricoPayload>[]
+          }
+          create: {
+            args: Prisma.EquipeTurnoHistoricoCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeTurnoHistoricoPayload>
+          }
+          createMany: {
+            args: Prisma.EquipeTurnoHistoricoCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.EquipeTurnoHistoricoDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeTurnoHistoricoPayload>
+          }
+          update: {
+            args: Prisma.EquipeTurnoHistoricoUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeTurnoHistoricoPayload>
+          }
+          deleteMany: {
+            args: Prisma.EquipeTurnoHistoricoDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.EquipeTurnoHistoricoUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.EquipeTurnoHistoricoUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeTurnoHistoricoPayload>
+          }
+          aggregate: {
+            args: Prisma.EquipeTurnoHistoricoAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateEquipeTurnoHistorico>
+          }
+          groupBy: {
+            args: Prisma.EquipeTurnoHistoricoGroupByArgs<ExtArgs>
+            result: $Utils.Optional<EquipeTurnoHistoricoGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.EquipeTurnoHistoricoCountArgs<ExtArgs>
+            result: $Utils.Optional<EquipeTurnoHistoricoCountAggregateOutputType> | number
+          }
+        }
+      }
       Supervisor: {
         payload: Prisma.$SupervisorPayload<ExtArgs>
         fields: Prisma.SupervisorFieldRefs
@@ -4729,6 +4897,8 @@ export namespace Prisma {
     slotEscala?: SlotEscalaOmit
     eventoCobertura?: EventoCoberturaOmit
     equipeHorarioVigencia?: EquipeHorarioVigenciaOmit
+    horarioAberturaCatalogo?: HorarioAberturaCatalogoOmit
+    equipeTurnoHistorico?: EquipeTurnoHistoricoOmit
     supervisor?: SupervisorOmit
     test?: TestOmit
     turno?: TurnoOmit
@@ -5466,6 +5636,7 @@ export namespace Prisma {
     Turno: number
     EscalaEquipePeriodo: number
     EquipeHorarioVigencia: number
+    EquipeTurnoHistorico: number
   }
 
   export type EquipeCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5473,6 +5644,7 @@ export namespace Prisma {
     Turno?: boolean | EquipeCountOutputTypeCountTurnoArgs
     EscalaEquipePeriodo?: boolean | EquipeCountOutputTypeCountEscalaEquipePeriodoArgs
     EquipeHorarioVigencia?: boolean | EquipeCountOutputTypeCountEquipeHorarioVigenciaArgs
+    EquipeTurnoHistorico?: boolean | EquipeCountOutputTypeCountEquipeTurnoHistoricoArgs
   }
 
   // Custom InputTypes
@@ -5512,6 +5684,13 @@ export namespace Prisma {
    */
   export type EquipeCountOutputTypeCountEquipeHorarioVigenciaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: EquipeHorarioVigenciaWhereInput
+  }
+
+  /**
+   * EquipeCountOutputType without action
+   */
+  export type EquipeCountOutputTypeCountEquipeTurnoHistoricoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EquipeTurnoHistoricoWhereInput
   }
 
 
@@ -5623,6 +5802,37 @@ export namespace Prisma {
    */
   export type SlotEscalaCountOutputTypeCountCoberturasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: EventoCoberturaWhereInput
+  }
+
+
+  /**
+   * Count Type HorarioAberturaCatalogoCountOutputType
+   */
+
+  export type HorarioAberturaCatalogoCountOutputType = {
+    Historicos: number
+  }
+
+  export type HorarioAberturaCatalogoCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    Historicos?: boolean | HorarioAberturaCatalogoCountOutputTypeCountHistoricosArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * HorarioAberturaCatalogoCountOutputType without action
+   */
+  export type HorarioAberturaCatalogoCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HorarioAberturaCatalogoCountOutputType
+     */
+    select?: HorarioAberturaCatalogoCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * HorarioAberturaCatalogoCountOutputType without action
+   */
+  export type HorarioAberturaCatalogoCountOutputTypeCountHistoricosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EquipeTurnoHistoricoWhereInput
   }
 
 
@@ -37133,6 +37343,7 @@ export namespace Prisma {
     Turno?: boolean | Equipe$TurnoArgs<ExtArgs>
     EscalaEquipePeriodo?: boolean | Equipe$EscalaEquipePeriodoArgs<ExtArgs>
     EquipeHorarioVigencia?: boolean | Equipe$EquipeHorarioVigenciaArgs<ExtArgs>
+    EquipeTurnoHistorico?: boolean | Equipe$EquipeTurnoHistoricoArgs<ExtArgs>
     _count?: boolean | EquipeCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["equipe"]>
 
@@ -37159,6 +37370,7 @@ export namespace Prisma {
     Turno?: boolean | Equipe$TurnoArgs<ExtArgs>
     EscalaEquipePeriodo?: boolean | Equipe$EscalaEquipePeriodoArgs<ExtArgs>
     EquipeHorarioVigencia?: boolean | Equipe$EquipeHorarioVigenciaArgs<ExtArgs>
+    EquipeTurnoHistorico?: boolean | Equipe$EquipeTurnoHistoricoArgs<ExtArgs>
     _count?: boolean | EquipeCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -37171,6 +37383,7 @@ export namespace Prisma {
       Turno: Prisma.$TurnoPayload<ExtArgs>[]
       EscalaEquipePeriodo: Prisma.$EscalaEquipePeriodoPayload<ExtArgs>[]
       EquipeHorarioVigencia: Prisma.$EquipeHorarioVigenciaPayload<ExtArgs>[]
+      EquipeTurnoHistorico: Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -37529,6 +37742,7 @@ export namespace Prisma {
     Turno<T extends Equipe$TurnoArgs<ExtArgs> = {}>(args?: Subset<T, Equipe$TurnoArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TurnoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     EscalaEquipePeriodo<T extends Equipe$EscalaEquipePeriodoArgs<ExtArgs> = {}>(args?: Subset<T, Equipe$EscalaEquipePeriodoArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EscalaEquipePeriodoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     EquipeHorarioVigencia<T extends Equipe$EquipeHorarioVigenciaArgs<ExtArgs> = {}>(args?: Subset<T, Equipe$EquipeHorarioVigenciaArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EquipeHorarioVigenciaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    EquipeTurnoHistorico<T extends Equipe$EquipeTurnoHistoricoArgs<ExtArgs> = {}>(args?: Subset<T, Equipe$EquipeTurnoHistoricoArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -38004,6 +38218,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: EquipeHorarioVigenciaScalarFieldEnum | EquipeHorarioVigenciaScalarFieldEnum[]
+  }
+
+  /**
+   * Equipe.EquipeTurnoHistorico
+   */
+  export type Equipe$EquipeTurnoHistoricoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeTurnoHistorico
+     */
+    select?: EquipeTurnoHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeTurnoHistorico
+     */
+    omit?: EquipeTurnoHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeTurnoHistoricoInclude<ExtArgs> | null
+    where?: EquipeTurnoHistoricoWhereInput
+    orderBy?: EquipeTurnoHistoricoOrderByWithRelationInput | EquipeTurnoHistoricoOrderByWithRelationInput[]
+    cursor?: EquipeTurnoHistoricoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EquipeTurnoHistoricoScalarFieldEnum | EquipeTurnoHistoricoScalarFieldEnum[]
   }
 
   /**
@@ -46646,6 +46884,2225 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: EquipeHorarioVigenciaInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model HorarioAberturaCatalogo
+   */
+
+  export type AggregateHorarioAberturaCatalogo = {
+    _count: HorarioAberturaCatalogoCountAggregateOutputType | null
+    _avg: HorarioAberturaCatalogoAvgAggregateOutputType | null
+    _sum: HorarioAberturaCatalogoSumAggregateOutputType | null
+    _min: HorarioAberturaCatalogoMinAggregateOutputType | null
+    _max: HorarioAberturaCatalogoMaxAggregateOutputType | null
+  }
+
+  export type HorarioAberturaCatalogoAvgAggregateOutputType = {
+    id: number | null
+    duracaoHoras: Decimal | null
+    duracaoIntervaloHoras: Decimal | null
+  }
+
+  export type HorarioAberturaCatalogoSumAggregateOutputType = {
+    id: number | null
+    duracaoHoras: Decimal | null
+    duracaoIntervaloHoras: Decimal | null
+  }
+
+  export type HorarioAberturaCatalogoMinAggregateOutputType = {
+    id: number | null
+    nome: string | null
+    inicioTurnoHora: string | null
+    duracaoHoras: Decimal | null
+    duracaoIntervaloHoras: Decimal | null
+    ativo: boolean | null
+    observacoes: string | null
+    createdAt: Date | null
+    createdBy: string | null
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+  }
+
+  export type HorarioAberturaCatalogoMaxAggregateOutputType = {
+    id: number | null
+    nome: string | null
+    inicioTurnoHora: string | null
+    duracaoHoras: Decimal | null
+    duracaoIntervaloHoras: Decimal | null
+    ativo: boolean | null
+    observacoes: string | null
+    createdAt: Date | null
+    createdBy: string | null
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+  }
+
+  export type HorarioAberturaCatalogoCountAggregateOutputType = {
+    id: number
+    nome: number
+    inicioTurnoHora: number
+    duracaoHoras: number
+    duracaoIntervaloHoras: number
+    ativo: number
+    observacoes: number
+    createdAt: number
+    createdBy: number
+    updatedAt: number
+    updatedBy: number
+    deletedAt: number
+    deletedBy: number
+    _all: number
+  }
+
+
+  export type HorarioAberturaCatalogoAvgAggregateInputType = {
+    id?: true
+    duracaoHoras?: true
+    duracaoIntervaloHoras?: true
+  }
+
+  export type HorarioAberturaCatalogoSumAggregateInputType = {
+    id?: true
+    duracaoHoras?: true
+    duracaoIntervaloHoras?: true
+  }
+
+  export type HorarioAberturaCatalogoMinAggregateInputType = {
+    id?: true
+    nome?: true
+    inicioTurnoHora?: true
+    duracaoHoras?: true
+    duracaoIntervaloHoras?: true
+    ativo?: true
+    observacoes?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+  }
+
+  export type HorarioAberturaCatalogoMaxAggregateInputType = {
+    id?: true
+    nome?: true
+    inicioTurnoHora?: true
+    duracaoHoras?: true
+    duracaoIntervaloHoras?: true
+    ativo?: true
+    observacoes?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+  }
+
+  export type HorarioAberturaCatalogoCountAggregateInputType = {
+    id?: true
+    nome?: true
+    inicioTurnoHora?: true
+    duracaoHoras?: true
+    duracaoIntervaloHoras?: true
+    ativo?: true
+    observacoes?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+    _all?: true
+  }
+
+  export type HorarioAberturaCatalogoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which HorarioAberturaCatalogo to aggregate.
+     */
+    where?: HorarioAberturaCatalogoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HorarioAberturaCatalogos to fetch.
+     */
+    orderBy?: HorarioAberturaCatalogoOrderByWithRelationInput | HorarioAberturaCatalogoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: HorarioAberturaCatalogoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HorarioAberturaCatalogos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HorarioAberturaCatalogos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned HorarioAberturaCatalogos
+    **/
+    _count?: true | HorarioAberturaCatalogoCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: HorarioAberturaCatalogoAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: HorarioAberturaCatalogoSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: HorarioAberturaCatalogoMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: HorarioAberturaCatalogoMaxAggregateInputType
+  }
+
+  export type GetHorarioAberturaCatalogoAggregateType<T extends HorarioAberturaCatalogoAggregateArgs> = {
+        [P in keyof T & keyof AggregateHorarioAberturaCatalogo]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateHorarioAberturaCatalogo[P]>
+      : GetScalarType<T[P], AggregateHorarioAberturaCatalogo[P]>
+  }
+
+
+
+
+  export type HorarioAberturaCatalogoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HorarioAberturaCatalogoWhereInput
+    orderBy?: HorarioAberturaCatalogoOrderByWithAggregationInput | HorarioAberturaCatalogoOrderByWithAggregationInput[]
+    by: HorarioAberturaCatalogoScalarFieldEnum[] | HorarioAberturaCatalogoScalarFieldEnum
+    having?: HorarioAberturaCatalogoScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: HorarioAberturaCatalogoCountAggregateInputType | true
+    _avg?: HorarioAberturaCatalogoAvgAggregateInputType
+    _sum?: HorarioAberturaCatalogoSumAggregateInputType
+    _min?: HorarioAberturaCatalogoMinAggregateInputType
+    _max?: HorarioAberturaCatalogoMaxAggregateInputType
+  }
+
+  export type HorarioAberturaCatalogoGroupByOutputType = {
+    id: number
+    nome: string
+    inicioTurnoHora: string
+    duracaoHoras: Decimal
+    duracaoIntervaloHoras: Decimal
+    ativo: boolean
+    observacoes: string | null
+    createdAt: Date
+    createdBy: string
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+    _count: HorarioAberturaCatalogoCountAggregateOutputType | null
+    _avg: HorarioAberturaCatalogoAvgAggregateOutputType | null
+    _sum: HorarioAberturaCatalogoSumAggregateOutputType | null
+    _min: HorarioAberturaCatalogoMinAggregateOutputType | null
+    _max: HorarioAberturaCatalogoMaxAggregateOutputType | null
+  }
+
+  type GetHorarioAberturaCatalogoGroupByPayload<T extends HorarioAberturaCatalogoGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<HorarioAberturaCatalogoGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof HorarioAberturaCatalogoGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], HorarioAberturaCatalogoGroupByOutputType[P]>
+            : GetScalarType<T[P], HorarioAberturaCatalogoGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type HorarioAberturaCatalogoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    nome?: boolean
+    inicioTurnoHora?: boolean
+    duracaoHoras?: boolean
+    duracaoIntervaloHoras?: boolean
+    ativo?: boolean
+    observacoes?: boolean
+    createdAt?: boolean
+    createdBy?: boolean
+    updatedAt?: boolean
+    updatedBy?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+    Historicos?: boolean | HorarioAberturaCatalogo$HistoricosArgs<ExtArgs>
+    _count?: boolean | HorarioAberturaCatalogoCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["horarioAberturaCatalogo"]>
+
+
+
+  export type HorarioAberturaCatalogoSelectScalar = {
+    id?: boolean
+    nome?: boolean
+    inicioTurnoHora?: boolean
+    duracaoHoras?: boolean
+    duracaoIntervaloHoras?: boolean
+    ativo?: boolean
+    observacoes?: boolean
+    createdAt?: boolean
+    createdBy?: boolean
+    updatedAt?: boolean
+    updatedBy?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+  }
+
+  export type HorarioAberturaCatalogoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "inicioTurnoHora" | "duracaoHoras" | "duracaoIntervaloHoras" | "ativo" | "observacoes" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["horarioAberturaCatalogo"]>
+  export type HorarioAberturaCatalogoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    Historicos?: boolean | HorarioAberturaCatalogo$HistoricosArgs<ExtArgs>
+    _count?: boolean | HorarioAberturaCatalogoCountOutputTypeDefaultArgs<ExtArgs>
+  }
+
+  export type $HorarioAberturaCatalogoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "HorarioAberturaCatalogo"
+    objects: {
+      Historicos: Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      nome: string
+      inicioTurnoHora: string
+      duracaoHoras: Prisma.Decimal
+      duracaoIntervaloHoras: Prisma.Decimal
+      ativo: boolean
+      observacoes: string | null
+      createdAt: Date
+      createdBy: string
+      updatedAt: Date | null
+      updatedBy: string | null
+      deletedAt: Date | null
+      deletedBy: string | null
+    }, ExtArgs["result"]["horarioAberturaCatalogo"]>
+    composites: {}
+  }
+
+  type HorarioAberturaCatalogoGetPayload<S extends boolean | null | undefined | HorarioAberturaCatalogoDefaultArgs> = $Result.GetResult<Prisma.$HorarioAberturaCatalogoPayload, S>
+
+  type HorarioAberturaCatalogoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<HorarioAberturaCatalogoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: HorarioAberturaCatalogoCountAggregateInputType | true
+    }
+
+  export interface HorarioAberturaCatalogoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['HorarioAberturaCatalogo'], meta: { name: 'HorarioAberturaCatalogo' } }
+    /**
+     * Find zero or one HorarioAberturaCatalogo that matches the filter.
+     * @param {HorarioAberturaCatalogoFindUniqueArgs} args - Arguments to find a HorarioAberturaCatalogo
+     * @example
+     * // Get one HorarioAberturaCatalogo
+     * const horarioAberturaCatalogo = await prisma.horarioAberturaCatalogo.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends HorarioAberturaCatalogoFindUniqueArgs>(args: SelectSubset<T, HorarioAberturaCatalogoFindUniqueArgs<ExtArgs>>): Prisma__HorarioAberturaCatalogoClient<$Result.GetResult<Prisma.$HorarioAberturaCatalogoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one HorarioAberturaCatalogo that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {HorarioAberturaCatalogoFindUniqueOrThrowArgs} args - Arguments to find a HorarioAberturaCatalogo
+     * @example
+     * // Get one HorarioAberturaCatalogo
+     * const horarioAberturaCatalogo = await prisma.horarioAberturaCatalogo.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends HorarioAberturaCatalogoFindUniqueOrThrowArgs>(args: SelectSubset<T, HorarioAberturaCatalogoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__HorarioAberturaCatalogoClient<$Result.GetResult<Prisma.$HorarioAberturaCatalogoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first HorarioAberturaCatalogo that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HorarioAberturaCatalogoFindFirstArgs} args - Arguments to find a HorarioAberturaCatalogo
+     * @example
+     * // Get one HorarioAberturaCatalogo
+     * const horarioAberturaCatalogo = await prisma.horarioAberturaCatalogo.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends HorarioAberturaCatalogoFindFirstArgs>(args?: SelectSubset<T, HorarioAberturaCatalogoFindFirstArgs<ExtArgs>>): Prisma__HorarioAberturaCatalogoClient<$Result.GetResult<Prisma.$HorarioAberturaCatalogoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first HorarioAberturaCatalogo that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HorarioAberturaCatalogoFindFirstOrThrowArgs} args - Arguments to find a HorarioAberturaCatalogo
+     * @example
+     * // Get one HorarioAberturaCatalogo
+     * const horarioAberturaCatalogo = await prisma.horarioAberturaCatalogo.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends HorarioAberturaCatalogoFindFirstOrThrowArgs>(args?: SelectSubset<T, HorarioAberturaCatalogoFindFirstOrThrowArgs<ExtArgs>>): Prisma__HorarioAberturaCatalogoClient<$Result.GetResult<Prisma.$HorarioAberturaCatalogoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more HorarioAberturaCatalogos that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HorarioAberturaCatalogoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all HorarioAberturaCatalogos
+     * const horarioAberturaCatalogos = await prisma.horarioAberturaCatalogo.findMany()
+     * 
+     * // Get first 10 HorarioAberturaCatalogos
+     * const horarioAberturaCatalogos = await prisma.horarioAberturaCatalogo.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const horarioAberturaCatalogoWithIdOnly = await prisma.horarioAberturaCatalogo.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends HorarioAberturaCatalogoFindManyArgs>(args?: SelectSubset<T, HorarioAberturaCatalogoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HorarioAberturaCatalogoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a HorarioAberturaCatalogo.
+     * @param {HorarioAberturaCatalogoCreateArgs} args - Arguments to create a HorarioAberturaCatalogo.
+     * @example
+     * // Create one HorarioAberturaCatalogo
+     * const HorarioAberturaCatalogo = await prisma.horarioAberturaCatalogo.create({
+     *   data: {
+     *     // ... data to create a HorarioAberturaCatalogo
+     *   }
+     * })
+     * 
+     */
+    create<T extends HorarioAberturaCatalogoCreateArgs>(args: SelectSubset<T, HorarioAberturaCatalogoCreateArgs<ExtArgs>>): Prisma__HorarioAberturaCatalogoClient<$Result.GetResult<Prisma.$HorarioAberturaCatalogoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many HorarioAberturaCatalogos.
+     * @param {HorarioAberturaCatalogoCreateManyArgs} args - Arguments to create many HorarioAberturaCatalogos.
+     * @example
+     * // Create many HorarioAberturaCatalogos
+     * const horarioAberturaCatalogo = await prisma.horarioAberturaCatalogo.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends HorarioAberturaCatalogoCreateManyArgs>(args?: SelectSubset<T, HorarioAberturaCatalogoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a HorarioAberturaCatalogo.
+     * @param {HorarioAberturaCatalogoDeleteArgs} args - Arguments to delete one HorarioAberturaCatalogo.
+     * @example
+     * // Delete one HorarioAberturaCatalogo
+     * const HorarioAberturaCatalogo = await prisma.horarioAberturaCatalogo.delete({
+     *   where: {
+     *     // ... filter to delete one HorarioAberturaCatalogo
+     *   }
+     * })
+     * 
+     */
+    delete<T extends HorarioAberturaCatalogoDeleteArgs>(args: SelectSubset<T, HorarioAberturaCatalogoDeleteArgs<ExtArgs>>): Prisma__HorarioAberturaCatalogoClient<$Result.GetResult<Prisma.$HorarioAberturaCatalogoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one HorarioAberturaCatalogo.
+     * @param {HorarioAberturaCatalogoUpdateArgs} args - Arguments to update one HorarioAberturaCatalogo.
+     * @example
+     * // Update one HorarioAberturaCatalogo
+     * const horarioAberturaCatalogo = await prisma.horarioAberturaCatalogo.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends HorarioAberturaCatalogoUpdateArgs>(args: SelectSubset<T, HorarioAberturaCatalogoUpdateArgs<ExtArgs>>): Prisma__HorarioAberturaCatalogoClient<$Result.GetResult<Prisma.$HorarioAberturaCatalogoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more HorarioAberturaCatalogos.
+     * @param {HorarioAberturaCatalogoDeleteManyArgs} args - Arguments to filter HorarioAberturaCatalogos to delete.
+     * @example
+     * // Delete a few HorarioAberturaCatalogos
+     * const { count } = await prisma.horarioAberturaCatalogo.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends HorarioAberturaCatalogoDeleteManyArgs>(args?: SelectSubset<T, HorarioAberturaCatalogoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more HorarioAberturaCatalogos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HorarioAberturaCatalogoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many HorarioAberturaCatalogos
+     * const horarioAberturaCatalogo = await prisma.horarioAberturaCatalogo.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends HorarioAberturaCatalogoUpdateManyArgs>(args: SelectSubset<T, HorarioAberturaCatalogoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one HorarioAberturaCatalogo.
+     * @param {HorarioAberturaCatalogoUpsertArgs} args - Arguments to update or create a HorarioAberturaCatalogo.
+     * @example
+     * // Update or create a HorarioAberturaCatalogo
+     * const horarioAberturaCatalogo = await prisma.horarioAberturaCatalogo.upsert({
+     *   create: {
+     *     // ... data to create a HorarioAberturaCatalogo
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the HorarioAberturaCatalogo we want to update
+     *   }
+     * })
+     */
+    upsert<T extends HorarioAberturaCatalogoUpsertArgs>(args: SelectSubset<T, HorarioAberturaCatalogoUpsertArgs<ExtArgs>>): Prisma__HorarioAberturaCatalogoClient<$Result.GetResult<Prisma.$HorarioAberturaCatalogoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of HorarioAberturaCatalogos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HorarioAberturaCatalogoCountArgs} args - Arguments to filter HorarioAberturaCatalogos to count.
+     * @example
+     * // Count the number of HorarioAberturaCatalogos
+     * const count = await prisma.horarioAberturaCatalogo.count({
+     *   where: {
+     *     // ... the filter for the HorarioAberturaCatalogos we want to count
+     *   }
+     * })
+    **/
+    count<T extends HorarioAberturaCatalogoCountArgs>(
+      args?: Subset<T, HorarioAberturaCatalogoCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], HorarioAberturaCatalogoCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a HorarioAberturaCatalogo.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HorarioAberturaCatalogoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends HorarioAberturaCatalogoAggregateArgs>(args: Subset<T, HorarioAberturaCatalogoAggregateArgs>): Prisma.PrismaPromise<GetHorarioAberturaCatalogoAggregateType<T>>
+
+    /**
+     * Group by HorarioAberturaCatalogo.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HorarioAberturaCatalogoGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends HorarioAberturaCatalogoGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: HorarioAberturaCatalogoGroupByArgs['orderBy'] }
+        : { orderBy?: HorarioAberturaCatalogoGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, HorarioAberturaCatalogoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetHorarioAberturaCatalogoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the HorarioAberturaCatalogo model
+   */
+  readonly fields: HorarioAberturaCatalogoFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for HorarioAberturaCatalogo.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__HorarioAberturaCatalogoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    Historicos<T extends HorarioAberturaCatalogo$HistoricosArgs<ExtArgs> = {}>(args?: Subset<T, HorarioAberturaCatalogo$HistoricosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the HorarioAberturaCatalogo model
+   */
+  interface HorarioAberturaCatalogoFieldRefs {
+    readonly id: FieldRef<"HorarioAberturaCatalogo", 'Int'>
+    readonly nome: FieldRef<"HorarioAberturaCatalogo", 'String'>
+    readonly inicioTurnoHora: FieldRef<"HorarioAberturaCatalogo", 'String'>
+    readonly duracaoHoras: FieldRef<"HorarioAberturaCatalogo", 'Decimal'>
+    readonly duracaoIntervaloHoras: FieldRef<"HorarioAberturaCatalogo", 'Decimal'>
+    readonly ativo: FieldRef<"HorarioAberturaCatalogo", 'Boolean'>
+    readonly observacoes: FieldRef<"HorarioAberturaCatalogo", 'String'>
+    readonly createdAt: FieldRef<"HorarioAberturaCatalogo", 'DateTime'>
+    readonly createdBy: FieldRef<"HorarioAberturaCatalogo", 'String'>
+    readonly updatedAt: FieldRef<"HorarioAberturaCatalogo", 'DateTime'>
+    readonly updatedBy: FieldRef<"HorarioAberturaCatalogo", 'String'>
+    readonly deletedAt: FieldRef<"HorarioAberturaCatalogo", 'DateTime'>
+    readonly deletedBy: FieldRef<"HorarioAberturaCatalogo", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * HorarioAberturaCatalogo findUnique
+   */
+  export type HorarioAberturaCatalogoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HorarioAberturaCatalogo
+     */
+    select?: HorarioAberturaCatalogoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HorarioAberturaCatalogo
+     */
+    omit?: HorarioAberturaCatalogoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HorarioAberturaCatalogoInclude<ExtArgs> | null
+    /**
+     * Filter, which HorarioAberturaCatalogo to fetch.
+     */
+    where: HorarioAberturaCatalogoWhereUniqueInput
+  }
+
+  /**
+   * HorarioAberturaCatalogo findUniqueOrThrow
+   */
+  export type HorarioAberturaCatalogoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HorarioAberturaCatalogo
+     */
+    select?: HorarioAberturaCatalogoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HorarioAberturaCatalogo
+     */
+    omit?: HorarioAberturaCatalogoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HorarioAberturaCatalogoInclude<ExtArgs> | null
+    /**
+     * Filter, which HorarioAberturaCatalogo to fetch.
+     */
+    where: HorarioAberturaCatalogoWhereUniqueInput
+  }
+
+  /**
+   * HorarioAberturaCatalogo findFirst
+   */
+  export type HorarioAberturaCatalogoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HorarioAberturaCatalogo
+     */
+    select?: HorarioAberturaCatalogoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HorarioAberturaCatalogo
+     */
+    omit?: HorarioAberturaCatalogoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HorarioAberturaCatalogoInclude<ExtArgs> | null
+    /**
+     * Filter, which HorarioAberturaCatalogo to fetch.
+     */
+    where?: HorarioAberturaCatalogoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HorarioAberturaCatalogos to fetch.
+     */
+    orderBy?: HorarioAberturaCatalogoOrderByWithRelationInput | HorarioAberturaCatalogoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for HorarioAberturaCatalogos.
+     */
+    cursor?: HorarioAberturaCatalogoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HorarioAberturaCatalogos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HorarioAberturaCatalogos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of HorarioAberturaCatalogos.
+     */
+    distinct?: HorarioAberturaCatalogoScalarFieldEnum | HorarioAberturaCatalogoScalarFieldEnum[]
+  }
+
+  /**
+   * HorarioAberturaCatalogo findFirstOrThrow
+   */
+  export type HorarioAberturaCatalogoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HorarioAberturaCatalogo
+     */
+    select?: HorarioAberturaCatalogoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HorarioAberturaCatalogo
+     */
+    omit?: HorarioAberturaCatalogoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HorarioAberturaCatalogoInclude<ExtArgs> | null
+    /**
+     * Filter, which HorarioAberturaCatalogo to fetch.
+     */
+    where?: HorarioAberturaCatalogoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HorarioAberturaCatalogos to fetch.
+     */
+    orderBy?: HorarioAberturaCatalogoOrderByWithRelationInput | HorarioAberturaCatalogoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for HorarioAberturaCatalogos.
+     */
+    cursor?: HorarioAberturaCatalogoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HorarioAberturaCatalogos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HorarioAberturaCatalogos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of HorarioAberturaCatalogos.
+     */
+    distinct?: HorarioAberturaCatalogoScalarFieldEnum | HorarioAberturaCatalogoScalarFieldEnum[]
+  }
+
+  /**
+   * HorarioAberturaCatalogo findMany
+   */
+  export type HorarioAberturaCatalogoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HorarioAberturaCatalogo
+     */
+    select?: HorarioAberturaCatalogoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HorarioAberturaCatalogo
+     */
+    omit?: HorarioAberturaCatalogoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HorarioAberturaCatalogoInclude<ExtArgs> | null
+    /**
+     * Filter, which HorarioAberturaCatalogos to fetch.
+     */
+    where?: HorarioAberturaCatalogoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HorarioAberturaCatalogos to fetch.
+     */
+    orderBy?: HorarioAberturaCatalogoOrderByWithRelationInput | HorarioAberturaCatalogoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing HorarioAberturaCatalogos.
+     */
+    cursor?: HorarioAberturaCatalogoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HorarioAberturaCatalogos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HorarioAberturaCatalogos.
+     */
+    skip?: number
+    distinct?: HorarioAberturaCatalogoScalarFieldEnum | HorarioAberturaCatalogoScalarFieldEnum[]
+  }
+
+  /**
+   * HorarioAberturaCatalogo create
+   */
+  export type HorarioAberturaCatalogoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HorarioAberturaCatalogo
+     */
+    select?: HorarioAberturaCatalogoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HorarioAberturaCatalogo
+     */
+    omit?: HorarioAberturaCatalogoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HorarioAberturaCatalogoInclude<ExtArgs> | null
+    /**
+     * The data needed to create a HorarioAberturaCatalogo.
+     */
+    data: XOR<HorarioAberturaCatalogoCreateInput, HorarioAberturaCatalogoUncheckedCreateInput>
+  }
+
+  /**
+   * HorarioAberturaCatalogo createMany
+   */
+  export type HorarioAberturaCatalogoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many HorarioAberturaCatalogos.
+     */
+    data: HorarioAberturaCatalogoCreateManyInput | HorarioAberturaCatalogoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * HorarioAberturaCatalogo update
+   */
+  export type HorarioAberturaCatalogoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HorarioAberturaCatalogo
+     */
+    select?: HorarioAberturaCatalogoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HorarioAberturaCatalogo
+     */
+    omit?: HorarioAberturaCatalogoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HorarioAberturaCatalogoInclude<ExtArgs> | null
+    /**
+     * The data needed to update a HorarioAberturaCatalogo.
+     */
+    data: XOR<HorarioAberturaCatalogoUpdateInput, HorarioAberturaCatalogoUncheckedUpdateInput>
+    /**
+     * Choose, which HorarioAberturaCatalogo to update.
+     */
+    where: HorarioAberturaCatalogoWhereUniqueInput
+  }
+
+  /**
+   * HorarioAberturaCatalogo updateMany
+   */
+  export type HorarioAberturaCatalogoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update HorarioAberturaCatalogos.
+     */
+    data: XOR<HorarioAberturaCatalogoUpdateManyMutationInput, HorarioAberturaCatalogoUncheckedUpdateManyInput>
+    /**
+     * Filter which HorarioAberturaCatalogos to update
+     */
+    where?: HorarioAberturaCatalogoWhereInput
+    /**
+     * Limit how many HorarioAberturaCatalogos to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * HorarioAberturaCatalogo upsert
+   */
+  export type HorarioAberturaCatalogoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HorarioAberturaCatalogo
+     */
+    select?: HorarioAberturaCatalogoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HorarioAberturaCatalogo
+     */
+    omit?: HorarioAberturaCatalogoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HorarioAberturaCatalogoInclude<ExtArgs> | null
+    /**
+     * The filter to search for the HorarioAberturaCatalogo to update in case it exists.
+     */
+    where: HorarioAberturaCatalogoWhereUniqueInput
+    /**
+     * In case the HorarioAberturaCatalogo found by the `where` argument doesn't exist, create a new HorarioAberturaCatalogo with this data.
+     */
+    create: XOR<HorarioAberturaCatalogoCreateInput, HorarioAberturaCatalogoUncheckedCreateInput>
+    /**
+     * In case the HorarioAberturaCatalogo was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<HorarioAberturaCatalogoUpdateInput, HorarioAberturaCatalogoUncheckedUpdateInput>
+  }
+
+  /**
+   * HorarioAberturaCatalogo delete
+   */
+  export type HorarioAberturaCatalogoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HorarioAberturaCatalogo
+     */
+    select?: HorarioAberturaCatalogoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HorarioAberturaCatalogo
+     */
+    omit?: HorarioAberturaCatalogoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HorarioAberturaCatalogoInclude<ExtArgs> | null
+    /**
+     * Filter which HorarioAberturaCatalogo to delete.
+     */
+    where: HorarioAberturaCatalogoWhereUniqueInput
+  }
+
+  /**
+   * HorarioAberturaCatalogo deleteMany
+   */
+  export type HorarioAberturaCatalogoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which HorarioAberturaCatalogos to delete
+     */
+    where?: HorarioAberturaCatalogoWhereInput
+    /**
+     * Limit how many HorarioAberturaCatalogos to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * HorarioAberturaCatalogo.Historicos
+   */
+  export type HorarioAberturaCatalogo$HistoricosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeTurnoHistorico
+     */
+    select?: EquipeTurnoHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeTurnoHistorico
+     */
+    omit?: EquipeTurnoHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeTurnoHistoricoInclude<ExtArgs> | null
+    where?: EquipeTurnoHistoricoWhereInput
+    orderBy?: EquipeTurnoHistoricoOrderByWithRelationInput | EquipeTurnoHistoricoOrderByWithRelationInput[]
+    cursor?: EquipeTurnoHistoricoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EquipeTurnoHistoricoScalarFieldEnum | EquipeTurnoHistoricoScalarFieldEnum[]
+  }
+
+  /**
+   * HorarioAberturaCatalogo without action
+   */
+  export type HorarioAberturaCatalogoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HorarioAberturaCatalogo
+     */
+    select?: HorarioAberturaCatalogoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HorarioAberturaCatalogo
+     */
+    omit?: HorarioAberturaCatalogoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HorarioAberturaCatalogoInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model EquipeTurnoHistorico
+   */
+
+  export type AggregateEquipeTurnoHistorico = {
+    _count: EquipeTurnoHistoricoCountAggregateOutputType | null
+    _avg: EquipeTurnoHistoricoAvgAggregateOutputType | null
+    _sum: EquipeTurnoHistoricoSumAggregateOutputType | null
+    _min: EquipeTurnoHistoricoMinAggregateOutputType | null
+    _max: EquipeTurnoHistoricoMaxAggregateOutputType | null
+  }
+
+  export type EquipeTurnoHistoricoAvgAggregateOutputType = {
+    id: number | null
+    equipeId: number | null
+    horarioAberturaCatalogoId: number | null
+    duracaoHoras: Decimal | null
+    duracaoIntervaloHoras: Decimal | null
+  }
+
+  export type EquipeTurnoHistoricoSumAggregateOutputType = {
+    id: number | null
+    equipeId: number | null
+    horarioAberturaCatalogoId: number | null
+    duracaoHoras: Decimal | null
+    duracaoIntervaloHoras: Decimal | null
+  }
+
+  export type EquipeTurnoHistoricoMinAggregateOutputType = {
+    id: number | null
+    equipeId: number | null
+    horarioAberturaCatalogoId: number | null
+    dataInicio: Date | null
+    dataFim: Date | null
+    inicioTurnoHora: string | null
+    duracaoHoras: Decimal | null
+    duracaoIntervaloHoras: Decimal | null
+    fimTurnoHora: string | null
+    motivo: string | null
+    observacoes: string | null
+    createdAt: Date | null
+    createdBy: string | null
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+  }
+
+  export type EquipeTurnoHistoricoMaxAggregateOutputType = {
+    id: number | null
+    equipeId: number | null
+    horarioAberturaCatalogoId: number | null
+    dataInicio: Date | null
+    dataFim: Date | null
+    inicioTurnoHora: string | null
+    duracaoHoras: Decimal | null
+    duracaoIntervaloHoras: Decimal | null
+    fimTurnoHora: string | null
+    motivo: string | null
+    observacoes: string | null
+    createdAt: Date | null
+    createdBy: string | null
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+  }
+
+  export type EquipeTurnoHistoricoCountAggregateOutputType = {
+    id: number
+    equipeId: number
+    horarioAberturaCatalogoId: number
+    dataInicio: number
+    dataFim: number
+    inicioTurnoHora: number
+    duracaoHoras: number
+    duracaoIntervaloHoras: number
+    fimTurnoHora: number
+    motivo: number
+    observacoes: number
+    createdAt: number
+    createdBy: number
+    updatedAt: number
+    updatedBy: number
+    deletedAt: number
+    deletedBy: number
+    _all: number
+  }
+
+
+  export type EquipeTurnoHistoricoAvgAggregateInputType = {
+    id?: true
+    equipeId?: true
+    horarioAberturaCatalogoId?: true
+    duracaoHoras?: true
+    duracaoIntervaloHoras?: true
+  }
+
+  export type EquipeTurnoHistoricoSumAggregateInputType = {
+    id?: true
+    equipeId?: true
+    horarioAberturaCatalogoId?: true
+    duracaoHoras?: true
+    duracaoIntervaloHoras?: true
+  }
+
+  export type EquipeTurnoHistoricoMinAggregateInputType = {
+    id?: true
+    equipeId?: true
+    horarioAberturaCatalogoId?: true
+    dataInicio?: true
+    dataFim?: true
+    inicioTurnoHora?: true
+    duracaoHoras?: true
+    duracaoIntervaloHoras?: true
+    fimTurnoHora?: true
+    motivo?: true
+    observacoes?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+  }
+
+  export type EquipeTurnoHistoricoMaxAggregateInputType = {
+    id?: true
+    equipeId?: true
+    horarioAberturaCatalogoId?: true
+    dataInicio?: true
+    dataFim?: true
+    inicioTurnoHora?: true
+    duracaoHoras?: true
+    duracaoIntervaloHoras?: true
+    fimTurnoHora?: true
+    motivo?: true
+    observacoes?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+  }
+
+  export type EquipeTurnoHistoricoCountAggregateInputType = {
+    id?: true
+    equipeId?: true
+    horarioAberturaCatalogoId?: true
+    dataInicio?: true
+    dataFim?: true
+    inicioTurnoHora?: true
+    duracaoHoras?: true
+    duracaoIntervaloHoras?: true
+    fimTurnoHora?: true
+    motivo?: true
+    observacoes?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+    _all?: true
+  }
+
+  export type EquipeTurnoHistoricoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which EquipeTurnoHistorico to aggregate.
+     */
+    where?: EquipeTurnoHistoricoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EquipeTurnoHistoricos to fetch.
+     */
+    orderBy?: EquipeTurnoHistoricoOrderByWithRelationInput | EquipeTurnoHistoricoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: EquipeTurnoHistoricoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EquipeTurnoHistoricos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EquipeTurnoHistoricos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned EquipeTurnoHistoricos
+    **/
+    _count?: true | EquipeTurnoHistoricoCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: EquipeTurnoHistoricoAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: EquipeTurnoHistoricoSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: EquipeTurnoHistoricoMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: EquipeTurnoHistoricoMaxAggregateInputType
+  }
+
+  export type GetEquipeTurnoHistoricoAggregateType<T extends EquipeTurnoHistoricoAggregateArgs> = {
+        [P in keyof T & keyof AggregateEquipeTurnoHistorico]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateEquipeTurnoHistorico[P]>
+      : GetScalarType<T[P], AggregateEquipeTurnoHistorico[P]>
+  }
+
+
+
+
+  export type EquipeTurnoHistoricoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EquipeTurnoHistoricoWhereInput
+    orderBy?: EquipeTurnoHistoricoOrderByWithAggregationInput | EquipeTurnoHistoricoOrderByWithAggregationInput[]
+    by: EquipeTurnoHistoricoScalarFieldEnum[] | EquipeTurnoHistoricoScalarFieldEnum
+    having?: EquipeTurnoHistoricoScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: EquipeTurnoHistoricoCountAggregateInputType | true
+    _avg?: EquipeTurnoHistoricoAvgAggregateInputType
+    _sum?: EquipeTurnoHistoricoSumAggregateInputType
+    _min?: EquipeTurnoHistoricoMinAggregateInputType
+    _max?: EquipeTurnoHistoricoMaxAggregateInputType
+  }
+
+  export type EquipeTurnoHistoricoGroupByOutputType = {
+    id: number
+    equipeId: number
+    horarioAberturaCatalogoId: number | null
+    dataInicio: Date
+    dataFim: Date | null
+    inicioTurnoHora: string
+    duracaoHoras: Decimal
+    duracaoIntervaloHoras: Decimal
+    fimTurnoHora: string | null
+    motivo: string | null
+    observacoes: string | null
+    createdAt: Date
+    createdBy: string
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+    _count: EquipeTurnoHistoricoCountAggregateOutputType | null
+    _avg: EquipeTurnoHistoricoAvgAggregateOutputType | null
+    _sum: EquipeTurnoHistoricoSumAggregateOutputType | null
+    _min: EquipeTurnoHistoricoMinAggregateOutputType | null
+    _max: EquipeTurnoHistoricoMaxAggregateOutputType | null
+  }
+
+  type GetEquipeTurnoHistoricoGroupByPayload<T extends EquipeTurnoHistoricoGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<EquipeTurnoHistoricoGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof EquipeTurnoHistoricoGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], EquipeTurnoHistoricoGroupByOutputType[P]>
+            : GetScalarType<T[P], EquipeTurnoHistoricoGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type EquipeTurnoHistoricoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    equipeId?: boolean
+    horarioAberturaCatalogoId?: boolean
+    dataInicio?: boolean
+    dataFim?: boolean
+    inicioTurnoHora?: boolean
+    duracaoHoras?: boolean
+    duracaoIntervaloHoras?: boolean
+    fimTurnoHora?: boolean
+    motivo?: boolean
+    observacoes?: boolean
+    createdAt?: boolean
+    createdBy?: boolean
+    updatedAt?: boolean
+    updatedBy?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+    equipe?: boolean | EquipeDefaultArgs<ExtArgs>
+    horarioAberturaCatalogo?: boolean | EquipeTurnoHistorico$horarioAberturaCatalogoArgs<ExtArgs>
+  }, ExtArgs["result"]["equipeTurnoHistorico"]>
+
+
+
+  export type EquipeTurnoHistoricoSelectScalar = {
+    id?: boolean
+    equipeId?: boolean
+    horarioAberturaCatalogoId?: boolean
+    dataInicio?: boolean
+    dataFim?: boolean
+    inicioTurnoHora?: boolean
+    duracaoHoras?: boolean
+    duracaoIntervaloHoras?: boolean
+    fimTurnoHora?: boolean
+    motivo?: boolean
+    observacoes?: boolean
+    createdAt?: boolean
+    createdBy?: boolean
+    updatedAt?: boolean
+    updatedBy?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+  }
+
+  export type EquipeTurnoHistoricoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "equipeId" | "horarioAberturaCatalogoId" | "dataInicio" | "dataFim" | "inicioTurnoHora" | "duracaoHoras" | "duracaoIntervaloHoras" | "fimTurnoHora" | "motivo" | "observacoes" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["equipeTurnoHistorico"]>
+  export type EquipeTurnoHistoricoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    equipe?: boolean | EquipeDefaultArgs<ExtArgs>
+    horarioAberturaCatalogo?: boolean | EquipeTurnoHistorico$horarioAberturaCatalogoArgs<ExtArgs>
+  }
+
+  export type $EquipeTurnoHistoricoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "EquipeTurnoHistorico"
+    objects: {
+      equipe: Prisma.$EquipePayload<ExtArgs>
+      horarioAberturaCatalogo: Prisma.$HorarioAberturaCatalogoPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      equipeId: number
+      horarioAberturaCatalogoId: number | null
+      dataInicio: Date
+      dataFim: Date | null
+      inicioTurnoHora: string
+      duracaoHoras: Prisma.Decimal
+      duracaoIntervaloHoras: Prisma.Decimal
+      fimTurnoHora: string | null
+      motivo: string | null
+      observacoes: string | null
+      createdAt: Date
+      createdBy: string
+      updatedAt: Date | null
+      updatedBy: string | null
+      deletedAt: Date | null
+      deletedBy: string | null
+    }, ExtArgs["result"]["equipeTurnoHistorico"]>
+    composites: {}
+  }
+
+  type EquipeTurnoHistoricoGetPayload<S extends boolean | null | undefined | EquipeTurnoHistoricoDefaultArgs> = $Result.GetResult<Prisma.$EquipeTurnoHistoricoPayload, S>
+
+  type EquipeTurnoHistoricoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<EquipeTurnoHistoricoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: EquipeTurnoHistoricoCountAggregateInputType | true
+    }
+
+  export interface EquipeTurnoHistoricoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['EquipeTurnoHistorico'], meta: { name: 'EquipeTurnoHistorico' } }
+    /**
+     * Find zero or one EquipeTurnoHistorico that matches the filter.
+     * @param {EquipeTurnoHistoricoFindUniqueArgs} args - Arguments to find a EquipeTurnoHistorico
+     * @example
+     * // Get one EquipeTurnoHistorico
+     * const equipeTurnoHistorico = await prisma.equipeTurnoHistorico.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends EquipeTurnoHistoricoFindUniqueArgs>(args: SelectSubset<T, EquipeTurnoHistoricoFindUniqueArgs<ExtArgs>>): Prisma__EquipeTurnoHistoricoClient<$Result.GetResult<Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one EquipeTurnoHistorico that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {EquipeTurnoHistoricoFindUniqueOrThrowArgs} args - Arguments to find a EquipeTurnoHistorico
+     * @example
+     * // Get one EquipeTurnoHistorico
+     * const equipeTurnoHistorico = await prisma.equipeTurnoHistorico.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends EquipeTurnoHistoricoFindUniqueOrThrowArgs>(args: SelectSubset<T, EquipeTurnoHistoricoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__EquipeTurnoHistoricoClient<$Result.GetResult<Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first EquipeTurnoHistorico that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EquipeTurnoHistoricoFindFirstArgs} args - Arguments to find a EquipeTurnoHistorico
+     * @example
+     * // Get one EquipeTurnoHistorico
+     * const equipeTurnoHistorico = await prisma.equipeTurnoHistorico.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends EquipeTurnoHistoricoFindFirstArgs>(args?: SelectSubset<T, EquipeTurnoHistoricoFindFirstArgs<ExtArgs>>): Prisma__EquipeTurnoHistoricoClient<$Result.GetResult<Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first EquipeTurnoHistorico that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EquipeTurnoHistoricoFindFirstOrThrowArgs} args - Arguments to find a EquipeTurnoHistorico
+     * @example
+     * // Get one EquipeTurnoHistorico
+     * const equipeTurnoHistorico = await prisma.equipeTurnoHistorico.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends EquipeTurnoHistoricoFindFirstOrThrowArgs>(args?: SelectSubset<T, EquipeTurnoHistoricoFindFirstOrThrowArgs<ExtArgs>>): Prisma__EquipeTurnoHistoricoClient<$Result.GetResult<Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more EquipeTurnoHistoricos that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EquipeTurnoHistoricoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all EquipeTurnoHistoricos
+     * const equipeTurnoHistoricos = await prisma.equipeTurnoHistorico.findMany()
+     * 
+     * // Get first 10 EquipeTurnoHistoricos
+     * const equipeTurnoHistoricos = await prisma.equipeTurnoHistorico.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const equipeTurnoHistoricoWithIdOnly = await prisma.equipeTurnoHistorico.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends EquipeTurnoHistoricoFindManyArgs>(args?: SelectSubset<T, EquipeTurnoHistoricoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a EquipeTurnoHistorico.
+     * @param {EquipeTurnoHistoricoCreateArgs} args - Arguments to create a EquipeTurnoHistorico.
+     * @example
+     * // Create one EquipeTurnoHistorico
+     * const EquipeTurnoHistorico = await prisma.equipeTurnoHistorico.create({
+     *   data: {
+     *     // ... data to create a EquipeTurnoHistorico
+     *   }
+     * })
+     * 
+     */
+    create<T extends EquipeTurnoHistoricoCreateArgs>(args: SelectSubset<T, EquipeTurnoHistoricoCreateArgs<ExtArgs>>): Prisma__EquipeTurnoHistoricoClient<$Result.GetResult<Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many EquipeTurnoHistoricos.
+     * @param {EquipeTurnoHistoricoCreateManyArgs} args - Arguments to create many EquipeTurnoHistoricos.
+     * @example
+     * // Create many EquipeTurnoHistoricos
+     * const equipeTurnoHistorico = await prisma.equipeTurnoHistorico.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends EquipeTurnoHistoricoCreateManyArgs>(args?: SelectSubset<T, EquipeTurnoHistoricoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a EquipeTurnoHistorico.
+     * @param {EquipeTurnoHistoricoDeleteArgs} args - Arguments to delete one EquipeTurnoHistorico.
+     * @example
+     * // Delete one EquipeTurnoHistorico
+     * const EquipeTurnoHistorico = await prisma.equipeTurnoHistorico.delete({
+     *   where: {
+     *     // ... filter to delete one EquipeTurnoHistorico
+     *   }
+     * })
+     * 
+     */
+    delete<T extends EquipeTurnoHistoricoDeleteArgs>(args: SelectSubset<T, EquipeTurnoHistoricoDeleteArgs<ExtArgs>>): Prisma__EquipeTurnoHistoricoClient<$Result.GetResult<Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one EquipeTurnoHistorico.
+     * @param {EquipeTurnoHistoricoUpdateArgs} args - Arguments to update one EquipeTurnoHistorico.
+     * @example
+     * // Update one EquipeTurnoHistorico
+     * const equipeTurnoHistorico = await prisma.equipeTurnoHistorico.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends EquipeTurnoHistoricoUpdateArgs>(args: SelectSubset<T, EquipeTurnoHistoricoUpdateArgs<ExtArgs>>): Prisma__EquipeTurnoHistoricoClient<$Result.GetResult<Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more EquipeTurnoHistoricos.
+     * @param {EquipeTurnoHistoricoDeleteManyArgs} args - Arguments to filter EquipeTurnoHistoricos to delete.
+     * @example
+     * // Delete a few EquipeTurnoHistoricos
+     * const { count } = await prisma.equipeTurnoHistorico.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends EquipeTurnoHistoricoDeleteManyArgs>(args?: SelectSubset<T, EquipeTurnoHistoricoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more EquipeTurnoHistoricos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EquipeTurnoHistoricoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many EquipeTurnoHistoricos
+     * const equipeTurnoHistorico = await prisma.equipeTurnoHistorico.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends EquipeTurnoHistoricoUpdateManyArgs>(args: SelectSubset<T, EquipeTurnoHistoricoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one EquipeTurnoHistorico.
+     * @param {EquipeTurnoHistoricoUpsertArgs} args - Arguments to update or create a EquipeTurnoHistorico.
+     * @example
+     * // Update or create a EquipeTurnoHistorico
+     * const equipeTurnoHistorico = await prisma.equipeTurnoHistorico.upsert({
+     *   create: {
+     *     // ... data to create a EquipeTurnoHistorico
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the EquipeTurnoHistorico we want to update
+     *   }
+     * })
+     */
+    upsert<T extends EquipeTurnoHistoricoUpsertArgs>(args: SelectSubset<T, EquipeTurnoHistoricoUpsertArgs<ExtArgs>>): Prisma__EquipeTurnoHistoricoClient<$Result.GetResult<Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of EquipeTurnoHistoricos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EquipeTurnoHistoricoCountArgs} args - Arguments to filter EquipeTurnoHistoricos to count.
+     * @example
+     * // Count the number of EquipeTurnoHistoricos
+     * const count = await prisma.equipeTurnoHistorico.count({
+     *   where: {
+     *     // ... the filter for the EquipeTurnoHistoricos we want to count
+     *   }
+     * })
+    **/
+    count<T extends EquipeTurnoHistoricoCountArgs>(
+      args?: Subset<T, EquipeTurnoHistoricoCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], EquipeTurnoHistoricoCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a EquipeTurnoHistorico.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EquipeTurnoHistoricoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends EquipeTurnoHistoricoAggregateArgs>(args: Subset<T, EquipeTurnoHistoricoAggregateArgs>): Prisma.PrismaPromise<GetEquipeTurnoHistoricoAggregateType<T>>
+
+    /**
+     * Group by EquipeTurnoHistorico.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EquipeTurnoHistoricoGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends EquipeTurnoHistoricoGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: EquipeTurnoHistoricoGroupByArgs['orderBy'] }
+        : { orderBy?: EquipeTurnoHistoricoGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, EquipeTurnoHistoricoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetEquipeTurnoHistoricoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the EquipeTurnoHistorico model
+   */
+  readonly fields: EquipeTurnoHistoricoFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for EquipeTurnoHistorico.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__EquipeTurnoHistoricoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    equipe<T extends EquipeDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EquipeDefaultArgs<ExtArgs>>): Prisma__EquipeClient<$Result.GetResult<Prisma.$EquipePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    horarioAberturaCatalogo<T extends EquipeTurnoHistorico$horarioAberturaCatalogoArgs<ExtArgs> = {}>(args?: Subset<T, EquipeTurnoHistorico$horarioAberturaCatalogoArgs<ExtArgs>>): Prisma__HorarioAberturaCatalogoClient<$Result.GetResult<Prisma.$HorarioAberturaCatalogoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the EquipeTurnoHistorico model
+   */
+  interface EquipeTurnoHistoricoFieldRefs {
+    readonly id: FieldRef<"EquipeTurnoHistorico", 'Int'>
+    readonly equipeId: FieldRef<"EquipeTurnoHistorico", 'Int'>
+    readonly horarioAberturaCatalogoId: FieldRef<"EquipeTurnoHistorico", 'Int'>
+    readonly dataInicio: FieldRef<"EquipeTurnoHistorico", 'DateTime'>
+    readonly dataFim: FieldRef<"EquipeTurnoHistorico", 'DateTime'>
+    readonly inicioTurnoHora: FieldRef<"EquipeTurnoHistorico", 'String'>
+    readonly duracaoHoras: FieldRef<"EquipeTurnoHistorico", 'Decimal'>
+    readonly duracaoIntervaloHoras: FieldRef<"EquipeTurnoHistorico", 'Decimal'>
+    readonly fimTurnoHora: FieldRef<"EquipeTurnoHistorico", 'String'>
+    readonly motivo: FieldRef<"EquipeTurnoHistorico", 'String'>
+    readonly observacoes: FieldRef<"EquipeTurnoHistorico", 'String'>
+    readonly createdAt: FieldRef<"EquipeTurnoHistorico", 'DateTime'>
+    readonly createdBy: FieldRef<"EquipeTurnoHistorico", 'String'>
+    readonly updatedAt: FieldRef<"EquipeTurnoHistorico", 'DateTime'>
+    readonly updatedBy: FieldRef<"EquipeTurnoHistorico", 'String'>
+    readonly deletedAt: FieldRef<"EquipeTurnoHistorico", 'DateTime'>
+    readonly deletedBy: FieldRef<"EquipeTurnoHistorico", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * EquipeTurnoHistorico findUnique
+   */
+  export type EquipeTurnoHistoricoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeTurnoHistorico
+     */
+    select?: EquipeTurnoHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeTurnoHistorico
+     */
+    omit?: EquipeTurnoHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeTurnoHistoricoInclude<ExtArgs> | null
+    /**
+     * Filter, which EquipeTurnoHistorico to fetch.
+     */
+    where: EquipeTurnoHistoricoWhereUniqueInput
+  }
+
+  /**
+   * EquipeTurnoHistorico findUniqueOrThrow
+   */
+  export type EquipeTurnoHistoricoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeTurnoHistorico
+     */
+    select?: EquipeTurnoHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeTurnoHistorico
+     */
+    omit?: EquipeTurnoHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeTurnoHistoricoInclude<ExtArgs> | null
+    /**
+     * Filter, which EquipeTurnoHistorico to fetch.
+     */
+    where: EquipeTurnoHistoricoWhereUniqueInput
+  }
+
+  /**
+   * EquipeTurnoHistorico findFirst
+   */
+  export type EquipeTurnoHistoricoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeTurnoHistorico
+     */
+    select?: EquipeTurnoHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeTurnoHistorico
+     */
+    omit?: EquipeTurnoHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeTurnoHistoricoInclude<ExtArgs> | null
+    /**
+     * Filter, which EquipeTurnoHistorico to fetch.
+     */
+    where?: EquipeTurnoHistoricoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EquipeTurnoHistoricos to fetch.
+     */
+    orderBy?: EquipeTurnoHistoricoOrderByWithRelationInput | EquipeTurnoHistoricoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for EquipeTurnoHistoricos.
+     */
+    cursor?: EquipeTurnoHistoricoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EquipeTurnoHistoricos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EquipeTurnoHistoricos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EquipeTurnoHistoricos.
+     */
+    distinct?: EquipeTurnoHistoricoScalarFieldEnum | EquipeTurnoHistoricoScalarFieldEnum[]
+  }
+
+  /**
+   * EquipeTurnoHistorico findFirstOrThrow
+   */
+  export type EquipeTurnoHistoricoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeTurnoHistorico
+     */
+    select?: EquipeTurnoHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeTurnoHistorico
+     */
+    omit?: EquipeTurnoHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeTurnoHistoricoInclude<ExtArgs> | null
+    /**
+     * Filter, which EquipeTurnoHistorico to fetch.
+     */
+    where?: EquipeTurnoHistoricoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EquipeTurnoHistoricos to fetch.
+     */
+    orderBy?: EquipeTurnoHistoricoOrderByWithRelationInput | EquipeTurnoHistoricoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for EquipeTurnoHistoricos.
+     */
+    cursor?: EquipeTurnoHistoricoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EquipeTurnoHistoricos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EquipeTurnoHistoricos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EquipeTurnoHistoricos.
+     */
+    distinct?: EquipeTurnoHistoricoScalarFieldEnum | EquipeTurnoHistoricoScalarFieldEnum[]
+  }
+
+  /**
+   * EquipeTurnoHistorico findMany
+   */
+  export type EquipeTurnoHistoricoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeTurnoHistorico
+     */
+    select?: EquipeTurnoHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeTurnoHistorico
+     */
+    omit?: EquipeTurnoHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeTurnoHistoricoInclude<ExtArgs> | null
+    /**
+     * Filter, which EquipeTurnoHistoricos to fetch.
+     */
+    where?: EquipeTurnoHistoricoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EquipeTurnoHistoricos to fetch.
+     */
+    orderBy?: EquipeTurnoHistoricoOrderByWithRelationInput | EquipeTurnoHistoricoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing EquipeTurnoHistoricos.
+     */
+    cursor?: EquipeTurnoHistoricoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EquipeTurnoHistoricos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EquipeTurnoHistoricos.
+     */
+    skip?: number
+    distinct?: EquipeTurnoHistoricoScalarFieldEnum | EquipeTurnoHistoricoScalarFieldEnum[]
+  }
+
+  /**
+   * EquipeTurnoHistorico create
+   */
+  export type EquipeTurnoHistoricoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeTurnoHistorico
+     */
+    select?: EquipeTurnoHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeTurnoHistorico
+     */
+    omit?: EquipeTurnoHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeTurnoHistoricoInclude<ExtArgs> | null
+    /**
+     * The data needed to create a EquipeTurnoHistorico.
+     */
+    data: XOR<EquipeTurnoHistoricoCreateInput, EquipeTurnoHistoricoUncheckedCreateInput>
+  }
+
+  /**
+   * EquipeTurnoHistorico createMany
+   */
+  export type EquipeTurnoHistoricoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many EquipeTurnoHistoricos.
+     */
+    data: EquipeTurnoHistoricoCreateManyInput | EquipeTurnoHistoricoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * EquipeTurnoHistorico update
+   */
+  export type EquipeTurnoHistoricoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeTurnoHistorico
+     */
+    select?: EquipeTurnoHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeTurnoHistorico
+     */
+    omit?: EquipeTurnoHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeTurnoHistoricoInclude<ExtArgs> | null
+    /**
+     * The data needed to update a EquipeTurnoHistorico.
+     */
+    data: XOR<EquipeTurnoHistoricoUpdateInput, EquipeTurnoHistoricoUncheckedUpdateInput>
+    /**
+     * Choose, which EquipeTurnoHistorico to update.
+     */
+    where: EquipeTurnoHistoricoWhereUniqueInput
+  }
+
+  /**
+   * EquipeTurnoHistorico updateMany
+   */
+  export type EquipeTurnoHistoricoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update EquipeTurnoHistoricos.
+     */
+    data: XOR<EquipeTurnoHistoricoUpdateManyMutationInput, EquipeTurnoHistoricoUncheckedUpdateManyInput>
+    /**
+     * Filter which EquipeTurnoHistoricos to update
+     */
+    where?: EquipeTurnoHistoricoWhereInput
+    /**
+     * Limit how many EquipeTurnoHistoricos to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * EquipeTurnoHistorico upsert
+   */
+  export type EquipeTurnoHistoricoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeTurnoHistorico
+     */
+    select?: EquipeTurnoHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeTurnoHistorico
+     */
+    omit?: EquipeTurnoHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeTurnoHistoricoInclude<ExtArgs> | null
+    /**
+     * The filter to search for the EquipeTurnoHistorico to update in case it exists.
+     */
+    where: EquipeTurnoHistoricoWhereUniqueInput
+    /**
+     * In case the EquipeTurnoHistorico found by the `where` argument doesn't exist, create a new EquipeTurnoHistorico with this data.
+     */
+    create: XOR<EquipeTurnoHistoricoCreateInput, EquipeTurnoHistoricoUncheckedCreateInput>
+    /**
+     * In case the EquipeTurnoHistorico was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<EquipeTurnoHistoricoUpdateInput, EquipeTurnoHistoricoUncheckedUpdateInput>
+  }
+
+  /**
+   * EquipeTurnoHistorico delete
+   */
+  export type EquipeTurnoHistoricoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeTurnoHistorico
+     */
+    select?: EquipeTurnoHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeTurnoHistorico
+     */
+    omit?: EquipeTurnoHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeTurnoHistoricoInclude<ExtArgs> | null
+    /**
+     * Filter which EquipeTurnoHistorico to delete.
+     */
+    where: EquipeTurnoHistoricoWhereUniqueInput
+  }
+
+  /**
+   * EquipeTurnoHistorico deleteMany
+   */
+  export type EquipeTurnoHistoricoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which EquipeTurnoHistoricos to delete
+     */
+    where?: EquipeTurnoHistoricoWhereInput
+    /**
+     * Limit how many EquipeTurnoHistoricos to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * EquipeTurnoHistorico.horarioAberturaCatalogo
+   */
+  export type EquipeTurnoHistorico$horarioAberturaCatalogoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HorarioAberturaCatalogo
+     */
+    select?: HorarioAberturaCatalogoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HorarioAberturaCatalogo
+     */
+    omit?: HorarioAberturaCatalogoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HorarioAberturaCatalogoInclude<ExtArgs> | null
+    where?: HorarioAberturaCatalogoWhereInput
+  }
+
+  /**
+   * EquipeTurnoHistorico without action
+   */
+  export type EquipeTurnoHistoricoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeTurnoHistorico
+     */
+    select?: EquipeTurnoHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeTurnoHistorico
+     */
+    omit?: EquipeTurnoHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeTurnoHistoricoInclude<ExtArgs> | null
   }
 
 
@@ -55601,6 +58058,48 @@ export namespace Prisma {
   export type EquipeHorarioVigenciaScalarFieldEnum = (typeof EquipeHorarioVigenciaScalarFieldEnum)[keyof typeof EquipeHorarioVigenciaScalarFieldEnum]
 
 
+  export const HorarioAberturaCatalogoScalarFieldEnum: {
+    id: 'id',
+    nome: 'nome',
+    inicioTurnoHora: 'inicioTurnoHora',
+    duracaoHoras: 'duracaoHoras',
+    duracaoIntervaloHoras: 'duracaoIntervaloHoras',
+    ativo: 'ativo',
+    observacoes: 'observacoes',
+    createdAt: 'createdAt',
+    createdBy: 'createdBy',
+    updatedAt: 'updatedAt',
+    updatedBy: 'updatedBy',
+    deletedAt: 'deletedAt',
+    deletedBy: 'deletedBy'
+  };
+
+  export type HorarioAberturaCatalogoScalarFieldEnum = (typeof HorarioAberturaCatalogoScalarFieldEnum)[keyof typeof HorarioAberturaCatalogoScalarFieldEnum]
+
+
+  export const EquipeTurnoHistoricoScalarFieldEnum: {
+    id: 'id',
+    equipeId: 'equipeId',
+    horarioAberturaCatalogoId: 'horarioAberturaCatalogoId',
+    dataInicio: 'dataInicio',
+    dataFim: 'dataFim',
+    inicioTurnoHora: 'inicioTurnoHora',
+    duracaoHoras: 'duracaoHoras',
+    duracaoIntervaloHoras: 'duracaoIntervaloHoras',
+    fimTurnoHora: 'fimTurnoHora',
+    motivo: 'motivo',
+    observacoes: 'observacoes',
+    createdAt: 'createdAt',
+    createdBy: 'createdBy',
+    updatedAt: 'updatedAt',
+    updatedBy: 'updatedBy',
+    deletedAt: 'deletedAt',
+    deletedBy: 'deletedBy'
+  };
+
+  export type EquipeTurnoHistoricoScalarFieldEnum = (typeof EquipeTurnoHistoricoScalarFieldEnum)[keyof typeof EquipeTurnoHistoricoScalarFieldEnum]
+
+
   export const SupervisorScalarFieldEnum: {
     id: 'id',
     nome: 'nome',
@@ -56119,6 +58618,31 @@ export namespace Prisma {
   };
 
   export type EquipeHorarioVigenciaOrderByRelevanceFieldEnum = (typeof EquipeHorarioVigenciaOrderByRelevanceFieldEnum)[keyof typeof EquipeHorarioVigenciaOrderByRelevanceFieldEnum]
+
+
+  export const HorarioAberturaCatalogoOrderByRelevanceFieldEnum: {
+    nome: 'nome',
+    inicioTurnoHora: 'inicioTurnoHora',
+    observacoes: 'observacoes',
+    createdBy: 'createdBy',
+    updatedBy: 'updatedBy',
+    deletedBy: 'deletedBy'
+  };
+
+  export type HorarioAberturaCatalogoOrderByRelevanceFieldEnum = (typeof HorarioAberturaCatalogoOrderByRelevanceFieldEnum)[keyof typeof HorarioAberturaCatalogoOrderByRelevanceFieldEnum]
+
+
+  export const EquipeTurnoHistoricoOrderByRelevanceFieldEnum: {
+    inicioTurnoHora: 'inicioTurnoHora',
+    fimTurnoHora: 'fimTurnoHora',
+    motivo: 'motivo',
+    observacoes: 'observacoes',
+    createdBy: 'createdBy',
+    updatedBy: 'updatedBy',
+    deletedBy: 'deletedBy'
+  };
+
+  export type EquipeTurnoHistoricoOrderByRelevanceFieldEnum = (typeof EquipeTurnoHistoricoOrderByRelevanceFieldEnum)[keyof typeof EquipeTurnoHistoricoOrderByRelevanceFieldEnum]
 
 
   export const SupervisorOrderByRelevanceFieldEnum: {
@@ -58699,6 +61223,7 @@ export namespace Prisma {
     Turno?: TurnoListRelationFilter
     EscalaEquipePeriodo?: EscalaEquipePeriodoListRelationFilter
     EquipeHorarioVigencia?: EquipeHorarioVigenciaListRelationFilter
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoListRelationFilter
   }
 
   export type EquipeOrderByWithRelationInput = {
@@ -58718,6 +61243,7 @@ export namespace Prisma {
     Turno?: TurnoOrderByRelationAggregateInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoOrderByRelationAggregateInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaOrderByRelationAggregateInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoOrderByRelationAggregateInput
     _relevance?: EquipeOrderByRelevanceInput
   }
 
@@ -58741,6 +61267,7 @@ export namespace Prisma {
     Turno?: TurnoListRelationFilter
     EscalaEquipePeriodo?: EscalaEquipePeriodoListRelationFilter
     EquipeHorarioVigencia?: EquipeHorarioVigenciaListRelationFilter
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoListRelationFilter
   }, "id">
 
   export type EquipeOrderByWithAggregationInput = {
@@ -59571,6 +62098,225 @@ export namespace Prisma {
     updatedBy?: StringNullableWithAggregatesFilter<"EquipeHorarioVigencia"> | string | null
     deletedAt?: DateTimeNullableWithAggregatesFilter<"EquipeHorarioVigencia"> | Date | string | null
     deletedBy?: StringNullableWithAggregatesFilter<"EquipeHorarioVigencia"> | string | null
+  }
+
+  export type HorarioAberturaCatalogoWhereInput = {
+    AND?: HorarioAberturaCatalogoWhereInput | HorarioAberturaCatalogoWhereInput[]
+    OR?: HorarioAberturaCatalogoWhereInput[]
+    NOT?: HorarioAberturaCatalogoWhereInput | HorarioAberturaCatalogoWhereInput[]
+    id?: IntFilter<"HorarioAberturaCatalogo"> | number
+    nome?: StringFilter<"HorarioAberturaCatalogo"> | string
+    inicioTurnoHora?: StringFilter<"HorarioAberturaCatalogo"> | string
+    duracaoHoras?: DecimalFilter<"HorarioAberturaCatalogo"> | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFilter<"HorarioAberturaCatalogo"> | Decimal | DecimalJsLike | number | string
+    ativo?: BoolFilter<"HorarioAberturaCatalogo"> | boolean
+    observacoes?: StringNullableFilter<"HorarioAberturaCatalogo"> | string | null
+    createdAt?: DateTimeFilter<"HorarioAberturaCatalogo"> | Date | string
+    createdBy?: StringFilter<"HorarioAberturaCatalogo"> | string
+    updatedAt?: DateTimeNullableFilter<"HorarioAberturaCatalogo"> | Date | string | null
+    updatedBy?: StringNullableFilter<"HorarioAberturaCatalogo"> | string | null
+    deletedAt?: DateTimeNullableFilter<"HorarioAberturaCatalogo"> | Date | string | null
+    deletedBy?: StringNullableFilter<"HorarioAberturaCatalogo"> | string | null
+    Historicos?: EquipeTurnoHistoricoListRelationFilter
+  }
+
+  export type HorarioAberturaCatalogoOrderByWithRelationInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    inicioTurnoHora?: SortOrder
+    duracaoHoras?: SortOrder
+    duracaoIntervaloHoras?: SortOrder
+    ativo?: SortOrder
+    observacoes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrderInput | SortOrder
+    updatedBy?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    deletedBy?: SortOrderInput | SortOrder
+    Historicos?: EquipeTurnoHistoricoOrderByRelationAggregateInput
+    _relevance?: HorarioAberturaCatalogoOrderByRelevanceInput
+  }
+
+  export type HorarioAberturaCatalogoWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: HorarioAberturaCatalogoWhereInput | HorarioAberturaCatalogoWhereInput[]
+    OR?: HorarioAberturaCatalogoWhereInput[]
+    NOT?: HorarioAberturaCatalogoWhereInput | HorarioAberturaCatalogoWhereInput[]
+    nome?: StringFilter<"HorarioAberturaCatalogo"> | string
+    inicioTurnoHora?: StringFilter<"HorarioAberturaCatalogo"> | string
+    duracaoHoras?: DecimalFilter<"HorarioAberturaCatalogo"> | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFilter<"HorarioAberturaCatalogo"> | Decimal | DecimalJsLike | number | string
+    ativo?: BoolFilter<"HorarioAberturaCatalogo"> | boolean
+    observacoes?: StringNullableFilter<"HorarioAberturaCatalogo"> | string | null
+    createdAt?: DateTimeFilter<"HorarioAberturaCatalogo"> | Date | string
+    createdBy?: StringFilter<"HorarioAberturaCatalogo"> | string
+    updatedAt?: DateTimeNullableFilter<"HorarioAberturaCatalogo"> | Date | string | null
+    updatedBy?: StringNullableFilter<"HorarioAberturaCatalogo"> | string | null
+    deletedAt?: DateTimeNullableFilter<"HorarioAberturaCatalogo"> | Date | string | null
+    deletedBy?: StringNullableFilter<"HorarioAberturaCatalogo"> | string | null
+    Historicos?: EquipeTurnoHistoricoListRelationFilter
+  }, "id">
+
+  export type HorarioAberturaCatalogoOrderByWithAggregationInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    inicioTurnoHora?: SortOrder
+    duracaoHoras?: SortOrder
+    duracaoIntervaloHoras?: SortOrder
+    ativo?: SortOrder
+    observacoes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrderInput | SortOrder
+    updatedBy?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    deletedBy?: SortOrderInput | SortOrder
+    _count?: HorarioAberturaCatalogoCountOrderByAggregateInput
+    _avg?: HorarioAberturaCatalogoAvgOrderByAggregateInput
+    _max?: HorarioAberturaCatalogoMaxOrderByAggregateInput
+    _min?: HorarioAberturaCatalogoMinOrderByAggregateInput
+    _sum?: HorarioAberturaCatalogoSumOrderByAggregateInput
+  }
+
+  export type HorarioAberturaCatalogoScalarWhereWithAggregatesInput = {
+    AND?: HorarioAberturaCatalogoScalarWhereWithAggregatesInput | HorarioAberturaCatalogoScalarWhereWithAggregatesInput[]
+    OR?: HorarioAberturaCatalogoScalarWhereWithAggregatesInput[]
+    NOT?: HorarioAberturaCatalogoScalarWhereWithAggregatesInput | HorarioAberturaCatalogoScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"HorarioAberturaCatalogo"> | number
+    nome?: StringWithAggregatesFilter<"HorarioAberturaCatalogo"> | string
+    inicioTurnoHora?: StringWithAggregatesFilter<"HorarioAberturaCatalogo"> | string
+    duracaoHoras?: DecimalWithAggregatesFilter<"HorarioAberturaCatalogo"> | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalWithAggregatesFilter<"HorarioAberturaCatalogo"> | Decimal | DecimalJsLike | number | string
+    ativo?: BoolWithAggregatesFilter<"HorarioAberturaCatalogo"> | boolean
+    observacoes?: StringNullableWithAggregatesFilter<"HorarioAberturaCatalogo"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"HorarioAberturaCatalogo"> | Date | string
+    createdBy?: StringWithAggregatesFilter<"HorarioAberturaCatalogo"> | string
+    updatedAt?: DateTimeNullableWithAggregatesFilter<"HorarioAberturaCatalogo"> | Date | string | null
+    updatedBy?: StringNullableWithAggregatesFilter<"HorarioAberturaCatalogo"> | string | null
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"HorarioAberturaCatalogo"> | Date | string | null
+    deletedBy?: StringNullableWithAggregatesFilter<"HorarioAberturaCatalogo"> | string | null
+  }
+
+  export type EquipeTurnoHistoricoWhereInput = {
+    AND?: EquipeTurnoHistoricoWhereInput | EquipeTurnoHistoricoWhereInput[]
+    OR?: EquipeTurnoHistoricoWhereInput[]
+    NOT?: EquipeTurnoHistoricoWhereInput | EquipeTurnoHistoricoWhereInput[]
+    id?: IntFilter<"EquipeTurnoHistorico"> | number
+    equipeId?: IntFilter<"EquipeTurnoHistorico"> | number
+    horarioAberturaCatalogoId?: IntNullableFilter<"EquipeTurnoHistorico"> | number | null
+    dataInicio?: DateTimeFilter<"EquipeTurnoHistorico"> | Date | string
+    dataFim?: DateTimeNullableFilter<"EquipeTurnoHistorico"> | Date | string | null
+    inicioTurnoHora?: StringFilter<"EquipeTurnoHistorico"> | string
+    duracaoHoras?: DecimalFilter<"EquipeTurnoHistorico"> | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFilter<"EquipeTurnoHistorico"> | Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+    motivo?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+    observacoes?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+    createdAt?: DateTimeFilter<"EquipeTurnoHistorico"> | Date | string
+    createdBy?: StringFilter<"EquipeTurnoHistorico"> | string
+    updatedAt?: DateTimeNullableFilter<"EquipeTurnoHistorico"> | Date | string | null
+    updatedBy?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+    deletedAt?: DateTimeNullableFilter<"EquipeTurnoHistorico"> | Date | string | null
+    deletedBy?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+    equipe?: XOR<EquipeScalarRelationFilter, EquipeWhereInput>
+    horarioAberturaCatalogo?: XOR<HorarioAberturaCatalogoNullableScalarRelationFilter, HorarioAberturaCatalogoWhereInput> | null
+  }
+
+  export type EquipeTurnoHistoricoOrderByWithRelationInput = {
+    id?: SortOrder
+    equipeId?: SortOrder
+    horarioAberturaCatalogoId?: SortOrderInput | SortOrder
+    dataInicio?: SortOrder
+    dataFim?: SortOrderInput | SortOrder
+    inicioTurnoHora?: SortOrder
+    duracaoHoras?: SortOrder
+    duracaoIntervaloHoras?: SortOrder
+    fimTurnoHora?: SortOrderInput | SortOrder
+    motivo?: SortOrderInput | SortOrder
+    observacoes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrderInput | SortOrder
+    updatedBy?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    deletedBy?: SortOrderInput | SortOrder
+    equipe?: EquipeOrderByWithRelationInput
+    horarioAberturaCatalogo?: HorarioAberturaCatalogoOrderByWithRelationInput
+    _relevance?: EquipeTurnoHistoricoOrderByRelevanceInput
+  }
+
+  export type EquipeTurnoHistoricoWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: EquipeTurnoHistoricoWhereInput | EquipeTurnoHistoricoWhereInput[]
+    OR?: EquipeTurnoHistoricoWhereInput[]
+    NOT?: EquipeTurnoHistoricoWhereInput | EquipeTurnoHistoricoWhereInput[]
+    equipeId?: IntFilter<"EquipeTurnoHistorico"> | number
+    horarioAberturaCatalogoId?: IntNullableFilter<"EquipeTurnoHistorico"> | number | null
+    dataInicio?: DateTimeFilter<"EquipeTurnoHistorico"> | Date | string
+    dataFim?: DateTimeNullableFilter<"EquipeTurnoHistorico"> | Date | string | null
+    inicioTurnoHora?: StringFilter<"EquipeTurnoHistorico"> | string
+    duracaoHoras?: DecimalFilter<"EquipeTurnoHistorico"> | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFilter<"EquipeTurnoHistorico"> | Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+    motivo?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+    observacoes?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+    createdAt?: DateTimeFilter<"EquipeTurnoHistorico"> | Date | string
+    createdBy?: StringFilter<"EquipeTurnoHistorico"> | string
+    updatedAt?: DateTimeNullableFilter<"EquipeTurnoHistorico"> | Date | string | null
+    updatedBy?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+    deletedAt?: DateTimeNullableFilter<"EquipeTurnoHistorico"> | Date | string | null
+    deletedBy?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+    equipe?: XOR<EquipeScalarRelationFilter, EquipeWhereInput>
+    horarioAberturaCatalogo?: XOR<HorarioAberturaCatalogoNullableScalarRelationFilter, HorarioAberturaCatalogoWhereInput> | null
+  }, "id">
+
+  export type EquipeTurnoHistoricoOrderByWithAggregationInput = {
+    id?: SortOrder
+    equipeId?: SortOrder
+    horarioAberturaCatalogoId?: SortOrderInput | SortOrder
+    dataInicio?: SortOrder
+    dataFim?: SortOrderInput | SortOrder
+    inicioTurnoHora?: SortOrder
+    duracaoHoras?: SortOrder
+    duracaoIntervaloHoras?: SortOrder
+    fimTurnoHora?: SortOrderInput | SortOrder
+    motivo?: SortOrderInput | SortOrder
+    observacoes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrderInput | SortOrder
+    updatedBy?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    deletedBy?: SortOrderInput | SortOrder
+    _count?: EquipeTurnoHistoricoCountOrderByAggregateInput
+    _avg?: EquipeTurnoHistoricoAvgOrderByAggregateInput
+    _max?: EquipeTurnoHistoricoMaxOrderByAggregateInput
+    _min?: EquipeTurnoHistoricoMinOrderByAggregateInput
+    _sum?: EquipeTurnoHistoricoSumOrderByAggregateInput
+  }
+
+  export type EquipeTurnoHistoricoScalarWhereWithAggregatesInput = {
+    AND?: EquipeTurnoHistoricoScalarWhereWithAggregatesInput | EquipeTurnoHistoricoScalarWhereWithAggregatesInput[]
+    OR?: EquipeTurnoHistoricoScalarWhereWithAggregatesInput[]
+    NOT?: EquipeTurnoHistoricoScalarWhereWithAggregatesInput | EquipeTurnoHistoricoScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"EquipeTurnoHistorico"> | number
+    equipeId?: IntWithAggregatesFilter<"EquipeTurnoHistorico"> | number
+    horarioAberturaCatalogoId?: IntNullableWithAggregatesFilter<"EquipeTurnoHistorico"> | number | null
+    dataInicio?: DateTimeWithAggregatesFilter<"EquipeTurnoHistorico"> | Date | string
+    dataFim?: DateTimeNullableWithAggregatesFilter<"EquipeTurnoHistorico"> | Date | string | null
+    inicioTurnoHora?: StringWithAggregatesFilter<"EquipeTurnoHistorico"> | string
+    duracaoHoras?: DecimalWithAggregatesFilter<"EquipeTurnoHistorico"> | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalWithAggregatesFilter<"EquipeTurnoHistorico"> | Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: StringNullableWithAggregatesFilter<"EquipeTurnoHistorico"> | string | null
+    motivo?: StringNullableWithAggregatesFilter<"EquipeTurnoHistorico"> | string | null
+    observacoes?: StringNullableWithAggregatesFilter<"EquipeTurnoHistorico"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"EquipeTurnoHistorico"> | Date | string
+    createdBy?: StringWithAggregatesFilter<"EquipeTurnoHistorico"> | string
+    updatedAt?: DateTimeNullableWithAggregatesFilter<"EquipeTurnoHistorico"> | Date | string | null
+    updatedBy?: StringNullableWithAggregatesFilter<"EquipeTurnoHistorico"> | string | null
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"EquipeTurnoHistorico"> | Date | string | null
+    deletedBy?: StringNullableWithAggregatesFilter<"EquipeTurnoHistorico"> | string | null
   }
 
   export type SupervisorWhereInput = {
@@ -62727,6 +65473,7 @@ export namespace Prisma {
     Turno?: TurnoCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateInput = {
@@ -62744,6 +65491,7 @@ export namespace Prisma {
     Turno?: TurnoUncheckedCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUpdateInput = {
@@ -62760,6 +65508,7 @@ export namespace Prisma {
     Turno?: TurnoUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateInput = {
@@ -62777,6 +65526,7 @@ export namespace Prisma {
     Turno?: TurnoUncheckedUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeCreateManyInput = {
@@ -63667,6 +66417,254 @@ export namespace Prisma {
     duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     vigenciaInicio?: DateTimeFieldUpdateOperationsInput | Date | string
     vigenciaFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type HorarioAberturaCatalogoCreateInput = {
+    nome: string
+    inicioTurnoHora: string
+    duracaoHoras: Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras: Decimal | DecimalJsLike | number | string
+    ativo?: boolean
+    observacoes?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    Historicos?: EquipeTurnoHistoricoCreateNestedManyWithoutHorarioAberturaCatalogoInput
+  }
+
+  export type HorarioAberturaCatalogoUncheckedCreateInput = {
+    id?: number
+    nome: string
+    inicioTurnoHora: string
+    duracaoHoras: Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras: Decimal | DecimalJsLike | number | string
+    ativo?: boolean
+    observacoes?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    Historicos?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutHorarioAberturaCatalogoInput
+  }
+
+  export type HorarioAberturaCatalogoUpdateInput = {
+    nome?: StringFieldUpdateOperationsInput | string
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    Historicos?: EquipeTurnoHistoricoUpdateManyWithoutHorarioAberturaCatalogoNestedInput
+  }
+
+  export type HorarioAberturaCatalogoUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nome?: StringFieldUpdateOperationsInput | string
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    Historicos?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutHorarioAberturaCatalogoNestedInput
+  }
+
+  export type HorarioAberturaCatalogoCreateManyInput = {
+    id?: number
+    nome: string
+    inicioTurnoHora: string
+    duracaoHoras: Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras: Decimal | DecimalJsLike | number | string
+    ativo?: boolean
+    observacoes?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type HorarioAberturaCatalogoUpdateManyMutationInput = {
+    nome?: StringFieldUpdateOperationsInput | string
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type HorarioAberturaCatalogoUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nome?: StringFieldUpdateOperationsInput | string
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type EquipeTurnoHistoricoCreateInput = {
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    inicioTurnoHora: string
+    duracaoHoras: Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras: Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: string | null
+    motivo?: string | null
+    observacoes?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    equipe: EquipeCreateNestedOneWithoutEquipeTurnoHistoricoInput
+    horarioAberturaCatalogo?: HorarioAberturaCatalogoCreateNestedOneWithoutHistoricosInput
+  }
+
+  export type EquipeTurnoHistoricoUncheckedCreateInput = {
+    id?: number
+    equipeId: number
+    horarioAberturaCatalogoId?: number | null
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    inicioTurnoHora: string
+    duracaoHoras: Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras: Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: string | null
+    motivo?: string | null
+    observacoes?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type EquipeTurnoHistoricoUpdateInput = {
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: NullableStringFieldUpdateOperationsInput | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    equipe?: EquipeUpdateOneRequiredWithoutEquipeTurnoHistoricoNestedInput
+    horarioAberturaCatalogo?: HorarioAberturaCatalogoUpdateOneWithoutHistoricosNestedInput
+  }
+
+  export type EquipeTurnoHistoricoUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    equipeId?: IntFieldUpdateOperationsInput | number
+    horarioAberturaCatalogoId?: NullableIntFieldUpdateOperationsInput | number | null
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: NullableStringFieldUpdateOperationsInput | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type EquipeTurnoHistoricoCreateManyInput = {
+    id?: number
+    equipeId: number
+    horarioAberturaCatalogoId?: number | null
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    inicioTurnoHora: string
+    duracaoHoras: Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras: Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: string | null
+    motivo?: string | null
+    observacoes?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type EquipeTurnoHistoricoUpdateManyMutationInput = {
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: NullableStringFieldUpdateOperationsInput | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type EquipeTurnoHistoricoUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    equipeId?: IntFieldUpdateOperationsInput | number
+    horarioAberturaCatalogoId?: NullableIntFieldUpdateOperationsInput | number | null
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: NullableStringFieldUpdateOperationsInput | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -66435,6 +69433,12 @@ export namespace Prisma {
     none?: EquipeHorarioVigenciaWhereInput
   }
 
+  export type EquipeTurnoHistoricoListRelationFilter = {
+    every?: EquipeTurnoHistoricoWhereInput
+    some?: EquipeTurnoHistoricoWhereInput
+    none?: EquipeTurnoHistoricoWhereInput
+  }
+
   export type EquipeSupervisorOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -66448,6 +69452,10 @@ export namespace Prisma {
   }
 
   export type EquipeHorarioVigenciaOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type EquipeTurnoHistoricoOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -67259,6 +70267,159 @@ export namespace Prisma {
     _sum?: NestedDecimalFilter<$PrismaModel>
     _min?: NestedDecimalFilter<$PrismaModel>
     _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
+  export type HorarioAberturaCatalogoOrderByRelevanceInput = {
+    fields: HorarioAberturaCatalogoOrderByRelevanceFieldEnum | HorarioAberturaCatalogoOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type HorarioAberturaCatalogoCountOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    inicioTurnoHora?: SortOrder
+    duracaoHoras?: SortOrder
+    duracaoIntervaloHoras?: SortOrder
+    ativo?: SortOrder
+    observacoes?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type HorarioAberturaCatalogoAvgOrderByAggregateInput = {
+    id?: SortOrder
+    duracaoHoras?: SortOrder
+    duracaoIntervaloHoras?: SortOrder
+  }
+
+  export type HorarioAberturaCatalogoMaxOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    inicioTurnoHora?: SortOrder
+    duracaoHoras?: SortOrder
+    duracaoIntervaloHoras?: SortOrder
+    ativo?: SortOrder
+    observacoes?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type HorarioAberturaCatalogoMinOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    inicioTurnoHora?: SortOrder
+    duracaoHoras?: SortOrder
+    duracaoIntervaloHoras?: SortOrder
+    ativo?: SortOrder
+    observacoes?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type HorarioAberturaCatalogoSumOrderByAggregateInput = {
+    id?: SortOrder
+    duracaoHoras?: SortOrder
+    duracaoIntervaloHoras?: SortOrder
+  }
+
+  export type HorarioAberturaCatalogoNullableScalarRelationFilter = {
+    is?: HorarioAberturaCatalogoWhereInput | null
+    isNot?: HorarioAberturaCatalogoWhereInput | null
+  }
+
+  export type EquipeTurnoHistoricoOrderByRelevanceInput = {
+    fields: EquipeTurnoHistoricoOrderByRelevanceFieldEnum | EquipeTurnoHistoricoOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type EquipeTurnoHistoricoCountOrderByAggregateInput = {
+    id?: SortOrder
+    equipeId?: SortOrder
+    horarioAberturaCatalogoId?: SortOrder
+    dataInicio?: SortOrder
+    dataFim?: SortOrder
+    inicioTurnoHora?: SortOrder
+    duracaoHoras?: SortOrder
+    duracaoIntervaloHoras?: SortOrder
+    fimTurnoHora?: SortOrder
+    motivo?: SortOrder
+    observacoes?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type EquipeTurnoHistoricoAvgOrderByAggregateInput = {
+    id?: SortOrder
+    equipeId?: SortOrder
+    horarioAberturaCatalogoId?: SortOrder
+    duracaoHoras?: SortOrder
+    duracaoIntervaloHoras?: SortOrder
+  }
+
+  export type EquipeTurnoHistoricoMaxOrderByAggregateInput = {
+    id?: SortOrder
+    equipeId?: SortOrder
+    horarioAberturaCatalogoId?: SortOrder
+    dataInicio?: SortOrder
+    dataFim?: SortOrder
+    inicioTurnoHora?: SortOrder
+    duracaoHoras?: SortOrder
+    duracaoIntervaloHoras?: SortOrder
+    fimTurnoHora?: SortOrder
+    motivo?: SortOrder
+    observacoes?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type EquipeTurnoHistoricoMinOrderByAggregateInput = {
+    id?: SortOrder
+    equipeId?: SortOrder
+    horarioAberturaCatalogoId?: SortOrder
+    dataInicio?: SortOrder
+    dataFim?: SortOrder
+    inicioTurnoHora?: SortOrder
+    duracaoHoras?: SortOrder
+    duracaoIntervaloHoras?: SortOrder
+    fimTurnoHora?: SortOrder
+    motivo?: SortOrder
+    observacoes?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type EquipeTurnoHistoricoSumOrderByAggregateInput = {
+    id?: SortOrder
+    equipeId?: SortOrder
+    horarioAberturaCatalogoId?: SortOrder
+    duracaoHoras?: SortOrder
+    duracaoIntervaloHoras?: SortOrder
   }
 
   export type SupervisorOrderByRelevanceInput = {
@@ -69662,6 +72823,13 @@ export namespace Prisma {
     connect?: EquipeHorarioVigenciaWhereUniqueInput | EquipeHorarioVigenciaWhereUniqueInput[]
   }
 
+  export type EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput = {
+    create?: XOR<EquipeTurnoHistoricoCreateWithoutEquipeInput, EquipeTurnoHistoricoUncheckedCreateWithoutEquipeInput> | EquipeTurnoHistoricoCreateWithoutEquipeInput[] | EquipeTurnoHistoricoUncheckedCreateWithoutEquipeInput[]
+    connectOrCreate?: EquipeTurnoHistoricoCreateOrConnectWithoutEquipeInput | EquipeTurnoHistoricoCreateOrConnectWithoutEquipeInput[]
+    createMany?: EquipeTurnoHistoricoCreateManyEquipeInputEnvelope
+    connect?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+  }
+
   export type EquipeSupervisorUncheckedCreateNestedManyWithoutEquipeInput = {
     create?: XOR<EquipeSupervisorCreateWithoutEquipeInput, EquipeSupervisorUncheckedCreateWithoutEquipeInput> | EquipeSupervisorCreateWithoutEquipeInput[] | EquipeSupervisorUncheckedCreateWithoutEquipeInput[]
     connectOrCreate?: EquipeSupervisorCreateOrConnectWithoutEquipeInput | EquipeSupervisorCreateOrConnectWithoutEquipeInput[]
@@ -69688,6 +72856,13 @@ export namespace Prisma {
     connectOrCreate?: EquipeHorarioVigenciaCreateOrConnectWithoutEquipeInput | EquipeHorarioVigenciaCreateOrConnectWithoutEquipeInput[]
     createMany?: EquipeHorarioVigenciaCreateManyEquipeInputEnvelope
     connect?: EquipeHorarioVigenciaWhereUniqueInput | EquipeHorarioVigenciaWhereUniqueInput[]
+  }
+
+  export type EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput = {
+    create?: XOR<EquipeTurnoHistoricoCreateWithoutEquipeInput, EquipeTurnoHistoricoUncheckedCreateWithoutEquipeInput> | EquipeTurnoHistoricoCreateWithoutEquipeInput[] | EquipeTurnoHistoricoUncheckedCreateWithoutEquipeInput[]
+    connectOrCreate?: EquipeTurnoHistoricoCreateOrConnectWithoutEquipeInput | EquipeTurnoHistoricoCreateOrConnectWithoutEquipeInput[]
+    createMany?: EquipeTurnoHistoricoCreateManyEquipeInputEnvelope
+    connect?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
   }
 
   export type TipoEquipeUpdateOneRequiredWithoutEquipeNestedInput = {
@@ -69762,6 +72937,20 @@ export namespace Prisma {
     deleteMany?: EquipeHorarioVigenciaScalarWhereInput | EquipeHorarioVigenciaScalarWhereInput[]
   }
 
+  export type EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput = {
+    create?: XOR<EquipeTurnoHistoricoCreateWithoutEquipeInput, EquipeTurnoHistoricoUncheckedCreateWithoutEquipeInput> | EquipeTurnoHistoricoCreateWithoutEquipeInput[] | EquipeTurnoHistoricoUncheckedCreateWithoutEquipeInput[]
+    connectOrCreate?: EquipeTurnoHistoricoCreateOrConnectWithoutEquipeInput | EquipeTurnoHistoricoCreateOrConnectWithoutEquipeInput[]
+    upsert?: EquipeTurnoHistoricoUpsertWithWhereUniqueWithoutEquipeInput | EquipeTurnoHistoricoUpsertWithWhereUniqueWithoutEquipeInput[]
+    createMany?: EquipeTurnoHistoricoCreateManyEquipeInputEnvelope
+    set?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    disconnect?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    delete?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    connect?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    update?: EquipeTurnoHistoricoUpdateWithWhereUniqueWithoutEquipeInput | EquipeTurnoHistoricoUpdateWithWhereUniqueWithoutEquipeInput[]
+    updateMany?: EquipeTurnoHistoricoUpdateManyWithWhereWithoutEquipeInput | EquipeTurnoHistoricoUpdateManyWithWhereWithoutEquipeInput[]
+    deleteMany?: EquipeTurnoHistoricoScalarWhereInput | EquipeTurnoHistoricoScalarWhereInput[]
+  }
+
   export type EquipeSupervisorUncheckedUpdateManyWithoutEquipeNestedInput = {
     create?: XOR<EquipeSupervisorCreateWithoutEquipeInput, EquipeSupervisorUncheckedCreateWithoutEquipeInput> | EquipeSupervisorCreateWithoutEquipeInput[] | EquipeSupervisorUncheckedCreateWithoutEquipeInput[]
     connectOrCreate?: EquipeSupervisorCreateOrConnectWithoutEquipeInput | EquipeSupervisorCreateOrConnectWithoutEquipeInput[]
@@ -69816,6 +73005,20 @@ export namespace Prisma {
     update?: EquipeHorarioVigenciaUpdateWithWhereUniqueWithoutEquipeInput | EquipeHorarioVigenciaUpdateWithWhereUniqueWithoutEquipeInput[]
     updateMany?: EquipeHorarioVigenciaUpdateManyWithWhereWithoutEquipeInput | EquipeHorarioVigenciaUpdateManyWithWhereWithoutEquipeInput[]
     deleteMany?: EquipeHorarioVigenciaScalarWhereInput | EquipeHorarioVigenciaScalarWhereInput[]
+  }
+
+  export type EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput = {
+    create?: XOR<EquipeTurnoHistoricoCreateWithoutEquipeInput, EquipeTurnoHistoricoUncheckedCreateWithoutEquipeInput> | EquipeTurnoHistoricoCreateWithoutEquipeInput[] | EquipeTurnoHistoricoUncheckedCreateWithoutEquipeInput[]
+    connectOrCreate?: EquipeTurnoHistoricoCreateOrConnectWithoutEquipeInput | EquipeTurnoHistoricoCreateOrConnectWithoutEquipeInput[]
+    upsert?: EquipeTurnoHistoricoUpsertWithWhereUniqueWithoutEquipeInput | EquipeTurnoHistoricoUpsertWithWhereUniqueWithoutEquipeInput[]
+    createMany?: EquipeTurnoHistoricoCreateManyEquipeInputEnvelope
+    set?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    disconnect?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    delete?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    connect?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    update?: EquipeTurnoHistoricoUpdateWithWhereUniqueWithoutEquipeInput | EquipeTurnoHistoricoUpdateWithWhereUniqueWithoutEquipeInput[]
+    updateMany?: EquipeTurnoHistoricoUpdateManyWithWhereWithoutEquipeInput | EquipeTurnoHistoricoUpdateManyWithWhereWithoutEquipeInput[]
+    deleteMany?: EquipeTurnoHistoricoScalarWhereInput | EquipeTurnoHistoricoScalarWhereInput[]
   }
 
   export type EquipeCreateNestedOneWithoutEquipeSupervisorInput = {
@@ -70222,6 +73425,78 @@ export namespace Prisma {
     upsert?: EquipeUpsertWithoutEquipeHorarioVigenciaInput
     connect?: EquipeWhereUniqueInput
     update?: XOR<XOR<EquipeUpdateToOneWithWhereWithoutEquipeHorarioVigenciaInput, EquipeUpdateWithoutEquipeHorarioVigenciaInput>, EquipeUncheckedUpdateWithoutEquipeHorarioVigenciaInput>
+  }
+
+  export type EquipeTurnoHistoricoCreateNestedManyWithoutHorarioAberturaCatalogoInput = {
+    create?: XOR<EquipeTurnoHistoricoCreateWithoutHorarioAberturaCatalogoInput, EquipeTurnoHistoricoUncheckedCreateWithoutHorarioAberturaCatalogoInput> | EquipeTurnoHistoricoCreateWithoutHorarioAberturaCatalogoInput[] | EquipeTurnoHistoricoUncheckedCreateWithoutHorarioAberturaCatalogoInput[]
+    connectOrCreate?: EquipeTurnoHistoricoCreateOrConnectWithoutHorarioAberturaCatalogoInput | EquipeTurnoHistoricoCreateOrConnectWithoutHorarioAberturaCatalogoInput[]
+    createMany?: EquipeTurnoHistoricoCreateManyHorarioAberturaCatalogoInputEnvelope
+    connect?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+  }
+
+  export type EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutHorarioAberturaCatalogoInput = {
+    create?: XOR<EquipeTurnoHistoricoCreateWithoutHorarioAberturaCatalogoInput, EquipeTurnoHistoricoUncheckedCreateWithoutHorarioAberturaCatalogoInput> | EquipeTurnoHistoricoCreateWithoutHorarioAberturaCatalogoInput[] | EquipeTurnoHistoricoUncheckedCreateWithoutHorarioAberturaCatalogoInput[]
+    connectOrCreate?: EquipeTurnoHistoricoCreateOrConnectWithoutHorarioAberturaCatalogoInput | EquipeTurnoHistoricoCreateOrConnectWithoutHorarioAberturaCatalogoInput[]
+    createMany?: EquipeTurnoHistoricoCreateManyHorarioAberturaCatalogoInputEnvelope
+    connect?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+  }
+
+  export type EquipeTurnoHistoricoUpdateManyWithoutHorarioAberturaCatalogoNestedInput = {
+    create?: XOR<EquipeTurnoHistoricoCreateWithoutHorarioAberturaCatalogoInput, EquipeTurnoHistoricoUncheckedCreateWithoutHorarioAberturaCatalogoInput> | EquipeTurnoHistoricoCreateWithoutHorarioAberturaCatalogoInput[] | EquipeTurnoHistoricoUncheckedCreateWithoutHorarioAberturaCatalogoInput[]
+    connectOrCreate?: EquipeTurnoHistoricoCreateOrConnectWithoutHorarioAberturaCatalogoInput | EquipeTurnoHistoricoCreateOrConnectWithoutHorarioAberturaCatalogoInput[]
+    upsert?: EquipeTurnoHistoricoUpsertWithWhereUniqueWithoutHorarioAberturaCatalogoInput | EquipeTurnoHistoricoUpsertWithWhereUniqueWithoutHorarioAberturaCatalogoInput[]
+    createMany?: EquipeTurnoHistoricoCreateManyHorarioAberturaCatalogoInputEnvelope
+    set?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    disconnect?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    delete?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    connect?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    update?: EquipeTurnoHistoricoUpdateWithWhereUniqueWithoutHorarioAberturaCatalogoInput | EquipeTurnoHistoricoUpdateWithWhereUniqueWithoutHorarioAberturaCatalogoInput[]
+    updateMany?: EquipeTurnoHistoricoUpdateManyWithWhereWithoutHorarioAberturaCatalogoInput | EquipeTurnoHistoricoUpdateManyWithWhereWithoutHorarioAberturaCatalogoInput[]
+    deleteMany?: EquipeTurnoHistoricoScalarWhereInput | EquipeTurnoHistoricoScalarWhereInput[]
+  }
+
+  export type EquipeTurnoHistoricoUncheckedUpdateManyWithoutHorarioAberturaCatalogoNestedInput = {
+    create?: XOR<EquipeTurnoHistoricoCreateWithoutHorarioAberturaCatalogoInput, EquipeTurnoHistoricoUncheckedCreateWithoutHorarioAberturaCatalogoInput> | EquipeTurnoHistoricoCreateWithoutHorarioAberturaCatalogoInput[] | EquipeTurnoHistoricoUncheckedCreateWithoutHorarioAberturaCatalogoInput[]
+    connectOrCreate?: EquipeTurnoHistoricoCreateOrConnectWithoutHorarioAberturaCatalogoInput | EquipeTurnoHistoricoCreateOrConnectWithoutHorarioAberturaCatalogoInput[]
+    upsert?: EquipeTurnoHistoricoUpsertWithWhereUniqueWithoutHorarioAberturaCatalogoInput | EquipeTurnoHistoricoUpsertWithWhereUniqueWithoutHorarioAberturaCatalogoInput[]
+    createMany?: EquipeTurnoHistoricoCreateManyHorarioAberturaCatalogoInputEnvelope
+    set?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    disconnect?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    delete?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    connect?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+    update?: EquipeTurnoHistoricoUpdateWithWhereUniqueWithoutHorarioAberturaCatalogoInput | EquipeTurnoHistoricoUpdateWithWhereUniqueWithoutHorarioAberturaCatalogoInput[]
+    updateMany?: EquipeTurnoHistoricoUpdateManyWithWhereWithoutHorarioAberturaCatalogoInput | EquipeTurnoHistoricoUpdateManyWithWhereWithoutHorarioAberturaCatalogoInput[]
+    deleteMany?: EquipeTurnoHistoricoScalarWhereInput | EquipeTurnoHistoricoScalarWhereInput[]
+  }
+
+  export type EquipeCreateNestedOneWithoutEquipeTurnoHistoricoInput = {
+    create?: XOR<EquipeCreateWithoutEquipeTurnoHistoricoInput, EquipeUncheckedCreateWithoutEquipeTurnoHistoricoInput>
+    connectOrCreate?: EquipeCreateOrConnectWithoutEquipeTurnoHistoricoInput
+    connect?: EquipeWhereUniqueInput
+  }
+
+  export type HorarioAberturaCatalogoCreateNestedOneWithoutHistoricosInput = {
+    create?: XOR<HorarioAberturaCatalogoCreateWithoutHistoricosInput, HorarioAberturaCatalogoUncheckedCreateWithoutHistoricosInput>
+    connectOrCreate?: HorarioAberturaCatalogoCreateOrConnectWithoutHistoricosInput
+    connect?: HorarioAberturaCatalogoWhereUniqueInput
+  }
+
+  export type EquipeUpdateOneRequiredWithoutEquipeTurnoHistoricoNestedInput = {
+    create?: XOR<EquipeCreateWithoutEquipeTurnoHistoricoInput, EquipeUncheckedCreateWithoutEquipeTurnoHistoricoInput>
+    connectOrCreate?: EquipeCreateOrConnectWithoutEquipeTurnoHistoricoInput
+    upsert?: EquipeUpsertWithoutEquipeTurnoHistoricoInput
+    connect?: EquipeWhereUniqueInput
+    update?: XOR<XOR<EquipeUpdateToOneWithWhereWithoutEquipeTurnoHistoricoInput, EquipeUpdateWithoutEquipeTurnoHistoricoInput>, EquipeUncheckedUpdateWithoutEquipeTurnoHistoricoInput>
+  }
+
+  export type HorarioAberturaCatalogoUpdateOneWithoutHistoricosNestedInput = {
+    create?: XOR<HorarioAberturaCatalogoCreateWithoutHistoricosInput, HorarioAberturaCatalogoUncheckedCreateWithoutHistoricosInput>
+    connectOrCreate?: HorarioAberturaCatalogoCreateOrConnectWithoutHistoricosInput
+    upsert?: HorarioAberturaCatalogoUpsertWithoutHistoricosInput
+    disconnect?: HorarioAberturaCatalogoWhereInput | boolean
+    delete?: HorarioAberturaCatalogoWhereInput | boolean
+    connect?: HorarioAberturaCatalogoWhereUniqueInput
+    update?: XOR<XOR<HorarioAberturaCatalogoUpdateToOneWithWhereWithoutHistoricosInput, HorarioAberturaCatalogoUpdateWithoutHistoricosInput>, HorarioAberturaCatalogoUncheckedUpdateWithoutHistoricosInput>
   }
 
   export type ContratoCreateNestedOneWithoutSupervisorInput = {
@@ -73998,6 +77273,7 @@ export namespace Prisma {
     Turno?: TurnoCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateWithoutContratoInput = {
@@ -74014,6 +77290,7 @@ export namespace Prisma {
     Turno?: TurnoUncheckedCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeCreateOrConnectWithoutContratoInput = {
@@ -74992,6 +78269,7 @@ export namespace Prisma {
     Turno?: TurnoCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateWithoutTipoEquipeInput = {
@@ -75008,6 +78286,7 @@ export namespace Prisma {
     Turno?: TurnoUncheckedCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeCreateOrConnectWithoutTipoEquipeInput = {
@@ -75315,6 +78594,53 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type EquipeTurnoHistoricoCreateWithoutEquipeInput = {
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    inicioTurnoHora: string
+    duracaoHoras: Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras: Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: string | null
+    motivo?: string | null
+    observacoes?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    horarioAberturaCatalogo?: HorarioAberturaCatalogoCreateNestedOneWithoutHistoricosInput
+  }
+
+  export type EquipeTurnoHistoricoUncheckedCreateWithoutEquipeInput = {
+    id?: number
+    horarioAberturaCatalogoId?: number | null
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    inicioTurnoHora: string
+    duracaoHoras: Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras: Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: string | null
+    motivo?: string | null
+    observacoes?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type EquipeTurnoHistoricoCreateOrConnectWithoutEquipeInput = {
+    where: EquipeTurnoHistoricoWhereUniqueInput
+    create: XOR<EquipeTurnoHistoricoCreateWithoutEquipeInput, EquipeTurnoHistoricoUncheckedCreateWithoutEquipeInput>
+  }
+
+  export type EquipeTurnoHistoricoCreateManyEquipeInputEnvelope = {
+    data: EquipeTurnoHistoricoCreateManyEquipeInput | EquipeTurnoHistoricoCreateManyEquipeInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TipoEquipeUpsertWithoutEquipeInput = {
     update: XOR<TipoEquipeUpdateWithoutEquipeInput, TipoEquipeUncheckedUpdateWithoutEquipeInput>
     create: XOR<TipoEquipeCreateWithoutEquipeInput, TipoEquipeUncheckedCreateWithoutEquipeInput>
@@ -75537,6 +78863,45 @@ export namespace Prisma {
     deletedBy?: StringNullableFilter<"EquipeHorarioVigencia"> | string | null
   }
 
+  export type EquipeTurnoHistoricoUpsertWithWhereUniqueWithoutEquipeInput = {
+    where: EquipeTurnoHistoricoWhereUniqueInput
+    update: XOR<EquipeTurnoHistoricoUpdateWithoutEquipeInput, EquipeTurnoHistoricoUncheckedUpdateWithoutEquipeInput>
+    create: XOR<EquipeTurnoHistoricoCreateWithoutEquipeInput, EquipeTurnoHistoricoUncheckedCreateWithoutEquipeInput>
+  }
+
+  export type EquipeTurnoHistoricoUpdateWithWhereUniqueWithoutEquipeInput = {
+    where: EquipeTurnoHistoricoWhereUniqueInput
+    data: XOR<EquipeTurnoHistoricoUpdateWithoutEquipeInput, EquipeTurnoHistoricoUncheckedUpdateWithoutEquipeInput>
+  }
+
+  export type EquipeTurnoHistoricoUpdateManyWithWhereWithoutEquipeInput = {
+    where: EquipeTurnoHistoricoScalarWhereInput
+    data: XOR<EquipeTurnoHistoricoUpdateManyMutationInput, EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeInput>
+  }
+
+  export type EquipeTurnoHistoricoScalarWhereInput = {
+    AND?: EquipeTurnoHistoricoScalarWhereInput | EquipeTurnoHistoricoScalarWhereInput[]
+    OR?: EquipeTurnoHistoricoScalarWhereInput[]
+    NOT?: EquipeTurnoHistoricoScalarWhereInput | EquipeTurnoHistoricoScalarWhereInput[]
+    id?: IntFilter<"EquipeTurnoHistorico"> | number
+    equipeId?: IntFilter<"EquipeTurnoHistorico"> | number
+    horarioAberturaCatalogoId?: IntNullableFilter<"EquipeTurnoHistorico"> | number | null
+    dataInicio?: DateTimeFilter<"EquipeTurnoHistorico"> | Date | string
+    dataFim?: DateTimeNullableFilter<"EquipeTurnoHistorico"> | Date | string | null
+    inicioTurnoHora?: StringFilter<"EquipeTurnoHistorico"> | string
+    duracaoHoras?: DecimalFilter<"EquipeTurnoHistorico"> | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFilter<"EquipeTurnoHistorico"> | Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+    motivo?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+    observacoes?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+    createdAt?: DateTimeFilter<"EquipeTurnoHistorico"> | Date | string
+    createdBy?: StringFilter<"EquipeTurnoHistorico"> | string
+    updatedAt?: DateTimeNullableFilter<"EquipeTurnoHistorico"> | Date | string | null
+    updatedBy?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+    deletedAt?: DateTimeNullableFilter<"EquipeTurnoHistorico"> | Date | string | null
+    deletedBy?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
+  }
+
   export type EquipeCreateWithoutEquipeSupervisorInput = {
     nome: string
     createdAt?: Date | string
@@ -75550,6 +78915,7 @@ export namespace Prisma {
     Turno?: TurnoCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateWithoutEquipeSupervisorInput = {
@@ -75566,6 +78932,7 @@ export namespace Prisma {
     Turno?: TurnoUncheckedCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeCreateOrConnectWithoutEquipeSupervisorInput = {
@@ -75625,6 +78992,7 @@ export namespace Prisma {
     Turno?: TurnoUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateWithoutEquipeSupervisorInput = {
@@ -75641,6 +79009,7 @@ export namespace Prisma {
     Turno?: TurnoUncheckedUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
   }
 
   export type SupervisorUpsertWithoutEquipeSupervisorInput = {
@@ -76062,6 +79431,7 @@ export namespace Prisma {
     EquipeSupervisor?: EquipeSupervisorCreateNestedManyWithoutEquipeInput
     Turno?: TurnoCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateWithoutEscalaEquipePeriodoInput = {
@@ -76078,6 +79448,7 @@ export namespace Prisma {
     EquipeSupervisor?: EquipeSupervisorUncheckedCreateNestedManyWithoutEquipeInput
     Turno?: TurnoUncheckedCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeCreateOrConnectWithoutEscalaEquipePeriodoInput = {
@@ -76198,6 +79569,7 @@ export namespace Prisma {
     EquipeSupervisor?: EquipeSupervisorUpdateManyWithoutEquipeNestedInput
     Turno?: TurnoUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateWithoutEscalaEquipePeriodoInput = {
@@ -76214,6 +79586,7 @@ export namespace Prisma {
     EquipeSupervisor?: EquipeSupervisorUncheckedUpdateManyWithoutEquipeNestedInput
     Turno?: TurnoUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
   }
 
   export type TipoEscalaUpsertWithoutEscalasEquipePeriodoInput = {
@@ -76692,6 +80065,7 @@ export namespace Prisma {
     EquipeSupervisor?: EquipeSupervisorCreateNestedManyWithoutEquipeInput
     Turno?: TurnoCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateWithoutEquipeHorarioVigenciaInput = {
@@ -76708,6 +80082,7 @@ export namespace Prisma {
     EquipeSupervisor?: EquipeSupervisorUncheckedCreateNestedManyWithoutEquipeInput
     Turno?: TurnoUncheckedCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeCreateOrConnectWithoutEquipeHorarioVigenciaInput = {
@@ -76739,6 +80114,7 @@ export namespace Prisma {
     EquipeSupervisor?: EquipeSupervisorUpdateManyWithoutEquipeNestedInput
     Turno?: TurnoUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateWithoutEquipeHorarioVigenciaInput = {
@@ -76755,6 +80131,230 @@ export namespace Prisma {
     EquipeSupervisor?: EquipeSupervisorUncheckedUpdateManyWithoutEquipeNestedInput
     Turno?: TurnoUncheckedUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
+  }
+
+  export type EquipeTurnoHistoricoCreateWithoutHorarioAberturaCatalogoInput = {
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    inicioTurnoHora: string
+    duracaoHoras: Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras: Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: string | null
+    motivo?: string | null
+    observacoes?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    equipe: EquipeCreateNestedOneWithoutEquipeTurnoHistoricoInput
+  }
+
+  export type EquipeTurnoHistoricoUncheckedCreateWithoutHorarioAberturaCatalogoInput = {
+    id?: number
+    equipeId: number
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    inicioTurnoHora: string
+    duracaoHoras: Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras: Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: string | null
+    motivo?: string | null
+    observacoes?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type EquipeTurnoHistoricoCreateOrConnectWithoutHorarioAberturaCatalogoInput = {
+    where: EquipeTurnoHistoricoWhereUniqueInput
+    create: XOR<EquipeTurnoHistoricoCreateWithoutHorarioAberturaCatalogoInput, EquipeTurnoHistoricoUncheckedCreateWithoutHorarioAberturaCatalogoInput>
+  }
+
+  export type EquipeTurnoHistoricoCreateManyHorarioAberturaCatalogoInputEnvelope = {
+    data: EquipeTurnoHistoricoCreateManyHorarioAberturaCatalogoInput | EquipeTurnoHistoricoCreateManyHorarioAberturaCatalogoInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type EquipeTurnoHistoricoUpsertWithWhereUniqueWithoutHorarioAberturaCatalogoInput = {
+    where: EquipeTurnoHistoricoWhereUniqueInput
+    update: XOR<EquipeTurnoHistoricoUpdateWithoutHorarioAberturaCatalogoInput, EquipeTurnoHistoricoUncheckedUpdateWithoutHorarioAberturaCatalogoInput>
+    create: XOR<EquipeTurnoHistoricoCreateWithoutHorarioAberturaCatalogoInput, EquipeTurnoHistoricoUncheckedCreateWithoutHorarioAberturaCatalogoInput>
+  }
+
+  export type EquipeTurnoHistoricoUpdateWithWhereUniqueWithoutHorarioAberturaCatalogoInput = {
+    where: EquipeTurnoHistoricoWhereUniqueInput
+    data: XOR<EquipeTurnoHistoricoUpdateWithoutHorarioAberturaCatalogoInput, EquipeTurnoHistoricoUncheckedUpdateWithoutHorarioAberturaCatalogoInput>
+  }
+
+  export type EquipeTurnoHistoricoUpdateManyWithWhereWithoutHorarioAberturaCatalogoInput = {
+    where: EquipeTurnoHistoricoScalarWhereInput
+    data: XOR<EquipeTurnoHistoricoUpdateManyMutationInput, EquipeTurnoHistoricoUncheckedUpdateManyWithoutHorarioAberturaCatalogoInput>
+  }
+
+  export type EquipeCreateWithoutEquipeTurnoHistoricoInput = {
+    nome: string
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    tipoEquipe: TipoEquipeCreateNestedOneWithoutEquipeInput
+    contrato: ContratoCreateNestedOneWithoutEquipeInput
+    EquipeSupervisor?: EquipeSupervisorCreateNestedManyWithoutEquipeInput
+    Turno?: TurnoCreateNestedManyWithoutEquipeInput
+    EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
+    EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
+  }
+
+  export type EquipeUncheckedCreateWithoutEquipeTurnoHistoricoInput = {
+    id?: number
+    nome: string
+    tipoEquipeId: number
+    contratoId: number
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    EquipeSupervisor?: EquipeSupervisorUncheckedCreateNestedManyWithoutEquipeInput
+    Turno?: TurnoUncheckedCreateNestedManyWithoutEquipeInput
+    EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
+  }
+
+  export type EquipeCreateOrConnectWithoutEquipeTurnoHistoricoInput = {
+    where: EquipeWhereUniqueInput
+    create: XOR<EquipeCreateWithoutEquipeTurnoHistoricoInput, EquipeUncheckedCreateWithoutEquipeTurnoHistoricoInput>
+  }
+
+  export type HorarioAberturaCatalogoCreateWithoutHistoricosInput = {
+    nome: string
+    inicioTurnoHora: string
+    duracaoHoras: Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras: Decimal | DecimalJsLike | number | string
+    ativo?: boolean
+    observacoes?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type HorarioAberturaCatalogoUncheckedCreateWithoutHistoricosInput = {
+    id?: number
+    nome: string
+    inicioTurnoHora: string
+    duracaoHoras: Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras: Decimal | DecimalJsLike | number | string
+    ativo?: boolean
+    observacoes?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type HorarioAberturaCatalogoCreateOrConnectWithoutHistoricosInput = {
+    where: HorarioAberturaCatalogoWhereUniqueInput
+    create: XOR<HorarioAberturaCatalogoCreateWithoutHistoricosInput, HorarioAberturaCatalogoUncheckedCreateWithoutHistoricosInput>
+  }
+
+  export type EquipeUpsertWithoutEquipeTurnoHistoricoInput = {
+    update: XOR<EquipeUpdateWithoutEquipeTurnoHistoricoInput, EquipeUncheckedUpdateWithoutEquipeTurnoHistoricoInput>
+    create: XOR<EquipeCreateWithoutEquipeTurnoHistoricoInput, EquipeUncheckedCreateWithoutEquipeTurnoHistoricoInput>
+    where?: EquipeWhereInput
+  }
+
+  export type EquipeUpdateToOneWithWhereWithoutEquipeTurnoHistoricoInput = {
+    where?: EquipeWhereInput
+    data: XOR<EquipeUpdateWithoutEquipeTurnoHistoricoInput, EquipeUncheckedUpdateWithoutEquipeTurnoHistoricoInput>
+  }
+
+  export type EquipeUpdateWithoutEquipeTurnoHistoricoInput = {
+    nome?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    tipoEquipe?: TipoEquipeUpdateOneRequiredWithoutEquipeNestedInput
+    contrato?: ContratoUpdateOneRequiredWithoutEquipeNestedInput
+    EquipeSupervisor?: EquipeSupervisorUpdateManyWithoutEquipeNestedInput
+    Turno?: TurnoUpdateManyWithoutEquipeNestedInput
+    EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
+    EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
+  }
+
+  export type EquipeUncheckedUpdateWithoutEquipeTurnoHistoricoInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nome?: StringFieldUpdateOperationsInput | string
+    tipoEquipeId?: IntFieldUpdateOperationsInput | number
+    contratoId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    EquipeSupervisor?: EquipeSupervisorUncheckedUpdateManyWithoutEquipeNestedInput
+    Turno?: TurnoUncheckedUpdateManyWithoutEquipeNestedInput
+    EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
+  }
+
+  export type HorarioAberturaCatalogoUpsertWithoutHistoricosInput = {
+    update: XOR<HorarioAberturaCatalogoUpdateWithoutHistoricosInput, HorarioAberturaCatalogoUncheckedUpdateWithoutHistoricosInput>
+    create: XOR<HorarioAberturaCatalogoCreateWithoutHistoricosInput, HorarioAberturaCatalogoUncheckedCreateWithoutHistoricosInput>
+    where?: HorarioAberturaCatalogoWhereInput
+  }
+
+  export type HorarioAberturaCatalogoUpdateToOneWithWhereWithoutHistoricosInput = {
+    where?: HorarioAberturaCatalogoWhereInput
+    data: XOR<HorarioAberturaCatalogoUpdateWithoutHistoricosInput, HorarioAberturaCatalogoUncheckedUpdateWithoutHistoricosInput>
+  }
+
+  export type HorarioAberturaCatalogoUpdateWithoutHistoricosInput = {
+    nome?: StringFieldUpdateOperationsInput | string
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type HorarioAberturaCatalogoUncheckedUpdateWithoutHistoricosInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nome?: StringFieldUpdateOperationsInput | string
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ContratoCreateWithoutSupervisorInput = {
@@ -76949,6 +80549,7 @@ export namespace Prisma {
     EquipeSupervisor?: EquipeSupervisorCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateWithoutTurnoInput = {
@@ -76965,6 +80566,7 @@ export namespace Prisma {
     EquipeSupervisor?: EquipeSupervisorUncheckedCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeCreateOrConnectWithoutTurnoInput = {
@@ -77071,6 +80673,7 @@ export namespace Prisma {
     EquipeSupervisor?: EquipeSupervisorUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateWithoutTurnoInput = {
@@ -77087,6 +80690,7 @@ export namespace Prisma {
     EquipeSupervisor?: EquipeSupervisorUncheckedUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
   }
 
   export type TurnoEletricistaUpsertWithWhereUniqueWithoutTurnoInput = {
@@ -79106,6 +82710,7 @@ export namespace Prisma {
     Turno?: TurnoUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateWithoutContratoInput = {
@@ -79122,6 +82727,7 @@ export namespace Prisma {
     Turno?: TurnoUncheckedUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateManyWithoutContratoInput = {
@@ -79505,6 +83111,7 @@ export namespace Prisma {
     Turno?: TurnoUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateWithoutTipoEquipeInput = {
@@ -79521,6 +83128,7 @@ export namespace Prisma {
     Turno?: TurnoUncheckedUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateManyWithoutTipoEquipeInput = {
@@ -79622,6 +83230,25 @@ export namespace Prisma {
     duracaoHoras: Decimal | DecimalJsLike | number | string
     vigenciaInicio: Date | string
     vigenciaFim?: Date | string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type EquipeTurnoHistoricoCreateManyEquipeInput = {
+    id?: number
+    horarioAberturaCatalogoId?: number | null
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    inicioTurnoHora: string
+    duracaoHoras: Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras: Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: string | null
+    motivo?: string | null
+    observacoes?: string | null
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
@@ -79802,6 +83429,62 @@ export namespace Prisma {
     duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     vigenciaInicio?: DateTimeFieldUpdateOperationsInput | Date | string
     vigenciaFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type EquipeTurnoHistoricoUpdateWithoutEquipeInput = {
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: NullableStringFieldUpdateOperationsInput | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    horarioAberturaCatalogo?: HorarioAberturaCatalogoUpdateOneWithoutHistoricosNestedInput
+  }
+
+  export type EquipeTurnoHistoricoUncheckedUpdateWithoutEquipeInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    horarioAberturaCatalogoId?: NullableIntFieldUpdateOperationsInput | number | null
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: NullableStringFieldUpdateOperationsInput | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    horarioAberturaCatalogoId?: NullableIntFieldUpdateOperationsInput | number | null
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: NullableStringFieldUpdateOperationsInput | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -80097,6 +83780,81 @@ export namespace Prisma {
     resultado?: EnumEventoCoberturaResultadoFieldUpdateOperationsInput | $Enums.EventoCoberturaResultado
     justificativa?: NullableStringFieldUpdateOperationsInput | string | null
     registradoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type EquipeTurnoHistoricoCreateManyHorarioAberturaCatalogoInput = {
+    id?: number
+    equipeId: number
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    inicioTurnoHora: string
+    duracaoHoras: Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras: Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: string | null
+    motivo?: string | null
+    observacoes?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type EquipeTurnoHistoricoUpdateWithoutHorarioAberturaCatalogoInput = {
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: NullableStringFieldUpdateOperationsInput | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    equipe?: EquipeUpdateOneRequiredWithoutEquipeTurnoHistoricoNestedInput
+  }
+
+  export type EquipeTurnoHistoricoUncheckedUpdateWithoutHorarioAberturaCatalogoInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    equipeId?: IntFieldUpdateOperationsInput | number
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: NullableStringFieldUpdateOperationsInput | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type EquipeTurnoHistoricoUncheckedUpdateManyWithoutHorarioAberturaCatalogoInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    equipeId?: IntFieldUpdateOperationsInput | number
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inicioTurnoHora?: StringFieldUpdateOperationsInput | string
+    duracaoHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    duracaoIntervaloHoras?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fimTurnoHora?: NullableStringFieldUpdateOperationsInput | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

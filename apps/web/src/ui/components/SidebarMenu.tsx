@@ -130,6 +130,8 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       // Submenus de Escalas
       '/dashboard/cadastro/escala-equipe-periodo': 'escalas-menu',
       '/dashboard/cadastro/tipo-escala': 'escalas-menu',
+      '/dashboard/cadastro/horario-equipe': 'escalas-menu',
+      '/dashboard/cadastro/equipe-horario': 'escalas-menu',
 
       // Submenus de APR
       '/dashboard/cadastro/apr-pergunta': 'apr',
@@ -204,6 +206,14 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
             {
               key: '/dashboard/cadastro/tipo-escala',
               label: <Link href='/dashboard/cadastro/tipo-escala'>Tipos de Escala</Link>,
+            },
+            {
+              key: '/dashboard/cadastro/horario-equipe',
+              label: <Link href='/dashboard/cadastro/horario-equipe'>Catálogo de Horários</Link>,
+            },
+            {
+              key: '/dashboard/cadastro/equipe-horario',
+              label: <Link href='/dashboard/cadastro/equipe-horario'>Horários das Equipes</Link>,
             },
           ]
         },

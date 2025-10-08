@@ -38,6 +38,8 @@ model Equipe {
   EscalaEquipePeriodo EscalaEquipePeriodo[]
 
   EquipeHorarioVigencia EquipeHorarioVigencia[]
+
+  EquipeTurnoHistorico EquipeTurnoHistorico[]
 }
 
 model EquipeSupervisor {

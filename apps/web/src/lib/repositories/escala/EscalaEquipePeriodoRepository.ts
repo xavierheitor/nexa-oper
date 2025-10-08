@@ -35,6 +35,38 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
   EscalaEquipePeriodo,
   EscalaEquipePeriodoFilter
 > {
+  protected getSearchFields(): string[] {
+    return ['observacoes', 'equipe.nome'];
+  }
+
+  protected async findMany(
+    where: any,
+    orderBy: any,
+    skip: number,
+    take: number,
+    include?: any
+  ): Promise<EscalaEquipePeriodo[]> {
+    return prisma.escalaEquipePeriodo.findMany({
+      where,
+      orderBy,
+      skip,
+      take,
+      include: include || {
+        equipe: true,
+        tipoEscala: true,
+        _count: {
+          select: {
+            Slots: true,
+          },
+        },
+      },
+    });
+  }
+
+  protected async count(where: any): Promise<number> {
+    return prisma.escalaEquipePeriodo.count({ where });
+  }
+
   private toPrismaCreateData(
     data: EscalaEquipePeriodoCreateInput,
     userId?: string
@@ -72,11 +104,19 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
     const { id, ...updateData } = data;
 
     const prismaData: Prisma.EscalaEquipePeriodoUpdateInput = {
-      ...(updateData.equipeId && { equipe: { connect: { id: updateData.equipeId } } }),
-      ...(updateData.tipoEscalaId && { tipoEscala: { connect: { id: updateData.tipoEscalaId } } }),
-      ...(updateData.periodoInicio && { periodoInicio: updateData.periodoInicio }),
+      ...(updateData.equipeId && {
+        equipe: { connect: { id: updateData.equipeId } },
+      }),
+      ...(updateData.tipoEscalaId && {
+        tipoEscala: { connect: { id: updateData.tipoEscalaId } },
+      }),
+      ...(updateData.periodoInicio && {
+        periodoInicio: updateData.periodoInicio,
+      }),
       ...(updateData.periodoFim && { periodoFim: updateData.periodoFim }),
-      ...(updateData.observacoes !== undefined && { observacoes: updateData.observacoes }),
+      ...(updateData.observacoes !== undefined && {
+        observacoes: updateData.observacoes,
+      }),
       ...(updateData.status && { status: updateData.status }),
       ...(updateData.versao && { versao: updateData.versao }),
       updatedAt: new Date(),
@@ -173,7 +213,10 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
     return { items, total };
   }
 
-  async delete(id: string | number, userId: string): Promise<EscalaEquipePeriodo> {
+  async delete(
+    id: string | number,
+    userId: string
+  ): Promise<EscalaEquipePeriodo> {
     return prisma.escalaEquipePeriodo.update({
       where: { id: Number(id) },
       data: {

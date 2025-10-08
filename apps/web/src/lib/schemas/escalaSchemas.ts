@@ -338,7 +338,96 @@ export const atribuicaoEletricistaBulkSchema = z.object({
 });
 
 // ============================================
-// EQUIPE HORÁRIO VIGÊNCIA
+// HORÁRIO ABERTURA CATÁLOGO (Presets)
+// ============================================
+
+export const horarioAberturaCatalogoCreateSchema = z.object({
+  nome: z.string().min(1, 'Nome é obrigatório').max(255),
+  inicioTurnoHora: z
+    .string()
+    .regex(/^\d{2}:\d{2}:\d{2}$/, 'Formato deve ser HH:MM:SS'),
+  duracaoHoras: z.coerce.number().positive('Duração deve ser positiva'),
+  duracaoIntervaloHoras: z.coerce.number().min(0, 'Intervalo não pode ser negativo').default(0),
+  ativo: z.boolean().optional().default(true),
+  observacoes: z.string().max(1000).optional(),
+});
+
+export const horarioAberturaCatalogoUpdateSchema = horarioAberturaCatalogoCreateSchema.extend({
+  id: z.number().int().positive(),
+});
+
+export const horarioAberturaCatalogoFilterSchema = z.object({
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  orderBy: z.string(),
+  orderDir: z.enum(['asc', 'desc']),
+  search: z.string().optional(),
+  ativo: z.boolean().optional(),
+  include: z.any().optional(),
+});
+
+// ============================================
+// EQUIPE TURNO HISTÓRICO (Associação Equipe → Horário)
+// ============================================
+
+export const equipeTurnoHistoricoCreateSchema = z
+  .object({
+    equipeId: z.number().int().positive('Equipe é obrigatória'),
+    horarioAberturaCatalogoId: z.number().int().positive().optional(),
+    dataInicio: z.coerce.date(),
+    dataFim: z.coerce.date().optional(),
+    inicioTurnoHora: z
+      .string()
+      .regex(/^\d{2}:\d{2}:\d{2}$/, 'Formato deve ser HH:MM:SS'),
+    duracaoHoras: z.coerce.number().positive('Duração deve ser positiva'),
+    duracaoIntervaloHoras: z.coerce.number().min(0).default(0),
+    motivo: z.string().max(500).optional(),
+    observacoes: z.string().max(1000).optional(),
+  })
+  .refine(
+    data => !data.dataFim || data.dataFim >= data.dataInicio,
+    {
+      message: 'Data fim deve ser maior ou igual à data início',
+      path: ['dataFim'],
+    }
+  );
+
+export const equipeTurnoHistoricoUpdateSchema = z
+  .object({
+    id: z.number().int().positive(),
+    equipeId: z.number().int().positive('Equipe é obrigatória'),
+    horarioAberturaCatalogoId: z.number().int().positive().optional(),
+    dataInicio: z.coerce.date(),
+    dataFim: z.coerce.date().optional(),
+    inicioTurnoHora: z
+      .string()
+      .regex(/^\d{2}:\d{2}:\d{2}$/, 'Formato deve ser HH:MM:SS'),
+    duracaoHoras: z.coerce.number().positive('Duração deve ser positiva'),
+    duracaoIntervaloHoras: z.coerce.number().min(0).default(0),
+    motivo: z.string().max(500).optional(),
+    observacoes: z.string().max(1000).optional(),
+  })
+  .refine(
+    data => !data.dataFim || data.dataFim >= data.dataInicio,
+    {
+      message: 'Data fim deve ser maior ou igual à data início',
+      path: ['dataFim'],
+    }
+  );
+
+export const equipeTurnoHistoricoFilterSchema = z.object({
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  orderBy: z.string(),
+  orderDir: z.enum(['asc', 'desc']),
+  search: z.string().optional(),
+  equipeId: z.number().int().positive().optional(),
+  vigente: z.boolean().optional(),
+  include: z.any().optional(),
+});
+
+// ============================================
+// EQUIPE HORÁRIO VIGÊNCIA (DEPRECATED - usar EquipeTurnoHistorico)
 // ============================================
 
 export const equipeHorarioVigenciaCreateSchema = z
@@ -377,6 +466,17 @@ export const equipeHorarioVigenciaUpdateSchema = z
       path: ['vigenciaFim'],
     }
   );
+
+export const equipeHorarioVigenciaFilterSchema = z.object({
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  orderBy: z.string(),
+  orderDir: z.enum(['asc', 'desc']),
+  search: z.string().optional(),
+  equipeId: z.number().int().positive().optional(),
+  vigente: z.boolean().optional(), // Filtrar apenas vigências ativas
+  include: z.any().optional(),
+});
 
 // ============================================
 // EVENTO COBERTURA
@@ -589,12 +689,37 @@ export type AtribuicaoEletricistaBulk = z.infer<
   typeof atribuicaoEletricistaBulkSchema
 >;
 
-// EquipeHorarioVigencia
+// HorarioAberturaCatalogo
+export type HorarioAberturaCatalogoCreate = z.infer<
+  typeof horarioAberturaCatalogoCreateSchema
+>;
+export type HorarioAberturaCatalogoUpdate = z.infer<
+  typeof horarioAberturaCatalogoUpdateSchema
+>;
+export type HorarioAberturaCatalogoFilter = z.infer<
+  typeof horarioAberturaCatalogoFilterSchema
+>;
+
+// EquipeTurnoHistorico
+export type EquipeTurnoHistoricoCreate = z.infer<
+  typeof equipeTurnoHistoricoCreateSchema
+>;
+export type EquipeTurnoHistoricoUpdate = z.infer<
+  typeof equipeTurnoHistoricoUpdateSchema
+>;
+export type EquipeTurnoHistoricoFilter = z.infer<
+  typeof equipeTurnoHistoricoFilterSchema
+>;
+
+// EquipeHorarioVigencia (DEPRECATED)
 export type EquipeHorarioVigenciaCreate = z.infer<
   typeof equipeHorarioVigenciaCreateSchema
 >;
 export type EquipeHorarioVigenciaUpdate = z.infer<
   typeof equipeHorarioVigenciaUpdateSchema
+>;
+export type EquipeHorarioVigenciaFilter = z.infer<
+  typeof equipeHorarioVigenciaFilterSchema
 >;
 
 // EventoCobertura

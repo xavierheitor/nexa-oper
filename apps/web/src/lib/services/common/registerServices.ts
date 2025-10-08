@@ -47,6 +47,9 @@ import { VeiculoService } from '../VeiculoService';
 // Módulo de Escalas
 import { TipoEscalaService } from '../escala/TipoEscalaService';
 import { EscalaEquipePeriodoService } from '../escala/EscalaEquipePeriodoService';
+import { EquipeHorarioVigenciaService } from '../escala/EquipeHorarioVigenciaService';
+import { HorarioAberturaCatalogoService } from '../escala/HorarioAberturaCatalogoService';
+import { EquipeTurnoHistoricoService } from '../escala/EquipeTurnoHistoricoService';
 import { container } from './ServiceContainer';
 
 /**
@@ -107,6 +110,18 @@ export function registerServices(): void {
   container.register(
     'escalaEquipePeriodoService',
     () => new EscalaEquipePeriodoService()
+  );
+  container.register(
+    'equipeHorarioVigenciaService',
+    () => new EquipeHorarioVigenciaService()
+  );
+  container.register(
+    'horarioAberturaCatalogoService',
+    () => new HorarioAberturaCatalogoService()
+  );
+  container.register(
+    'equipeTurnoHistoricoService',
+    () => new EquipeTurnoHistoricoService()
   );
 
   // Adicione novos serviços aqui conforme necessário

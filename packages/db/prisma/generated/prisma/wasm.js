@@ -605,6 +605,42 @@ exports.Prisma.EquipeHorarioVigenciaScalarFieldEnum = {
   deletedBy: 'deletedBy'
 };
 
+exports.Prisma.HorarioAberturaCatalogoScalarFieldEnum = {
+  id: 'id',
+  nome: 'nome',
+  inicioTurnoHora: 'inicioTurnoHora',
+  duracaoHoras: 'duracaoHoras',
+  duracaoIntervaloHoras: 'duracaoIntervaloHoras',
+  ativo: 'ativo',
+  observacoes: 'observacoes',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy',
+  updatedAt: 'updatedAt',
+  updatedBy: 'updatedBy',
+  deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy'
+};
+
+exports.Prisma.EquipeTurnoHistoricoScalarFieldEnum = {
+  id: 'id',
+  equipeId: 'equipeId',
+  horarioAberturaCatalogoId: 'horarioAberturaCatalogoId',
+  dataInicio: 'dataInicio',
+  dataFim: 'dataFim',
+  inicioTurnoHora: 'inicioTurnoHora',
+  duracaoHoras: 'duracaoHoras',
+  duracaoIntervaloHoras: 'duracaoIntervaloHoras',
+  fimTurnoHora: 'fimTurnoHora',
+  motivo: 'motivo',
+  observacoes: 'observacoes',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy',
+  updatedAt: 'updatedAt',
+  updatedBy: 'updatedBy',
+  deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy'
+};
+
 exports.Prisma.SupervisorScalarFieldEnum = {
   id: 'id',
   nome: 'nome',
@@ -981,6 +1017,25 @@ exports.Prisma.EquipeHorarioVigenciaOrderByRelevanceFieldEnum = {
   deletedBy: 'deletedBy'
 };
 
+exports.Prisma.HorarioAberturaCatalogoOrderByRelevanceFieldEnum = {
+  nome: 'nome',
+  inicioTurnoHora: 'inicioTurnoHora',
+  observacoes: 'observacoes',
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
+  deletedBy: 'deletedBy'
+};
+
+exports.Prisma.EquipeTurnoHistoricoOrderByRelevanceFieldEnum = {
+  inicioTurnoHora: 'inicioTurnoHora',
+  fimTurnoHora: 'fimTurnoHora',
+  motivo: 'motivo',
+  observacoes: 'observacoes',
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
+  deletedBy: 'deletedBy'
+};
+
 exports.Prisma.SupervisorOrderByRelevanceFieldEnum = {
   nome: 'nome',
   createdBy: 'createdBy',
@@ -1124,6 +1179,8 @@ exports.Prisma.ModelName = {
   SlotEscala: 'SlotEscala',
   EventoCobertura: 'EventoCobertura',
   EquipeHorarioVigencia: 'EquipeHorarioVigencia',
+  HorarioAberturaCatalogo: 'HorarioAberturaCatalogo',
+  EquipeTurnoHistorico: 'EquipeTurnoHistorico',
   Supervisor: 'Supervisor',
   Test: 'Test',
   Turno: 'Turno',

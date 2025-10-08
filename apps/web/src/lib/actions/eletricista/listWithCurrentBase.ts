@@ -1,7 +1,11 @@
+// ARQUIVO COMENTADO - Usa @clerk/nextjs/server que não está instalado
+// TODO: Migrar para next-auth ou remover se não for necessário
+
+/*
 'use server';
 
 import { prisma } from '@/lib/db/db.service';
-import { auth } from '@clerk/nextjs/server';
+// import { auth } from '@clerk/nextjs/server';
 
 export async function listEletricistasWithCurrentBase(params: {
   page?: number;
@@ -98,3 +102,4 @@ export async function listEletricistasWithCurrentBase(params: {
     return { success: false, error: 'Erro ao listar eletricistas.' };
   }
 }
+*/

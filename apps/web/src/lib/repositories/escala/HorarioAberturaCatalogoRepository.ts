@@ -1,36 +1,34 @@
 /**
- * Repository para TipoEscala
+ * Repository para HorarioAberturaCatalogo
  *
- * Gerencia acesso a dados de tipos de escala (4x2, 5x1, Espanhola, etc)
+ * Gerencia acesso a dados do catálogo de horários (presets reutilizáveis)
  */
 
-import { TipoEscala, Prisma, ModoRepeticao } from '@nexa-oper/db';
+import { HorarioAberturaCatalogo, Prisma } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
 
-interface TipoEscalaFilter extends PaginationParams {
+interface HorarioAberturaCatalogoFilter extends PaginationParams {
   ativo?: boolean;
-  modoRepeticao?: ModoRepeticao;
 }
 
-export type TipoEscalaCreateInput = {
+export type HorarioAberturaCatalogoCreateInput = {
   nome: string;
-  modoRepeticao: ModoRepeticao;
-  cicloDias?: number;
-  periodicidadeSemanas?: number;
-  eletricistasPorTurma?: number;
+  inicioTurnoHora: string;
+  duracaoHoras: number;
+  duracaoIntervaloHoras?: number;
   ativo?: boolean;
   observacoes?: string;
 };
 
-export type TipoEscalaUpdateInput = Partial<TipoEscalaCreateInput> & {
+export type HorarioAberturaCatalogoUpdateInput = Partial<HorarioAberturaCatalogoCreateInput> & {
   id: number;
 };
 
-export class TipoEscalaRepository extends AbstractCrudRepository<
-  TipoEscala,
-  TipoEscalaFilter
+export class HorarioAberturaCatalogoRepository extends AbstractCrudRepository<
+  HorarioAberturaCatalogo,
+  HorarioAberturaCatalogoFilter
 > {
   protected getSearchFields(): string[] {
     return ['nome', 'observacoes'];
@@ -42,8 +40,8 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
     skip: number,
     take: number,
     include?: any
-  ): Promise<TipoEscala[]> {
-    return prisma.tipoEscala.findMany({
+  ): Promise<HorarioAberturaCatalogo[]> {
+    return prisma.horarioAberturaCatalogo.findMany({
       where,
       orderBy,
       skip,
@@ -51,8 +49,7 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
       include: include || {
         _count: {
           select: {
-            CicloPosicoes: true,
-            SemanaMascaras: true,
+            Historicos: true,
           },
         },
       },
@@ -60,19 +57,18 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
   }
 
   protected async count(where: any): Promise<number> {
-    return prisma.tipoEscala.count({ where });
+    return prisma.horarioAberturaCatalogo.count({ where });
   }
 
   private toPrismaCreateData(
-    data: TipoEscalaCreateInput,
+    data: HorarioAberturaCatalogoCreateInput,
     userId?: string
-  ): Prisma.TipoEscalaCreateInput {
+  ): Prisma.HorarioAberturaCatalogoCreateInput {
     return {
       nome: data.nome,
-      modoRepeticao: data.modoRepeticao,
-      cicloDias: data.cicloDias,
-      periodicidadeSemanas: data.periodicidadeSemanas,
-      eletricistasPorTurma: data.eletricistasPorTurma,
+      inicioTurnoHora: data.inicioTurnoHora,
+      duracaoHoras: data.duracaoHoras,
+      duracaoIntervaloHoras: data.duracaoIntervaloHoras || 0,
       ativo: data.ativo ?? true,
       observacoes: data.observacoes,
       createdAt: new Date(),
@@ -81,20 +77,20 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
   }
 
   async create(
-    data: TipoEscalaCreateInput,
+    data: HorarioAberturaCatalogoCreateInput,
     userId?: string
-  ): Promise<TipoEscala> {
-    return prisma.tipoEscala.create({
+  ): Promise<HorarioAberturaCatalogo> {
+    return prisma.horarioAberturaCatalogo.create({
       data: this.toPrismaCreateData(data, userId),
     });
   }
 
   async update(
-    data: TipoEscalaUpdateInput,
+    data: HorarioAberturaCatalogoUpdateInput,
     userId?: string
-  ): Promise<TipoEscala> {
+  ): Promise<HorarioAberturaCatalogo> {
     const { id, ...updateData } = data;
-    return prisma.tipoEscala.update({
+    return prisma.horarioAberturaCatalogo.update({
       where: { id },
       data: {
         ...updateData,
@@ -104,21 +100,20 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
     });
   }
 
-  async findById(id: string | number): Promise<TipoEscala | null> {
-    return prisma.tipoEscala.findUnique({
+  async findById(id: string | number): Promise<HorarioAberturaCatalogo | null> {
+    return prisma.horarioAberturaCatalogo.findUnique({
       where: { id: Number(id), deletedAt: null },
       include: {
-        CicloPosicoes: {
-          orderBy: { posicao: 'asc' },
-        },
-        SemanaMascaras: {
-          orderBy: [{ semanaIndex: 'asc' }, { dia: 'asc' }],
+        _count: {
+          select: {
+            Historicos: true,
+          },
         },
       },
     });
   }
 
-  async list(params: TipoEscalaFilter) {
+  async list(params: HorarioAberturaCatalogoFilter) {
     const {
       page = 1,
       pageSize = 10,
@@ -126,15 +121,13 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
       orderDir = 'asc',
       search,
       ativo,
-      modoRepeticao,
     } = params;
 
     const skip = (page - 1) * pageSize;
 
-    const where: Prisma.TipoEscalaWhereInput = {
+    const where: Prisma.HorarioAberturaCatalogoWhereInput = {
       deletedAt: null,
       ...(ativo !== undefined && { ativo }),
-      ...(modoRepeticao && { modoRepeticao }),
       ...(search && {
         OR: [
           { nome: { contains: search } },
@@ -144,7 +137,7 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
     };
 
     const [items, total] = await Promise.all([
-      prisma.tipoEscala.findMany({
+      prisma.horarioAberturaCatalogo.findMany({
         where,
         skip,
         take: pageSize,
@@ -152,20 +145,19 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
         include: {
           _count: {
             select: {
-              CicloPosicoes: true,
-              SemanaMascaras: true,
+              Historicos: true,
             },
           },
         },
       }),
-      prisma.tipoEscala.count({ where }),
+      prisma.horarioAberturaCatalogo.count({ where }),
     ]);
 
     return { items, total };
   }
 
-  async delete(id: string | number, userId: string): Promise<TipoEscala> {
-    return prisma.tipoEscala.update({
+  async delete(id: string | number, userId: string): Promise<HorarioAberturaCatalogo> {
+    return prisma.horarioAberturaCatalogo.update({
       where: { id: Number(id) },
       data: {
         deletedAt: new Date(),

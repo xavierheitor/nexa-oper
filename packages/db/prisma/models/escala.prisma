@@ -270,3 +270,80 @@ model EquipeHorarioVigencia {
 
   @@index([equipeId, vigenciaInicio])
 }
+
+
+/// ===============================================
+/// Catálogo de Horários de Abertura (presets)
+/// ===============================================
+model HorarioAberturaCatalogo {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)           // Ex.: "06h • 8h + 1h int."
+
+  // Preset base (usado como modelo)
+  inicioTurnoHora       String  @db.VarChar(8)    // "HH:MM:SS"
+  duracaoHoras          Decimal @db.Decimal(5, 2) // ex.: 8.00
+  duracaoIntervaloHoras Decimal @db.Decimal(5, 2) // ex.: 1.00
+
+  ativo       Boolean @default(true)
+  observacoes String? @db.VarChar(1000)
+
+  // Auditoria
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Histórico que usou este preset
+  Historicos EquipeTurnoHistorico[]
+
+  @@index([ativo])
+  @@index([nome])
+}
+
+/// ===================================================
+/// Histórico de Horário de Turno por Equipe (snapshot)
+/// ===================================================
+model EquipeTurnoHistorico {
+  id Int @id @default(autoincrement())
+
+  // Chave do histórico (qual equipe)
+  equipeId Int
+  equipe   Equipe @relation(fields: [equipeId], references: [id])
+
+  // Referência opcional ao preset usado (só para rastreabilidade)
+  horarioAberturaCatalogoId Int?
+  horarioAberturaCatalogo   HorarioAberturaCatalogo? @relation(fields: [horarioAberturaCatalogoId], references: [id])
+
+  // Vigência temporal (histórico do "a partir de")
+  dataInicio DateTime            // Quando esta configuração passa a valer
+  dataFim    DateTime?           // Quando deixa de valer (null = vigente)
+
+  // SNAPSHOT dos valores (não dependem do catálogo depois de criado)
+  inicioTurnoHora       String  @db.VarChar(8)    // "HH:MM:SS"
+  duracaoHoras          Decimal @db.Decimal(5, 2) // ex.: 8.00
+  duracaoIntervaloHoras Decimal @db.Decimal(5, 2) // ex.: 1.00
+
+  // Opcional: persistir fim previsto do turno (pode ser calculado na app)
+  fimTurnoHora String? @db.VarChar(8)             // "HH:MM:SS"
+
+  // Observações / motivo da mudança (opcional)
+  motivo      String? @db.VarChar(500)
+  observacoes String? @db.VarChar(1000)
+
+  // Auditoria
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Índices úteis
+  @@index([equipeId])
+  @@index([horarioAberturaCatalogoId])
+  @@index([dataInicio])
+  @@index([dataFim])
+  @@index([equipeId, dataInicio])
+}
