@@ -150,6 +150,19 @@ export const salvarPosicoesCicloSchema = z.object({
     .min(1, 'Pelo menos uma posição é necessária'),
 });
 
+export const salvarMascarasSemanasSchema = z.object({
+  tipoEscalaId: z.number().int().positive(),
+  mascaras: z
+    .array(
+      z.object({
+        semanaIndex: z.number().int().min(0),
+        dia: DiaSemanaEnum,
+        status: StatusTrabalhoEnum,
+      })
+    )
+    .min(1, 'Pelo menos uma máscara é necessária'),
+});
+
 // ============================================
 // TIPO ESCALA - SEMANA MÁSCARA
 // ============================================
@@ -524,6 +537,7 @@ export type TipoEscalaCicloPosicaoUpdate = z.infer<
   typeof tipoEscalaCicloPosicaoUpdateSchema
 >;
 export type SalvarPosicoesCiclo = z.infer<typeof salvarPosicoesCicloSchema>;
+export type SalvarMascarasSemanas = z.infer<typeof salvarMascarasSemanasSchema>;
 
 // TipoEscalaSemanaMascara
 export type TipoEscalaSemanaMascaraCreate = z.infer<

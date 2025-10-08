@@ -10,7 +10,7 @@ import React, { useEffect, useState, useCallback, use } from 'react';
 import { Card, Tabs, Button, Tag, Space, Row, Col, Switch, Spin, App } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
-import { getTipoEscalaById, salvarPosicoesCiclo } from '@/lib/actions/escala/tipoEscala';
+import { getTipoEscalaById, salvarPosicoesCiclo, salvarMascarasSemanas } from '@/lib/actions/escala/tipoEscala';
 
 interface Props {
   params: Promise<{
@@ -57,7 +57,7 @@ export default function TipoEscalaDetailPage({ params }: Props) {
   const [loading, setLoading] = useState(true);
   const [tipoEscala, setTipoEscala] = useState<TipoEscalaWithRelations | null>(null);
   const [cicloPosicoes, setCicloPosicoes] = useState<{ posicao: number; status: string }[]>([]);
-  const [semanaMascaras, setSemanaMascaras] = useState<any[]>([]);
+  const [semanaMascaras, setSemanaMascaras] = useState<{ semanaIndex: number; dia: string; status: string }[]>([]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -85,8 +85,26 @@ export default function TipoEscalaDetailPage({ params }: Props) {
         }
 
         // Inicializar máscaras de semana
-        if (tipoEscalaData.modoRepeticao === 'SEMANA_DEPENDENTE') {
-          setSemanaMascaras(tipoEscalaData.SemanaMascaras || []);
+        if (tipoEscalaData.modoRepeticao === 'SEMANA_DEPENDENTE' && tipoEscalaData.periodicidadeSemanas) {
+          const mascaras = tipoEscalaData.SemanaMascaras || [];
+          const mascarasCompletas = [];
+
+          // Para cada semana e cada dia, criar uma máscara
+          const diasSemana = ['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO', 'DOMINGO'];
+          for (let semanaIdx = 0; semanaIdx < tipoEscalaData.periodicidadeSemanas; semanaIdx++) {
+            for (const dia of diasSemana) {
+              const existente = mascaras.find(
+                (m: any) => m.semanaIndex === semanaIdx && m.dia === dia
+              );
+              mascarasCompletas.push({
+                semanaIndex: semanaIdx,
+                dia,
+                status: existente?.status || 'TRABALHO',
+              });
+            }
+          }
+
+          setSemanaMascaras(mascarasCompletas);
         }
       }
     } catch (error) {
@@ -110,27 +128,57 @@ export default function TipoEscalaDetailPage({ params }: Props) {
     );
   };
 
+  const handleToggleMascara = (semanaIndex: number, dia: string) => {
+    console.log('Toggle mascara:', { semanaIndex, dia, semanaMascaras });
+    setSemanaMascaras(prev => {
+      const updated = prev.map(m =>
+        m.semanaIndex === semanaIndex && m.dia === dia
+          ? { ...m, status: m.status === 'TRABALHO' ? 'FOLGA' : 'TRABALHO' }
+          : m
+      );
+      console.log('Updated mascaras:', updated);
+      return updated;
+    });
+  };
+
   const handleSavePosicoes = async () => {
     if (!tipoEscala) return;
 
     try {
-      const result = await salvarPosicoesCiclo({
-        tipoEscalaId: tipoEscala.id,
-        posicoes: cicloPosicoes.map(p => ({
-          posicao: p.posicao,
-          status: p.status,
-        })),
-      });
+      if (tipoEscala.modoRepeticao === 'CICLO_DIAS') {
+        const result = await salvarPosicoesCiclo({
+          tipoEscalaId: tipoEscala.id,
+          posicoes: cicloPosicoes.map(p => ({
+            posicao: p.posicao,
+            status: p.status,
+          })),
+        });
 
-      if (result.success) {
-        message.success('Posições do ciclo salvas com sucesso!');
-        // Recarrega os dados para pegar os IDs criados
-        await loadData();
-      } else {
-        message.error(result.error || 'Erro ao salvar posições');
+        if (result.success) {
+          message.success('Posições do ciclo salvas com sucesso!');
+          await loadData();
+        } else {
+          message.error(result.error || 'Erro ao salvar posições');
+        }
+      } else if (tipoEscala.modoRepeticao === 'SEMANA_DEPENDENTE') {
+        const result = await salvarMascarasSemanas({
+          tipoEscalaId: tipoEscala.id,
+          mascaras: semanaMascaras.map(m => ({
+            semanaIndex: m.semanaIndex,
+            dia: m.dia,
+            status: m.status,
+          })),
+        });
+
+        if (result.success) {
+          message.success('Máscaras de semana salvas com sucesso!');
+          await loadData();
+        } else {
+          message.error(result.error || 'Erro ao salvar máscaras');
+        }
       }
     } catch (error) {
-      message.error('Erro ao salvar posições do ciclo');
+      message.error('Erro ao salvar configurações');
       console.error('Erro:', error);
     }
   };
@@ -301,39 +349,48 @@ export default function TipoEscalaDetailPage({ params }: Props) {
                         </p>
 
                         {Array.from({ length: tipoEscala.periodicidadeSemanas || 0 }, (_, i) => i).map((semanaIndex: number) => (
-                          <Card
-                            key={`semana-${tipoEscala.id}-${semanaIndex}`}
-                            title={`Semana ${String.fromCharCode(65 + semanaIndex)}`}
-                            style={{ marginBottom: 16 }}
-                          >
-                            <Space wrap>
+                          <div key={`semana-${tipoEscala.id}-${semanaIndex}`} style={{ marginBottom: 24 }}>
+                            <h4 style={{ marginBottom: 12 }}>Semana {String.fromCharCode(65 + semanaIndex)}</h4>
+                            <Space direction="vertical" style={{ width: '100%' }} size="small">
                               {Object.entries(DiaSemanaLabels).map(([dia, label]) => {
                                 const mascara = semanaMascaras.find(
-                                  (m: any) => m.semanaIndex === semanaIndex && m.dia === dia
+                                  m => m.semanaIndex === semanaIndex && m.dia === dia
                                 );
                                 const isTrabalho = mascara?.status === 'TRABALHO';
 
                                 return (
-                                  <Tag
+                                  <Card
                                     key={dia}
-                                    color={isTrabalho ? 'green' : 'red'}
-                                    style={{ cursor: 'pointer', fontSize: 14, padding: '4px 12px' }}
-                                    onClick={() => {
-                                      message.info('Edição de máscaras será implementada em breve');
-                                      // TODO: Implementar toggle de máscara
+                                    size="small"
+                                    style={{
+                                      background: isTrabalho ? '#f6ffed' : '#fff1f0',
+                                      borderColor: isTrabalho ? '#52c41a' : '#ff4d4f',
                                     }}
                                   >
-                                    {label}: {isTrabalho ? 'T' : 'F'}
-                                  </Tag>
+                                    <Row align="middle" justify="space-between">
+                                      <Col>
+                                        <Space>
+                                          <strong>{label}</strong>
+                                          <Tag color={isTrabalho ? 'green' : 'red'}>
+                                            {isTrabalho ? 'TRABALHO' : 'FOLGA'}
+                                          </Tag>
+                                        </Space>
+                                      </Col>
+                                      <Col>
+                                        <Switch
+                                          checked={isTrabalho}
+                                          checkedChildren="TRABALHO"
+                                          unCheckedChildren="FOLGA"
+                                          onChange={() => handleToggleMascara(semanaIndex, dia)}
+                                        />
+                                      </Col>
+                                    </Row>
+                                  </Card>
                                 );
                               })}
                             </Space>
-                          </Card>
+                          </div>
                         ))}
-
-                        <p style={{ marginTop: 16, color: '#999' }}>
-                          🔧 Clique nos dias para alternar entre TRABALHO e FOLGA (em breve)
-                        </p>
                       </div>
                     ),
                   },

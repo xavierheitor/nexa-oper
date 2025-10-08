@@ -14,6 +14,7 @@ import {
   tipoEscalaUpdateSchema,
   tipoEscalaFilterSchema,
   salvarPosicoesCicloSchema,
+  salvarMascarasSemanasSchema,
 } from '../../schemas/escalaSchemas';
 import { handleServerAction } from '../common/actionHandler';
 
@@ -81,5 +82,16 @@ export const salvarPosicoesCiclo = async (rawData: unknown) =>
     },
     rawData,
     { entityName: 'TipoEscalaCicloPosicao', actionType: 'create' }
+  );
+
+export const salvarMascarasSemanas = async (rawData: unknown) =>
+  handleServerAction(
+    salvarMascarasSemanasSchema,
+    async (data, session) => {
+      const service = container.get<TipoEscalaService>('tipoEscalaService');
+      return service.salvarMascarasSemanas(data, session.user.id);
+    },
+    rawData,
+    { entityName: 'TipoEscalaSemanaMascara', actionType: 'create' }
   );
 

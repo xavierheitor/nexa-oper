@@ -117,5 +117,46 @@ export class TipoEscalaService extends AbstractCrudService<
       posicoesAtualizadas: posicoes.length,
     };
   }
+
+  async salvarMascarasSemanas(
+    data: SalvarMascarasSemanas,
+    userId: string
+  ): Promise<{ success: boolean; mascarasAtualizadas: number }> {
+    const { tipoEscalaId, mascaras } = data;
+
+    // Verifica se o tipo de escala existe
+    const tipoEscala = await this.tipoRepo.findById(tipoEscalaId);
+    if (!tipoEscala) {
+      throw new Error('Tipo de escala não encontrado');
+    }
+
+    if (tipoEscala.modoRepeticao !== 'SEMANA_DEPENDENTE') {
+      throw new Error('Este tipo de escala não usa máscaras de semana');
+    }
+
+    // Deleta todas as máscaras existentes e cria novas em uma transação
+    await prisma.$transaction(async tx => {
+      // Remove todas as máscaras existentes
+      await tx.tipoEscalaSemanaMascara.deleteMany({
+        where: { tipoEscalaId },
+      });
+
+      // Cria as novas máscaras
+      await tx.tipoEscalaSemanaMascara.createMany({
+        data: mascaras.map(mascara => ({
+          tipoEscalaId,
+          semanaIndex: mascara.semanaIndex,
+          dia: mascara.dia,
+          status: mascara.status,
+          createdBy: userId,
+        })),
+      });
+    });
+
+    return {
+      success: true,
+      mascarasAtualizadas: mascaras.length,
+    };
+  }
 }
 
