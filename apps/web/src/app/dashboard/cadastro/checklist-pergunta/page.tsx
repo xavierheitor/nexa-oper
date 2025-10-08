@@ -59,10 +59,10 @@ export default function ChecklistPerguntaPage() {
 
   const handleSubmit = async (values: ChecklistPerguntaFormData) => {
     const action = async (): Promise<ActionResult<ChecklistPergunta>> => {
-      const pergunta = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateChecklistPergunta({ ...values, id: controller.editingItem.id })
         : await createChecklistPergunta(values);
-      return { success: true, data: pergunta.data };
+      return result;
     };
     controller.exec(action, 'Pergunta salva com sucesso!').finally(() => perguntas.mutate());
   };

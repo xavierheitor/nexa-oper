@@ -17,6 +17,7 @@ import {
   publicarPeriodoSchema,
   arquivarPeriodoSchema,
   duplicarPeriodoSchema,
+  atribuirEletricistasSchema,
 } from '../../schemas/escalaSchemas';
 import { handleServerAction } from '../common/actionHandler';
 
@@ -27,7 +28,9 @@ export const createEscalaEquipePeriodo = async (rawData: unknown) =>
   handleServerAction(
     escalaEquipePeriodoCreateSchema,
     async (data, session) => {
-      const service = container.get<EscalaEquipePeriodoService>('escalaEquipePeriodoService');
+      const service = container.get<EscalaEquipePeriodoService>(
+        'escalaEquipePeriodoService'
+      );
       return service.create(data, session.user.id);
     },
     rawData,
@@ -41,7 +44,9 @@ export const updateEscalaEquipePeriodo = async (rawData: unknown) =>
   handleServerAction(
     escalaEquipePeriodoUpdateSchema,
     async (data, session) => {
-      const service = container.get<EscalaEquipePeriodoService>('escalaEquipePeriodoService');
+      const service = container.get<EscalaEquipePeriodoService>(
+        'escalaEquipePeriodoService'
+      );
       return service.update(data, session.user.id);
     },
     rawData,
@@ -54,8 +59,10 @@ export const updateEscalaEquipePeriodo = async (rawData: unknown) =>
 export const listEscalasEquipePeriodo = async (rawData: unknown) =>
   handleServerAction(
     escalaEquipePeriodoFilterSchema,
-    async (data) => {
-      const service = container.get<EscalaEquipePeriodoService>('escalaEquipePeriodoService');
+    async data => {
+      const service = container.get<EscalaEquipePeriodoService>(
+        'escalaEquipePeriodoService'
+      );
       return service.list(data);
     },
     rawData,
@@ -101,7 +108,9 @@ export const gerarSlotsEscala = async (rawData: unknown) =>
   handleServerAction(
     gerarSlotsSchema,
     async (data, session) => {
-      const service = container.get<EscalaEquipePeriodoService>('escalaEquipePeriodoService');
+      const service = container.get<EscalaEquipePeriodoService>(
+        'escalaEquipePeriodoService'
+      );
       return service.gerarSlots(data, session.user.id);
     },
     rawData,
@@ -115,7 +124,9 @@ export const publicarEscala = async (rawData: unknown) =>
   handleServerAction(
     publicarPeriodoSchema,
     async (data, session) => {
-      const service = container.get<EscalaEquipePeriodoService>('escalaEquipePeriodoService');
+      const service = container.get<EscalaEquipePeriodoService>(
+        'escalaEquipePeriodoService'
+      );
       return service.publicar(data, session.user.id);
     },
     rawData,
@@ -129,7 +140,9 @@ export const arquivarEscala = async (rawData: unknown) =>
   handleServerAction(
     arquivarPeriodoSchema,
     async (data, session) => {
-      const service = container.get<EscalaEquipePeriodoService>('escalaEquipePeriodoService');
+      const service = container.get<EscalaEquipePeriodoService>(
+        'escalaEquipePeriodoService'
+      );
       return service.arquivar(data.escalaEquipePeriodoId, session.user.id);
     },
     rawData,
@@ -143,10 +156,28 @@ export const duplicarEscala = async (rawData: unknown) =>
   handleServerAction(
     duplicarPeriodoSchema,
     async (data, session) => {
-      const service = container.get<EscalaEquipePeriodoService>('escalaEquipePeriodoService');
+      const service = container.get<EscalaEquipePeriodoService>(
+        'escalaEquipePeriodoService'
+      );
       return service.duplicar(data, session.user.id);
     },
     rawData,
     { entityName: 'EscalaEquipePeriodo', actionType: 'create' }
+  );
+
+/**
+ * Atribui automaticamente eletricistas aos slots
+ */
+export const atribuirEletricistas = async (rawData: unknown) =>
+  handleServerAction(
+    atribuirEletricistasSchema,
+    async (data, session) => {
+      const service = container.get<EscalaEquipePeriodoService>(
+        'escalaEquipePeriodoService'
+      );
+      return service.atribuirEletricistas(data, session.user.id);
+    },
+    rawData,
+    { entityName: 'AtribuicaoEletricista', actionType: 'create' }
   );
 

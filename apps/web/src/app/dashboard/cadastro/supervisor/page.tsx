@@ -161,10 +161,10 @@ export default function SupervisorPage() {
 
   const handleSubmit = async (values: SupervisorFormData) => {
     const action = async (): Promise<ActionResult<Supervisor>> => {
-      const supervisor = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateSupervisor({ ...values, id: controller.editingItem.id })
         : await createSupervisor(values);
-      return { success: true, data: supervisor.data };
+      return result;
     };
 
     controller.exec(action, 'Supervisor salvo com sucesso!').finally(() => {
@@ -177,7 +177,7 @@ export default function SupervisorPage() {
       const result = vinculoController.editingItem?.id
         ? await updateEquipeSupervisor({ ...values, id: vinculoController.editingItem.id })
         : await createEquipeSupervisor(values);
-      return { success: true, data: result.data };
+      return result;
     };
     vinculoController.exec(action, 'Vínculo salvo com sucesso!').finally(() => vinculos.mutate());
   };

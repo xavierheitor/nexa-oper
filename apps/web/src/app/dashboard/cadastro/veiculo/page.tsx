@@ -196,15 +196,15 @@ export default function VeiculoPage() {
       };
 
       // Verifica se estamos editando (tem item selecionado) ou criando
-      const veiculo = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateVeiculo({
           ...payload, // Dados do formulário normalizados
           id: controller.editingItem.id, // ID do item sendo editado
         })
         : await createVeiculo(payload); // Apenas dados do formulário para criação
 
-      // Retorna o resultado no formato esperado pelo controller
-      return { success: true, data: veiculo.data };
+      // Retorna o resultado original do backend (não sobrescrever success!)
+      return result;
     };
 
     // Executa a ação através do controller (gerencia loading, notificações, etc.)

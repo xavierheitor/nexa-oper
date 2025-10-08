@@ -68,10 +68,10 @@ export default function ChecklistOpcaoRespostaPage() {
 
   const handleSubmit = async (values: ChecklistOpcaoRespostaFormData) => {
     const action = async (): Promise<ActionResult<ChecklistOpcaoResposta>> => {
-      const opcao = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateChecklistOpcaoResposta({ ...values, id: controller.editingItem.id })
         : await createChecklistOpcaoResposta(values);
-      return { success: true, data: opcao.data };
+      return result;
     };
     controller.exec(action, 'Opção salva com sucesso!').finally(() => opcoes.mutate());
   };

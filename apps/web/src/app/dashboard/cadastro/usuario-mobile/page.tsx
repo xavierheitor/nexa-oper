@@ -146,7 +146,7 @@ export default function MobileUserPage() {
   // Submit do formulário
   const handleSubmit = async (values: MobileUserFormData) => {
     const action = async (): Promise<ActionResult<MobileUser>> => {
-      const mobileUser = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateMobileUser({
           ...values,
           id: controller.editingItem.id,
@@ -155,7 +155,7 @@ export default function MobileUserPage() {
         })
         : await createMobileUser(values);
 
-      return { success: true, data: mobileUser.data };
+      return result;
     };
 
     controller.exec(action, 'Usuário móvel salvo com sucesso!').finally(() => {

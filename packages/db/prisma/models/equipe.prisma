@@ -34,7 +34,6 @@ model Equipe {
 
   Turno Turno[]
 
-  ComposicaoMinimaEquipe ComposicaoMinimaEquipe[]
 
   EscalaEquipePeriodo EscalaEquipePeriodo[]
 

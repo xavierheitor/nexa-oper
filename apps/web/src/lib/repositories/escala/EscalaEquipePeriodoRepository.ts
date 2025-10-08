@@ -102,18 +102,10 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
           include: {
             CicloPosicoes: true,
             SemanaMascaras: true,
-            ComposicaoPorPapel: {
-              include: {
-                papel: true,
-              },
-            },
+            ComposicaoPorPapel: true,
           },
         },
-        ComposicaoOverride: {
-          include: {
-            papel: true,
-          },
-        },
+        ComposicaoOverride: true,
         Slots: {
           take: 100, // Limitar para performance
           orderBy: { data: 'asc' },
@@ -121,7 +113,6 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
             Atribuicoes: {
               include: {
                 eletricista: true,
-                papel: true,
               },
             },
           },
@@ -158,7 +149,7 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
         periodoFim: { lte: periodoFim },
       }),
       ...(search && {
-        observacoes: { contains: search, mode: 'insensitive' },
+        observacoes: { contains: search },
       }),
     };
 

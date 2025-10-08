@@ -127,13 +127,14 @@ export default function TipoEscalaForm({
 
       <Form.Item
         name="minEletricistasPorTurno"
-        label="Mínimo de Eletricistas por Turno"
-        tooltip="Quantidade mínima de eletricistas necessários (opcional)"
+        label="Quantidade de Eletricistas Necessários"
+        rules={[{ required: true, message: 'Quantidade de eletricistas é obrigatória' }]}
+        tooltip="Total de eletricistas que compõem esta escala. Ex: 4x2 = 3, Espanhola = 2 ou 4, 4x1 = 5"
       >
         <InputNumber
-          min={0}
+          min={2}
           max={99}
-          placeholder="Ex: 3"
+          placeholder="Ex: 3 para escala 4x2"
           style={{ width: '100%' }}
         />
       </Form.Item>

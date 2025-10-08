@@ -85,12 +85,12 @@ export default function BasePage() {
     // Função assíncrona que será executada pelo controller
     const action = async () => {
       // Se está editando (tem ID), atualiza; senão, cria novo
-      const base = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateBase({ ...values, id: controller.editingItem.id }) // Atualização
         : await createBase(values); // Criação
 
-      // Retorna resultado no formato esperado pelo controller
-      return { success: true, data: base.data } as ActionResult<Base>;
+      // Retorna resultado original do backend (não sobrescrever success!)
+      return result;
     };
 
     // Executa a ação com feedback para o usuário

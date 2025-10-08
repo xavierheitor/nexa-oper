@@ -37,10 +37,10 @@ export default function TipoChecklistPage() {
 
   const handleSubmit = async (values: { nome: string }) => {
     const action = async () => {
-      const tipo = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateTipoChecklist({ ...values, id: controller.editingItem.id })
         : await createTipoChecklist(values);
-      return { success: true, data: tipo.data } as any;
+      return result;
     };
     controller.exec(action, 'Tipo salvo com sucesso!').finally(() => tipos.mutate());
   };

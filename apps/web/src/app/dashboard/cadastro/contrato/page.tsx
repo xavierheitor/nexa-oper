@@ -92,15 +92,15 @@ export default function ContratoPage() {
     // Cria uma ação assíncrona que será executada pelo controller
     const action = async (): Promise<ActionResult<Contrato>> => {
       // Verifica se estamos editando (tem item selecionado) ou criando
-      const contrato = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateContrato({
           ...values, // Dados do formulário
           id: controller.editingItem.id, // ID do item sendo editado
         })
         : await createContrato(values); // Apenas dados do formulário para criação
 
-      // Retorna o resultado no formato esperado pelo controller
-      return { success: true, data: contrato.data };
+      // Retorna o resultado original do backend (não sobrescrever success!)
+      return result;
     };
 
     // Executa a ação através do controller (gerencia loading, notificações, etc.)

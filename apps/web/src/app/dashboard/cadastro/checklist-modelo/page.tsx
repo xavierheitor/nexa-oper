@@ -107,10 +107,10 @@ export default function ChecklistPage() {
 
   const handleSubmit = async (values: ChecklistFormData) => {
     const action = async (): Promise<ActionResult<Checklist>> => {
-      const payload = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateChecklist({ ...values, id: controller.editingItem.id })
         : await createChecklist(values);
-      return { success: true, data: payload.data };
+      return result;
     };
     controller.exec(action, 'Checklist salvo com sucesso!').finally(() => checklists.mutate());
   };

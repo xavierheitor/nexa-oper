@@ -83,6 +83,11 @@ class DbService {
           process.env.NODE_ENV === 'development'
             ? ['query', 'error', 'warn'] // Desenvolvimento: logs detalhados
             : ['error'], // Produção: apenas erros
+        // Timeout aumentado para transações complexas
+        transactionOptions: {
+          maxWait: 10000, // Espera máxima para adquirir uma transação (10s)
+          timeout: 30000, // Timeout da transação (30s)
+        },
       });
 
     // Em desenvolvimento, armazena no global para reutilização

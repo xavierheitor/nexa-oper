@@ -16,9 +16,11 @@ enum DiaSemana {
   DOMINGO
 }
 
+// Mantém TRABALHO/FOLGA/FALTA para uso em máscaras/padrões se quiser
 enum StatusTrabalho {
   TRABALHO
   FOLGA
+  FALTA
 }
 
 enum StatusEscalaEquipePeriodo {
@@ -28,10 +30,11 @@ enum StatusEscalaEquipePeriodo {
   ARQUIVADA
 }
 
+// Estado efetivo do slot (histórico do eletricista)
 enum EstadoSlot {
   TRABALHO
   FOLGA
-  BLOQUEADO_CALENDARIO
+  FALTA
   EXCECAO
 }
 
@@ -41,6 +44,7 @@ enum OrigemAtribuicao {
   REMANEJAMENTO
 }
 
+// Pode permanecer mesmo não sendo usado diretamente agora
 enum StatusAtribuicaoPlanejada {
   ATIVO
   REMOVIDO
@@ -70,71 +74,20 @@ enum EventoCoberturaResultado {
 /// Catálogos / Regras
 /// =========================
 
-model PapelEquipe {
-  id    Int     @id @default(autoincrement())
-  nome  String  @db.VarChar(255)
-  ativo Boolean @default(true)
-
-  // Metadados opcionais
-  exigeHabilitacao Boolean @default(false)
-  prioridadeEscala Int? // menor = maior prioridade
-
-  createdAt DateTime  @default(now())
-  createdBy String    @db.VarChar(255)
-  updatedAt DateTime? @updatedAt
-  updatedBy String?   @db.VarChar(255)
-  deletedAt DateTime?
-  deletedBy String?   @db.VarChar(255)
-
-  ComposicaoMinimaEquipe ComposicaoMinimaEquipe[]
-  Atribuicoes            AtribuicaoEletricista[]
-
-  ComposicaoMinimaTipoEscala ComposicaoMinimaTipoEscala[]
-
-  EscalaEquipePeriodoComposicaoMinima EscalaEquipePeriodoComposicaoMinima[]
-}
-
-model ComposicaoMinimaEquipe {
-  id Int @id @default(autoincrement())
-
-  equipeId Int
-  equipe   Equipe @relation(fields: [equipeId], references: [id])
-
-  papelId Int
-  papel   PapelEquipe @relation(fields: [papelId], references: [id])
-
-  quantidadeMinima Int
-
-  createdAt DateTime  @default(now())
-  createdBy String    @db.VarChar(255)
-  updatedAt DateTime? @updatedAt
-  updatedBy String?   @db.VarChar(255)
-  deletedAt DateTime?
-  deletedBy String?   @db.VarChar(255)
-
-  @@unique([equipeId, papelId])
-}
-
-/// ====== Enums já enviados antes (mantêm-se iguais) ======
-/// ModoRepeticao, DiaSemana, StatusTrabalho, StatusEscalaEquipePeriodo,
-/// EstadoSlot, OrigemAtribuicao, StatusAtribuicaoPlanejada,
-/// TipoIndisponibilidade, EventoCoberturaTipo, EventoCoberturaResultado
-/// PapelEquipe, etc.
-
 /// =========================
-/// Catálogo de Tipos de Escala (ajustado)
+/// Catálogo de Tipos de Escala (sem "papel")
 /// =========================
 model TipoEscala {
   id   Int    @id @default(autoincrement())
   nome String @db.VarChar(255)
 
-  // Define apenas padrão T/F (sem horário)
+  // Define padrão (sem horário)
   modoRepeticao        ModoRepeticao
   cicloDias            Int? // se CICLO_DIAS
   periodicidadeSemanas Int? // se SEMANA_DEPENDENTE
 
-  // NOVO: regra simples de composição total (ex.: 4x2 requer 3; Espanhola requer 2)
-  minEletricistasPorTurno Int?
+  // Regra simples de composição diária (ex.: 4x2 → 3; Espanhola → 2)
+  eletricistasPorTurma Int?
 
   ativo       Boolean @default(true)
   observacoes String? @db.VarChar(1000)
@@ -149,9 +102,6 @@ model TipoEscala {
   // Padrões de T/F
   CicloPosicoes  TipoEscalaCicloPosicao[]
   SemanaMascaras TipoEscalaSemanaMascara[]
-
-  // Regras por papel (opcional — se quiser exigir líder/motorista etc.)
-  ComposicaoPorPapel ComposicaoMinimaTipoEscala[]
 
   // Uso
   EscalasEquipePeriodo EscalaEquipePeriodo[]
@@ -195,31 +145,7 @@ model TipoEscalaSemanaMascara {
 }
 
 /// =========================
-/// Composição mínima dependente do Tipo de Escala
-/// =========================
-model ComposicaoMinimaTipoEscala {
-  id Int @id @default(autoincrement())
-
-  tipoEscalaId Int
-  tipoEscala   TipoEscala @relation(fields: [tipoEscalaId], references: [id])
-
-  papelId Int
-  papel   PapelEquipe @relation(fields: [papelId], references: [id])
-
-  quantidadeMinima Int
-
-  createdAt DateTime  @default(now())
-  createdBy String    @db.VarChar(255)
-  updatedAt DateTime? @updatedAt
-  updatedBy String?   @db.VarChar(255)
-  deletedAt DateTime?
-  deletedBy String?   @db.VarChar(255)
-
-  @@unique([tipoEscalaId, papelId])
-}
-
-/// =========================
-/// Configuração da Equipe por Período (sem mudanças aqui)
+/// Configuração da Equipe por Período
 /// =========================
 model EscalaEquipePeriodo {
   id Int @id @default(autoincrement())
@@ -247,50 +173,33 @@ model EscalaEquipePeriodo {
 
   Slots SlotEscala[]
 
-  // NOVO: override de composição mínima por período (se necessário)
-  ComposicaoOverride EscalaEquipePeriodoComposicaoMinima[]
-
   @@index([equipeId, periodoInicio])
   @@index([tipoEscalaId])
 }
 
-/// Override por período (caso a equipe precise ajustar a regra do tipo)
-model EscalaEquipePeriodoComposicaoMinima {
+/// =========================
+/// Slot = (dia + eletricista) com estado
+/// =========================
+model SlotEscala {
   id Int @id @default(autoincrement())
 
   escalaEquipePeriodoId Int
   escalaEquipePeriodo   EscalaEquipePeriodo @relation(fields: [escalaEquipePeriodoId], references: [id])
 
-  papelId Int
-  papel   PapelEquipe @relation(fields: [papelId], references: [id])
-
-  quantidadeMinima Int
-
-  createdAt DateTime  @default(now())
-  createdBy String    @db.VarChar(255)
-  updatedAt DateTime? @updatedAt
-  updatedBy String?   @db.VarChar(255)
-  deletedAt DateTime?
-  deletedBy String?   @db.VarChar(255)
-
-  @@unique([escalaEquipePeriodoId, papelId])
-}
-
-model AtribuicaoEletricista {
-  id Int @id @default(autoincrement())
-
-  slotEscalaId Int
-  slotEscala   SlotEscala @relation(fields: [slotEscalaId], references: [id])
-
   eletricistaId Int
   eletricista   Eletricista @relation(fields: [eletricistaId], references: [id])
 
-  papelId Int
-  papel   PapelEquipe @relation(fields: [papelId], references: [id])
+  data   DateTime
+  estado EstadoSlot
 
-  origem          OrigemAtribuicao          @default(GERACAO)
-  statusPlanejado StatusAtribuicaoPlanejada @default(ATIVO)
-  observacoes     String?                   @db.VarChar(1000)
+  // Horários previstos herdados da vigência da equipe (se TRABALHO)
+  inicioPrevisto String? @db.VarChar(8) // "HH:MM:SS"
+  fimPrevisto    String? @db.VarChar(8) // "HH:MM:SS"
+
+  anotacoesDia String? @db.VarChar(1000)
+
+  origem          OrigemAtribuicao @default(GERACAO)
+  observacoes     String?          @db.VarChar(1000)
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -299,30 +208,30 @@ model AtribuicaoEletricista {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  // Relacionamento inverso com eventos de cobertura (quando este planejado faltou)
-  CoberturasComoPlanejado EventoCobertura[] @relation("CoberturaPlanejado")
+  Coberturas  EventoCobertura[]
 
-  @@unique([slotEscalaId, eletricistaId]) // evita o mesmo eletricista 2x no mesmo dia
-  @@index([papelId])
+  // Um slot por (período, dia, eletricista)
+  @@unique([escalaEquipePeriodoId, data, eletricistaId])
+  @@index([data])
+  @@index([eletricistaId, data])
 }
 
+/// =========================
+/// Evento de cobertura (liga-se ao slot planejado)
+/// =========================
 model EventoCobertura {
   id Int @id @default(autoincrement())
 
   slotEscalaId Int
   slotEscala   SlotEscala @relation(fields: [slotEscalaId], references: [id])
 
-  // Quem faltou (opcional em alguns casos de remanejamento)
-  eletricistaPlanejadoId Int?
-  eletricistaPlanejado   AtribuicaoEletricista? @relation("CoberturaPlanejado", fields: [eletricistaPlanejadoId], references: [id])
-
-  // Quem cobriu (pode ser alguém de folga/sem escala/mesma ou outra equipe)
+  // Quem cobriu (pode ser alguém da mesma equipe ou outra)
   eletricistaCobrindoId Int?
   eletricistaCobrindo   Eletricista? @relation(fields: [eletricistaCobrindoId], references: [id])
 
   tipo          EventoCoberturaTipo
   resultado     EventoCoberturaResultado
-  justificativa String?                  @db.VarChar(1000)
+  justificativa String? @db.VarChar(1000)
 
   registradoEm DateTime @default(now())
 
@@ -335,38 +244,11 @@ model EventoCobertura {
 
   @@index([slotEscalaId])
   @@index([eletricistaCobrindoId])
-  @@index([eletricistaPlanejadoId])
 }
 
-model SlotEscala {
-  id Int @id @default(autoincrement())
-
-  escalaEquipePeriodoId Int
-  escalaEquipePeriodo   EscalaEquipePeriodo @relation(fields: [escalaEquipePeriodoId], references: [id])
-
-  data   DateTime
-  estado EstadoSlot
-
-  // Horários previstos herdados da vigência da equipe para a data (se estado = TRABALHO)
-  inicioPrevisto String? @db.VarChar(8) // "HH:MM:SS"
-  fimPrevisto    String? @db.VarChar(8) // "HH:MM:SS"
-
-  anotacoesDia String? @db.VarChar(1000)
-
-  createdAt DateTime  @default(now())
-  createdBy String    @db.VarChar(255)
-  updatedAt DateTime? @updatedAt
-  updatedBy String?   @db.VarChar(255)
-  deletedAt DateTime?
-  deletedBy String?   @db.VarChar(255)
-
-  Atribuicoes AtribuicaoEletricista[]
-  Coberturas  EventoCobertura[]
-
-  @@unique([escalaEquipePeriodoId, data]) // 1 dia por período/equipe
-  @@index([data])
-}
-
+/// =========================
+/// Horários por vigência da equipe
+/// =========================
 model EquipeHorarioVigencia {
   id Int @id @default(autoincrement())
 

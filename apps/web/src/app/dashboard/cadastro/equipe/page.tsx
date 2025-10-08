@@ -87,10 +87,10 @@ export default function EquipePage() {
 
   const handleSubmit = async (values: EquipeFormData) => {
     const action = async (): Promise<ActionResult<Equipe>> => {
-      const equipe = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateEquipe({ ...values, id: controller.editingItem.id })
         : await createEquipe(values);
-      return { success: true, data: equipe.data };
+      return result;
     };
 
     controller.exec(action, 'Equipe salva com sucesso!').finally(() => {

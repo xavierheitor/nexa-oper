@@ -83,11 +83,7 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
         SemanaMascaras: {
           orderBy: [{ semanaIndex: 'asc' }, { dia: 'asc' }],
         },
-        ComposicaoPorPapel: {
-          include: {
-            papel: true,
-          },
-        },
+        ComposicaoPorPapel: true,
       },
     });
   }
@@ -111,8 +107,8 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
       ...(modoRepeticao && { modoRepeticao }),
       ...(search && {
         OR: [
-          { nome: { contains: search, mode: 'insensitive' } },
-          { observacoes: { contains: search, mode: 'insensitive' } },
+          { nome: { contains: search } },
+          { observacoes: { contains: search } },
         ],
       }),
     };

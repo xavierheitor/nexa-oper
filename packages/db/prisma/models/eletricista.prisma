@@ -18,7 +18,7 @@ model Eletricista {
   TurnoEletricistas        TurnoEletricista[]
   EletricistaBaseHistorico EletricistaBaseHistorico[]
 
-  AtribuicaoEletricista AtribuicaoEletricista[]
-
   EventoCobertura EventoCobertura[]
+
+  SlotEscala SlotEscala[]
 }

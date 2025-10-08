@@ -65,7 +65,7 @@ import AprPerguntaForm, { AprPerguntaFormData } from './form';
  * // Uso no sistema de rotas do Next.js
  * // Arquivo: app/dashboard/apr-pergunta/page.tsx
  * export default AprPerguntaPage;
- * 
+ *
  * // Acesso via URL: /dashboard/apr-pergunta
  * ```
  */
@@ -90,14 +90,14 @@ export default function AprPerguntaPage() {
   const columns = useTableColumnsWithActions<AprPergunta>(
     [
       // Coluna ID
-      { 
-        title: 'ID', 
-        dataIndex: 'id', 
-        key: 'id', 
-        sorter: true, 
-        width: 80 
+      {
+        title: 'ID',
+        dataIndex: 'id',
+        key: 'id',
+        sorter: true,
+        width: 80
       },
-      
+
       // Coluna principal: Nome da pergunta
       {
         title: 'Pergunta',
@@ -106,7 +106,7 @@ export default function AprPerguntaPage() {
         sorter: true,
         ...getTextFilter<AprPergunta>('nome', 'pergunta'),
       },
-      
+
       // Coluna de data de criação
       {
         title: 'Criado em',
@@ -125,12 +125,12 @@ export default function AprPerguntaPage() {
           controller.open(result.data);
         }
       },
-      
+
       // Ação de exclusão: confirma e executa soft delete
       onDelete: (item) =>
         controller
           .exec(
-            () => deleteAprPergunta({ id: item.id }), 
+            () => deleteAprPergunta({ id: item.id }),
             'Pergunta excluída com sucesso!'
           )
           .finally(() => perguntas.mutate()),
@@ -148,13 +148,13 @@ export default function AprPerguntaPage() {
   const handleSubmit = async (values: AprPerguntaFormData) => {
     const action = async (): Promise<ActionResult<AprPergunta>> => {
       // Determina se é edição ou criação
-      const pergunta = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateAprPergunta({ ...values, id: controller.editingItem.id })
         : await createAprPergunta(values);
-        
-      return { success: true, data: pergunta.data };
+
+      return result;
     };
-    
+
     // Executa ação com feedback automático
     controller
       .exec(action, 'Pergunta salva com sucesso!')
@@ -172,8 +172,8 @@ export default function AprPerguntaPage() {
       <Card
         title="Perguntas APR"
         extra={
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             onClick={() => controller.open()}
           >
             Adicionar
@@ -201,8 +201,8 @@ export default function AprPerguntaPage() {
       >
         <AprPerguntaForm
           initialValues={
-            controller.editingItem 
-              ? { nome: controller.editingItem.nome } 
+            controller.editingItem
+              ? { nome: controller.editingItem.nome }
               : undefined
           }
           onSubmit={handleSubmit}

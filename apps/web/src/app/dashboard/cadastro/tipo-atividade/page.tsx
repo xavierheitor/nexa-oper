@@ -36,10 +36,10 @@ export default function TipoAtividadePage() {
 
   const handleSubmit = async (values: { nome: string }) => {
     const action = async () => {
-      const out = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateTipoAtividade({ ...values, id: controller.editingItem.id })
         : await createTipoAtividade(values);
-      return { success: true, data: out.data } as any;
+      return result;
     };
     controller.exec(action, 'Tipo salvo com sucesso!').finally(() => tipos.mutate());
   };

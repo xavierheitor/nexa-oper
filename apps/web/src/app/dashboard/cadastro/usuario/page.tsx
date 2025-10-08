@@ -158,16 +158,16 @@ export default function UserPage() {
   // Submit do formulário
   const handleSubmit = async (values: UserFormData) => {
     const action = async (): Promise<ActionResult<User>> => {
-      const user = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateUser({
-            ...values,
-            id: controller.editingItem.id,
+          ...values,
+          id: controller.editingItem.id,
             // Se estamos editando e as senhas estão vazias, não incluí-las
             ...(values.password ? {} : { password: undefined, confirmPassword: undefined }),
           })
         : await createUser(values);
 
-      return { success: true, data: user.data };
+      return result;
     };
 
     controller.exec(action, 'Usuário salvo com sucesso!').finally(() => {
@@ -189,8 +189,8 @@ export default function UserPage() {
           </Space>
         }
         extra={
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             icon={<UserOutlined />}
             onClick={() => controller.open()}
           >

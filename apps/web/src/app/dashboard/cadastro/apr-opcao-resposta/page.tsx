@@ -67,7 +67,7 @@ import AprOpcaoRespostaForm, { AprOpcaoRespostaFormData } from './form';
  * // Uso no sistema de rotas do Next.js
  * // Arquivo: app/dashboard/apr-opcao-resposta/page.tsx
  * export default AprOpcaoRespostaPage;
- * 
+ *
  * // Acesso via URL: /dashboard/apr-opcao-resposta
  * ```
  */
@@ -92,14 +92,14 @@ export default function AprOpcaoRespostaPage() {
   const columns = useTableColumnsWithActions<AprOpcaoResposta>(
     [
       // Coluna ID
-      { 
-        title: 'ID', 
-        dataIndex: 'id', 
-        key: 'id', 
-        sorter: true, 
-        width: 80 
+      {
+        title: 'ID',
+        dataIndex: 'id',
+        key: 'id',
+        sorter: true,
+        width: 80
       },
-      
+
       // Coluna principal: Nome da opção de resposta
       {
         title: 'Opção de Resposta',
@@ -108,8 +108,8 @@ export default function AprOpcaoRespostaPage() {
         sorter: true,
         ...getTextFilter<AprOpcaoResposta>('nome', 'opção de resposta'),
       },
-      
-      
+
+
       // Coluna de data de criação
       {
         title: 'Criado em',
@@ -128,12 +128,12 @@ export default function AprOpcaoRespostaPage() {
           controller.open(result.data);
         }
       },
-      
+
       // Ação de exclusão: confirma e executa soft delete
       onDelete: (item) =>
         controller
           .exec(
-            () => deleteAprOpcaoResposta({ id: item.id }), 
+            () => deleteAprOpcaoResposta({ id: item.id }),
             'Opção de resposta excluída com sucesso!'
           )
           .finally(() => opcoesResposta.mutate()),
@@ -151,13 +151,13 @@ export default function AprOpcaoRespostaPage() {
   const handleSubmit = async (values: AprOpcaoRespostaFormData) => {
     const action = async (): Promise<ActionResult<AprOpcaoResposta>> => {
       // Determina se é edição ou criação
-      const opcaoResposta = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateAprOpcaoResposta({ ...values, id: controller.editingItem.id })
         : await createAprOpcaoResposta(values);
-        
-      return { success: true, data: opcaoResposta.data };
+
+      return result;
     };
-    
+
     // Executa ação com feedback automático
     controller
       .exec(action, 'Opção de resposta salva com sucesso!')
@@ -175,8 +175,8 @@ export default function AprOpcaoRespostaPage() {
       <Card
         title="Opções de Resposta APR"
         extra={
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             onClick={() => controller.open()}
           >
             Adicionar
@@ -204,8 +204,8 @@ export default function AprOpcaoRespostaPage() {
       >
         <AprOpcaoRespostaForm
           initialValues={
-            controller.editingItem 
-              ? { nome: controller.editingItem.nome } 
+            controller.editingItem
+              ? { nome: controller.editingItem.nome }
               : undefined
           }
           onSubmit={handleSubmit}

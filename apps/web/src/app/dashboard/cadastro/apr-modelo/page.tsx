@@ -275,11 +275,11 @@ export default function AprPage() {
   const handleSubmit = async (values: AprFormData) => {
     const action = async (): Promise<ActionResult<Apr>> => {
       // Determina se é edição ou criação
-      const apr = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateApr({ ...values, id: controller.editingItem.id })
         : await createApr(values);
 
-      return { success: true, data: apr.data };
+      return result;
     };
 
     // Executa ação com feedback automático

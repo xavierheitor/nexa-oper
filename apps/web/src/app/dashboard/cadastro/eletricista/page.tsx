@@ -155,15 +155,16 @@ export default function EletricistaPage() {
       };
 
       // Verifica se estamos editando (tem item selecionado) ou criando
-      const eletricista = controller.editingItem?.id
+      const result = controller.editingItem?.id
         ? await updateEletricista({
           ...payload, // Dados do formulário normalizados
           id: controller.editingItem.id,
         })
         : await createEletricista(payload); // Apenas dados do formulário para criação
 
-      // Retorna o resultado no formato esperado pelo controller
-      return { success: true, data: eletricista.data };
+      // IMPORTANTE: Retornar o resultado original do backend
+      // Se houver erro, o controller.exec vai tratá-lo corretamente
+      return result;
     };
 
     // Executa a ação através do controller (gerencia loading, notificações, etc.)
