@@ -17,12 +17,15 @@ import {
   tipoEscalaCreateSchema,
   tipoEscalaFilterSchema,
   tipoEscalaUpdateSchema,
+  salvarPosicoesCicloSchema,
 } from '../../schemas/escalaSchemas';
 import { PaginatedResult } from '../../types/common';
+import { prisma } from '../../db/db.service';
 
 type TipoEscalaCreate = z.infer<typeof tipoEscalaCreateSchema>;
 type TipoEscalaUpdate = z.infer<typeof tipoEscalaUpdateSchema>;
 type TipoEscalaFilter = z.infer<typeof tipoEscalaFilterSchema>;
+type SalvarPosicoesCiclo = z.infer<typeof salvarPosicoesCicloSchema>;
 
 export class TipoEscalaService extends AbstractCrudService<
   TipoEscalaCreate,
@@ -69,6 +72,49 @@ export class TipoEscalaService extends AbstractCrudService<
       total,
       page: params.page,
       pageSize: params.pageSize,
+    };
+  }
+
+  /**
+   * Salva/Atualiza as posições do ciclo de dias de um tipo de escala
+   */
+  async salvarPosicoesCiclo(
+    data: SalvarPosicoesCiclo,
+    userId: string
+  ): Promise<{ success: boolean; posicoesAtualizadas: number }> {
+    const { tipoEscalaId, posicoes } = data;
+
+    // Verifica se o tipo de escala existe
+    const tipoEscala = await this.tipoRepo.findById(tipoEscalaId);
+    if (!tipoEscala) {
+      throw new Error('Tipo de escala não encontrado');
+    }
+
+    if (tipoEscala.modoRepeticao !== 'CICLO_DIAS') {
+      throw new Error('Este tipo de escala não usa ciclo de dias');
+    }
+
+    // Deleta todas as posições existentes e cria novas em uma transação
+    await prisma.$transaction(async tx => {
+      // Remove todas as posições existentes
+      await tx.tipoEscalaCicloPosicao.deleteMany({
+        where: { tipoEscalaId },
+      });
+
+      // Cria as novas posições
+      await tx.tipoEscalaCicloPosicao.createMany({
+        data: posicoes.map(pos => ({
+          tipoEscalaId,
+          posicao: pos.posicao,
+          status: pos.status,
+          createdBy: userId,
+        })),
+      });
+    });
+
+    return {
+      success: true,
+      posicoesAtualizadas: posicoes.length,
     };
   }
 }

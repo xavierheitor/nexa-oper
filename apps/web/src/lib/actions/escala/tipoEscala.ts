@@ -6,12 +6,14 @@
 
 'use server';
 
+import { z } from 'zod';
 import type { TipoEscalaService } from '@/lib/services/escala/TipoEscalaService';
 import { container } from '@/lib/services/common/registerServices';
 import {
   tipoEscalaCreateSchema,
   tipoEscalaUpdateSchema,
   tipoEscalaFilterSchema,
+  salvarPosicoesCicloSchema,
 } from '../../schemas/escalaSchemas';
 import { handleServerAction } from '../common/actionHandler';
 
@@ -40,7 +42,7 @@ export const updateTipoEscala = async (rawData: unknown) =>
 export const listTiposEscala = async (rawData: unknown) =>
   handleServerAction(
     tipoEscalaFilterSchema,
-    async (data) => {
+    async data => {
       const service = container.get<TipoEscalaService>('tipoEscalaService');
       return service.list(data);
     },
@@ -50,7 +52,7 @@ export const listTiposEscala = async (rawData: unknown) =>
 
 export const getTipoEscalaById = async (id: number) =>
   handleServerAction(
-    tipoEscalaFilterSchema,
+    z.object({}),
     async () => {
       const service = container.get<TipoEscalaService>('tipoEscalaService');
       return service.getById(id);
@@ -61,12 +63,23 @@ export const getTipoEscalaById = async (id: number) =>
 
 export const deleteTipoEscala = async (id: number) =>
   handleServerAction(
-    tipoEscalaFilterSchema,
+    z.object({}),
     async (_, session) => {
       const service = container.get<TipoEscalaService>('tipoEscalaService');
       return service.delete(id, session.user.id);
     },
     {},
     { entityName: 'TipoEscala', actionType: 'delete' }
+  );
+
+export const salvarPosicoesCiclo = async (rawData: unknown) =>
+  handleServerAction(
+    salvarPosicoesCicloSchema,
+    async (data, session) => {
+      const service = container.get<TipoEscalaService>('tipoEscalaService');
+      return service.salvarPosicoesCiclo(data, session.user.id);
+    },
+    rawData,
+    { entityName: 'TipoEscalaCicloPosicao', actionType: 'create' }
   );
 

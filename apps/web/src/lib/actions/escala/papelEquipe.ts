@@ -6,6 +6,7 @@
 
 'use server';
 
+import { z } from 'zod';
 import type { PapelEquipeService } from '@/lib/services/escala/PapelEquipeService';
 import { container } from '@/lib/services/common/registerServices';
 import {
@@ -49,7 +50,7 @@ export const updatePapelEquipe = async (rawData: unknown) =>
 export const listPapeisEquipe = async (rawData: unknown) =>
   handleServerAction(
     papelEquipeFilterSchema,
-    async (data) => {
+    async data => {
       const service = container.get<PapelEquipeService>('papelEquipeService');
       return service.list(data);
     },
@@ -62,7 +63,7 @@ export const listPapeisEquipe = async (rawData: unknown) =>
  */
 export const getPapelEquipeById = async (id: number) =>
   handleServerAction(
-    papelEquipeFilterSchema,
+    z.object({}),
     async () => {
       const service = container.get<PapelEquipeService>('papelEquipeService');
       return service.getById(id);
@@ -76,7 +77,7 @@ export const getPapelEquipeById = async (id: number) =>
  */
 export const deletePapelEquipe = async (id: number) =>
   handleServerAction(
-    papelEquipeFilterSchema,
+    z.object({}),
     async (_, session) => {
       const service = container.get<PapelEquipeService>('papelEquipeService');
       return service.delete(id, session.user.id);

@@ -144,6 +144,18 @@ export const tipoEscalaCicloPosicaoUpdateSchema = tipoEscalaCicloPosicaoCreateSc
   id: z.number().int().positive(),
 });
 
+export const salvarPosicoesCicloSchema = z.object({
+  tipoEscalaId: z.number().int().positive(),
+  posicoes: z
+    .array(
+      z.object({
+        posicao: z.number().int().min(0),
+        status: StatusTrabalhoEnum,
+      })
+    )
+    .min(1, 'Pelo menos uma posição é necessária'),
+});
+
 // ============================================
 // TIPO ESCALA - SEMANA MÁSCARA
 // ============================================
@@ -433,6 +445,7 @@ export type TipoEscalaFilter = z.infer<typeof tipoEscalaFilterSchema>;
 // TipoEscalaCicloPosicao
 export type TipoEscalaCicloPosicaoCreate = z.infer<typeof tipoEscalaCicloPosicaoCreateSchema>;
 export type TipoEscalaCicloPosicaoUpdate = z.infer<typeof tipoEscalaCicloPosicaoUpdateSchema>;
+export type SalvarPosicoesCiclo = z.infer<typeof salvarPosicoesCicloSchema>;
 
 // TipoEscalaSemanaMascara
 export type TipoEscalaSemanaMascaraCreate = z.infer<typeof tipoEscalaSemanaMascaraCreateSchema>;

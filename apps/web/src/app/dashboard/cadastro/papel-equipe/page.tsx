@@ -38,9 +38,9 @@ export default function PapelEquipePage() {
   const crud = useCrudController<PapelEquipe>('papelEquipe');
 
   // Hook para dados paginados
-  const papeis = useEntityData<PapelEquipe>({
+  const papeis = useEntityData({
     key: 'papeisEquipe',
-    fetcher: unwrapFetcher(listPapeisEquipe),
+    fetcher: unwrapFetcher(listPapeisEquipe) as any,
     paginationEnabled: true,
     initialParams: {
       page: 1,
@@ -140,7 +140,7 @@ export default function PapelEquipePage() {
 
   const handleSave = async (values: unknown) => {
     const action = editingItem
-      ? () => updatePapelEquipe({ ...values, id: editingItem.id })
+      ? () => updatePapelEquipe({ ...(values as Record<string, unknown>), id: editingItem.id })
       : () => createPapelEquipe(values);
 
     await crud.exec(
@@ -167,12 +167,12 @@ export default function PapelEquipePage() {
       </div>
 
       <Table
-        columns={columns}
-        dataSource={papeis.data}
+        columns={columns as any}
+        dataSource={papeis.data as PapelEquipe[]}
         loading={papeis.isLoading}
         rowKey="id"
         pagination={papeis.pagination}
-        onChange={papeis.handleTableChange}
+        onChange={papeis.handleTableChange as any}
       />
 
       <Modal

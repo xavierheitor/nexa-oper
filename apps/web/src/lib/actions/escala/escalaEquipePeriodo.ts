@@ -6,6 +6,7 @@
 
 'use server';
 
+import { z } from 'zod';
 import type { EscalaEquipePeriodoService } from '@/lib/services/escala/EscalaEquipePeriodoService';
 import { container } from '@/lib/services/common/registerServices';
 import {
@@ -66,9 +67,11 @@ export const listEscalasEquipePeriodo = async (rawData: unknown) =>
  */
 export const getEscalaEquipePeriodoById = async (id: number) =>
   handleServerAction(
-    escalaEquipePeriodoFilterSchema,
+    z.object({}),
     async () => {
-      const service = container.get<EscalaEquipePeriodoService>('escalaEquipePeriodoService');
+      const service = container.get<EscalaEquipePeriodoService>(
+        'escalaEquipePeriodoService'
+      );
       return service.getById(id);
     },
     {},
@@ -80,9 +83,11 @@ export const getEscalaEquipePeriodoById = async (id: number) =>
  */
 export const deleteEscalaEquipePeriodo = async (id: number) =>
   handleServerAction(
-    escalaEquipePeriodoFilterSchema,
+    z.object({}),
     async (_, session) => {
-      const service = container.get<EscalaEquipePeriodoService>('escalaEquipePeriodoService');
+      const service = container.get<EscalaEquipePeriodoService>(
+        'escalaEquipePeriodoService'
+      );
       return service.delete(id, session.user.id);
     },
     {},

@@ -8,7 +8,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Form, Select, DatePicker, Input, Button, Space, Alert } from 'antd';
-import { useServerData } from '@/lib/hooks/useServerData';
+import { useEntityData } from '@/lib/hooks/useEntityData';
 import { listEquipes } from '@/lib/actions/equipe/list';
 import { listTiposEscala } from '@/lib/actions/escala/tipoEscala';
 import dayjs from 'dayjs';
@@ -36,26 +36,34 @@ export default function EscalaEquipePeriodoForm({
   const [loading, setLoading] = React.useState(false);
 
   // Carregar equipes
-  const { data: equipes, loading: equipesLoading } = useServerData({
-    fetchAction: listEquipes,
-    params: {
-      page: 1,
-      pageSize: 100,
-      orderBy: 'nome',
-      orderDir: 'asc',
+  const { data: equipes, isLoading: equipesLoading } = useEntityData({
+    key: 'equipes-form',
+    fetcher: async () => {
+      const result = await listEquipes({
+        page: 1,
+        pageSize: 100,
+        orderBy: 'nome',
+        orderDir: 'asc',
+      });
+      return result.success && result.data ? result.data.data : [];
     },
+    paginationEnabled: false,
   });
 
   // Carregar tipos de escala
-  const { data: tiposEscala, loading: tiposLoading } = useServerData({
-    fetchAction: listTiposEscala,
-    params: {
-      page: 1,
-      pageSize: 100,
-      orderBy: 'nome',
-      orderDir: 'asc',
-      ativo: true,
+  const { data: tiposEscala, isLoading: tiposLoading } = useEntityData({
+    key: 'tipos-escala-form',
+    fetcher: async () => {
+      const result = await listTiposEscala({
+        page: 1,
+        pageSize: 100,
+        orderBy: 'nome',
+        orderDir: 'asc',
+        ativo: true,
+      });
+      return result.success && result.data ? result.data.data : [];
     },
+    paginationEnabled: false,
   });
 
   const handleSubmit = async (values: any) => {
@@ -114,7 +122,7 @@ export default function EscalaEquipePeriodoForm({
           filterOption={(input, option) =>
             (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
           }
-          options={equipes?.data?.map((equipe: any) => ({
+          options={equipes?.map((equipe: any) => ({
             value: equipe.id,
             label: equipe.nome,
           }))}
@@ -134,7 +142,7 @@ export default function EscalaEquipePeriodoForm({
           filterOption={(input, option) =>
             (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
           }
-          options={tiposEscala?.data?.map((tipo: any) => ({
+          options={tiposEscala?.map((tipo: any) => ({
             value: tipo.id,
             label: `${tipo.nome} - ${tipo.modoRepeticao === 'CICLO_DIAS' ? 'Ciclo' : 'Semanal'}`,
           }))}

@@ -73,9 +73,9 @@ export default function EscalaEquipePeriodoPage() {
 
   const crud = useCrudController<EscalaEquipePeriodo>('escalaEquipePeriodo');
 
-  const escalas = useEntityData<EscalaEquipePeriodo>({
+  const escalas = useEntityData({
     key: 'escalasEquipePeriodo',
-    fetcher: unwrapFetcher(listEscalasEquipePeriodo),
+    fetcher: unwrapFetcher(listEscalasEquipePeriodo) as any,
     paginationEnabled: true,
     initialParams: {
       page: 1,
@@ -98,7 +98,7 @@ export default function EscalaEquipePeriodoPage() {
             mode: 'full',
           });
 
-          if (result.success) {
+          if (result.success && result.data) {
             message.success(`${result.data.slotsGerados} slots gerados com sucesso!`);
             escalas.mutate();
           } else {
@@ -303,7 +303,7 @@ export default function EscalaEquipePeriodoPage() {
 
   const handleSave = async (values: unknown) => {
     const action = editingItem
-      ? () => updateEscalaEquipePeriodo({ ...values, id: editingItem.id })
+      ? () => updateEscalaEquipePeriodo({ ...(values as Record<string, unknown>), id: editingItem.id })
       : () => createEscalaEquipePeriodo(values);
 
     await crud.exec(
@@ -330,12 +330,12 @@ export default function EscalaEquipePeriodoPage() {
       </div>
 
       <Table
-        columns={columns}
-        dataSource={escalas.data}
+        columns={columns as any}
+        dataSource={escalas.data as EscalaEquipePeriodo[]}
         loading={escalas.isLoading}
         rowKey="id"
         pagination={escalas.pagination}
-        onChange={escalas.handleTableChange}
+        onChange={escalas.handleTableChange as any}
       />
 
       <Modal

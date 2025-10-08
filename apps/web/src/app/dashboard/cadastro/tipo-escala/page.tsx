@@ -9,8 +9,9 @@
 
 import React, { useState } from 'react';
 import { Table, Button, Space, Modal, message, Tag, Badge } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { useRouter } from 'next/navigation';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useCrudController } from '@/lib/hooks/useCrudController';
@@ -21,6 +22,7 @@ import {
   deleteTipoEscala,
 } from '@/lib/actions/escala/tipoEscala';
 import TipoEscalaForm from './form';
+
 
 interface TipoEscala {
   id: number;
@@ -38,14 +40,15 @@ interface TipoEscala {
 }
 
 export default function TipoEscalaPage() {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<TipoEscala | null>(null);
 
   const crud = useCrudController<TipoEscala>('tipoEscala');
 
-  const tipos = useEntityData<TipoEscala>({
+  const tipos = useEntityData({
     key: 'tiposEscala',
-    fetcher: unwrapFetcher(listTiposEscala),
+    fetcher: unwrapFetcher(listTiposEscala) as any,
     paginationEnabled: true,
     initialParams: {
       page: 1,
@@ -116,9 +119,16 @@ export default function TipoEscalaPage() {
     {
       title: 'Ações',
       key: 'actions',
-      width: 150,
+      width: 220,
       render: (_: unknown, record: TipoEscala) => (
         <Space size="small">
+          <Button
+            type="link"
+            icon={<SettingOutlined />}
+            onClick={() => router.push(`/dashboard/cadastro/tipo-escala/${record.id}`)}
+          >
+            Configurar
+          </Button>
           <Button
             type="link"
             icon={<EditOutlined />}
@@ -167,7 +177,7 @@ export default function TipoEscalaPage() {
 
   const handleSave = async (values: unknown) => {
     const action = editingItem
-      ? () => updateTipoEscala({ ...values, id: editingItem.id })
+      ? () => updateTipoEscala({ ...(values as Record<string, unknown>), id: editingItem.id })
       : () => createTipoEscala(values);
 
     await crud.exec(
@@ -194,12 +204,12 @@ export default function TipoEscalaPage() {
       </div>
 
       <Table
-        columns={columns}
-        dataSource={tipos.data}
+        columns={columns as any}
+        dataSource={tipos.data as TipoEscala[]}
         loading={tipos.isLoading}
         rowKey="id"
         pagination={tipos.pagination}
-        onChange={tipos.handleTableChange}
+        onChange={tipos.handleTableChange as any}
       />
 
       <Modal
