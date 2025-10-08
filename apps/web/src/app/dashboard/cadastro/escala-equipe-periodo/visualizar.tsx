@@ -19,18 +19,18 @@ interface VisualizarEscalaProps {
   onClose: () => void;
 }
 
-interface SlotComAtribuicoes {
+interface Slot {
   id: number;
   data: Date;
-  estado: string;
-  Atribuicoes: Array<{
+  estado: 'TRABALHO' | 'FOLGA' | 'FALTA' | 'EXCECAO';
+  eletricistaId: number;
+  eletricista: {
     id: number;
-    eletricistaId: number;
-    eletricista: {
-      id: number;
-      nome: string;
-    };
-  }>;
+    nome: string;
+    matricula: string;
+  };
+  inicioPrevisto: string | null;
+  fimPrevisto: string | null;
 }
 
 interface DadosEscala {
@@ -39,7 +39,8 @@ interface DadosEscala {
   tipoEscala: { nome: string };
   periodoInicio: Date;
   periodoFim: Date;
-  Slots: SlotComAtribuicoes[];
+  status: string;
+  Slots: Slot[];
 }
 
 export default function VisualizarEscala({ escalaId, open, onClose }: VisualizarEscalaProps) {
@@ -49,15 +50,14 @@ export default function VisualizarEscala({ escalaId, open, onClose }: Visualizar
   const carregarDados = useCallback(async () => {
     setLoading(true);
     try {
-      // Buscar dados da escala com slots e atribuições
+      // Buscar dados da escala com slots
       const response = await fetch(`/api/escalas/${escalaId}/visualizar`);
       const result = await response.json();
 
       if (result.success) {
         console.log('Dados carregados:', {
-          slots: result.data.Slots.length,
-          totalAtribuicoes: result.data.Slots.reduce((sum: number, s: any) => sum + s.Atribuicoes.length, 0),
-          primeiroSlot: result.data.Slots[0]
+          slots: result.data.Slots?.length || 0,
+          eletricistas: [...new Set(result.data.Slots?.map((s: Slot) => s.eletricistaId) || [])].length,
         });
         setDados(result.data);
       } else {
@@ -96,18 +96,24 @@ export default function VisualizarEscala({ escalaId, open, onClose }: Visualizar
     return null;
   }
 
-  // Extrair eletricistas únicos
-  const eletricistasMap = new Map<number, string>();
+  // Extrair eletricistas únicos dos slots
+  const eletricistasMap = new Map<number, { nome: string; matricula: string }>();
   dados.Slots.forEach(slot => {
-    slot.Atribuicoes.forEach(atr => {
-      eletricistasMap.set(atr.eletricistaId, atr.eletricista.nome);
-    });
+    if (!eletricistasMap.has(slot.eletricistaId)) {
+      eletricistasMap.set(slot.eletricistaId, {
+        nome: slot.eletricista.nome,
+        matricula: slot.eletricista.matricula,
+      });
+    }
   });
-  const eletricistas = Array.from(eletricistasMap.entries()).map(([id, nome]) => ({ id, nome }));
+  const eletricistas = Array.from(eletricistasMap.entries()).map(([id, info]) => ({
+    id,
+    nome: info.nome,
+    matricula: info.matricula,
+  }));
 
-  console.log('Eletricistas encontrados:', eletricistas);
+  console.log('Eletricistas encontrados:', eletricistas.length);
   console.log('Total de slots:', dados.Slots.length);
-  console.log('Slots com atribuições:', dados.Slots.filter(s => s.Atribuicoes.length > 0).length);
 
   // Gerar lista de dias
   const inicio = new Date(dados.periodoInicio);
@@ -125,18 +131,19 @@ export default function VisualizarEscala({ escalaId, open, onClose }: Visualizar
     const row: any = {
       key: elet.id,
       eletricista: elet.nome,
+      matricula: elet.matricula,
     };
 
-    // Para cada dia, verificar se o eletricista trabalha
+    // Para cada dia, buscar o slot deste eletricista
     dias.forEach(dia => {
       const diaKey = dia.toISOString().split('T')[0];
       const slot = dados.Slots.find(s => {
         const slotDate = new Date(s.data);
-        return slotDate.toISOString().split('T')[0] === diaKey;
+        return slotDate.toISOString().split('T')[0] === diaKey && s.eletricistaId === elet.id;
       });
 
-      const trabalha = slot?.Atribuicoes.some(a => a.eletricistaId === elet.id);
-      row[diaKey] = trabalha ? 'T' : 'F';
+      // Usar o estado do slot
+      row[diaKey] = slot ? slot.estado : null;
     });
 
     return row;
@@ -149,8 +156,13 @@ export default function VisualizarEscala({ escalaId, open, onClose }: Visualizar
       dataIndex: 'eletricista',
       key: 'eletricista',
       fixed: 'left',
-      width: 200,
-      render: (nome: string) => <strong>{nome}</strong>,
+      width: 180,
+      render: (nome: string, record: any) => (
+        <div>
+          <div style={{ fontWeight: 'bold' }}>{nome}</div>
+          <div style={{ fontSize: '11px', color: '#666' }}>{record.matricula}</div>
+        </div>
+      ),
     },
     ...dias.map(dia => {
       const diaKey = dia.toISOString().split('T')[0];
@@ -168,20 +180,27 @@ export default function VisualizarEscala({ escalaId, open, onClose }: Visualizar
         key: diaKey,
         width: 50,
         align: 'center' as const,
-        render: (status: string) => {
-          if (status === 'T') {
-            return (
-              <Tag color="green" style={{ margin: 0, width: '100%' }}>
-                T
-              </Tag>
-            );
-          } else {
-            return (
-              <Tag color="red" style={{ margin: 0, width: '100%' }}>
-                F
-              </Tag>
-            );
+        render: (estado: string | null) => {
+          if (!estado) {
+            return <span style={{ color: '#ccc' }}>-</span>;
           }
+
+          const config = {
+            TRABALHO: { color: 'green', label: 'T', title: 'Trabalho' },
+            FOLGA: { color: 'red', label: 'F', title: 'Folga' },
+            FALTA: { color: 'orange', label: 'X', title: 'Falta' },
+            EXCECAO: { color: 'blue', label: 'E', title: 'Exceção' },
+          }[estado] || { color: 'default', label: '?', title: estado };
+
+          return (
+            <Tag
+              color={config.color}
+              style={{ margin: 0, width: '100%', cursor: 'help' }}
+              title={config.title}
+            >
+              {config.label}
+            </Tag>
+          );
         },
       };
     }),
@@ -197,14 +216,23 @@ export default function VisualizarEscala({ escalaId, open, onClose }: Visualizar
       style={{ top: 20 }}
     >
       <Card size="small" style={{ marginBottom: 16 }}>
-        <p><strong>Equipe:</strong> {dados.equipe.nome}</p>
-        <p><strong>Tipo de Escala:</strong> {dados.tipoEscala.nome}</p>
-        <p><strong>Período:</strong> {new Date(dados.periodoInicio).toLocaleDateString()} até {new Date(dados.periodoFim).toLocaleDateString()}</p>
-        <p><strong>Total de Dias:</strong> {dias.length}</p>
-        <p>
-          <Tag color="green">T = Trabalho</Tag>
-          <Tag color="red">F = Folga</Tag>
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <p><strong>Equipe:</strong> {dados.equipe.nome}</p>
+            <p><strong>Tipo de Escala:</strong> {dados.tipoEscala.nome}</p>
+            <p><strong>Período:</strong> {new Date(dados.periodoInicio).toLocaleDateString()} até {new Date(dados.periodoFim).toLocaleDateString()}</p>
+            <p><strong>Total de Dias:</strong> {dias.length} | <strong>Eletricistas:</strong> {eletricistas.length}</p>
+          </div>
+          <div>
+            <p><strong>Legenda:</strong></p>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <Tag color="green">T = Trabalho</Tag>
+              <Tag color="red">F = Folga</Tag>
+              <Tag color="orange">X = Falta</Tag>
+              <Tag color="blue">E = Exceção</Tag>
+            </div>
+          </div>
+        </div>
       </Card>
 
       <Table

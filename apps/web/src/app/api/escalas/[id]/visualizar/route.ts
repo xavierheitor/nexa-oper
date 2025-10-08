@@ -14,7 +14,7 @@ export async function GET(
     const escalaId = Number(resolvedParams.id);
 
     const escala = await prisma.escalaEquipePeriodo.findUnique({
-      where: { id: escalaId },
+      where: { id: escalaId, deletedAt: null },
       include: {
         equipe: {
           select: {
@@ -27,19 +27,16 @@ export async function GET(
           },
         },
         Slots: {
+          where: {
+            deletedAt: null,
+          },
           orderBy: { data: 'asc' },
           include: {
-            Atribuicoes: {
-              where: {
-                deletedAt: null,
-              },
-              include: {
-                eletricista: {
-                  select: {
-                    id: true,
-                    nome: true,
-                  },
-                },
+            eletricista: {
+              select: {
+                id: true,
+                nome: true,
+                matricula: true,
               },
             },
           },
@@ -55,15 +52,13 @@ export async function GET(
     }
 
     // Log para debug
+    const eletricistasUnicos = new Set(escala.Slots.map(s => s.eletricistaId));
     console.log('Escala encontrada:', {
       id: escala.id,
       slots: escala.Slots.length,
-      totalAtribuicoes: escala.Slots.reduce((sum, s) => sum + s.Atribuicoes.length, 0),
-      atribuicoesPorSlot: escala.Slots.map(s => ({
-        data: s.data,
-        qtd: s.Atribuicoes.length,
-        eletricistas: s.Atribuicoes.map(a => a.eletricista.nome)
-      }))
+      eletricistas: eletricistasUnicos.size,
+      diasComTrabalho: escala.Slots.filter(s => s.estado === 'TRABALHO').length,
+      diasComFolga: escala.Slots.filter(s => s.estado === 'FOLGA').length,
     });
 
     return NextResponse.json({
