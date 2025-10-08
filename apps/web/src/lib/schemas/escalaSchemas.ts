@@ -40,31 +40,6 @@ export const EventoCoberturaTipoEnum = z.enum(['FALTA', 'SUPRIMENTO', 'TROCA']);
 export const EventoCoberturaResultadoEnum = z.enum(['COBERTO', 'VAGA_DESCOBERTA']);
 
 // ============================================
-// PAPEL EQUIPE
-// ============================================
-
-export const papelEquipeCreateSchema = z.object({
-  nome: z.string().min(1, 'Nome é obrigatório').max(255),
-  ativo: z.boolean().optional().default(true),
-  exigeHabilitacao: z.boolean().optional().default(false),
-  prioridadeEscala: z.number().int().optional(),
-});
-
-export const papelEquipeUpdateSchema = papelEquipeCreateSchema.extend({
-  id: z.number().int().positive(),
-});
-
-export const papelEquipeFilterSchema = z.object({
-  page: z.number().int().positive(),
-  pageSize: z.number().int().positive(),
-  orderBy: z.string(),
-  orderDir: z.enum(['asc', 'desc']),
-  search: z.string().optional(),
-  ativo: z.boolean().optional(),
-  include: z.any().optional(),
-});
-
-// ============================================
 // TIPO ESCALA
 // ============================================
 
@@ -431,11 +406,6 @@ export const validarComposicaoSchema = z.object({
 // ============================================
 // EXPORTAÇÃO DE TIPOS
 // ============================================
-
-// PapelEquipe
-export type PapelEquipeCreate = z.infer<typeof papelEquipeCreateSchema>;
-export type PapelEquipeUpdate = z.infer<typeof papelEquipeUpdateSchema>;
-export type PapelEquipeFilter = z.infer<typeof papelEquipeFilterSchema>;
 
 // TipoEscala
 export type TipoEscalaCreate = z.infer<typeof tipoEscalaCreateSchema>;

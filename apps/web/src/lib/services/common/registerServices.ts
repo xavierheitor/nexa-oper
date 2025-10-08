@@ -45,7 +45,6 @@ import { TipoVeiculoService } from '../TipoVeiculoService';
 import { UserService } from '../UserService';
 import { VeiculoService } from '../VeiculoService';
 // Módulo de Escalas
-import { PapelEquipeService } from '../escala/PapelEquipeService';
 import { TipoEscalaService } from '../escala/TipoEscalaService';
 import { EscalaEquipePeriodoService } from '../escala/EscalaEquipePeriodoService';
 import { container } from './ServiceContainer';
@@ -104,7 +103,6 @@ export function registerServices(): void {
   container.register('mobileUserService', () => new MobileUserService());
 
   // Módulo de Escalas
-  container.register('papelEquipeService', () => new PapelEquipeService());
   container.register('tipoEscalaService', () => new TipoEscalaService());
   container.register(
     'escalaEquipePeriodoService',

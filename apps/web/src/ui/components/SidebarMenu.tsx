@@ -128,7 +128,6 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       '/dashboard/cadastro/veiculo': 'veiculos-menu',
 
       // Submenus de Escalas
-      '/dashboard/cadastro/papel-equipe': 'escalas-menu',
       '/dashboard/cadastro/escala-equipe-periodo': 'escalas-menu',
       '/dashboard/cadastro/tipo-escala': 'escalas-menu',
 
@@ -198,10 +197,6 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           label: 'Escalas',
           icon: <CalendarOutlined />,
           children: [
-            {
-              key: '/dashboard/cadastro/papel-equipe',
-              label: <Link href='/dashboard/cadastro/papel-equipe'>Papéis de Equipe</Link>,
-            },
             {
               key: '/dashboard/cadastro/escala-equipe-periodo',
               label: <Link href='/dashboard/cadastro/escala-equipe-periodo'>Períodos de Escala</Link>,
