@@ -17,7 +17,8 @@ import {
   publicarPeriodoSchema,
   arquivarPeriodoSchema,
   duplicarPeriodoSchema,
-  atribuirEletricistasSchema,
+  marcarFaltaSchema,
+  registrarTrocaSchema,
 } from '../../schemas/escalaSchemas';
 import { handleServerAction } from '../common/actionHandler';
 
@@ -166,18 +167,40 @@ export const duplicarEscala = async (rawData: unknown) =>
   );
 
 /**
- * Atribui automaticamente eletricistas aos slots
+ * Marca falta de um eletricista em uma data específica
  */
-export const atribuirEletricistas = async (rawData: unknown) =>
+export const marcarFaltaAction = async (rawData: unknown) =>
   handleServerAction(
-    atribuirEletricistasSchema,
+    marcarFaltaSchema,
     async (data, session) => {
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
-      return service.atribuirEletricistas(data, session.user.id);
+      return service.marcarFalta({
+        ...data,
+        actorId: session.user.id,
+      });
     },
     rawData,
-    { entityName: 'AtribuicaoEletricista', actionType: 'create' }
+    { entityName: 'SlotEscala', actionType: 'update' }
+  );
+
+/**
+ * Registra troca de turno entre eletricistas
+ */
+export const registrarTrocaAction = async (rawData: unknown) =>
+  handleServerAction(
+    registrarTrocaSchema,
+    async (data, session) => {
+      const service = container.get<EscalaEquipePeriodoService>(
+        'escalaEquipePeriodoService'
+      );
+      return service.registrarTroca({
+        ...data,
+        actorId: session.user.id,
+      });
+    },
+    rawData,
+    { entityName: 'EventoCobertura', actionType: 'create' }
   );
 

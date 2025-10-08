@@ -26,7 +26,7 @@ interface TipoEscalaWithRelations {
   periodicidadeSemanas: number | null;
   ativo: boolean;
   observacoes: string | null;
-  minEletricistasPorTurno: number | null;
+  eletricistasPorTurma: number | null;
   CicloPosicoes?: Array<{
     id: number;
     posicao: number;
@@ -201,9 +201,9 @@ export default function TipoEscalaDetailPage({ params }: Props) {
                         <strong>Periodicidade:</strong> {tipoEscala.periodicidadeSemanas} semanas
                       </Col>
                     )}
-                    {tipoEscala.minEletricistasPorTurno && (
+                    {tipoEscala.eletricistasPorTurma && (
                       <Col span={12}>
-                        <strong>Mínimo de Eletricistas:</strong> {tipoEscala.minEletricistasPorTurno}
+                        <strong>Eletricistas por Turma:</strong> {tipoEscala.eletricistasPorTurma}
                       </Col>
                     )}
                     <Col span={12}>

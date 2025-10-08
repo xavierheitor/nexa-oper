@@ -15,7 +15,7 @@ interface TipoEscalaFormProps {
     modoRepeticao?: 'CICLO_DIAS' | 'SEMANA_DEPENDENTE';
     cicloDias?: number;
     periodicidadeSemanas?: number;
-    minEletricistasPorTurno?: number;
+    eletricistasPorTurma?: number;
     ativo?: boolean;
     observacoes?: string;
   };
@@ -126,8 +126,8 @@ export default function TipoEscalaForm({
       )}
 
       <Form.Item
-        name="minEletricistasPorTurno"
-        label="Quantidade de Eletricistas Necessários"
+        name="eletricistasPorTurma"
+        label="Quantidade de Eletricistas por Turma"
         rules={[{ required: true, message: 'Quantidade de eletricistas é obrigatória' }]}
         tooltip="Total de eletricistas que compõem esta escala. Ex: 4x2 = 3, Espanhola = 2 ou 4, 4x1 = 5"
       >

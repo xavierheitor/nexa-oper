@@ -30,7 +30,7 @@ interface TipoEscala {
   modoRepeticao: 'CICLO_DIAS' | 'SEMANA_DEPENDENTE';
   cicloDias?: number;
   periodicidadeSemanas?: number;
-  minEletricistasPorTurno?: number;
+  eletricistasPorTurma?: number;
   ativo: boolean;
   observacoes?: string;
   _count?: {
@@ -88,11 +88,11 @@ export default function TipoEscalaPage() {
       },
     },
     {
-      title: 'Mín. Eletricistas',
-      dataIndex: 'minEletricistasPorTurno',
-      key: 'minEletricistasPorTurno',
+      title: 'Eletricistas/Turma',
+      dataIndex: 'eletricistasPorTurma',
+      key: 'eletricistasPorTurma',
       width: 150,
-      render: (min?: number) => min || '-',
+      render: (qtd?: number) => qtd || '-',
     },
     {
       title: 'Posições',

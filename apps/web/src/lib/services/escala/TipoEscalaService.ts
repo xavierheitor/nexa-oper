@@ -47,7 +47,7 @@ export class TipoEscalaService extends AbstractCrudService<
       modoRepeticao: data.modoRepeticao,
       cicloDias: data.cicloDias,
       periodicidadeSemanas: data.periodicidadeSemanas,
-      minEletricistasPorTurno: data.minEletricistasPorTurno,
+      eletricistasPorTurma: data.eletricistasPorTurma,
       ativo: data.ativo,
       observacoes: data.observacoes,
     };

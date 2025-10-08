@@ -49,10 +49,11 @@ export const tipoEscalaCreateSchema = z
     modoRepeticao: ModoRepeticaoEnum,
     cicloDias: z.number().int().positive().optional(),
     periodicidadeSemanas: z.number().int().positive().optional(),
-    minEletricistasPorTurno: z
+    eletricistasPorTurma: z
       .number()
       .int()
-      .min(2, 'Mínimo de 2 eletricistas'),
+      .min(1, 'Mínimo de 1 eletricista')
+      .optional(),
     ativo: z.boolean().optional().default(true),
     observacoes: z.string().max(1000).optional(),
   })
@@ -84,10 +85,11 @@ export const tipoEscalaUpdateSchema = z
     modoRepeticao: ModoRepeticaoEnum,
     cicloDias: z.number().int().positive().optional(),
     periodicidadeSemanas: z.number().int().positive().optional(),
-    minEletricistasPorTurno: z
+    eletricistasPorTurma: z
       .number()
       .int()
-      .min(2, 'Mínimo de 2 eletricistas'),
+      .min(1, 'Mínimo de 1 eletricista')
+      .optional(),
     ativo: z.boolean().optional().default(true),
     observacoes: z.string().max(1000).optional(),
   })
@@ -419,6 +421,36 @@ export const arquivarPeriodoSchema = z.object({
 });
 
 /**
+ * Schema para marcar falta
+ */
+export const marcarFaltaSchema = z
+  .object({
+    periodoId: z.number().int().positive('ID do período é obrigatório'),
+    dataISO: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'Data deve estar no formato YYYY-MM-DD'),
+    eletricistaId: z.number().int().positive('ID do eletricista é obrigatório'),
+    cobridorId: z.number().int().positive().optional(),
+    justificativa: z.string().max(1000).optional(),
+  })
+  .describe('Marcar falta de eletricista');
+
+/**
+ * Schema para registrar troca
+ */
+export const registrarTrocaSchema = z
+  .object({
+    periodoId: z.number().int().positive('ID do período é obrigatório'),
+    dataISO: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'Data deve estar no formato YYYY-MM-DD'),
+    titularId: z.number().int().positive('ID do titular é obrigatório'),
+    executorId: z.number().int().positive('ID do executor é obrigatório'),
+    justificativa: z.string().max(1000).optional(),
+  })
+  .describe('Registrar troca de turno');
+
+/**
  * Schema para duplicar período
  */
 export const duplicarPeriodoSchema = z
@@ -555,4 +587,6 @@ export type AtribuirEletricistasInput = z.infer<
   typeof atribuirEletricistasSchema
 >;
 export type ValidarComposicaoInput = z.infer<typeof validarComposicaoSchema>;
+export type MarcarFaltaInput = z.infer<typeof marcarFaltaSchema>;
+export type RegistrarTrocaInput = z.infer<typeof registrarTrocaSchema>;
 

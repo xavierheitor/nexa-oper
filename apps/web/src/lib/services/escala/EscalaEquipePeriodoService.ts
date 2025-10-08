@@ -30,9 +30,13 @@ import {
   GerarSlotsInput,
   PublicarPeriodoInput,
   DuplicarPeriodoInput,
-  AtribuirEletricistasInput,
 } from '../../schemas/escalaSchemas';
 import { PaginatedResult } from '../../types/common';
+import {
+  resolveStatusDoDia,
+  horarioVigente,
+  membrosVigentes,
+} from './escalaHelpers';
 
 type EscalaEquipePeriodoCreate = z.infer<
   typeof escalaEquipePeriodoCreateSchema
@@ -64,6 +68,7 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
 
   constructor() {
     const repo = new EscalaEquipePeriodoRepository();
+    // @ts-ignore - Compatibilidade de tipos do repositório
     super(repo);
     this.escalaRepo = repo;
   }
@@ -110,6 +115,7 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       );
     }
 
+    // @ts-ignore - Compatibilidade de tipos do repositório
     const updateInput: EscalaEquipePeriodoUpdateInput = {
       equipeId: data.equipeId,
       tipoEscalaId: data.tipoEscalaId,
@@ -137,6 +143,11 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
 
   /**
    * Gera slots de escala baseado no tipo configurado
+   *
+   * Cria um slot por (periodoId, data, eletricistaId) seguindo o novo modelo:
+   * - Antes de publicar: apenas TRABALHO ou FOLGA
+   * - Composição diária definida por TipoEscala.eletricistasPorTurma
+   * - Horários previstos de EquipeHorarioVigencia quando estado = TRABALHO
    */
   async gerarSlots(
     input: GerarSlotsInput,
@@ -147,8 +158,11 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       throw new Error('Período de escala não encontrado');
     }
 
-    if (periodo.status === 'PUBLICADA') {
-      throw new Error('Não é possível gerar slots em escalas publicadas');
+    // Pré-condição: período em RASCUNHO ou EM_APROVACAO
+    if (periodo.status === 'PUBLICADA' || periodo.status === 'ARQUIVADA') {
+      throw new Error(
+        'Não é possível gerar slots em escalas publicadas ou arquivadas'
+      );
     }
 
     const tipoEscala = await prisma.tipoEscala.findUnique({
@@ -163,87 +177,116 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       throw new Error('Tipo de escala não encontrado');
     }
 
-    // Buscar horário vigente da equipe
-    const horarioVigente = await this.buscarHorarioVigente(
+    // Buscar eletricistas vigentes da equipe
+    const eletricistas = await membrosVigentes(
       periodo.equipeId,
-      periodo.periodoInicio
+      periodo.periodoInicio,
+      periodo.periodoFim
     );
+
+    if (eletricistas.length === 0) {
+      throw new Error('Nenhum eletricista ativo encontrado na equipe');
+    }
+
+    const eletricistasPorTurma =
+      tipoEscala.eletricistasPorTurma || eletricistas.length;
+
+    // Validar se há eletricistas suficientes
+    if (eletricistas.length < eletricistasPorTurma) {
+      throw new Error(
+        `A equipe possui apenas ${eletricistas.length} eletricista(s), mas o tipo de escala requer ${eletricistasPorTurma} por turma`
+      );
+    }
 
     const dataInicio =
       input.mode === 'fromDate' ? input.fromDate! : periodo.periodoInicio;
     const dataFim = periodo.periodoFim;
 
-    const slots: Array<
-      Omit<
-        SlotEscala,
-        | 'id'
-        | 'createdAt'
-        | 'createdBy'
-        | 'updatedAt'
-        | 'updatedBy'
-        | 'deletedAt'
-        | 'deletedBy'
-      >
-    > = [];
+    const slotsToUpsert: Array<{
+      escalaEquipePeriodoId: number;
+      eletricistaId: number;
+      data: Date;
+      estado: 'TRABALHO' | 'FOLGA';
+      inicioPrevisto: string | null;
+      fimPrevisto: string | null;
+      anotacoesDia: string | null;
+      origem: 'GERACAO';
+    }> = [];
+
     let currentDate = new Date(dataInicio);
 
+    // Para cada dia do período
     while (currentDate <= dataFim) {
-      const estado = this.determinarEstado(
-        currentDate,
+      // Determinar status do padrão (TRABALHO ou FOLGA)
+      const statusDia = resolveStatusDoDia(
         tipoEscala,
+        currentDate,
         periodo.periodoInicio
       );
 
-      let inicioPrevisto: string | null = null;
-      let fimPrevisto: string | null = null;
-
-      if (estado === 'TRABALHO' && horarioVigente) {
-        inicioPrevisto = horarioVigente.inicioTurnoHora;
-        fimPrevisto = this.calcularFimTurno(
-          horarioVigente.inicioTurnoHora,
-          Number(horarioVigente.duracaoHoras)
-        );
+      // Buscar horários vigentes para este dia (se TRABALHO)
+      let horarios: { inicio: string; fim: string } | null = null;
+      if (statusDia === 'TRABALHO') {
+        horarios = await horarioVigente(periodo.equipeId, currentDate);
       }
 
-      slots.push({
-        escalaEquipePeriodoId: periodo.id,
-        data: new Date(currentDate),
-        estado,
-        inicioPrevisto,
-        fimPrevisto,
-        anotacoesDia: null,
-      });
+      // Selecionar quem compõe o dia (eletricistasPorTurma)
+      // TODO: Implementar lógica de rodízio inteligente
+      // Por enquanto, selecionamos os primeiros N eletricistas
+      const escaladosNoDia = eletricistas.slice(0, eletricistasPorTurma);
+      const escaladosIds = new Set(escaladosNoDia.map(e => e.id));
+
+      // Para cada eletricista da equipe, criar um slot
+      for (const eletricista of eletricistas) {
+        const compoe =
+          statusDia === 'TRABALHO' && escaladosIds.has(eletricista.id);
+
+        slotsToUpsert.push({
+          escalaEquipePeriodoId: periodo.id,
+          eletricistaId: eletricista.id,
+          data: new Date(currentDate),
+          estado: compoe ? 'TRABALHO' : 'FOLGA',
+          inicioPrevisto: compoe && horarios ? horarios.inicio : null,
+          fimPrevisto: compoe && horarios ? horarios.fim : null,
+          anotacoesDia: null,
+          origem: 'GERACAO',
+        });
+      }
 
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // Upsert slots no banco
-    await prisma.$transaction(
-      slots.map(slot =>
-        prisma.slotEscala.upsert({
-          where: {
-            escalaEquipePeriodoId_data: {
-              escalaEquipePeriodoId: slot.escalaEquipePeriodoId,
-              data: slot.data,
-            },
+    // Upsert slots no banco pela chave composta [escalaEquipePeriodoId, data, eletricistaId]
+    for (const slot of slotsToUpsert) {
+      await prisma.slotEscala.upsert({
+        where: {
+          escalaEquipePeriodoId_data_eletricistaId: {
+            escalaEquipePeriodoId: slot.escalaEquipePeriodoId,
+            data: slot.data,
+            eletricistaId: slot.eletricistaId,
           },
-          create: {
-            ...slot,
-            createdBy: userId,
-            createdAt: new Date(),
-          },
-          update: {
-            estado: slot.estado,
-            inicioPrevisto: slot.inicioPrevisto,
-            fimPrevisto: slot.fimPrevisto,
-            updatedBy: userId,
-            updatedAt: new Date(),
-          },
-        })
-      )
-    );
+        },
+        create: {
+          escalaEquipePeriodoId: slot.escalaEquipePeriodoId,
+          eletricistaId: slot.eletricistaId,
+          data: slot.data,
+          estado: slot.estado,
+          inicioPrevisto: slot.inicioPrevisto,
+          fimPrevisto: slot.fimPrevisto,
+          anotacoesDia: slot.anotacoesDia,
+          origem: slot.origem,
+          createdBy: userId,
+        },
+        update: {
+          estado: slot.estado,
+          inicioPrevisto: slot.inicioPrevisto,
+          fimPrevisto: slot.fimPrevisto,
+          updatedBy: userId,
+        },
+      });
+    }
 
-    return { slotsGerados: slots.length };
+    return { slotsGerados: slotsToUpsert.length };
   }
 
   /**
@@ -327,6 +370,10 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
 
   /**
    * Publica uma escala (torna imutável)
+   *
+   * Validações:
+   * - Nenhum slot com estado = FALTA
+   * - Para cada dia: count(TRABALHO) = eletricistasPorTurma
    */
   async publicar(
     input: PublicarPeriodoInput,
@@ -341,12 +388,36 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       throw new Error('Período já está publicado');
     }
 
-    // Validar composição mínima se solicitado
-    if (input.validarComposicao) {
-      await this.validarComposicaoMinima(periodo.id);
+    // Validar que não há FALTAs (FALTA só pode ocorrer após publicação)
+    const slotsComFalta = await prisma.slotEscala.count({
+      where: {
+        escalaEquipePeriodoId: periodo.id,
+        estado: 'FALTA',
+        deletedAt: null,
+      },
+    });
+
+    if (slotsComFalta > 0) {
+      throw new Error(
+        'Não é possível publicar período com slots marcados como FALTA. Corrija ou remova essas marcações.'
+      );
     }
 
-    return this.escalaRepo.updateStatus(periodo.id, 'PUBLICADA', userId);
+    // Validar composição diária
+    await this.validarComposicaoMinimaDiaria(periodo.id);
+
+    // Atualizar status e incrementar versão
+    const updated = await prisma.escalaEquipePeriodo.update({
+      where: { id: periodo.id },
+      data: {
+        status: 'PUBLICADA',
+        versao: { increment: 1 },
+        updatedBy: userId,
+        updatedAt: new Date(),
+      },
+    });
+
+    return updated;
   }
 
   /**
@@ -357,6 +428,152 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
     userId: string
   ): Promise<EscalaEquipePeriodo> {
     return this.escalaRepo.updateStatus(periodoId, 'ARQUIVADA', userId);
+  }
+
+  /**
+   * Marca falta de um eletricista em uma data específica
+   *
+   * Pré-condição: período em PUBLICADA
+   * - Atualiza estado do slot para FALTA
+   * - Cria EventoCobertura com tipo = FALTA
+   */
+  async marcarFalta(params: {
+    periodoId: number;
+    dataISO: string;
+    eletricistaId: number;
+    cobridorId?: number;
+    justificativa?: string;
+    actorId: string;
+  }): Promise<{ slot: SlotEscala; evento: any }> {
+    // Buscar período
+    const periodo = await this.escalaRepo.findById(params.periodoId);
+    if (!periodo) {
+      throw new Error('Período não encontrado');
+    }
+
+    // Pré-condição: período PUBLICADA
+    if (periodo.status !== 'PUBLICADA') {
+      throw new Error('Só é possível marcar falta em períodos publicados');
+    }
+
+    // Encontrar slot pela chave composta
+    const data = new Date(params.dataISO);
+    const slot = await prisma.slotEscala.findUnique({
+      where: {
+        escalaEquipePeriodoId_data_eletricistaId: {
+          escalaEquipePeriodoId: params.periodoId,
+          data,
+          eletricistaId: params.eletricistaId,
+        },
+      },
+    });
+
+    if (!slot) {
+      throw new Error('Slot não encontrado para esta data e eletricista');
+    }
+
+    // Atualizar estado do slot para FALTA
+    const slotAtualizado = await prisma.slotEscala.update({
+      where: { id: slot.id },
+      data: {
+        estado: 'FALTA',
+        updatedBy: params.actorId,
+        updatedAt: new Date(),
+      },
+    });
+
+    // Criar EventoCobertura
+    const resultado = params.cobridorId ? 'COBERTO' : 'VAGA_DESCOBERTA';
+    const evento = await prisma.eventoCobertura.create({
+      data: {
+        slotEscalaId: slot.id,
+        eletricistaCobrindoId: params.cobridorId,
+        tipo: 'FALTA',
+        resultado,
+        justificativa: params.justificativa,
+        registradoEm: new Date(),
+        createdBy: params.actorId,
+      },
+    });
+
+    return { slot: slotAtualizado, evento };
+  }
+
+  /**
+   * Registra troca de turno entre eletricistas
+   *
+   * Pré-condição: período em PUBLICADA
+   * - NÃO altera o estado do slot do titular
+   * - Cria EventoCobertura com tipo = TROCA e resultado = COBERTO
+   */
+  async registrarTroca(params: {
+    periodoId: number;
+    dataISO: string;
+    titularId: number;
+    executorId: number;
+    justificativa?: string;
+    actorId: string;
+  }): Promise<{ slot: SlotEscala; evento: any }> {
+    // Buscar período
+    const periodo = await this.escalaRepo.findById(params.periodoId);
+    if (!periodo) {
+      throw new Error('Período não encontrado');
+    }
+
+    // Pré-condição: período PUBLICADA
+    if (periodo.status !== 'PUBLICADA') {
+      throw new Error('Só é possível registrar troca em períodos publicados');
+    }
+
+    // Encontrar slot do titular
+    const data = new Date(params.dataISO);
+    const slotTitular = await prisma.slotEscala.findUnique({
+      where: {
+        escalaEquipePeriodoId_data_eletricistaId: {
+          escalaEquipePeriodoId: params.periodoId,
+          data,
+          eletricistaId: params.titularId,
+        },
+      },
+    });
+
+    if (!slotTitular) {
+      throw new Error('Slot do titular não encontrado para esta data');
+    }
+
+    // Verificar se executor existe na equipe
+    const slotExecutor = await prisma.slotEscala.findUnique({
+      where: {
+        escalaEquipePeriodoId_data_eletricistaId: {
+          escalaEquipePeriodoId: params.periodoId,
+          data,
+          eletricistaId: params.executorId,
+        },
+      },
+    });
+
+    if (!slotExecutor) {
+      throw new Error(
+        'Executor não pertence à equipe ou não tem slot nesta data'
+      );
+    }
+
+    // NÃO altera o estado do slot do titular (mantém histórico real)
+    // Apenas cria o evento de cobertura
+
+    const evento = await prisma.eventoCobertura.create({
+      data: {
+        slotEscalaId: slotTitular.id,
+        eletricistaCobrindoId: params.executorId,
+        tipo: 'TROCA',
+        resultado: 'COBERTO',
+        justificativa: params.justificativa,
+        registradoEm: new Date(),
+        createdBy: params.actorId,
+      },
+    });
+
+    return { slot: slotTitular, evento };
   }
 
   /**
@@ -403,239 +620,74 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
   }
 
   /**
-   * Valida composição mínima de todos os slots de trabalho
+   * Valida composição diária: count(TRABALHO) = eletricistasPorTurma para cada dia
    */
-  private async validarComposicaoMinima(periodoId: number): Promise<void> {
-    const slots = await prisma.slotEscala.findMany({
+  private async validarComposicaoMinimaDiaria(
+    periodoId: number
+  ): Promise<void> {
+    const periodo = await prisma.escalaEquipePeriodo.findUnique({
+      where: { id: periodoId },
+      include: {
+        tipoEscala: true,
+      },
+    });
+
+    if (!periodo) {
+      throw new Error('Período não encontrado');
+    }
+
+    const eletricistasPorTurma = periodo.tipoEscala.eletricistasPorTurma;
+    if (!eletricistasPorTurma) {
+      throw new Error(
+        'Tipo de escala não possui eletricistasPorTurma configurado'
+      );
+    }
+
+    // Buscar contagem de slots TRABALHO por dia
+    const slotsPorDia = await prisma.slotEscala.groupBy({
+      by: ['data'],
       where: {
         escalaEquipePeriodoId: periodoId,
         estado: 'TRABALHO',
         deletedAt: null,
       },
-      include: {
-        Atribuicoes: {
-          where: {
-            statusPlanejado: 'ATIVO',
-            deletedAt: null,
-          },
-        },
+      _count: {
+        id: true,
       },
     });
 
-    const periodo = await this.escalaRepo.findById(periodoId);
-    if (!periodo) {
-      throw new Error('Período não encontrado');
-    }
+    // Verificar cada dia do período
+    let currentDate = new Date(periodo.periodoInicio);
+    const dataFim = new Date(periodo.periodoFim);
+    const diasComProblema: string[] = [];
 
-    // TODO: Implementar validação completa de composição
-    // (verificar override, tipo, e equipe)
+    while (currentDate <= dataFim) {
+      const dataStr = currentDate.toISOString().split('T')[0];
 
-    const slotsComAtribuicoes = slots.filter(
-      s => s.Atribuicoes && s.Atribuicoes.length > 0
-    );
+      const slotDoDia = slotsPorDia.find(s => {
+        const sData = new Date(s.data);
+        return sData.toISOString().split('T')[0] === dataStr;
+      });
 
-    if (slotsComAtribuicoes.length === 0) {
-      throw new Error('Nenhum slot possui atribuições de eletricistas');
-    }
-  }
+      const count = slotDoDia ? slotDoDia._count.id : 0;
 
-  /**
-   * Atribui automaticamente eletricistas aos slots baseado no tipo de escala
-   *
-   * LÓGICA:
-   * - Escala 4x2 (CICLO_DIAS): 3 eletricistas com ciclos DEFASADOS, sempre 2 por slot
-   * - Escala Espanhola (SEMANA_DEPENDENTE): 2 eletricistas sempre JUNTOS
-   */
-  async atribuirEletricistas(
-    input: AtribuirEletricistasInput,
-    userId: string
-  ): Promise<{ atribuicoesGeradas: number }> {
-    // Buscar período com tipo de escala
-    const periodo = await prisma.escalaEquipePeriodo.findUnique({
-      where: { id: input.escalaEquipePeriodoId },
-      include: {
-        tipoEscala: {
-          include: {
-            CicloPosicoes: { orderBy: { posicao: 'asc' } },
-          },
-        },
-        Slots: {
-          where: { estado: 'TRABALHO' },
-          orderBy: { data: 'asc' },
-        },
-      },
-    });
-
-    if (!periodo) {
-      throw new Error('Período de escala não encontrado');
-    }
-
-    if (periodo.status === 'PUBLICADA') {
-      throw new Error(
-        'Não é possível atribuir eletricistas em escalas publicadas'
-      );
-    }
-
-    const { tipoEscala, Slots: slots } = periodo;
-
-    // Validações baseadas na configuração do tipo de escala
-    const qtdNecessaria = tipoEscala.minEletricistasPorTurno || 2;
-
-    if (input.eletricistas.length !== qtdNecessaria) {
-      throw new Error(
-        `Este tipo de escala requer exatamente ${qtdNecessaria} eletricistas`
-      );
-    }
-
-    // Validar datas de folga
-    for (const elet of input.eletricistas) {
-      if (
-        elet.proximaFolga < periodo.periodoInicio ||
-        elet.proximaFolga > periodo.periodoFim
-      ) {
-        throw new Error(
-          'Data da próxima folga deve estar dentro do período da escala'
-        );
+      // Se o dia tem slots, deve ter exatamente eletricistasPorTurma
+      // Se não tem nenhum slot, é um dia de folga (válido)
+      if (count > 0 && count !== eletricistasPorTurma) {
+        diasComProblema.push(`${dataStr} (${count}/${eletricistasPorTurma})`);
       }
+
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // Remove atribuições existentes
-    await prisma.atribuicaoEletricista.deleteMany({
-      where: {
-        slotEscala: {
-          escalaEquipePeriodoId: periodo.id,
-        },
-      },
-    });
-
-    let atribuicoesGeradas = 0;
-
-    if (tipoEscala.modoRepeticao === 'CICLO_DIAS') {
-      // LÓGICA 4x2: 3 eletricistas com ciclos baseados na próxima folga
-      atribuicoesGeradas = await this.atribuirCicloComProximaFolga(
-        slots,
-        input.eletricistas,
-        tipoEscala.cicloDias!,
-        periodo.periodoInicio,
-        userId
-      );
-    } else if (tipoEscala.modoRepeticao === 'SEMANA_DEPENDENTE') {
-      // LÓGICA ESPANHOLA: 2 eletricistas sempre JUNTOS
-      atribuicoesGeradas = await this.atribuirEspanhola(
-        slots,
-        input.eletricistas.map(e => e.eletricistaId),
-        userId
+    if (diasComProblema.length > 0) {
+      throw new Error(
+        `Composição inválida nos dias: ${diasComProblema.join(', ')}. ` +
+          `Cada dia deve ter exatamente ${eletricistasPorTurma} eletricista(s) trabalhando.`
       );
     }
-
-    return { atribuicoesGeradas };
-  }
-
-  /**
-   * Atribui eletricistas com ciclos baseados na data da próxima folga (Escala 4x2)
-   *
-   * Cada eletricista informa quando é sua próxima folga, e o sistema
-   * calcula o ciclo de trabalho/folga a partir dessa informação.
-   *
-   * Exemplo:
-   * - Período: 01/01 a 31/01
-   * - Eletricista A: próxima folga 05/01 → trabalha 01-04, folga 05-06, trabalha 07-10, etc
-   * - Eletricista B: próxima folga 03/01 → trabalha 01-02, folga 03-04, trabalha 05-08, etc
-   * - Eletricista C: próxima folga 07/01 → trabalha 01-06, folga 07-08, trabalha 09-12, etc
-   *
-   * Ciclo 4x2: 4 dias trabalho + 2 dias folga = 6 dias
-   */
-  private async atribuirCicloComProximaFolga(
-    slots: SlotEscala[],
-    eletricistas: Array<{ eletricistaId: number; proximaFolga: Date }>,
-    cicloDias: number,
-    periodoInicio: Date,
-    userId: string
-  ): Promise<number> {
-    const atribuicoes: Array<{
-      slotEscalaId: number;
-      eletricistaId: number;
-      createdBy: string;
-    }> = [];
-
-    // Para cada eletricista, calcula em quais dias ele trabalha
-    eletricistas.forEach(({ eletricistaId, proximaFolga }) => {
-      // Calcula quantos dias até a próxima folga
-      const diasAteProximaFolga = Math.floor(
-        (proximaFolga.getTime() - periodoInicio.getTime()) /
-          (1000 * 60 * 60 * 24)
-      );
-
-      slots.forEach(slot => {
-        // Calcula em qual dia do período estamos
-        const diaSlot = Math.floor(
-          (slot.data.getTime() - periodoInicio.getTime()) /
-            (1000 * 60 * 60 * 24)
-        );
-
-        // Calcula posição no ciclo deste eletricista
-        // Ajusta para começar do dia da próxima folga
-        const posicaoNoCiclo =
-          (diaSlot - diasAteProximaFolga + cicloDias) % cicloDias;
-
-        // No ciclo 4x2 (6 dias total):
-        // - Posições 0,1 = FOLGA (os 2 primeiros dias são folga)
-        // - Posições 2,3,4,5 = TRABALHO (os 4 dias seguintes são trabalho)
-        const estaEmFolga = posicaoNoCiclo < 2;
-
-        if (!estaEmFolga) {
-          atribuicoes.push({
-            slotEscalaId: slot.id,
-            eletricistaId,
-            createdBy: userId,
-          });
-        }
-      });
-    });
-
-    // Cria todas as atribuições
-    await prisma.atribuicaoEletricista.createMany({
-      data: atribuicoes,
-    });
-
-    return atribuicoes.length;
-  }
-
-  /**
-   * Atribui eletricistas JUNTOS (Escala Espanhola)
-   *
-   * Os 2 eletricistas trabalham sempre juntos:
-   * - Semana A: Todos os dias (inclusive domingo)
-   * - Semana B: Seg-Sex (sáb-dom folga, turno não abre)
-   */
-  private async atribuirEspanhola(
-    slots: SlotEscala[],
-    eletricistaIds: number[],
-    userId: string
-  ): Promise<number> {
-    const atribuicoes: Array<{
-      slotEscalaId: number;
-      eletricistaId: number;
-      createdBy: string;
-    }> = [];
-
-    // Para CADA slot de trabalho, atribui os 2 eletricistas JUNTOS
-    slots.forEach(slot => {
-      eletricistaIds.forEach(eletricistaId => {
-        atribuicoes.push({
-          slotEscalaId: slot.id,
-          eletricistaId,
-          createdBy: userId,
-        });
-      });
-    });
-
-    // Cria todas as atribuições
-    await prisma.atribuicaoEletricista.createMany({
-      data: atribuicoes,
-    });
-
-    return atribuicoes.length;
   }
 }
+
+
 

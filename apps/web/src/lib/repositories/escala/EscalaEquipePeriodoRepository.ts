@@ -100,21 +100,19 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
         equipe: true,
         tipoEscala: {
           include: {
-            CicloPosicoes: true,
-            SemanaMascaras: true,
-            ComposicaoPorPapel: true,
+            CicloPosicoes: {
+              orderBy: { posicao: 'asc' },
+            },
+            SemanaMascaras: {
+              orderBy: [{ semanaIndex: 'asc' }, { dia: 'asc' }],
+            },
           },
         },
-        ComposicaoOverride: true,
         Slots: {
           take: 100, // Limitar para performance
           orderBy: { data: 'asc' },
           include: {
-            Atribuicoes: {
-              include: {
-                eletricista: true,
-              },
-            },
+            eletricista: true,
           },
         },
       },

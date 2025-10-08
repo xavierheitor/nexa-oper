@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "description": "Pacote compartilhado de banco de dados com Prisma",
-  "main": "./generated/prisma/index.js",
-  "types": "./generated/prisma/index.d.ts",
+  "main": "./prisma/generated/prisma/index.js",
+  "types": "./prisma/generated/prisma/index.d.ts",
   "exports": {
-    ".": "./generated/prisma/index.js",
+    ".": "./prisma/generated/prisma/index.js",
     "./package.json": "./package.json"
   },
   "scripts": {

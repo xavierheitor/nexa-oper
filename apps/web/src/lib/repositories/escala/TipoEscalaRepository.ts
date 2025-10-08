@@ -19,7 +19,7 @@ export type TipoEscalaCreateInput = {
   modoRepeticao: ModoRepeticao;
   cicloDias?: number;
   periodicidadeSemanas?: number;
-  minEletricistasPorTurno?: number;
+  eletricistasPorTurma?: number;
   ativo?: boolean;
   observacoes?: string;
 };
@@ -41,7 +41,7 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
       modoRepeticao: data.modoRepeticao,
       cicloDias: data.cicloDias,
       periodicidadeSemanas: data.periodicidadeSemanas,
-      minEletricistasPorTurno: data.minEletricistasPorTurno,
+      eletricistasPorTurma: data.eletricistasPorTurma,
       ativo: data.ativo ?? true,
       observacoes: data.observacoes,
       createdAt: new Date(),
@@ -83,7 +83,6 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
         SemanaMascaras: {
           orderBy: [{ semanaIndex: 'asc' }, { dia: 'asc' }],
         },
-        ComposicaoPorPapel: true,
       },
     });
   }
