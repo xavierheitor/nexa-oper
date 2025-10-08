@@ -1,16 +1,31 @@
 /**
  * Wizard de Criação de Período de Escala
  *
- * Fluxo guiado em 2 passos para criar escalas completas
+ * Fluxo guiado em 3 passos para criar escalas completas
  */
 
 'use client';
 
-import React, { useState } from 'react';
-import { Steps, Form, Select, DatePicker, Button, Space, message, Alert, Card, Input } from 'antd';
+import React, { useState, useEffect } from 'react';
+import {
+  Steps,
+  Form,
+  Select,
+  DatePicker,
+  Button,
+  Space,
+  message,
+  Alert,
+  Card,
+  Input,
+  Table,
+  InputNumber,
+  Checkbox,
+} from 'antd';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { listEquipes } from '@/lib/actions/equipe/list';
 import { listTiposEscala } from '@/lib/actions/escala/tipoEscala';
+import { listEletricistas } from '@/lib/actions/eletricista/list';
 import {
   createEscalaEquipePeriodo,
   gerarSlotsEscala,
@@ -23,6 +38,12 @@ interface EscalaWizardProps {
   onCancel: () => void;
 }
 
+interface EletricistaEscala {
+  eletricistaId: number;
+  eletricistaNome: string;
+  primeiroDiaFolga: number; // Dia da primeira folga desde o início do período (0 = primeiro dia)
+}
+
 export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [form] = Form.useForm();
@@ -31,6 +52,10 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
   // Dados do período criado
   const [periodoId, setPeriodoId] = useState<number | null>(null);
   const [tipoEscalaSelecionado, setTipoEscalaSelecionado] = useState<any>(null);
+  const [equipeIdSelecionada, setEquipeIdSelecionada] = useState<number | null>(null);
+
+  // Eletricistas selecionados com posição inicial
+  const [eletricistasEscala, setEletricistasEscala] = useState<EletricistaEscala[]>([]);
 
   // Carregar equipes
   const { data: equipes, isLoading: equipesLoading } = useEntityData({
@@ -63,6 +88,29 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
     paginationEnabled: false,
   });
 
+  // Carregar eletricistas da equipe selecionada
+  const { data: eletricistas, isLoading: eletricistasLoading, mutate: reloadEletricistas } = useEntityData({
+    key: `eletricistas-equipe-${equipeIdSelecionada}`,
+    fetcher: async () => {
+      if (!equipeIdSelecionada) return [];
+      const result = await listEletricistas({
+        page: 1,
+        pageSize: 100,
+        equipeId: equipeIdSelecionada,
+        ativo: true,
+      });
+      return result.success && result.data ? result.data.data : [];
+    },
+    paginationEnabled: false,
+  });
+
+  // Recarregar eletricistas quando a equipe mudar
+  useEffect(() => {
+    if (equipeIdSelecionada) {
+      reloadEletricistas();
+    }
+  }, [equipeIdSelecionada, reloadEletricistas]);
+
   // Step 1: Criar período
   const handleStep1Next = async () => {
     try {
@@ -93,8 +141,25 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
     }
   };
 
-  // Step 2: Gerar slots e finalizar
-  const handleStep2Finish = async () => {
+  // Step 2: Configurar eletricistas
+  const handleStep2Next = () => {
+    if (eletricistasEscala.length === 0) {
+      message.warning('Selecione pelo menos um eletricista para a escala');
+      return;
+    }
+
+    // Validar se todos têm dia da primeira folga definido
+    const semPosicao = eletricistasEscala.filter(e => e.primeiroDiaFolga === undefined || e.primeiroDiaFolga === null);
+    if (semPosicao.length > 0) {
+      message.warning('Defina o primeiro dia de folga para todos os eletricistas');
+      return;
+    }
+
+    setCurrentStep(2);
+  };
+
+  // Step 3: Gerar slots e finalizar
+  const handleStep3Finish = async () => {
     if (!periodoId) return;
 
     setLoading(true);
@@ -102,6 +167,7 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
       const result = await gerarSlotsEscala({
         escalaEquipePeriodoId: periodoId,
         mode: 'full',
+        eletricistasConfig: eletricistasEscala,
       });
 
       if (result.success && result.data) {
@@ -117,10 +183,40 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
     }
   };
 
+  // Handlers para gerenciar eletricistas
+  const toggleEletricista = (eletricista: any, checked: boolean) => {
+    if (checked) {
+      setEletricistasEscala([
+        ...eletricistasEscala,
+        {
+          eletricistaId: eletricista.id,
+          eletricistaNome: eletricista.nome,
+          primeiroDiaFolga: 0,
+        },
+      ]);
+    } else {
+      setEletricistasEscala(
+        eletricistasEscala.filter((e) => e.eletricistaId !== eletricista.id)
+      );
+    }
+  };
+
+  const updatePrimeiroDiaFolga = (eletricistaId: number, dia: number) => {
+    setEletricistasEscala(
+      eletricistasEscala.map((e) =>
+        e.eletricistaId === eletricistaId ? { ...e, primeiroDiaFolga: dia } : e
+      )
+    );
+  };
+
   const steps = [
     {
       title: 'Configurações',
       description: 'Equipe, tipo e período',
+    },
+    {
+      title: 'Eletricistas',
+      description: 'Selecionar e posicionar',
     },
     {
       title: 'Gerar Escala',
@@ -145,6 +241,7 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
               loading={equipesLoading}
               showSearch
               optionFilterProp="children"
+              onChange={(value) => setEquipeIdSelecionada(value)}
               options={equipes?.map((equipe: any) => ({
                 value: equipe.id,
                 label: equipe.nome,
@@ -208,12 +305,95 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
         </Form>
       )}
 
-      {/* Step 2: Gerar Slots */}
+      {/* Step 2: Selecionar Eletricistas */}
       {currentStep === 1 && (
         <Space direction="vertical" style={{ width: '100%' }} size="large">
           <Alert
+            message="Selecione os eletricistas e defina o primeiro dia de folga de cada um"
+            description="Informe em qual dia (contando desde o início do período) o eletricista terá sua primeira folga. Exemplo: 0 = folga já no primeiro dia, 2 = folga no terceiro dia, etc."
+            type="info"
+            showIcon
+          />
+
+          <Card title="Eletricistas da Equipe" loading={eletricistasLoading}>
+            <Table
+              dataSource={eletricistas || []}
+              rowKey="id"
+              pagination={false}
+              size="small"
+              columns={[
+                {
+                  title: 'Participar',
+                  key: 'participar',
+                  width: 80,
+                  render: (_: unknown, record: any) => (
+                    <Checkbox
+                      checked={eletricistasEscala.some((e) => e.eletricistaId === record.id)}
+                      onChange={(e) => toggleEletricista(record, e.target.checked)}
+                    />
+                  ),
+                },
+                {
+                  title: 'Nome',
+                  dataIndex: 'nome',
+                  key: 'nome',
+                },
+                {
+                  title: 'Matrícula',
+                  dataIndex: 'matricula',
+                  key: 'matricula',
+                  width: 120,
+                },
+                {
+                  title: '1º Dia de Folga',
+                  key: 'primeiroDiaFolga',
+                  width: 150,
+                  render: (_: unknown, record: any) => {
+                    const eletricistaConfig = eletricistasEscala.find(
+                      (e) => e.eletricistaId === record.id
+                    );
+                    if (!eletricistaConfig) return null;
+
+                    return (
+                      <InputNumber
+                        min={0}
+                        placeholder="Ex: 2"
+                        value={eletricistaConfig.primeiroDiaFolga}
+                        onChange={(value) => updatePrimeiroDiaFolga(record.id, value || 0)}
+                        style={{ width: '100%' }}
+                        addonAfter="dias"
+                      />
+                    );
+                  },
+                },
+              ]}
+            />
+
+            {eletricistasEscala.length > 0 && (
+              <Alert
+                style={{ marginTop: 16 }}
+                message={`${eletricistasEscala.length} eletricista(s) selecionado(s)`}
+                type="success"
+                showIcon
+              />
+            )}
+          </Card>
+
+          <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Button onClick={() => setCurrentStep(0)}>Voltar</Button>
+            <Button type="primary" onClick={handleStep2Next}>
+              Próximo
+            </Button>
+          </Space>
+        </Space>
+      )}
+
+      {/* Step 3: Gerar Slots */}
+      {currentStep === 2 && (
+        <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <Alert
             message="Tudo pronto! Agora vamos gerar os slots da escala."
-            description="Os slots serão criados automaticamente para todos os eletricistas da equipe, seguindo o padrão do tipo de escala selecionado."
+            description="Os slots serão criados automaticamente para os eletricistas selecionados, seguindo o padrão do tipo de escala e as posições iniciais definidas."
             type="success"
             showIcon
           />
@@ -222,12 +402,13 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
             <h3>Resumo:</h3>
             <p>✅ Período criado</p>
             <p>✅ Tipo de escala configurado: {tipoEscalaSelecionado?.nome}</p>
+            <p>✅ {eletricistasEscala.length} eletricista(s) configurado(s)</p>
             <p>⏳ Slots aguardando geração</p>
           </Card>
 
           <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-            <Button onClick={() => setCurrentStep(0)}>Voltar</Button>
-            <Button type="primary" onClick={handleStep2Finish} loading={loading}>
+            <Button onClick={() => setCurrentStep(1)}>Voltar</Button>
+            <Button type="primary" onClick={handleStep3Finish} loading={loading}>
               Gerar Slots e Finalizar
             </Button>
           </Space>

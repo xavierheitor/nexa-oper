@@ -398,6 +398,15 @@ export const gerarSlotsSchema = z
       .positive('ID do período é obrigatório'),
     mode: z.enum(['full', 'fromDate']),
     fromDate: z.coerce.date().optional(),
+    eletricistasConfig: z
+      .array(
+        z.object({
+          eletricistaId: z.number().int().positive(),
+          eletricistaNome: z.string().optional(),
+          primeiroDiaFolga: z.number().int().min(0),
+        })
+      )
+      .optional(),
   })
   .refine(data => data.mode !== 'fromDate' || data.fromDate != null, {
     message: 'fromDate é obrigatório quando mode é fromDate',

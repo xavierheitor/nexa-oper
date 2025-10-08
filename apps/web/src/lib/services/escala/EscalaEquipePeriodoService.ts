@@ -178,23 +178,45 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
     }
 
     // Buscar eletricistas vigentes da equipe
-    const eletricistas = await membrosVigentes(
-      periodo.equipeId,
-      periodo.periodoInicio,
-      periodo.periodoFim
-    );
+    let eletricistasParaGerar: Array<{ id: number; primeiroDiaFolga: number }> =
+      [];
 
-    if (eletricistas.length === 0) {
-      throw new Error('Nenhum eletricista ativo encontrado na equipe');
+    if (input.eletricistasConfig && input.eletricistasConfig.length > 0) {
+      // Usar configuração fornecida pelo wizard
+      eletricistasParaGerar = input.eletricistasConfig.map(config => ({
+        id: config.eletricistaId,
+        primeiroDiaFolga: config.primeiroDiaFolga,
+      }));
+    } else {
+      // Buscar todos os eletricistas vigentes da equipe
+      const eletricistasVigentes = await membrosVigentes(
+        periodo.equipeId,
+        periodo.periodoInicio,
+        periodo.periodoFim
+      );
+
+      if (eletricistasVigentes.length === 0) {
+        throw new Error('Nenhum eletricista ativo encontrado na equipe');
+      }
+
+      // Todos começam com primeira folga no dia 0 (compatibilidade)
+      eletricistasParaGerar = eletricistasVigentes.map(e => ({
+        id: e.id,
+        primeiroDiaFolga: 0,
+      }));
+    }
+
+    if (eletricistasParaGerar.length === 0) {
+      throw new Error('Nenhum eletricista selecionado para a escala');
     }
 
     const eletricistasPorTurma =
-      tipoEscala.eletricistasPorTurma || eletricistas.length;
+      tipoEscala.eletricistasPorTurma || eletricistasParaGerar.length;
 
     // Validar se há eletricistas suficientes
-    if (eletricistas.length < eletricistasPorTurma) {
+    if (eletricistasParaGerar.length < eletricistasPorTurma) {
       throw new Error(
-        `A equipe possui apenas ${eletricistas.length} eletricista(s), mas o tipo de escala requer ${eletricistasPorTurma} por turma`
+        `Foram selecionados apenas ${eletricistasParaGerar.length} eletricista(s), mas o tipo de escala requer ${eletricistasPorTurma} por turma`
       );
     }
 
@@ -213,47 +235,107 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       origem: 'GERACAO';
     }> = [];
 
+    // Pré-calcular posições iniciais no ciclo para cada eletricista
+    const eletricistasComPosicao = eletricistasParaGerar.map(
+      eletricistaConfig => {
+        let posicaoInicial = 0;
+
+        if (tipoEscala.modoRepeticao === 'CICLO_DIAS') {
+          const cicloDias = tipoEscala.cicloDias || 1;
+
+          // Encontrar a primeira posição de FOLGA no ciclo
+          const primeiraFolga = tipoEscala.CicloPosicoes.find(
+            p => p.status === 'FOLGA'
+          );
+
+          if (primeiraFolga) {
+            // Calcular posição inicial: quando primeiroDiaFolga acontece,
+            // o eletricista deve estar na primeira posição de folga
+            posicaoInicial =
+              (primeiraFolga.posicao -
+                eletricistaConfig.primeiroDiaFolga +
+                cicloDias) %
+              cicloDias;
+          }
+        }
+        // Para SEMANA_DEPENDENTE, não precisamos calcular posição inicial
+        // pois cada dia/semana tem sua própria máscara
+
+        return {
+          ...eletricistaConfig,
+          posicaoInicial,
+        };
+      }
+    );
+
     let currentDate = new Date(dataInicio);
+    let diaIndex = 0; // Índice do dia desde o início da escala
 
     // Para cada dia do período
     while (currentDate <= dataFim) {
-      // Determinar status do padrão (TRABALHO ou FOLGA)
-      const statusDia = resolveStatusDoDia(
-        tipoEscala,
-        currentDate,
-        periodo.periodoInicio
-      );
+      // Buscar horários vigentes para este dia
+      const horarios = await horarioVigente(periodo.equipeId, currentDate);
 
-      // Buscar horários vigentes para este dia (se TRABALHO)
-      let horarios: { inicio: string; fim: string } | null = null;
-      if (statusDia === 'TRABALHO') {
-        horarios = await horarioVigente(periodo.equipeId, currentDate);
-      }
+      // Para cada eletricista selecionado, criar um slot
+      for (const eletricistaConfig of eletricistasComPosicao) {
+        let statusEletricista: 'TRABALHO' | 'FOLGA';
 
-      // Selecionar quem compõe o dia (eletricistasPorTurma)
-      // TODO: Implementar lógica de rodízio inteligente
-      // Por enquanto, selecionamos os primeiros N eletricistas
-      const escaladosNoDia = eletricistas.slice(0, eletricistasPorTurma);
-      const escaladosIds = new Set(escaladosNoDia.map(e => e.id));
+        if (tipoEscala.modoRepeticao === 'CICLO_DIAS') {
+          // Para ciclo de dias, calcula a posição no ciclo
+          const cicloDias = tipoEscala.cicloDias || 1;
+          const posicaoAtual =
+            (eletricistaConfig.posicaoInicial + diaIndex) % cicloDias;
 
-      // Para cada eletricista da equipe, criar um slot
-      for (const eletricista of eletricistas) {
-        const compoe =
-          statusDia === 'TRABALHO' && escaladosIds.has(eletricista.id);
+          // Busca o status configurado para essa posição
+          const posicaoConfig = tipoEscala.CicloPosicoes.find(
+            p => p.posicao === posicaoAtual
+          );
+          statusEletricista =
+            posicaoConfig?.status === 'TRABALHO' ? 'TRABALHO' : 'FOLGA';
+        } else {
+          // Para modo semanal (SEMANA_DEPENDENTE)
+          const periodicidadeSemanas = tipoEscala.periodicidadeSemanas || 1;
+          const diaSemana = currentDate.getDay(); // 0=Domingo, 1=Segunda...
+          const semanaIndex = Math.floor(diaIndex / 7) % periodicidadeSemanas;
+
+          // Converter dia da semana JS para enum DiaSemana
+          const diasSemanaEnum = [
+            'DOMINGO',
+            'SEGUNDA',
+            'TERCA',
+            'QUARTA',
+            'QUINTA',
+            'SEXTA',
+            'SABADO',
+          ];
+          const diaEnum = diasSemanaEnum[diaSemana];
+
+          // Busca a configuração para esta semana e dia
+          const mascaraConfig = tipoEscala.SemanaMascaras.find(
+            m => m.semanaIndex === semanaIndex && m.dia === diaEnum
+          );
+          statusEletricista =
+            mascaraConfig?.status === 'TRABALHO' ? 'TRABALHO' : 'FOLGA';
+        }
 
         slotsToUpsert.push({
           escalaEquipePeriodoId: periodo.id,
-          eletricistaId: eletricista.id,
+          eletricistaId: eletricistaConfig.id,
           data: new Date(currentDate),
-          estado: compoe ? 'TRABALHO' : 'FOLGA',
-          inicioPrevisto: compoe && horarios ? horarios.inicio : null,
-          fimPrevisto: compoe && horarios ? horarios.fim : null,
+          estado: statusEletricista,
+          inicioPrevisto:
+            statusEletricista === 'TRABALHO' && horarios
+              ? horarios.inicio
+              : null,
+          fimPrevisto:
+            statusEletricista === 'TRABALHO' && horarios ? horarios.fim : null,
           anotacoesDia: null,
           origem: 'GERACAO',
         });
       }
 
       currentDate.setDate(currentDate.getDate() + 1);
+      diaIndex++;
     }
 
     // Upsert slots no banco pela chave composta [escalaEquipePeriodoId, data, eletricistaId]
