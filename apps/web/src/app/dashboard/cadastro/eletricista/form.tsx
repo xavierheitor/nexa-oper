@@ -1,10 +1,12 @@
 'use client';
 
-import { Base, Contrato } from '@nexa-oper/db';
-import { Button, Form, Input, message, Select, Spin } from 'antd';
+import { Base, Cargo, Contrato } from '@nexa-oper/db';
+import { Button, DatePicker, Form, Input, message, Select, Spin } from 'antd';
 import { useEffect, useState } from 'react';
 import { listBases } from '../../../../lib/actions/base/list';
 import { listContratos } from '../../../../lib/actions/contrato/list';
+import { listCargos } from '../../../../lib/actions/cargo/list';
+import dayjs from 'dayjs';
 
 // Importações do Ant Design e React
 
@@ -15,6 +17,8 @@ export interface EletricistaFormData {
   matricula: string; // Campo obrigatório
   telefone: string; // Campo obrigatório
   estado: string; // Campo obrigatório
+  admissao?: Date; // Data de admissão
+  cargoId: number; // Cargo do eletricista
   contratoId: number; // Campo obrigatório
   baseId: number; // Campo obrigatório
 }
@@ -41,6 +45,7 @@ export default function EletricistaForm({
 
   // Estados para armazenar os dados dos selects
   const [contratos, setContratos] = useState<Contrato[]>([]);
+  const [cargos, setCargos] = useState<Cargo[]>([]);
   const [bases, setBases] = useState<Base[]>([]);
   const [loadingSelects, setLoadingSelects] = useState(true);
 
@@ -50,9 +55,15 @@ export default function EletricistaForm({
       try {
         setLoadingSelects(true);
 
-        // Carrega contratos e bases em paralelo
-        const [contratosResponse, basesResponse] = await Promise.all([
+        // Carrega contratos, cargos e bases em paralelo
+        const [contratosResponse, cargosResponse, basesResponse] = await Promise.all([
           listContratos({
+            page: 1,
+            pageSize: 100,
+            orderBy: 'nome',
+            orderDir: 'asc',
+          }),
+          listCargos({
             page: 1,
             pageSize: 100,
             orderBy: 'nome',
@@ -67,6 +78,7 @@ export default function EletricistaForm({
         ]);
 
         setContratos(contratosResponse.data?.data || []);
+        setCargos(cargosResponse.data?.data || []);
         setBases(basesResponse.data?.data || []);
       } catch (error) {
         console.error('Erro ao carregar dados dos selects:', error);
@@ -83,7 +95,11 @@ export default function EletricistaForm({
   useEffect(() => {
     if (initialValues) {
       // Se há valores iniciais (modo edição), pré-popula o formulário
-      form.setFieldsValue(initialValues);
+      const formattedValues = {
+        ...initialValues,
+        admissao: initialValues.admissao ? dayjs(initialValues.admissao) : undefined,
+      };
+      form.setFieldsValue(formattedValues);
     } else {
       // Se não há valores (modo criação), limpa todos os campos
       form.resetFields();
@@ -140,14 +156,44 @@ export default function EletricistaForm({
       {/* Campo Estado do Eletricista */}
       <Form.Item
         name="estado" // Nome do campo (deve corresponder à interface EletricistaFormData)
-        label="Estado do Eletricista" // Label exibido acima do campo
+        label="Estado (UF)" // Label exibido acima do campo
         rules={[
           // Regras de validação do campo
           { required: true, message: 'Estado é obrigatório' }, // Campo obrigatório
-          { min: 1, max: 255, message: 'Estado deve ter entre 1 e 255 caracteres' } // Validação de tamanho
+          { len: 2, message: 'Estado deve ter 2 caracteres (UF)' } // Validação de tamanho
         ]}
       >
-        <Input placeholder="Digite o estado do eletricista" />
+        <Input placeholder="Ex: SP, RJ, MG" maxLength={2} style={{ textTransform: 'uppercase' }} />
+      </Form.Item>
+
+      {/* Campo Data de Admissão */}
+      <Form.Item
+        name="admissao"
+        label="Data de Admissão"
+        tooltip="Se não preenchida, será usada a data atual"
+      >
+        <DatePicker
+          format="DD/MM/YYYY"
+          placeholder="Selecione a data"
+          style={{ width: '100%' }}
+        />
+      </Form.Item>
+
+      {/* Campo Cargo */}
+      <Form.Item
+        name="cargoId"
+        label="Cargo"
+        rules={[
+          { required: true, message: 'Cargo é obrigatório' }
+        ]}
+      >
+        <Select
+          placeholder="Selecione o cargo"
+          loading={loadingSelects}
+          showSearch
+          filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
+          options={cargos.map(cargo => ({ value: cargo.id, label: `${cargo.nome} - R$ ${cargo.salarioBase.toFixed(2)}` }))}
+        />
       </Form.Item>
       {/* Campo Contrato */}
       <Form.Item

@@ -39,6 +39,7 @@ import { MobileUserService } from '../MobileUserService';
 import { SupervisorService } from '../SupervisorService';
 import { TipoAtividadeService } from '../TipoAtividadeService';
 import { BaseService } from '../BaseService';
+import { CargoService } from '../CargoService';
 import { TipoChecklistService } from '../TipoChecklistService';
 import { TipoEquipeService } from '../TipoEquipeService';
 import { TipoVeiculoService } from '../TipoVeiculoService';
@@ -62,6 +63,7 @@ export function registerServices(): void {
   // Registra serviços de domínio
   container.register('contratoService', () => new ContratoService());
   container.register('baseService', () => new BaseService());
+  container.register('cargoService', () => new CargoService());
   container.register('tipoEquipeService', () => new TipoEquipeService());
   container.register('equipeService', () => new EquipeService());
   container.register('tipoVeiculoService', () => new TipoVeiculoService());

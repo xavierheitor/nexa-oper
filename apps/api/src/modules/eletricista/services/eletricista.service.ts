@@ -248,6 +248,14 @@ export class EletricistaService {
             matricula: true,
             telefone: true,
             estado: true,
+            admissao: true,
+            cargoId: true,
+            cargo: {
+              select: {
+                id: true,
+                nome: true,
+              },
+            },
             contratoId: true,
             contrato: {
               select: {
@@ -302,6 +310,14 @@ export class EletricistaService {
           matricula: true,
           telefone: true,
           estado: true,
+          admissao: true,
+          cargoId: true,
+          cargo: {
+            select: {
+              id: true,
+              nome: true,
+            },
+          },
           contratoId: true,
           contrato: {
             select: {
@@ -364,6 +380,8 @@ export class EletricistaService {
           matricula: matricula.trim(),
           telefone: telefone.trim(),
           estado: estado.toUpperCase(),
+          admissao: createEletricistaDto.admissao || new Date(),
+          cargo: { connect: { id: createEletricistaDto.cargoId } },
           contrato: { connect: { id: contratoId } },
           ...createAuditData(userContext),
         },
@@ -373,6 +391,14 @@ export class EletricistaService {
           matricula: true,
           telefone: true,
           estado: true,
+          admissao: true,
+          cargoId: true,
+          cargo: {
+            select: {
+              id: true,
+              nome: true,
+            },
+          },
           contratoId: true,
           contrato: {
             select: {
@@ -411,7 +437,7 @@ export class EletricistaService {
     updateEletricistaDto: UpdateEletricistaDto,
     allowedContracts?: ContractPermission[]
   ): Promise<EletricistaResponseDto> {
-    const { nome, matricula, telefone, estado, contratoId } =
+    const { nome, matricula, telefone, estado, admissao, cargoId, contratoId } =
       updateEletricistaDto;
     const userContext = this.getCurrentUserContext();
 
@@ -458,6 +484,10 @@ export class EletricistaService {
           ...(estado && {
             estado: estado.trim().toUpperCase(),
           }),
+          ...(admissao && { admissao }),
+          ...(cargoId && {
+            cargo: { connect: { id: cargoId } },
+          }),
           ...(contratoId && {
             contrato: { connect: { id: contratoId } },
           }),
@@ -469,6 +499,14 @@ export class EletricistaService {
           matricula: true,
           telefone: true,
           estado: true,
+          admissao: true,
+          cargoId: true,
+          cargo: {
+            select: {
+              id: true,
+              nome: true,
+            },
+          },
           contratoId: true,
           contrato: {
             select: {

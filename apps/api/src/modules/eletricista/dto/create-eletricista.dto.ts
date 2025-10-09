@@ -2,11 +2,13 @@
  * DTO para criação de eletricistas
  */
 
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
+  IsDate,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsPositive,
   IsString,
   Length,
@@ -67,6 +69,21 @@ export class CreateEletricistaDto {
   )
   @Transform(({ value }) => value?.trim().toUpperCase())
   estado: string;
+
+  @ApiPropertyOptional({
+    description: 'Data de admissão',
+    example: '2024-01-01T00:00:00.000Z',
+  })
+  @IsOptional()
+  @IsDate({ message: 'Data de admissão deve ser uma data válida' })
+  @Type(() => Date)
+  admissao?: Date;
+
+  @ApiProperty({ description: 'Cargo associado', example: 1 })
+  @Type(() => Number)
+  @IsInt({ message: 'Cargo deve ser um número inteiro' })
+  @IsPositive({ message: 'Cargo deve ser positivo' })
+  cargoId: number;
 
   @ApiProperty({ description: 'Contrato associado', example: 12 })
   @Type(() => Number)

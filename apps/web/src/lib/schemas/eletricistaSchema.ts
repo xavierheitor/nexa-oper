@@ -14,10 +14,27 @@
 import { z } from 'zod';
 
 export const eletricistaCreateSchema = z.object({
-  nome: z.string().min(1, 'Nome é obrigatório').max(255, 'Nome deve ter no máximo 255 caracteres'),
-  matricula: z.string().min(1, 'Matrícula é obrigatória').max(255, 'Matrícula deve ter no máximo 255 caracteres'),
-  telefone: z.string().min(1, 'Telefone é obrigatório').max(255, 'Telefone deve ter no máximo 255 caracteres'),
-  estado: z.string().min(1, 'Estado é obrigatório').max(2, 'Estado deve ter no máximo 2 caracteres'),
+  nome: z
+    .string()
+    .min(1, 'Nome é obrigatório')
+    .max(255, 'Nome deve ter no máximo 255 caracteres'),
+  matricula: z
+    .string()
+    .min(1, 'Matrícula é obrigatória')
+    .max(255, 'Matrícula deve ter no máximo 255 caracteres'),
+  telefone: z
+    .string()
+    .min(1, 'Telefone é obrigatório')
+    .max(255, 'Telefone deve ter no máximo 255 caracteres'),
+  estado: z
+    .string()
+    .min(1, 'Estado é obrigatório')
+    .max(2, 'Estado deve ter no máximo 2 caracteres'),
+  admissao: z.coerce
+    .date()
+    .optional()
+    .default(() => new Date()),
+  cargoId: z.number().int('Cargo é obrigatório'),
   contratoId: z.number().int('Contrato é obrigatório'),
   baseId: z.number().int('Base é obrigatória').optional(),
 });
@@ -36,6 +53,26 @@ export const eletricistaFilterSchema = z.object({
   contratoId: z.number().int('Contrato é obrigatório').optional(),
 });
 
+// Schema para cadastro em lote
+export const eletricistaLoteItemSchema = z.object({
+  nome: z.string().min(1, 'Nome é obrigatório').max(255),
+  matricula: z.string().min(1, 'Matrícula é obrigatória').max(255),
+  telefone: z.string().min(1, 'Telefone é obrigatório').max(255),
+  estado: z.string().length(2, 'Estado deve ter 2 caracteres').toUpperCase(),
+  admissao: z.coerce.date(),
+});
+
+export const eletricistaLoteSchema = z.object({
+  contratoId: z.number().int().positive('Contrato é obrigatório'),
+  cargoId: z.number().int().positive('Cargo é obrigatório'),
+  baseId: z.number().int().positive('Base é obrigatória'),
+  eletricistas: z
+    .array(eletricistaLoteItemSchema)
+    .min(1, 'Adicione pelo menos um eletricista'),
+});
+
 export type EletricistaCreate = z.infer<typeof eletricistaCreateSchema>;
 export type EletricistaUpdate = z.infer<typeof eletricistaUpdateSchema>;
 export type EletricistaFilter = z.infer<typeof eletricistaFilterSchema>;
+export type EletricistaLoteInput = z.infer<typeof eletricistaLoteSchema>;
+export type EletricistaLoteItem = z.infer<typeof eletricistaLoteItemSchema>;

@@ -4,17 +4,21 @@ import { useState } from 'react';
 
 // Importações das Server Actions para buscar dados dos selects
 import { listEletricistas } from '@/lib/actions/eletricista/list';
+import { createEletricistasLote } from '@/lib/actions/eletricista/createLote';
+import { listContratos } from '@/lib/actions/contrato/list';
+import { listCargos } from '@/lib/actions/cargo/list';
+import { listBases } from '@/lib/actions/base/list';
 
 // Tipos do Prisma
-import { Base, Eletricista } from '@nexa-oper/db';
+import { Base, Cargo, Contrato, Eletricista } from '@nexa-oper/db';
 
 // Importações do hook e utilitários da aplicação
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
-import { App, Button, Card, Modal, Table, Tag } from 'antd';
-import { SwapOutlined } from '@ant-design/icons';
+import { App, Button, Card, Modal, Space, Table, Tag } from 'antd';
+import { SwapOutlined, PlusOutlined } from '@ant-design/icons';
 import { createEletricista } from '../../../../lib/actions/eletricista/create';
 import { deleteEletricista } from '../../../../lib/actions/eletricista/delete';
 import { transferEletricistaBase } from '../../../../lib/actions/eletricista/transferBase';
@@ -23,6 +27,7 @@ import { ActionResult } from '../../../../lib/types/common';
 import TransferBaseModal from '../../../../ui/components/TransferBaseModal';
 import { getSelectFilter, getTextFilter } from '../../../../ui/components/tableFilters';
 import EletricistaForm, { EletricistaFormData } from './form';
+import EletricistaLoteForm from './lote-form';
 
 type EletricistaWithBase = Eletricista & { baseAtual?: Base | null };
 
@@ -36,6 +41,10 @@ export default function EletricistaPage() {
   const [transferTarget, setTransferTarget] = useState<EletricistaWithBase | null>(null);
   // Estado para controlar o loading da transferência de base
   const [isTransferLoading, setIsTransferLoading] = useState(false);
+  // Estado para controlar o modal de cadastro em lote
+  const [isLoteModalOpen, setIsLoteModalOpen] = useState(false);
+  // Estado para controlar o loading do cadastro em lote
+  const [isLoteLoading, setIsLoteLoading] = useState(false);
 
 
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
@@ -50,7 +59,49 @@ export default function EletricistaPage() {
       orderDir: 'desc', // Direção da ordenação (mais recentes primeiro)
       include: {
         contrato: true, // Inclui dados do contrato
+        cargo: true, // Inclui dados do cargo
       },
+    },
+  });
+
+  // Hooks para dados necessários no formulário de lote
+  const contratos = useEntityData<Contrato>({
+    key: 'contratos-lote',
+    fetcher: unwrapFetcher(listContratos),
+    paginationEnabled: false,
+    initialParams: { page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' },
+  });
+
+  const cargos = useEntityData<Cargo>({
+    key: 'cargos-lote',
+    fetcher: unwrapFetcher(listCargos),
+    paginationEnabled: false,
+    initialParams: { page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' },
+  });
+
+  const bases = useEntityData<Base>({
+    key: 'bases-lote',
+    fetcher: unwrapFetcher(listBases),
+    paginationEnabled: false,
+    initialParams: { page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' },
+  });
+
+  // Debug: Log dos dados carregados
+  console.log('🔍 Dados para o formulário de lote:', {
+    contratos: {
+      total: contratos.data?.length || 0,
+      primeiros: contratos.data?.slice(0, 2),
+      isLoading: contratos.isLoading,
+    },
+    cargos: {
+      total: cargos.data?.length || 0,
+      primeiros: cargos.data?.slice(0, 2),
+      isLoading: cargos.isLoading,
+    },
+    bases: {
+      total: bases.data?.length || 0,
+      primeiros: bases.data?.slice(0, 2),
+      isLoading: bases.isLoading,
     },
   });
 
@@ -89,6 +140,13 @@ export default function EletricistaPage() {
         key: 'telefone',
         sorter: true, // Permite ordenação
         ...getTextFilter<Eletricista>('telefone', 'telefone do eletricista'), // Adiciona filtro de busca textual
+      },
+      // Coluna Cargo
+      {
+        title: 'Cargo',
+        key: 'cargo',
+        render: (_: unknown, record: any) => record.cargo?.nome || '-',
+        width: 150,
       },
       // Coluna Estado - com filtro de seleção
       {
@@ -173,6 +231,25 @@ export default function EletricistaPage() {
     });
   };
 
+  const handleLoteSubmit = async (values: any) => {
+    setIsLoteLoading(true);
+    try {
+      const result = await createEletricistasLote(values);
+
+      if (result.success && result.data) {
+        message.success(`${result.data.eletricistasCriados} eletricista(s) cadastrado(s) com sucesso!`);
+        setIsLoteModalOpen(false);
+        eletricistas.mutate(); // Revalida a lista
+      } else {
+        message.error(result.error || 'Erro ao cadastrar eletricistas em lote');
+      }
+    } catch (error: any) {
+      message.error(error.message || 'Erro ao cadastrar eletricistas em lote');
+    } finally {
+      setIsLoteLoading(false);
+    }
+  };
+
   const closeTransferModal = () => {
     if (isTransferLoading) {
       return;
@@ -225,10 +302,14 @@ export default function EletricistaPage() {
       <Card
         title="Eletricistas" // Título do card
         extra={
-          // Botão "Adicionar" no canto superior direito
-          <Button type="primary" onClick={() => controller.open()}>
-            Adicionar
-          </Button>
+          <Space>
+            <Button icon={<PlusOutlined />} onClick={() => setIsLoteModalOpen(true)}>
+              Cadastro em Lote
+            </Button>
+            <Button type="primary" onClick={() => controller.open()}>
+              Adicionar
+            </Button>
+          </Space>
         }
       >
         {/* Tabela principal com dados dos eletricistas */}
@@ -259,11 +340,31 @@ export default function EletricistaPage() {
             matricula: controller.editingItem.matricula,
             telefone: controller.editingItem.telefone,
             estado: controller.editingItem.estado,
+            admissao: controller.editingItem.admissao,
+            cargoId: controller.editingItem.cargoId,
             contratoId: controller.editingItem.contratoId,
             baseId: controller.editingItem.baseAtual?.id,
           } : undefined} // Se criando, deixa campos vazios
           onSubmit={handleSubmit} // Função que processa o submit
           loading={controller.loading} // Estado de loading para desabilitar botões
+        />
+      </Modal>
+
+      {/* Modal para cadastro em lote */}
+      <Modal
+        title="Cadastro em Lote de Eletricistas"
+        open={isLoteModalOpen}
+        onCancel={() => !isLoteLoading && setIsLoteModalOpen(false)}
+        footer={null}
+        destroyOnClose
+        width={900}
+      >
+        <EletricistaLoteForm
+          onSubmit={handleLoteSubmit}
+          loading={isLoteLoading}
+          contratos={contratos.data || []}
+          cargos={cargos.data || []}
+          bases={bases.data || []}
         />
       </Modal>
 

@@ -65,6 +65,8 @@ export class EletricistaRepository extends AbstractCrudRepository<
       const eletricista = await tx.eletricista.create({
         data: {
           ...eletricistaData,
+          admissao: data.admissao || new Date(),
+          cargoId: data.cargoId,
           createdBy,
           createdAt,
         },
@@ -122,6 +124,8 @@ export class EletricistaRepository extends AbstractCrudRepository<
         where: { id },
         data: {
           ...eletricistaData,
+          ...(data.admissao && { admissao: data.admissao }),
+          ...(data.cargoId && { cargoId: data.cargoId }),
           updatedBy,
           updatedAt,
         },

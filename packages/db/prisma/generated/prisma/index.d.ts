@@ -159,6 +159,11 @@ export type EletricistaBaseHistorico = $Result.DefaultSelection<Prisma.$Eletrici
  */
 export type Eletricista = $Result.DefaultSelection<Prisma.$EletricistaPayload>
 /**
+ * Model Cargo
+ * 
+ */
+export type Cargo = $Result.DefaultSelection<Prisma.$CargoPayload>
+/**
  * Model TipoEquipe
  * 
  */
@@ -821,6 +826,16 @@ export class PrismaClient<
     * ```
     */
   get eletricista(): Prisma.EletricistaDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.cargo`: Exposes CRUD operations for the **Cargo** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Cargos
+    * const cargos = await prisma.cargo.findMany()
+    * ```
+    */
+  get cargo(): Prisma.CargoDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.tipoEquipe`: Exposes CRUD operations for the **TipoEquipe** model.
@@ -1490,6 +1505,7 @@ export namespace Prisma {
     MobileContratoPermissao: 'MobileContratoPermissao',
     EletricistaBaseHistorico: 'EletricistaBaseHistorico',
     Eletricista: 'Eletricista',
+    Cargo: 'Cargo',
     TipoEquipe: 'TipoEquipe',
     Equipe: 'Equipe',
     EquipeSupervisor: 'EquipeSupervisor',
@@ -1528,7 +1544,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "apr" | "aprPergunta" | "aprPerguntaRelacao" | "aprOpcaoResposta" | "aprOpcaoRespostaRelacao" | "aprTipoAtividadeRelacao" | "tipoAtividade" | "mobileUser" | "mobileSession" | "mobileToken" | "user" | "account" | "session" | "verificationToken" | "role" | "roleUser" | "base" | "tipoChecklist" | "checklist" | "checklistPergunta" | "checklistPerguntaRelacao" | "checklistOpcaoResposta" | "checklistOpcaoRespostaRelacao" | "checklistTipoVeiculoRelacao" | "checklistTipoEquipeRelacao" | "contrato" | "mobileContratoPermissao" | "eletricistaBaseHistorico" | "eletricista" | "tipoEquipe" | "equipe" | "equipeSupervisor" | "tipoEscala" | "tipoEscalaCicloPosicao" | "tipoEscalaSemanaMascara" | "escalaEquipePeriodo" | "slotEscala" | "eventoCobertura" | "equipeHorarioVigencia" | "horarioAberturaCatalogo" | "equipeTurnoHistorico" | "supervisor" | "test" | "turno" | "turnoEletricista" | "veiculoBaseHistorico" | "tipoVeiculo" | "veiculo" | "veiculoOdometro"
+      modelProps: "apr" | "aprPergunta" | "aprPerguntaRelacao" | "aprOpcaoResposta" | "aprOpcaoRespostaRelacao" | "aprTipoAtividadeRelacao" | "tipoAtividade" | "mobileUser" | "mobileSession" | "mobileToken" | "user" | "account" | "session" | "verificationToken" | "role" | "roleUser" | "base" | "tipoChecklist" | "checklist" | "checklistPergunta" | "checklistPerguntaRelacao" | "checklistOpcaoResposta" | "checklistOpcaoRespostaRelacao" | "checklistTipoVeiculoRelacao" | "checklistTipoEquipeRelacao" | "contrato" | "mobileContratoPermissao" | "eletricistaBaseHistorico" | "eletricista" | "cargo" | "tipoEquipe" | "equipe" | "equipeSupervisor" | "tipoEscala" | "tipoEscalaCicloPosicao" | "tipoEscalaSemanaMascara" | "escalaEquipePeriodo" | "slotEscala" | "eventoCobertura" | "equipeHorarioVigencia" | "horarioAberturaCatalogo" | "equipeTurnoHistorico" | "supervisor" | "test" | "turno" | "turnoEletricista" | "veiculoBaseHistorico" | "tipoVeiculo" | "veiculo" | "veiculoOdometro"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3446,6 +3462,72 @@ export namespace Prisma {
           }
         }
       }
+      Cargo: {
+        payload: Prisma.$CargoPayload<ExtArgs>
+        fields: Prisma.CargoFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CargoFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CargoFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoPayload>
+          }
+          findFirst: {
+            args: Prisma.CargoFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CargoFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoPayload>
+          }
+          findMany: {
+            args: Prisma.CargoFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoPayload>[]
+          }
+          create: {
+            args: Prisma.CargoCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoPayload>
+          }
+          createMany: {
+            args: Prisma.CargoCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.CargoDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoPayload>
+          }
+          update: {
+            args: Prisma.CargoUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoPayload>
+          }
+          deleteMany: {
+            args: Prisma.CargoDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CargoUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.CargoUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoPayload>
+          }
+          aggregate: {
+            args: Prisma.CargoAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCargo>
+          }
+          groupBy: {
+            args: Prisma.CargoGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CargoGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CargoCountArgs<ExtArgs>
+            result: $Utils.Optional<CargoCountAggregateOutputType> | number
+          }
+        }
+      }
       TipoEquipe: {
         payload: Prisma.$TipoEquipePayload<ExtArgs>
         fields: Prisma.TipoEquipeFieldRefs
@@ -4887,6 +4969,7 @@ export namespace Prisma {
     mobileContratoPermissao?: MobileContratoPermissaoOmit
     eletricistaBaseHistorico?: EletricistaBaseHistoricoOmit
     eletricista?: EletricistaOmit
+    cargo?: CargoOmit
     tipoEquipe?: TipoEquipeOmit
     equipe?: EquipeOmit
     equipeSupervisor?: EquipeSupervisorOmit
@@ -5584,6 +5667,37 @@ export namespace Prisma {
    */
   export type EletricistaCountOutputTypeCountSlotEscalaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SlotEscalaWhereInput
+  }
+
+
+  /**
+   * Count Type CargoCountOutputType
+   */
+
+  export type CargoCountOutputType = {
+    Eletricista: number
+  }
+
+  export type CargoCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    Eletricista?: boolean | CargoCountOutputTypeCountEletricistaArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * CargoCountOutputType without action
+   */
+  export type CargoCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoCountOutputType
+     */
+    select?: CargoCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * CargoCountOutputType without action
+   */
+  export type CargoCountOutputTypeCountEletricistaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EletricistaWhereInput
   }
 
 
@@ -34897,11 +35011,13 @@ export namespace Prisma {
 
   export type EletricistaAvgAggregateOutputType = {
     id: number | null
+    cargoId: number | null
     contratoId: number | null
   }
 
   export type EletricistaSumAggregateOutputType = {
     id: number | null
+    cargoId: number | null
     contratoId: number | null
   }
 
@@ -34911,6 +35027,8 @@ export namespace Prisma {
     matricula: string | null
     telefone: string | null
     estado: string | null
+    admissao: Date | null
+    cargoId: number | null
     createdAt: Date | null
     createdBy: string | null
     updatedAt: Date | null
@@ -34926,6 +35044,8 @@ export namespace Prisma {
     matricula: string | null
     telefone: string | null
     estado: string | null
+    admissao: Date | null
+    cargoId: number | null
     createdAt: Date | null
     createdBy: string | null
     updatedAt: Date | null
@@ -34941,6 +35061,8 @@ export namespace Prisma {
     matricula: number
     telefone: number
     estado: number
+    admissao: number
+    cargoId: number
     createdAt: number
     createdBy: number
     updatedAt: number
@@ -34954,11 +35076,13 @@ export namespace Prisma {
 
   export type EletricistaAvgAggregateInputType = {
     id?: true
+    cargoId?: true
     contratoId?: true
   }
 
   export type EletricistaSumAggregateInputType = {
     id?: true
+    cargoId?: true
     contratoId?: true
   }
 
@@ -34968,6 +35092,8 @@ export namespace Prisma {
     matricula?: true
     telefone?: true
     estado?: true
+    admissao?: true
+    cargoId?: true
     createdAt?: true
     createdBy?: true
     updatedAt?: true
@@ -34983,6 +35109,8 @@ export namespace Prisma {
     matricula?: true
     telefone?: true
     estado?: true
+    admissao?: true
+    cargoId?: true
     createdAt?: true
     createdBy?: true
     updatedAt?: true
@@ -34998,6 +35126,8 @@ export namespace Prisma {
     matricula?: true
     telefone?: true
     estado?: true
+    admissao?: true
+    cargoId?: true
     createdAt?: true
     createdBy?: true
     updatedAt?: true
@@ -35100,6 +35230,8 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao: Date
+    cargoId: number
     createdAt: Date
     createdBy: string
     updatedAt: Date | null
@@ -35134,6 +35266,8 @@ export namespace Prisma {
     matricula?: boolean
     telefone?: boolean
     estado?: boolean
+    admissao?: boolean
+    cargoId?: boolean
     createdAt?: boolean
     createdBy?: boolean
     updatedAt?: boolean
@@ -35141,6 +35275,7 @@ export namespace Prisma {
     deletedAt?: boolean
     deletedBy?: boolean
     contratoId?: boolean
+    cargo?: boolean | CargoDefaultArgs<ExtArgs>
     contrato?: boolean | ContratoDefaultArgs<ExtArgs>
     TurnoEletricistas?: boolean | Eletricista$TurnoEletricistasArgs<ExtArgs>
     EletricistaBaseHistorico?: boolean | Eletricista$EletricistaBaseHistoricoArgs<ExtArgs>
@@ -35157,6 +35292,8 @@ export namespace Prisma {
     matricula?: boolean
     telefone?: boolean
     estado?: boolean
+    admissao?: boolean
+    cargoId?: boolean
     createdAt?: boolean
     createdBy?: boolean
     updatedAt?: boolean
@@ -35166,8 +35303,9 @@ export namespace Prisma {
     contratoId?: boolean
   }
 
-  export type EletricistaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "matricula" | "telefone" | "estado" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy" | "contratoId", ExtArgs["result"]["eletricista"]>
+  export type EletricistaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "matricula" | "telefone" | "estado" | "admissao" | "cargoId" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy" | "contratoId", ExtArgs["result"]["eletricista"]>
   export type EletricistaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    cargo?: boolean | CargoDefaultArgs<ExtArgs>
     contrato?: boolean | ContratoDefaultArgs<ExtArgs>
     TurnoEletricistas?: boolean | Eletricista$TurnoEletricistasArgs<ExtArgs>
     EletricistaBaseHistorico?: boolean | Eletricista$EletricistaBaseHistoricoArgs<ExtArgs>
@@ -35179,6 +35317,7 @@ export namespace Prisma {
   export type $EletricistaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Eletricista"
     objects: {
+      cargo: Prisma.$CargoPayload<ExtArgs>
       contrato: Prisma.$ContratoPayload<ExtArgs>
       TurnoEletricistas: Prisma.$TurnoEletricistaPayload<ExtArgs>[]
       EletricistaBaseHistorico: Prisma.$EletricistaBaseHistoricoPayload<ExtArgs>[]
@@ -35191,6 +35330,8 @@ export namespace Prisma {
       matricula: string
       telefone: string
       estado: string
+      admissao: Date
+      cargoId: number
       createdAt: Date
       createdBy: string
       updatedAt: Date | null
@@ -35538,6 +35679,7 @@ export namespace Prisma {
    */
   export interface Prisma__EletricistaClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    cargo<T extends CargoDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CargoDefaultArgs<ExtArgs>>): Prisma__CargoClient<$Result.GetResult<Prisma.$CargoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     contrato<T extends ContratoDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ContratoDefaultArgs<ExtArgs>>): Prisma__ContratoClient<$Result.GetResult<Prisma.$ContratoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     TurnoEletricistas<T extends Eletricista$TurnoEletricistasArgs<ExtArgs> = {}>(args?: Subset<T, Eletricista$TurnoEletricistasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TurnoEletricistaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     EletricistaBaseHistorico<T extends Eletricista$EletricistaBaseHistoricoArgs<ExtArgs> = {}>(args?: Subset<T, Eletricista$EletricistaBaseHistoricoArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EletricistaBaseHistoricoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -35577,6 +35719,8 @@ export namespace Prisma {
     readonly matricula: FieldRef<"Eletricista", 'String'>
     readonly telefone: FieldRef<"Eletricista", 'String'>
     readonly estado: FieldRef<"Eletricista", 'String'>
+    readonly admissao: FieldRef<"Eletricista", 'DateTime'>
+    readonly cargoId: FieldRef<"Eletricista", 'Int'>
     readonly createdAt: FieldRef<"Eletricista", 'DateTime'>
     readonly createdBy: FieldRef<"Eletricista", 'String'>
     readonly updatedAt: FieldRef<"Eletricista", 'DateTime'>
@@ -36038,6 +36182,1043 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: EletricistaInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Cargo
+   */
+
+  export type AggregateCargo = {
+    _count: CargoCountAggregateOutputType | null
+    _avg: CargoAvgAggregateOutputType | null
+    _sum: CargoSumAggregateOutputType | null
+    _min: CargoMinAggregateOutputType | null
+    _max: CargoMaxAggregateOutputType | null
+  }
+
+  export type CargoAvgAggregateOutputType = {
+    id: number | null
+    salarioBase: number | null
+  }
+
+  export type CargoSumAggregateOutputType = {
+    id: number | null
+    salarioBase: number | null
+  }
+
+  export type CargoMinAggregateOutputType = {
+    id: number | null
+    nome: string | null
+    salarioBase: number | null
+    createdAt: Date | null
+    createdBy: string | null
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+  }
+
+  export type CargoMaxAggregateOutputType = {
+    id: number | null
+    nome: string | null
+    salarioBase: number | null
+    createdAt: Date | null
+    createdBy: string | null
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+  }
+
+  export type CargoCountAggregateOutputType = {
+    id: number
+    nome: number
+    salarioBase: number
+    createdAt: number
+    createdBy: number
+    updatedAt: number
+    updatedBy: number
+    deletedAt: number
+    deletedBy: number
+    _all: number
+  }
+
+
+  export type CargoAvgAggregateInputType = {
+    id?: true
+    salarioBase?: true
+  }
+
+  export type CargoSumAggregateInputType = {
+    id?: true
+    salarioBase?: true
+  }
+
+  export type CargoMinAggregateInputType = {
+    id?: true
+    nome?: true
+    salarioBase?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+  }
+
+  export type CargoMaxAggregateInputType = {
+    id?: true
+    nome?: true
+    salarioBase?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+  }
+
+  export type CargoCountAggregateInputType = {
+    id?: true
+    nome?: true
+    salarioBase?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+    _all?: true
+  }
+
+  export type CargoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Cargo to aggregate.
+     */
+    where?: CargoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Cargos to fetch.
+     */
+    orderBy?: CargoOrderByWithRelationInput | CargoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CargoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Cargos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Cargos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Cargos
+    **/
+    _count?: true | CargoCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: CargoAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: CargoSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CargoMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CargoMaxAggregateInputType
+  }
+
+  export type GetCargoAggregateType<T extends CargoAggregateArgs> = {
+        [P in keyof T & keyof AggregateCargo]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCargo[P]>
+      : GetScalarType<T[P], AggregateCargo[P]>
+  }
+
+
+
+
+  export type CargoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CargoWhereInput
+    orderBy?: CargoOrderByWithAggregationInput | CargoOrderByWithAggregationInput[]
+    by: CargoScalarFieldEnum[] | CargoScalarFieldEnum
+    having?: CargoScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CargoCountAggregateInputType | true
+    _avg?: CargoAvgAggregateInputType
+    _sum?: CargoSumAggregateInputType
+    _min?: CargoMinAggregateInputType
+    _max?: CargoMaxAggregateInputType
+  }
+
+  export type CargoGroupByOutputType = {
+    id: number
+    nome: string
+    salarioBase: number
+    createdAt: Date
+    createdBy: string
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+    _count: CargoCountAggregateOutputType | null
+    _avg: CargoAvgAggregateOutputType | null
+    _sum: CargoSumAggregateOutputType | null
+    _min: CargoMinAggregateOutputType | null
+    _max: CargoMaxAggregateOutputType | null
+  }
+
+  type GetCargoGroupByPayload<T extends CargoGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CargoGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CargoGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CargoGroupByOutputType[P]>
+            : GetScalarType<T[P], CargoGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CargoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    nome?: boolean
+    salarioBase?: boolean
+    createdAt?: boolean
+    createdBy?: boolean
+    updatedAt?: boolean
+    updatedBy?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+    Eletricista?: boolean | Cargo$EletricistaArgs<ExtArgs>
+    _count?: boolean | CargoCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["cargo"]>
+
+
+
+  export type CargoSelectScalar = {
+    id?: boolean
+    nome?: boolean
+    salarioBase?: boolean
+    createdAt?: boolean
+    createdBy?: boolean
+    updatedAt?: boolean
+    updatedBy?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+  }
+
+  export type CargoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "salarioBase" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["cargo"]>
+  export type CargoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    Eletricista?: boolean | Cargo$EletricistaArgs<ExtArgs>
+    _count?: boolean | CargoCountOutputTypeDefaultArgs<ExtArgs>
+  }
+
+  export type $CargoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Cargo"
+    objects: {
+      Eletricista: Prisma.$EletricistaPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      nome: string
+      salarioBase: number
+      createdAt: Date
+      createdBy: string
+      updatedAt: Date | null
+      updatedBy: string | null
+      deletedAt: Date | null
+      deletedBy: string | null
+    }, ExtArgs["result"]["cargo"]>
+    composites: {}
+  }
+
+  type CargoGetPayload<S extends boolean | null | undefined | CargoDefaultArgs> = $Result.GetResult<Prisma.$CargoPayload, S>
+
+  type CargoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CargoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CargoCountAggregateInputType | true
+    }
+
+  export interface CargoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Cargo'], meta: { name: 'Cargo' } }
+    /**
+     * Find zero or one Cargo that matches the filter.
+     * @param {CargoFindUniqueArgs} args - Arguments to find a Cargo
+     * @example
+     * // Get one Cargo
+     * const cargo = await prisma.cargo.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CargoFindUniqueArgs>(args: SelectSubset<T, CargoFindUniqueArgs<ExtArgs>>): Prisma__CargoClient<$Result.GetResult<Prisma.$CargoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Cargo that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CargoFindUniqueOrThrowArgs} args - Arguments to find a Cargo
+     * @example
+     * // Get one Cargo
+     * const cargo = await prisma.cargo.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CargoFindUniqueOrThrowArgs>(args: SelectSubset<T, CargoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CargoClient<$Result.GetResult<Prisma.$CargoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Cargo that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoFindFirstArgs} args - Arguments to find a Cargo
+     * @example
+     * // Get one Cargo
+     * const cargo = await prisma.cargo.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CargoFindFirstArgs>(args?: SelectSubset<T, CargoFindFirstArgs<ExtArgs>>): Prisma__CargoClient<$Result.GetResult<Prisma.$CargoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Cargo that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoFindFirstOrThrowArgs} args - Arguments to find a Cargo
+     * @example
+     * // Get one Cargo
+     * const cargo = await prisma.cargo.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CargoFindFirstOrThrowArgs>(args?: SelectSubset<T, CargoFindFirstOrThrowArgs<ExtArgs>>): Prisma__CargoClient<$Result.GetResult<Prisma.$CargoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Cargos that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Cargos
+     * const cargos = await prisma.cargo.findMany()
+     * 
+     * // Get first 10 Cargos
+     * const cargos = await prisma.cargo.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const cargoWithIdOnly = await prisma.cargo.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CargoFindManyArgs>(args?: SelectSubset<T, CargoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CargoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Cargo.
+     * @param {CargoCreateArgs} args - Arguments to create a Cargo.
+     * @example
+     * // Create one Cargo
+     * const Cargo = await prisma.cargo.create({
+     *   data: {
+     *     // ... data to create a Cargo
+     *   }
+     * })
+     * 
+     */
+    create<T extends CargoCreateArgs>(args: SelectSubset<T, CargoCreateArgs<ExtArgs>>): Prisma__CargoClient<$Result.GetResult<Prisma.$CargoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Cargos.
+     * @param {CargoCreateManyArgs} args - Arguments to create many Cargos.
+     * @example
+     * // Create many Cargos
+     * const cargo = await prisma.cargo.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CargoCreateManyArgs>(args?: SelectSubset<T, CargoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Cargo.
+     * @param {CargoDeleteArgs} args - Arguments to delete one Cargo.
+     * @example
+     * // Delete one Cargo
+     * const Cargo = await prisma.cargo.delete({
+     *   where: {
+     *     // ... filter to delete one Cargo
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CargoDeleteArgs>(args: SelectSubset<T, CargoDeleteArgs<ExtArgs>>): Prisma__CargoClient<$Result.GetResult<Prisma.$CargoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Cargo.
+     * @param {CargoUpdateArgs} args - Arguments to update one Cargo.
+     * @example
+     * // Update one Cargo
+     * const cargo = await prisma.cargo.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CargoUpdateArgs>(args: SelectSubset<T, CargoUpdateArgs<ExtArgs>>): Prisma__CargoClient<$Result.GetResult<Prisma.$CargoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Cargos.
+     * @param {CargoDeleteManyArgs} args - Arguments to filter Cargos to delete.
+     * @example
+     * // Delete a few Cargos
+     * const { count } = await prisma.cargo.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CargoDeleteManyArgs>(args?: SelectSubset<T, CargoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Cargos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Cargos
+     * const cargo = await prisma.cargo.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CargoUpdateManyArgs>(args: SelectSubset<T, CargoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Cargo.
+     * @param {CargoUpsertArgs} args - Arguments to update or create a Cargo.
+     * @example
+     * // Update or create a Cargo
+     * const cargo = await prisma.cargo.upsert({
+     *   create: {
+     *     // ... data to create a Cargo
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Cargo we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CargoUpsertArgs>(args: SelectSubset<T, CargoUpsertArgs<ExtArgs>>): Prisma__CargoClient<$Result.GetResult<Prisma.$CargoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Cargos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoCountArgs} args - Arguments to filter Cargos to count.
+     * @example
+     * // Count the number of Cargos
+     * const count = await prisma.cargo.count({
+     *   where: {
+     *     // ... the filter for the Cargos we want to count
+     *   }
+     * })
+    **/
+    count<T extends CargoCountArgs>(
+      args?: Subset<T, CargoCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CargoCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Cargo.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CargoAggregateArgs>(args: Subset<T, CargoAggregateArgs>): Prisma.PrismaPromise<GetCargoAggregateType<T>>
+
+    /**
+     * Group by Cargo.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CargoGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CargoGroupByArgs['orderBy'] }
+        : { orderBy?: CargoGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CargoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCargoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Cargo model
+   */
+  readonly fields: CargoFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Cargo.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CargoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    Eletricista<T extends Cargo$EletricistaArgs<ExtArgs> = {}>(args?: Subset<T, Cargo$EletricistaArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EletricistaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Cargo model
+   */
+  interface CargoFieldRefs {
+    readonly id: FieldRef<"Cargo", 'Int'>
+    readonly nome: FieldRef<"Cargo", 'String'>
+    readonly salarioBase: FieldRef<"Cargo", 'Float'>
+    readonly createdAt: FieldRef<"Cargo", 'DateTime'>
+    readonly createdBy: FieldRef<"Cargo", 'String'>
+    readonly updatedAt: FieldRef<"Cargo", 'DateTime'>
+    readonly updatedBy: FieldRef<"Cargo", 'String'>
+    readonly deletedAt: FieldRef<"Cargo", 'DateTime'>
+    readonly deletedBy: FieldRef<"Cargo", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Cargo findUnique
+   */
+  export type CargoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Cargo
+     */
+    select?: CargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Cargo
+     */
+    omit?: CargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoInclude<ExtArgs> | null
+    /**
+     * Filter, which Cargo to fetch.
+     */
+    where: CargoWhereUniqueInput
+  }
+
+  /**
+   * Cargo findUniqueOrThrow
+   */
+  export type CargoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Cargo
+     */
+    select?: CargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Cargo
+     */
+    omit?: CargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoInclude<ExtArgs> | null
+    /**
+     * Filter, which Cargo to fetch.
+     */
+    where: CargoWhereUniqueInput
+  }
+
+  /**
+   * Cargo findFirst
+   */
+  export type CargoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Cargo
+     */
+    select?: CargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Cargo
+     */
+    omit?: CargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoInclude<ExtArgs> | null
+    /**
+     * Filter, which Cargo to fetch.
+     */
+    where?: CargoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Cargos to fetch.
+     */
+    orderBy?: CargoOrderByWithRelationInput | CargoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Cargos.
+     */
+    cursor?: CargoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Cargos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Cargos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Cargos.
+     */
+    distinct?: CargoScalarFieldEnum | CargoScalarFieldEnum[]
+  }
+
+  /**
+   * Cargo findFirstOrThrow
+   */
+  export type CargoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Cargo
+     */
+    select?: CargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Cargo
+     */
+    omit?: CargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoInclude<ExtArgs> | null
+    /**
+     * Filter, which Cargo to fetch.
+     */
+    where?: CargoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Cargos to fetch.
+     */
+    orderBy?: CargoOrderByWithRelationInput | CargoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Cargos.
+     */
+    cursor?: CargoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Cargos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Cargos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Cargos.
+     */
+    distinct?: CargoScalarFieldEnum | CargoScalarFieldEnum[]
+  }
+
+  /**
+   * Cargo findMany
+   */
+  export type CargoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Cargo
+     */
+    select?: CargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Cargo
+     */
+    omit?: CargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoInclude<ExtArgs> | null
+    /**
+     * Filter, which Cargos to fetch.
+     */
+    where?: CargoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Cargos to fetch.
+     */
+    orderBy?: CargoOrderByWithRelationInput | CargoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Cargos.
+     */
+    cursor?: CargoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Cargos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Cargos.
+     */
+    skip?: number
+    distinct?: CargoScalarFieldEnum | CargoScalarFieldEnum[]
+  }
+
+  /**
+   * Cargo create
+   */
+  export type CargoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Cargo
+     */
+    select?: CargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Cargo
+     */
+    omit?: CargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Cargo.
+     */
+    data: XOR<CargoCreateInput, CargoUncheckedCreateInput>
+  }
+
+  /**
+   * Cargo createMany
+   */
+  export type CargoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Cargos.
+     */
+    data: CargoCreateManyInput | CargoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Cargo update
+   */
+  export type CargoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Cargo
+     */
+    select?: CargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Cargo
+     */
+    omit?: CargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Cargo.
+     */
+    data: XOR<CargoUpdateInput, CargoUncheckedUpdateInput>
+    /**
+     * Choose, which Cargo to update.
+     */
+    where: CargoWhereUniqueInput
+  }
+
+  /**
+   * Cargo updateMany
+   */
+  export type CargoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Cargos.
+     */
+    data: XOR<CargoUpdateManyMutationInput, CargoUncheckedUpdateManyInput>
+    /**
+     * Filter which Cargos to update
+     */
+    where?: CargoWhereInput
+    /**
+     * Limit how many Cargos to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Cargo upsert
+   */
+  export type CargoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Cargo
+     */
+    select?: CargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Cargo
+     */
+    omit?: CargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Cargo to update in case it exists.
+     */
+    where: CargoWhereUniqueInput
+    /**
+     * In case the Cargo found by the `where` argument doesn't exist, create a new Cargo with this data.
+     */
+    create: XOR<CargoCreateInput, CargoUncheckedCreateInput>
+    /**
+     * In case the Cargo was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CargoUpdateInput, CargoUncheckedUpdateInput>
+  }
+
+  /**
+   * Cargo delete
+   */
+  export type CargoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Cargo
+     */
+    select?: CargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Cargo
+     */
+    omit?: CargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoInclude<ExtArgs> | null
+    /**
+     * Filter which Cargo to delete.
+     */
+    where: CargoWhereUniqueInput
+  }
+
+  /**
+   * Cargo deleteMany
+   */
+  export type CargoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Cargos to delete
+     */
+    where?: CargoWhereInput
+    /**
+     * Limit how many Cargos to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Cargo.Eletricista
+   */
+  export type Cargo$EletricistaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Eletricista
+     */
+    select?: EletricistaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Eletricista
+     */
+    omit?: EletricistaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EletricistaInclude<ExtArgs> | null
+    where?: EletricistaWhereInput
+    orderBy?: EletricistaOrderByWithRelationInput | EletricistaOrderByWithRelationInput[]
+    cursor?: EletricistaWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EletricistaScalarFieldEnum | EletricistaScalarFieldEnum[]
+  }
+
+  /**
+   * Cargo without action
+   */
+  export type CargoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Cargo
+     */
+    select?: CargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Cargo
+     */
+    omit?: CargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoInclude<ExtArgs> | null
   }
 
 
@@ -57867,6 +59048,8 @@ export namespace Prisma {
     matricula: 'matricula',
     telefone: 'telefone',
     estado: 'estado',
+    admissao: 'admissao',
+    cargoId: 'cargoId',
     createdAt: 'createdAt',
     createdBy: 'createdBy',
     updatedAt: 'updatedAt',
@@ -57877,6 +59060,21 @@ export namespace Prisma {
   };
 
   export type EletricistaScalarFieldEnum = (typeof EletricistaScalarFieldEnum)[keyof typeof EletricistaScalarFieldEnum]
+
+
+  export const CargoScalarFieldEnum: {
+    id: 'id',
+    nome: 'nome',
+    salarioBase: 'salarioBase',
+    createdAt: 'createdAt',
+    createdBy: 'createdBy',
+    updatedAt: 'updatedAt',
+    updatedBy: 'updatedBy',
+    deletedAt: 'deletedAt',
+    deletedBy: 'deletedBy'
+  };
+
+  export type CargoScalarFieldEnum = (typeof CargoScalarFieldEnum)[keyof typeof CargoScalarFieldEnum]
 
 
   export const TipoEquipeScalarFieldEnum: {
@@ -58519,6 +59717,16 @@ export namespace Prisma {
   export type EletricistaOrderByRelevanceFieldEnum = (typeof EletricistaOrderByRelevanceFieldEnum)[keyof typeof EletricistaOrderByRelevanceFieldEnum]
 
 
+  export const CargoOrderByRelevanceFieldEnum: {
+    nome: 'nome',
+    createdBy: 'createdBy',
+    updatedBy: 'updatedBy',
+    deletedBy: 'deletedBy'
+  };
+
+  export type CargoOrderByRelevanceFieldEnum = (typeof CargoOrderByRelevanceFieldEnum)[keyof typeof CargoOrderByRelevanceFieldEnum]
+
+
   export const TipoEquipeOrderByRelevanceFieldEnum: {
     nome: 'nome',
     createdBy: 'createdBy',
@@ -58755,6 +59963,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Float'
+   */
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+  /**
    * Reference to a field of type 'ModoRepeticao'
    */
   export type EnumModoRepeticaoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ModoRepeticao'>
@@ -58814,13 +60029,6 @@ export namespace Prisma {
    * Reference to a field of type 'Decimal'
    */
   export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
-    
-
-
-  /**
-   * Reference to a field of type 'Float'
-   */
-  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
     
   /**
    * Deep Input Types
@@ -61031,6 +62239,8 @@ export namespace Prisma {
     matricula?: StringFilter<"Eletricista"> | string
     telefone?: StringFilter<"Eletricista"> | string
     estado?: StringFilter<"Eletricista"> | string
+    admissao?: DateTimeFilter<"Eletricista"> | Date | string
+    cargoId?: IntFilter<"Eletricista"> | number
     createdAt?: DateTimeFilter<"Eletricista"> | Date | string
     createdBy?: StringFilter<"Eletricista"> | string
     updatedAt?: DateTimeNullableFilter<"Eletricista"> | Date | string | null
@@ -61038,6 +62248,7 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"Eletricista"> | Date | string | null
     deletedBy?: StringNullableFilter<"Eletricista"> | string | null
     contratoId?: IntFilter<"Eletricista"> | number
+    cargo?: XOR<CargoScalarRelationFilter, CargoWhereInput>
     contrato?: XOR<ContratoScalarRelationFilter, ContratoWhereInput>
     TurnoEletricistas?: TurnoEletricistaListRelationFilter
     EletricistaBaseHistorico?: EletricistaBaseHistoricoListRelationFilter
@@ -61051,6 +62262,8 @@ export namespace Prisma {
     matricula?: SortOrder
     telefone?: SortOrder
     estado?: SortOrder
+    admissao?: SortOrder
+    cargoId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrderInput | SortOrder
@@ -61058,6 +62271,7 @@ export namespace Prisma {
     deletedAt?: SortOrderInput | SortOrder
     deletedBy?: SortOrderInput | SortOrder
     contratoId?: SortOrder
+    cargo?: CargoOrderByWithRelationInput
     contrato?: ContratoOrderByWithRelationInput
     TurnoEletricistas?: TurnoEletricistaOrderByRelationAggregateInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoOrderByRelationAggregateInput
@@ -61075,6 +62289,8 @@ export namespace Prisma {
     matricula?: StringFilter<"Eletricista"> | string
     telefone?: StringFilter<"Eletricista"> | string
     estado?: StringFilter<"Eletricista"> | string
+    admissao?: DateTimeFilter<"Eletricista"> | Date | string
+    cargoId?: IntFilter<"Eletricista"> | number
     createdAt?: DateTimeFilter<"Eletricista"> | Date | string
     createdBy?: StringFilter<"Eletricista"> | string
     updatedAt?: DateTimeNullableFilter<"Eletricista"> | Date | string | null
@@ -61082,6 +62298,7 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"Eletricista"> | Date | string | null
     deletedBy?: StringNullableFilter<"Eletricista"> | string | null
     contratoId?: IntFilter<"Eletricista"> | number
+    cargo?: XOR<CargoScalarRelationFilter, CargoWhereInput>
     contrato?: XOR<ContratoScalarRelationFilter, ContratoWhereInput>
     TurnoEletricistas?: TurnoEletricistaListRelationFilter
     EletricistaBaseHistorico?: EletricistaBaseHistoricoListRelationFilter
@@ -61095,6 +62312,8 @@ export namespace Prisma {
     matricula?: SortOrder
     telefone?: SortOrder
     estado?: SortOrder
+    admissao?: SortOrder
+    cargoId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrderInput | SortOrder
@@ -61118,6 +62337,8 @@ export namespace Prisma {
     matricula?: StringWithAggregatesFilter<"Eletricista"> | string
     telefone?: StringWithAggregatesFilter<"Eletricista"> | string
     estado?: StringWithAggregatesFilter<"Eletricista"> | string
+    admissao?: DateTimeWithAggregatesFilter<"Eletricista"> | Date | string
+    cargoId?: IntWithAggregatesFilter<"Eletricista"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Eletricista"> | Date | string
     createdBy?: StringWithAggregatesFilter<"Eletricista"> | string
     updatedAt?: DateTimeNullableWithAggregatesFilter<"Eletricista"> | Date | string | null
@@ -61125,6 +62346,84 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Eletricista"> | Date | string | null
     deletedBy?: StringNullableWithAggregatesFilter<"Eletricista"> | string | null
     contratoId?: IntWithAggregatesFilter<"Eletricista"> | number
+  }
+
+  export type CargoWhereInput = {
+    AND?: CargoWhereInput | CargoWhereInput[]
+    OR?: CargoWhereInput[]
+    NOT?: CargoWhereInput | CargoWhereInput[]
+    id?: IntFilter<"Cargo"> | number
+    nome?: StringFilter<"Cargo"> | string
+    salarioBase?: FloatFilter<"Cargo"> | number
+    createdAt?: DateTimeFilter<"Cargo"> | Date | string
+    createdBy?: StringFilter<"Cargo"> | string
+    updatedAt?: DateTimeNullableFilter<"Cargo"> | Date | string | null
+    updatedBy?: StringNullableFilter<"Cargo"> | string | null
+    deletedAt?: DateTimeNullableFilter<"Cargo"> | Date | string | null
+    deletedBy?: StringNullableFilter<"Cargo"> | string | null
+    Eletricista?: EletricistaListRelationFilter
+  }
+
+  export type CargoOrderByWithRelationInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    salarioBase?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrderInput | SortOrder
+    updatedBy?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    deletedBy?: SortOrderInput | SortOrder
+    Eletricista?: EletricistaOrderByRelationAggregateInput
+    _relevance?: CargoOrderByRelevanceInput
+  }
+
+  export type CargoWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: CargoWhereInput | CargoWhereInput[]
+    OR?: CargoWhereInput[]
+    NOT?: CargoWhereInput | CargoWhereInput[]
+    nome?: StringFilter<"Cargo"> | string
+    salarioBase?: FloatFilter<"Cargo"> | number
+    createdAt?: DateTimeFilter<"Cargo"> | Date | string
+    createdBy?: StringFilter<"Cargo"> | string
+    updatedAt?: DateTimeNullableFilter<"Cargo"> | Date | string | null
+    updatedBy?: StringNullableFilter<"Cargo"> | string | null
+    deletedAt?: DateTimeNullableFilter<"Cargo"> | Date | string | null
+    deletedBy?: StringNullableFilter<"Cargo"> | string | null
+    Eletricista?: EletricistaListRelationFilter
+  }, "id">
+
+  export type CargoOrderByWithAggregationInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    salarioBase?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrderInput | SortOrder
+    updatedBy?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    deletedBy?: SortOrderInput | SortOrder
+    _count?: CargoCountOrderByAggregateInput
+    _avg?: CargoAvgOrderByAggregateInput
+    _max?: CargoMaxOrderByAggregateInput
+    _min?: CargoMinOrderByAggregateInput
+    _sum?: CargoSumOrderByAggregateInput
+  }
+
+  export type CargoScalarWhereWithAggregatesInput = {
+    AND?: CargoScalarWhereWithAggregatesInput | CargoScalarWhereWithAggregatesInput[]
+    OR?: CargoScalarWhereWithAggregatesInput[]
+    NOT?: CargoScalarWhereWithAggregatesInput | CargoScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"Cargo"> | number
+    nome?: StringWithAggregatesFilter<"Cargo"> | string
+    salarioBase?: FloatWithAggregatesFilter<"Cargo"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"Cargo"> | Date | string
+    createdBy?: StringWithAggregatesFilter<"Cargo"> | string
+    updatedAt?: DateTimeNullableWithAggregatesFilter<"Cargo"> | Date | string | null
+    updatedBy?: StringNullableWithAggregatesFilter<"Cargo"> | string | null
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"Cargo"> | Date | string | null
+    deletedBy?: StringNullableWithAggregatesFilter<"Cargo"> | string | null
   }
 
   export type TipoEquipeWhereInput = {
@@ -65265,12 +66564,14 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao?: Date | string
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
     updatedBy?: string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
+    cargo: CargoCreateNestedOneWithoutEletricistaInput
     contrato: ContratoCreateNestedOneWithoutEletricistaInput
     TurnoEletricistas?: TurnoEletricistaCreateNestedManyWithoutEletricistaInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoCreateNestedManyWithoutEletricistaInput
@@ -65284,6 +66585,8 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao?: Date | string
+    cargoId: number
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
@@ -65302,12 +66605,14 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo?: CargoUpdateOneRequiredWithoutEletricistaNestedInput
     contrato?: ContratoUpdateOneRequiredWithoutEletricistaNestedInput
     TurnoEletricistas?: TurnoEletricistaUpdateManyWithoutEletricistaNestedInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoUpdateManyWithoutEletricistaNestedInput
@@ -65321,6 +66626,8 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargoId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -65340,6 +66647,8 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao?: Date | string
+    cargoId: number
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
@@ -65354,6 +66663,7 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -65368,6 +66678,8 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargoId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -65375,6 +66687,91 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     contratoId?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type CargoCreateInput = {
+    nome: string
+    salarioBase?: number
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    Eletricista?: EletricistaCreateNestedManyWithoutCargoInput
+  }
+
+  export type CargoUncheckedCreateInput = {
+    id?: number
+    nome: string
+    salarioBase?: number
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    Eletricista?: EletricistaUncheckedCreateNestedManyWithoutCargoInput
+  }
+
+  export type CargoUpdateInput = {
+    nome?: StringFieldUpdateOperationsInput | string
+    salarioBase?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    Eletricista?: EletricistaUpdateManyWithoutCargoNestedInput
+  }
+
+  export type CargoUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nome?: StringFieldUpdateOperationsInput | string
+    salarioBase?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    Eletricista?: EletricistaUncheckedUpdateManyWithoutCargoNestedInput
+  }
+
+  export type CargoCreateManyInput = {
+    id?: number
+    nome: string
+    salarioBase?: number
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type CargoUpdateManyMutationInput = {
+    nome?: StringFieldUpdateOperationsInput | string
+    salarioBase?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type CargoUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nome?: StringFieldUpdateOperationsInput | string
+    salarioBase?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type TipoEquipeCreateInput = {
@@ -69271,6 +70668,11 @@ export namespace Prisma {
     baseId?: SortOrder
   }
 
+  export type CargoScalarRelationFilter = {
+    is?: CargoWhereInput
+    isNot?: CargoWhereInput
+  }
+
   export type TurnoEletricistaListRelationFilter = {
     every?: TurnoEletricistaWhereInput
     some?: TurnoEletricistaWhereInput
@@ -69313,6 +70715,8 @@ export namespace Prisma {
     matricula?: SortOrder
     telefone?: SortOrder
     estado?: SortOrder
+    admissao?: SortOrder
+    cargoId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrder
@@ -69324,6 +70728,7 @@ export namespace Prisma {
 
   export type EletricistaAvgOrderByAggregateInput = {
     id?: SortOrder
+    cargoId?: SortOrder
     contratoId?: SortOrder
   }
 
@@ -69333,6 +70738,8 @@ export namespace Prisma {
     matricula?: SortOrder
     telefone?: SortOrder
     estado?: SortOrder
+    admissao?: SortOrder
+    cargoId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrder
@@ -69348,6 +70755,8 @@ export namespace Prisma {
     matricula?: SortOrder
     telefone?: SortOrder
     estado?: SortOrder
+    admissao?: SortOrder
+    cargoId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrder
@@ -69359,7 +70768,87 @@ export namespace Prisma {
 
   export type EletricistaSumOrderByAggregateInput = {
     id?: SortOrder
+    cargoId?: SortOrder
     contratoId?: SortOrder
+  }
+
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type CargoOrderByRelevanceInput = {
+    fields: CargoOrderByRelevanceFieldEnum | CargoOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type CargoCountOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    salarioBase?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type CargoAvgOrderByAggregateInput = {
+    id?: SortOrder
+    salarioBase?: SortOrder
+  }
+
+  export type CargoMaxOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    salarioBase?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type CargoMinOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    salarioBase?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type CargoSumOrderByAggregateInput = {
+    id?: SortOrder
+    salarioBase?: SortOrder
+  }
+
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type TipoEquipeOrderByRelevanceInput = {
@@ -72517,6 +74006,12 @@ export namespace Prisma {
     update?: XOR<XOR<BaseUpdateToOneWithWhereWithoutEletricistaBaseHistoricoInput, BaseUpdateWithoutEletricistaBaseHistoricoInput>, BaseUncheckedUpdateWithoutEletricistaBaseHistoricoInput>
   }
 
+  export type CargoCreateNestedOneWithoutEletricistaInput = {
+    create?: XOR<CargoCreateWithoutEletricistaInput, CargoUncheckedCreateWithoutEletricistaInput>
+    connectOrCreate?: CargoCreateOrConnectWithoutEletricistaInput
+    connect?: CargoWhereUniqueInput
+  }
+
   export type ContratoCreateNestedOneWithoutEletricistaInput = {
     create?: XOR<ContratoCreateWithoutEletricistaInput, ContratoUncheckedCreateWithoutEletricistaInput>
     connectOrCreate?: ContratoCreateOrConnectWithoutEletricistaInput
@@ -72577,6 +74072,14 @@ export namespace Prisma {
     connectOrCreate?: SlotEscalaCreateOrConnectWithoutEletricistaInput | SlotEscalaCreateOrConnectWithoutEletricistaInput[]
     createMany?: SlotEscalaCreateManyEletricistaInputEnvelope
     connect?: SlotEscalaWhereUniqueInput | SlotEscalaWhereUniqueInput[]
+  }
+
+  export type CargoUpdateOneRequiredWithoutEletricistaNestedInput = {
+    create?: XOR<CargoCreateWithoutEletricistaInput, CargoUncheckedCreateWithoutEletricistaInput>
+    connectOrCreate?: CargoCreateOrConnectWithoutEletricistaInput
+    upsert?: CargoUpsertWithoutEletricistaInput
+    connect?: CargoWhereUniqueInput
+    update?: XOR<XOR<CargoUpdateToOneWithWhereWithoutEletricistaInput, CargoUpdateWithoutEletricistaInput>, CargoUncheckedUpdateWithoutEletricistaInput>
   }
 
   export type ContratoUpdateOneRequiredWithoutEletricistaNestedInput = {
@@ -72697,6 +74200,56 @@ export namespace Prisma {
     update?: SlotEscalaUpdateWithWhereUniqueWithoutEletricistaInput | SlotEscalaUpdateWithWhereUniqueWithoutEletricistaInput[]
     updateMany?: SlotEscalaUpdateManyWithWhereWithoutEletricistaInput | SlotEscalaUpdateManyWithWhereWithoutEletricistaInput[]
     deleteMany?: SlotEscalaScalarWhereInput | SlotEscalaScalarWhereInput[]
+  }
+
+  export type EletricistaCreateNestedManyWithoutCargoInput = {
+    create?: XOR<EletricistaCreateWithoutCargoInput, EletricistaUncheckedCreateWithoutCargoInput> | EletricistaCreateWithoutCargoInput[] | EletricistaUncheckedCreateWithoutCargoInput[]
+    connectOrCreate?: EletricistaCreateOrConnectWithoutCargoInput | EletricistaCreateOrConnectWithoutCargoInput[]
+    createMany?: EletricistaCreateManyCargoInputEnvelope
+    connect?: EletricistaWhereUniqueInput | EletricistaWhereUniqueInput[]
+  }
+
+  export type EletricistaUncheckedCreateNestedManyWithoutCargoInput = {
+    create?: XOR<EletricistaCreateWithoutCargoInput, EletricistaUncheckedCreateWithoutCargoInput> | EletricistaCreateWithoutCargoInput[] | EletricistaUncheckedCreateWithoutCargoInput[]
+    connectOrCreate?: EletricistaCreateOrConnectWithoutCargoInput | EletricistaCreateOrConnectWithoutCargoInput[]
+    createMany?: EletricistaCreateManyCargoInputEnvelope
+    connect?: EletricistaWhereUniqueInput | EletricistaWhereUniqueInput[]
+  }
+
+  export type FloatFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type EletricistaUpdateManyWithoutCargoNestedInput = {
+    create?: XOR<EletricistaCreateWithoutCargoInput, EletricistaUncheckedCreateWithoutCargoInput> | EletricistaCreateWithoutCargoInput[] | EletricistaUncheckedCreateWithoutCargoInput[]
+    connectOrCreate?: EletricistaCreateOrConnectWithoutCargoInput | EletricistaCreateOrConnectWithoutCargoInput[]
+    upsert?: EletricistaUpsertWithWhereUniqueWithoutCargoInput | EletricistaUpsertWithWhereUniqueWithoutCargoInput[]
+    createMany?: EletricistaCreateManyCargoInputEnvelope
+    set?: EletricistaWhereUniqueInput | EletricistaWhereUniqueInput[]
+    disconnect?: EletricistaWhereUniqueInput | EletricistaWhereUniqueInput[]
+    delete?: EletricistaWhereUniqueInput | EletricistaWhereUniqueInput[]
+    connect?: EletricistaWhereUniqueInput | EletricistaWhereUniqueInput[]
+    update?: EletricistaUpdateWithWhereUniqueWithoutCargoInput | EletricistaUpdateWithWhereUniqueWithoutCargoInput[]
+    updateMany?: EletricistaUpdateManyWithWhereWithoutCargoInput | EletricistaUpdateManyWithWhereWithoutCargoInput[]
+    deleteMany?: EletricistaScalarWhereInput | EletricistaScalarWhereInput[]
+  }
+
+  export type EletricistaUncheckedUpdateManyWithoutCargoNestedInput = {
+    create?: XOR<EletricistaCreateWithoutCargoInput, EletricistaUncheckedCreateWithoutCargoInput> | EletricistaCreateWithoutCargoInput[] | EletricistaUncheckedCreateWithoutCargoInput[]
+    connectOrCreate?: EletricistaCreateOrConnectWithoutCargoInput | EletricistaCreateOrConnectWithoutCargoInput[]
+    upsert?: EletricistaUpsertWithWhereUniqueWithoutCargoInput | EletricistaUpsertWithWhereUniqueWithoutCargoInput[]
+    createMany?: EletricistaCreateManyCargoInputEnvelope
+    set?: EletricistaWhereUniqueInput | EletricistaWhereUniqueInput[]
+    disconnect?: EletricistaWhereUniqueInput | EletricistaWhereUniqueInput[]
+    delete?: EletricistaWhereUniqueInput | EletricistaWhereUniqueInput[]
+    connect?: EletricistaWhereUniqueInput | EletricistaWhereUniqueInput[]
+    update?: EletricistaUpdateWithWhereUniqueWithoutCargoInput | EletricistaUpdateWithWhereUniqueWithoutCargoInput[]
+    updateMany?: EletricistaUpdateManyWithWhereWithoutCargoInput | EletricistaUpdateManyWithWhereWithoutCargoInput[]
+    deleteMany?: EletricistaScalarWhereInput | EletricistaScalarWhereInput[]
   }
 
   export type EquipeCreateNestedManyWithoutTipoEquipeInput = {
@@ -74136,6 +75689,22 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type NestedEnumModoRepeticaoFilter<$PrismaModel = never> = {
@@ -77220,12 +78789,14 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao?: Date | string
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
     updatedBy?: string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
+    cargo: CargoCreateNestedOneWithoutEletricistaInput
     TurnoEletricistas?: TurnoEletricistaCreateNestedManyWithoutEletricistaInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoCreateNestedManyWithoutEletricistaInput
     EventoCobertura?: EventoCoberturaCreateNestedManyWithoutEletricistaCobrindoInput
@@ -77238,6 +78809,8 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao?: Date | string
+    cargoId: number
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
@@ -77461,6 +79034,8 @@ export namespace Prisma {
     matricula?: StringFilter<"Eletricista"> | string
     telefone?: StringFilter<"Eletricista"> | string
     estado?: StringFilter<"Eletricista"> | string
+    admissao?: DateTimeFilter<"Eletricista"> | Date | string
+    cargoId?: IntFilter<"Eletricista"> | number
     createdAt?: DateTimeFilter<"Eletricista"> | Date | string
     createdBy?: StringFilter<"Eletricista"> | string
     updatedAt?: DateTimeNullableFilter<"Eletricista"> | Date | string | null
@@ -77745,12 +79320,14 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao?: Date | string
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
     updatedBy?: string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
+    cargo: CargoCreateNestedOneWithoutEletricistaInput
     contrato: ContratoCreateNestedOneWithoutEletricistaInput
     TurnoEletricistas?: TurnoEletricistaCreateNestedManyWithoutEletricistaInput
     EventoCobertura?: EventoCoberturaCreateNestedManyWithoutEletricistaCobrindoInput
@@ -77763,6 +79340,8 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao?: Date | string
+    cargoId: number
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
@@ -77826,12 +79405,14 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo?: CargoUpdateOneRequiredWithoutEletricistaNestedInput
     contrato?: ContratoUpdateOneRequiredWithoutEletricistaNestedInput
     TurnoEletricistas?: TurnoEletricistaUpdateManyWithoutEletricistaNestedInput
     EventoCobertura?: EventoCoberturaUpdateManyWithoutEletricistaCobrindoNestedInput
@@ -77844,6 +79425,8 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargoId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -77890,6 +79473,34 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     VeiculoBaseHistorico?: VeiculoBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput
+  }
+
+  export type CargoCreateWithoutEletricistaInput = {
+    nome: string
+    salarioBase?: number
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type CargoUncheckedCreateWithoutEletricistaInput = {
+    id?: number
+    nome: string
+    salarioBase?: number
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type CargoCreateOrConnectWithoutEletricistaInput = {
+    where: CargoWhereUniqueInput
+    create: XOR<CargoCreateWithoutEletricistaInput, CargoUncheckedCreateWithoutEletricistaInput>
   }
 
   export type ContratoCreateWithoutEletricistaInput = {
@@ -78088,6 +79699,40 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CargoUpsertWithoutEletricistaInput = {
+    update: XOR<CargoUpdateWithoutEletricistaInput, CargoUncheckedUpdateWithoutEletricistaInput>
+    create: XOR<CargoCreateWithoutEletricistaInput, CargoUncheckedCreateWithoutEletricistaInput>
+    where?: CargoWhereInput
+  }
+
+  export type CargoUpdateToOneWithWhereWithoutEletricistaInput = {
+    where?: CargoWhereInput
+    data: XOR<CargoUpdateWithoutEletricistaInput, CargoUncheckedUpdateWithoutEletricistaInput>
+  }
+
+  export type CargoUpdateWithoutEletricistaInput = {
+    nome?: StringFieldUpdateOperationsInput | string
+    salarioBase?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type CargoUncheckedUpdateWithoutEletricistaInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nome?: StringFieldUpdateOperationsInput | string
+    salarioBase?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
   export type ContratoUpsertWithoutEletricistaInput = {
     update: XOR<ContratoUpdateWithoutEletricistaInput, ContratoUncheckedUpdateWithoutEletricistaInput>
     create: XOR<ContratoCreateWithoutEletricistaInput, ContratoUncheckedCreateWithoutEletricistaInput>
@@ -78254,6 +79899,71 @@ export namespace Prisma {
     updatedBy?: StringNullableFilter<"SlotEscala"> | string | null
     deletedAt?: DateTimeNullableFilter<"SlotEscala"> | Date | string | null
     deletedBy?: StringNullableFilter<"SlotEscala"> | string | null
+  }
+
+  export type EletricistaCreateWithoutCargoInput = {
+    nome: string
+    matricula: string
+    telefone: string
+    estado: string
+    admissao?: Date | string
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    contrato: ContratoCreateNestedOneWithoutEletricistaInput
+    TurnoEletricistas?: TurnoEletricistaCreateNestedManyWithoutEletricistaInput
+    EletricistaBaseHistorico?: EletricistaBaseHistoricoCreateNestedManyWithoutEletricistaInput
+    EventoCobertura?: EventoCoberturaCreateNestedManyWithoutEletricistaCobrindoInput
+    SlotEscala?: SlotEscalaCreateNestedManyWithoutEletricistaInput
+  }
+
+  export type EletricistaUncheckedCreateWithoutCargoInput = {
+    id?: number
+    nome: string
+    matricula: string
+    telefone: string
+    estado: string
+    admissao?: Date | string
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    contratoId: number
+    TurnoEletricistas?: TurnoEletricistaUncheckedCreateNestedManyWithoutEletricistaInput
+    EletricistaBaseHistorico?: EletricistaBaseHistoricoUncheckedCreateNestedManyWithoutEletricistaInput
+    EventoCobertura?: EventoCoberturaUncheckedCreateNestedManyWithoutEletricistaCobrindoInput
+    SlotEscala?: SlotEscalaUncheckedCreateNestedManyWithoutEletricistaInput
+  }
+
+  export type EletricistaCreateOrConnectWithoutCargoInput = {
+    where: EletricistaWhereUniqueInput
+    create: XOR<EletricistaCreateWithoutCargoInput, EletricistaUncheckedCreateWithoutCargoInput>
+  }
+
+  export type EletricistaCreateManyCargoInputEnvelope = {
+    data: EletricistaCreateManyCargoInput | EletricistaCreateManyCargoInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type EletricistaUpsertWithWhereUniqueWithoutCargoInput = {
+    where: EletricistaWhereUniqueInput
+    update: XOR<EletricistaUpdateWithoutCargoInput, EletricistaUncheckedUpdateWithoutCargoInput>
+    create: XOR<EletricistaCreateWithoutCargoInput, EletricistaUncheckedCreateWithoutCargoInput>
+  }
+
+  export type EletricistaUpdateWithWhereUniqueWithoutCargoInput = {
+    where: EletricistaWhereUniqueInput
+    data: XOR<EletricistaUpdateWithoutCargoInput, EletricistaUncheckedUpdateWithoutCargoInput>
+  }
+
+  export type EletricistaUpdateManyWithWhereWithoutCargoInput = {
+    where: EletricistaScalarWhereInput
+    data: XOR<EletricistaUpdateManyMutationInput, EletricistaUncheckedUpdateManyWithoutCargoInput>
   }
 
   export type EquipeCreateWithoutTipoEquipeInput = {
@@ -79696,12 +81406,14 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao?: Date | string
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
     updatedBy?: string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
+    cargo: CargoCreateNestedOneWithoutEletricistaInput
     contrato: ContratoCreateNestedOneWithoutEletricistaInput
     TurnoEletricistas?: TurnoEletricistaCreateNestedManyWithoutEletricistaInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoCreateNestedManyWithoutEletricistaInput
@@ -79714,6 +81426,8 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao?: Date | string
+    cargoId: number
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
@@ -79830,12 +81544,14 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo?: CargoUpdateOneRequiredWithoutEletricistaNestedInput
     contrato?: ContratoUpdateOneRequiredWithoutEletricistaNestedInput
     TurnoEletricistas?: TurnoEletricistaUpdateManyWithoutEletricistaNestedInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoUpdateManyWithoutEletricistaNestedInput
@@ -79848,6 +81564,8 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargoId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -79923,12 +81641,14 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao?: Date | string
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
     updatedBy?: string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
+    cargo: CargoCreateNestedOneWithoutEletricistaInput
     contrato: ContratoCreateNestedOneWithoutEletricistaInput
     TurnoEletricistas?: TurnoEletricistaCreateNestedManyWithoutEletricistaInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoCreateNestedManyWithoutEletricistaInput
@@ -79941,6 +81661,8 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao?: Date | string
+    cargoId: number
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
@@ -80022,12 +81744,14 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo?: CargoUpdateOneRequiredWithoutEletricistaNestedInput
     contrato?: ContratoUpdateOneRequiredWithoutEletricistaNestedInput
     TurnoEletricistas?: TurnoEletricistaUpdateManyWithoutEletricistaNestedInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoUpdateManyWithoutEletricistaNestedInput
@@ -80040,6 +81764,8 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargoId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -80754,12 +82480,14 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao?: Date | string
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
     updatedBy?: string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
+    cargo: CargoCreateNestedOneWithoutEletricistaInput
     contrato: ContratoCreateNestedOneWithoutEletricistaInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoCreateNestedManyWithoutEletricistaInput
     EventoCobertura?: EventoCoberturaCreateNestedManyWithoutEletricistaCobrindoInput
@@ -80772,6 +82500,8 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao?: Date | string
+    cargoId: number
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
@@ -80851,12 +82581,14 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo?: CargoUpdateOneRequiredWithoutEletricistaNestedInput
     contrato?: ContratoUpdateOneRequiredWithoutEletricistaNestedInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoUpdateManyWithoutEletricistaNestedInput
     EventoCobertura?: EventoCoberturaUpdateManyWithoutEletricistaCobrindoNestedInput
@@ -80869,6 +82601,8 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargoId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -82548,6 +84282,8 @@ export namespace Prisma {
     matricula: string
     telefone: string
     estado: string
+    admissao?: Date | string
+    cargoId: number
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
@@ -82653,12 +84389,14 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo?: CargoUpdateOneRequiredWithoutEletricistaNestedInput
     TurnoEletricistas?: TurnoEletricistaUpdateManyWithoutEletricistaNestedInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoUpdateManyWithoutEletricistaNestedInput
     EventoCobertura?: EventoCoberturaUpdateManyWithoutEletricistaCobrindoNestedInput
@@ -82671,6 +84409,8 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargoId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -82689,6 +84429,8 @@ export namespace Prisma {
     matricula?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargoId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -83072,6 +84814,77 @@ export namespace Prisma {
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type EletricistaCreateManyCargoInput = {
+    id?: number
+    nome: string
+    matricula: string
+    telefone: string
+    estado: string
+    admissao?: Date | string
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    contratoId: number
+  }
+
+  export type EletricistaUpdateWithoutCargoInput = {
+    nome?: StringFieldUpdateOperationsInput | string
+    matricula?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    contrato?: ContratoUpdateOneRequiredWithoutEletricistaNestedInput
+    TurnoEletricistas?: TurnoEletricistaUpdateManyWithoutEletricistaNestedInput
+    EletricistaBaseHistorico?: EletricistaBaseHistoricoUpdateManyWithoutEletricistaNestedInput
+    EventoCobertura?: EventoCoberturaUpdateManyWithoutEletricistaCobrindoNestedInput
+    SlotEscala?: SlotEscalaUpdateManyWithoutEletricistaNestedInput
+  }
+
+  export type EletricistaUncheckedUpdateWithoutCargoInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nome?: StringFieldUpdateOperationsInput | string
+    matricula?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    contratoId?: IntFieldUpdateOperationsInput | number
+    TurnoEletricistas?: TurnoEletricistaUncheckedUpdateManyWithoutEletricistaNestedInput
+    EletricistaBaseHistorico?: EletricistaBaseHistoricoUncheckedUpdateManyWithoutEletricistaNestedInput
+    EventoCobertura?: EventoCoberturaUncheckedUpdateManyWithoutEletricistaCobrindoNestedInput
+    SlotEscala?: SlotEscalaUncheckedUpdateManyWithoutEletricistaNestedInput
+  }
+
+  export type EletricistaUncheckedUpdateManyWithoutCargoInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nome?: StringFieldUpdateOperationsInput | string
+    matricula?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    estado?: StringFieldUpdateOperationsInput | string
+    admissao?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    contratoId?: IntFieldUpdateOperationsInput | number
   }
 
   export type EquipeCreateManyTipoEquipeInput = {

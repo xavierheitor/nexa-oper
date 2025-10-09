@@ -31,6 +31,20 @@ class EletricistaContratoDto {
   numero: string;
 }
 
+class EletricistaCargoDto {
+  @ApiProperty({ description: 'ID do cargo', example: 1 })
+  @IsNumber()
+  @IsPositive()
+  id: number;
+
+  @ApiProperty({
+    description: 'Nome do cargo',
+    example: 'Eletricista',
+  })
+  @IsString()
+  nome: string;
+}
+
 export class EletricistaResponseDto {
   @ApiProperty({ description: 'ID do eletricista', example: 101 })
   @IsNumber()
@@ -55,6 +69,28 @@ export class EletricistaResponseDto {
   @ApiProperty({ description: 'Estado (UF)', example: 'MG' })
   @IsString()
   estado: string;
+
+  @ApiPropertyOptional({
+    description: 'Data de admissão',
+    example: '2024-01-01T00:00:00.000Z',
+  })
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  admissao?: Date;
+
+  @ApiProperty({ description: 'ID do cargo vinculado', example: 1 })
+  @IsNumber()
+  @IsPositive()
+  cargoId: number;
+
+  @ApiProperty({
+    description: 'Resumo do cargo',
+    type: EletricistaCargoDto,
+  })
+  @ValidateNested()
+  @Type(() => EletricistaCargoDto)
+  cargo: EletricistaCargoDto;
 
   @ApiProperty({ description: 'ID do contrato vinculado', example: 12 })
   @IsNumber()

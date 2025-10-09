@@ -10,10 +10,10 @@ export const baseUpdateSchema = baseCreateSchema.extend({
 });
 
 export const baseFilterSchema = z.object({
-  page: z.number().int(),
-  pageSize: z.number().int(),
-  orderBy: z.string(),
-  orderDir: z.enum(['asc', 'desc']),
+  page: z.number().int().default(1),
+  pageSize: z.number().int().default(10),
+  orderBy: z.string().default('nome'),
+  orderDir: z.enum(['asc', 'desc']).default('asc'),
   search: z.string().optional(),
   contratoId: z.number().int().positive().optional(),
   include: z.any().optional(),
