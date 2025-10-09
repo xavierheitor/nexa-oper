@@ -1,7 +1,7 @@
 'use client';
 
 // Importações do Ant Design e React
-import { Button, Form, Input, InputNumber, message, Select, Spin } from 'antd';
+import { Button, Form, Input, InputNumber, Select, Spin, App } from 'antd';
 import { useEffect, useState } from 'react';
 
 // Importações das Server Actions para buscar dados dos selects
@@ -36,6 +36,7 @@ export default function VeiculoForm({
   initialValues, // Valores para pré-popular o formulário (usado na edição)
   loading = false, // Estado de loading (padrão: false)
 }: VeiculoFormProps) {
+  const { message } = App.useApp();
   // Hook do Ant Design para controlar o formulário
   const [form] = Form.useForm();
 

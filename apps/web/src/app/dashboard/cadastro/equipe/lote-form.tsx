@@ -7,7 +7,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Card, Form, Input, Space, Table, Typography, message, Select } from 'antd';
+import { Button, Card, Form, Input, Space, Table, Typography, Select, App } from 'antd';
 import { createEquipesLote } from '@/lib/actions/equipe/createLote';
 import { EquipeLoteItem } from '@/lib/schemas/equipeSchema';
 
@@ -24,6 +24,7 @@ interface Props {
 }
 
 export default function EquipeLoteForm({ contratos, tiposEquipe, onSuccess }: Props) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const [dataSource, setDataSource] = useState<LinhaEquipe[]>([]);
   const [loading, setLoading] = useState(false);

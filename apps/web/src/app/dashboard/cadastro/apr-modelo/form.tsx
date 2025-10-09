@@ -58,7 +58,7 @@
 
 'use client';
 
-import { Button, Card, Form, Input, Spin, Transfer, Typography, message } from 'antd';
+import { Button, Card, Form, Input, Spin, Transfer, Typography, App } from 'antd';
 import type { TransferItem } from 'antd/es/transfer';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -144,6 +144,7 @@ interface Props {
  * ```
  */
 export default function AprForm({ onSubmit, initialValues, loading = false }: Props) {
+  const { message } = App.useApp();
   // Hook do Ant Design para controle do formulário
   const [form] = Form.useForm<AprFormData>();
   

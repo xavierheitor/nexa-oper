@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Form, Select, Button, Spin, message, Card, Table, Space } from 'antd';
+import { Form, Select, Button, Spin, Card, Table, Space, App } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 
 import { listContratos } from '@/lib/actions/contrato/list';
@@ -22,6 +22,7 @@ export default function PermissoesModal({
   onSaved,
   controllerExec
 }: PermissoesModalProps) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const [contratos, setContratos] = useState<any[]>([]);
   const [permissoes, setPermissoes] = useState<any[]>([]);

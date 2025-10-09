@@ -12,7 +12,7 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { Checklist } from '@nexa-oper/db';
-import { Button, Card, Modal, Table, Form, Select, Spin, message } from 'antd';
+import { Button, Card, Modal, Table, Form, Select, Spin, App } from 'antd';
 import { useEffect, useState } from 'react';
 import ChecklistForm, { ChecklistFormData } from './form';
 import { listChecklistTipoVeiculoVinculos } from '@/lib/actions/checklistVinculo/tipoVeiculo/list';
@@ -25,6 +25,7 @@ import { listTiposVeiculo } from '@/lib/actions/tipoVeiculo/list';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 
 export default function ChecklistPage() {
+  const { message } = App.useApp();
   const controller = useCrudController<Checklist>('checklists');
   const tvController = useCrudController<any>('checklist-tv-vinculos');
   const teController = useCrudController<any>('checklist-te-vinculos');

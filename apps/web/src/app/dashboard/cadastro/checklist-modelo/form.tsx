@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, Form, Input, Select, Spin, Transfer, Typography, message } from 'antd';
+import { Button, Card, Form, Input, Select, Spin, Transfer, Typography, App } from 'antd';
 import type { TransferItem } from 'antd/es/transfer';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -27,6 +27,7 @@ interface Props {
 }
 
 export default function ChecklistForm({ onSubmit, initialValues, loading = false }: Props) {
+  const { message } = App.useApp();
   const [form] = Form.useForm<ChecklistFormData>();
   const [tipos, setTipos] = useState<TipoChecklist[]>([]);
   const [perguntas, setPerguntas] = useState<ChecklistPergunta[]>([]);

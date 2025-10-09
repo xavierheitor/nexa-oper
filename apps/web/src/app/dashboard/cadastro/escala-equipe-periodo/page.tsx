@@ -7,7 +7,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Table, Button, Space, Modal, Tag, Tooltip, message } from 'antd';
+import { Table, Button, Space, Modal, Tag, Tooltip, App } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
@@ -74,6 +74,7 @@ const statusLabels = {
 };
 
 export default function EscalaEquipePeriodoPage() {
+  const { message } = App.useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<EscalaEquipePeriodo | null>(null);

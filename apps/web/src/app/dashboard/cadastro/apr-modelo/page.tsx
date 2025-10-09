@@ -57,7 +57,7 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { Apr } from '@nexa-oper/db';
-import { Button, Card, Form, Modal, Select, Spin, Table, Tag, message } from 'antd';
+import { Button, Card, Form, Modal, Select, Spin, Table, Tag, App } from 'antd';
 import { useEffect, useState } from 'react';
 import AprForm, { AprFormData } from './form';
 
@@ -80,6 +80,7 @@ import AprForm, { AprFormData } from './form';
  * ```
  */
 export default function AprPage() {
+  const { message } = App.useApp();
   // Controller para gerenciar estado de modais e operações CRUD
   const controller = useCrudController<Apr>('aprs');
 

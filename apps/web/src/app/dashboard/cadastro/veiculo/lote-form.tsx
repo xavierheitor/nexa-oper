@@ -7,7 +7,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Card, Form, Input, Space, Table, Typography, message, Select } from 'antd';
+import { Button, Card, Form, Input, Space, Table, Typography, Select, App } from 'antd';
 import { createVeiculosLote } from '@/lib/actions/veiculo/createLote';
 import { VeiculoLoteItem } from '@/lib/schemas/veiculoSchema';
 
@@ -25,6 +25,7 @@ interface Props {
 }
 
 export default function VeiculoLoteForm({ contratos, bases, tiposVeiculo, onSuccess }: Props) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const [dataSource, setDataSource] = useState<LinhaVeiculo[]>([]);
   const [loading, setLoading] = useState(false);

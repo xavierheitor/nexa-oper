@@ -1,7 +1,7 @@
 'use client';
 
 import { Base, Cargo, Contrato } from '@nexa-oper/db';
-import { Button, DatePicker, Form, Input, message, Select, Spin } from 'antd';
+import { Button, DatePicker, Form, Input, Select, Spin, App } from 'antd';
 import { useEffect, useState } from 'react';
 import { listBases } from '../../../../lib/actions/base/list';
 import { listContratos } from '../../../../lib/actions/contrato/list';
@@ -40,6 +40,7 @@ export default function EletricistaForm({
   initialValues, // Valores para pré-popular o formulário (usado na edição)
   loading = false, // Estado de loading (padrão: false)
 }: EletricistaFormProps) {
+  const { message } = App.useApp();
   // Hook do Ant Design para controlar o formulário
   const [form] = Form.useForm();
 

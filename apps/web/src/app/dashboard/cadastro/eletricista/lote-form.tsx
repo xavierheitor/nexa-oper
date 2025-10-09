@@ -5,7 +5,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Alert, Button, Card, DatePicker, Form, Input, Select, Space, Table, Tag, message } from 'antd';
+import { Alert, Button, Card, DatePicker, Form, Input, Select, Space, Table, Tag, App } from 'antd';
 import { DeleteOutlined, PlusOutlined, FileExcelOutlined } from '@ant-design/icons';
 import type { Cargo, Contrato } from '@nexa-oper/db';
 import dayjs, { Dayjs } from 'dayjs';
@@ -43,6 +43,7 @@ export default function EletricistaLoteForm({
   cargos,
   bases,
 }: EletricistaLoteFormProps) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const [eletricistas, setEletricistas] = useState<EletricistaLoteItem[]>([]);
   const [pasteValue, setPasteValue] = useState('');

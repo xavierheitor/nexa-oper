@@ -8,7 +8,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Table, Button, Space, Modal, message, Tag, Badge } from 'antd';
+import { Table, Button, Space, Modal, Tag, Badge, App } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useRouter } from 'next/navigation';
@@ -40,6 +40,7 @@ interface TipoEscala {
 }
 
 export default function TipoEscalaPage() {
+  const { message } = App.useApp();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<TipoEscala | null>(null);

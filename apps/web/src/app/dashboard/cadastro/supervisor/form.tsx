@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Form, Input, Select, Spin, message } from 'antd';
+import { Button, Form, Input, Select, Spin, App } from 'antd';
 import { useEffect, useState } from 'react';
 
 import { listContratos } from '@/lib/actions/contrato/list';
@@ -22,6 +22,7 @@ export default function SupervisorForm({
   initialValues,
   loading = false,
 }: SupervisorFormProps) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
 
   const [contratos, setContratos] = useState<Contrato[]>([]);
