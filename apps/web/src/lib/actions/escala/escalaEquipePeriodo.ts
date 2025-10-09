@@ -204,3 +204,19 @@ export const registrarTrocaAction = async (rawData: unknown) =>
     { entityName: 'EventoCobertura', actionType: 'create' }
   );
 
+/**
+ * Visualiza escala completa com todos os slots e estatísticas
+ */
+export const visualizarEscala = async (id: number) =>
+  handleServerAction(
+    z.object({ id: z.number() }),
+    async (data) => {
+      const service = container.get<EscalaEquipePeriodoService>(
+        'escalaEquipePeriodoService'
+      );
+      return service.visualizar(data.id);
+    },
+    { id },
+    { entityName: 'EscalaEquipePeriodo', actionType: 'get' }
+  );
+

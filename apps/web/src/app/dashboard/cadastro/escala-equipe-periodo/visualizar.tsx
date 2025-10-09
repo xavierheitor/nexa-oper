@@ -10,8 +10,9 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { Modal, Table, Spin, Tag, Card } from 'antd';
+import { Modal, Table, Spin, Tag, Card, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { visualizarEscala } from '@/lib/actions/escala/escalaEquipePeriodo';
 
 interface VisualizarEscalaProps {
   escalaId: number;
@@ -50,21 +51,22 @@ export default function VisualizarEscala({ escalaId, open, onClose }: Visualizar
   const carregarDados = useCallback(async () => {
     setLoading(true);
     try {
-      // Buscar dados da escala com slots
-      const response = await fetch(`/api/escalas/${escalaId}/visualizar`);
-      const result = await response.json();
+      // Buscar dados da escala com slots usando server action
+      const result = await visualizarEscala(escalaId);
 
-      if (result.success) {
+      if (result.success && result.data) {
         console.log('Dados carregados:', {
           slots: result.data.Slots?.length || 0,
-          eletricistas: [...new Set(result.data.Slots?.map((s: Slot) => s.eletricistaId) || [])].length,
+          eletricistas: result.data.estatisticas?.eletricistasUnicos || 0,
         });
         setDados(result.data);
       } else {
-        console.error('Erro na resposta:', result);
+        console.error('Erro na resposta:', result.error);
+        message.error(result.error || 'Erro ao carregar escala');
       }
     } catch (error) {
       console.error('Erro ao carregar escala:', error);
+      message.error('Erro ao carregar escala');
     } finally {
       setLoading(false);
     }

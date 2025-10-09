@@ -247,14 +247,7 @@ export default function EscalaEquipePeriodoPage() {
           ) : null}
           {record.status === 'RASCUNHO' && (
             <>
-              <Tooltip title="Gerar Slots">
-                <Button
-                  type="link"
-                  size="small"
-                  icon={<CalendarOutlined />}
-                  onClick={() => handleGerarSlots(record)}
-                />
-              </Tooltip>
+
               <Tooltip title="Publicar">
                 <Button
                   type="link"

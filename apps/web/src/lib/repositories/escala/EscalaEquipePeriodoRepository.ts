@@ -266,5 +266,43 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
       },
     });
   }
+
+  /**
+   * Busca escala para visualização completa (todos os slots)
+   */
+  async findByIdForVisualizacao(
+    id: string | number
+  ): Promise<EscalaEquipePeriodo | null> {
+    return prisma.escalaEquipePeriodo.findUnique({
+      where: { id: Number(id), deletedAt: null },
+      include: {
+        equipe: {
+          select: {
+            nome: true,
+          },
+        },
+        tipoEscala: {
+          select: {
+            nome: true,
+          },
+        },
+        Slots: {
+          where: {
+            deletedAt: null,
+          },
+          orderBy: { data: 'asc' },
+          include: {
+            eletricista: {
+              select: {
+                id: true,
+                nome: true,
+                matricula: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
 }
 

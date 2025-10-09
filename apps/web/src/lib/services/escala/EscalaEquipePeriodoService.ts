@@ -702,6 +702,43 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
   }
 
   /**
+   * Visualiza escala com todos os slots e estatísticas
+   */
+  async visualizar(id: number): Promise<
+    EscalaEquipePeriodo & {
+      estatisticas: {
+        totalSlots: number;
+        eletricistasUnicos: number;
+        diasComTrabalho: number;
+        diasComFolga: number;
+      };
+    }
+  > {
+    const escala = await this.escalaRepo.findByIdForVisualizacao(id);
+
+    if (!escala) {
+      throw new Error('Escala não encontrada');
+    }
+
+    // Calcular estatísticas
+    const eletricistasUnicos = new Set(escala.Slots.map(s => s.eletricistaId));
+    const diasComTrabalho = escala.Slots.filter(
+      s => s.estado === 'TRABALHO'
+    ).length;
+    const diasComFolga = escala.Slots.filter(s => s.estado === 'FOLGA').length;
+
+    return {
+      ...escala,
+      estatisticas: {
+        totalSlots: escala.Slots.length,
+        eletricistasUnicos: eletricistasUnicos.size,
+        diasComTrabalho,
+        diasComFolga,
+      },
+    };
+  }
+
+  /**
    * Valida composição diária: count(TRABALHO) = eletricistasPorTurma para cada dia
    */
   private async validarComposicaoMinimaDiaria(

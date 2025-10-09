@@ -14,13 +14,13 @@ import {
   DatePicker,
   Button,
   Space,
-  message,
   Alert,
   Card,
   Input,
   Table,
   InputNumber,
   Checkbox,
+  App,
 } from 'antd';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { listEquipes } from '@/lib/actions/equipe/list';
@@ -45,6 +45,7 @@ interface EletricistaEscala {
 }
 
 export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) {
+  const { message } = App.useApp();
   const [currentStep, setCurrentStep] = useState(0);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
