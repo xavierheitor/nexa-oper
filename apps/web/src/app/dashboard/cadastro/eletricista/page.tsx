@@ -141,12 +141,27 @@ export default function EletricistaPage() {
         sorter: true, // Permite ordenação
         ...getTextFilter<Eletricista>('telefone', 'telefone do eletricista'), // Adiciona filtro de busca textual
       },
+
+      {
+        title: 'Admissão',
+        dataIndex: 'admissao',
+        key: 'admissao',
+        sorter: true, // Permite ordenação
+        ...getTextFilter<Eletricista>('admissao', 'data de admissão do eletricista'), // Adiciona filtro de busca textual
+        render: (date: Date) => new Date(date).toLocaleDateString('pt-BR'),
+      },
       // Coluna Cargo
       {
         title: 'Cargo',
         key: 'cargo',
         render: (_: unknown, record: any) => record.cargo?.nome || '-',
         width: 150,
+        filters: cargos.data?.map(cargo => ({
+          text: cargo.nome,
+          value: cargo.id,
+        })) || [],
+        onFilter: (value: any, record: any) => record.cargo?.id === value,
+        filterSearch: true,
       },
       // Coluna Estado - com filtro de seleção
       {
@@ -154,10 +169,7 @@ export default function EletricistaPage() {
         dataIndex: 'estado',
         key: 'estado',
         sorter: true, // Permite ordenação
-        ...getSelectFilter<Eletricista>('estado', [
-          { text: 'Ativo', value: 'ativo' },
-          { text: 'Inativo', value: 'inativo' }
-        ]), // Adiciona filtro de seleção
+        ...getTextFilter<Eletricista>('estado', 'estado do eletricista'), // Adiciona filtro de busca textual
       },
       // Coluna Base Atual
       {
@@ -356,7 +368,7 @@ export default function EletricistaPage() {
         open={isLoteModalOpen}
         onCancel={() => !isLoteLoading && setIsLoteModalOpen(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         width={900}
       >
         <EletricistaLoteForm

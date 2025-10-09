@@ -157,12 +157,16 @@ export default function VeiculoPage() {
       {
         title: 'Tipo',
         dataIndex: ['tipoVeiculo', 'nome'], // Acessa o campo nome do relacionamento tipoVeiculo
-        sorter: true,
-        ...getTextFilter<VeiculoWithBase>('tipoVeiculoId', 'tipo de veículo'),
         key: 'tipoVeiculo',
+        sorter: true,
         render: (nome: string) => nome || '-',
         width: 120,
-        // TODO : Adicionar filtro de texto para o tipo de veículo por nome do tipo de veiculo
+        filters: tiposVeiculo?.map(tipo => ({
+          text: tipo.nome,
+          value: tipo.id,
+        })) || [],
+        onFilter: (value: any, record: any) => record.tipoVeiculo?.id === value,
+        filterSearch: true,
       },
       // Coluna Contrato - relacionamento
       {

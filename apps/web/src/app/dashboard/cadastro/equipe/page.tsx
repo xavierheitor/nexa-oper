@@ -16,7 +16,7 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 
-import { Equipe } from '@nexa-oper/db';
+import { Contrato, Equipe, TipoEquipe } from '@nexa-oper/db';
 import { Button, Card, Modal, Table, Space } from 'antd';
 
 import EquipeForm, { EquipeFormData } from './form';
@@ -88,6 +88,12 @@ export default function EquipePage() {
         sorter: true,
         render: (nome: string) => nome || '-',
         width: 160,
+        filters: tiposEquipe?.map(tipo => ({
+          text: tipo.nome,
+          value: tipo.id,
+        })) || [],
+        onFilter: (value: any, record: any) => record.tipoEquipe?.id === value,
+        filterSearch: true,
       },
       {
         title: 'Contrato',
