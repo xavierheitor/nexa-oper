@@ -1,9 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { createEquipe } from '@/lib/actions/equipe/create';
 import { deleteEquipe } from '@/lib/actions/equipe/delete';
 import { listEquipes } from '@/lib/actions/equipe/list';
 import { updateEquipe } from '@/lib/actions/equipe/update';
+import { listContratos } from '@/lib/actions/contrato/list';
+import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
@@ -14,12 +17,14 @@ import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 
 import { Equipe } from '@nexa-oper/db';
-import { Button, Card, Modal, Table } from 'antd';
+import { Button, Card, Modal, Table, Space } from 'antd';
 
 import EquipeForm, { EquipeFormData } from './form';
+import EquipeLoteForm from './lote-form';
 
 export default function EquipePage() {
   const controller = useCrudController<Equipe>('equipes');
+  const [isLoteModalOpen, setIsLoteModalOpen] = useState(false);
 
   const equipes = useEntityData<Equipe>({
     key: 'equipes',
@@ -35,6 +40,35 @@ export default function EquipePage() {
         contrato: true,
       },
     },
+  });
+
+  // Carregar dados para o formulário em lote
+  const { data: contratos } = useEntityData({
+    key: 'contratos-lote-equipe',
+    fetcher: async () => {
+      const result = await listContratos({
+        page: 1,
+        pageSize: 100,
+        orderBy: 'nome',
+        orderDir: 'asc',
+      });
+      return result.success && result.data ? result.data.data : [];
+    },
+    paginationEnabled: false,
+  });
+
+  const { data: tiposEquipe } = useEntityData({
+    key: 'tipos-equipe-lote',
+    fetcher: async () => {
+      const result = await listTiposEquipe({
+        page: 1,
+        pageSize: 100,
+        orderBy: 'nome',
+        orderDir: 'asc',
+      });
+      return result.success && result.data ? result.data.data : [];
+    },
+    paginationEnabled: false,
   });
 
   const columns = useTableColumnsWithActions<Equipe>(
@@ -107,9 +141,14 @@ export default function EquipePage() {
       <Card
         title="Equipes"
         extra={
-          <Button type="primary" onClick={() => controller.open()}>
-            Adicionar
-          </Button>
+          <Space>
+            <Button onClick={() => setIsLoteModalOpen(true)}>
+              Cadastro em Lote
+            </Button>
+            <Button type="primary" onClick={() => controller.open()}>
+              Adicionar
+            </Button>
+          </Space>
         }
       >
         <Table<Equipe>
@@ -142,6 +181,25 @@ export default function EquipePage() {
           }
           onSubmit={handleSubmit}
           loading={controller.loading}
+        />
+      </Modal>
+
+      {/* Modal de Cadastro em Lote */}
+      <Modal
+        title="Cadastro de Equipes em Lote"
+        open={isLoteModalOpen}
+        onCancel={() => setIsLoteModalOpen(false)}
+        footer={null}
+        width={800}
+        destroyOnHidden
+      >
+        <EquipeLoteForm
+          contratos={contratos || []}
+          tiposEquipe={tiposEquipe || []}
+          onSuccess={() => {
+            setIsLoteModalOpen(false);
+            equipes.mutate();
+          }}
         />
       </Modal>
     </>
