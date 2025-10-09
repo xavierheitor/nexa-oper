@@ -57,28 +57,34 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
   // Eletricistas selecionados com posição inicial
   const [eletricistasEscala, setEletricistasEscala] = useState<EletricistaEscala[]>([]);
 
-  // Carregar equipes
+  // Carregar equipes (TODAS, sem paginação)
   const { data: equipes, isLoading: equipesLoading } = useEntityData({
     key: 'equipes-wizard',
     fetcher: async () => {
+      console.log('🔍 Buscando equipes para wizard...');
       const result = await listEquipes({
         page: 1,
-        pageSize: 100,
+        pageSize: 9999, // Buscar TODAS as equipes
         orderBy: 'nome',
         orderDir: 'asc',
+      });
+      console.log('📊 Resultado da busca de equipes:', {
+        success: result.success,
+        totalEquipes: result.data?.data?.length || 0,
+        primeiras3: result.data?.data?.slice(0, 3).map((e: any) => e.nome),
       });
       return result.success && result.data ? result.data.data : [];
     },
     paginationEnabled: false,
   });
 
-  // Carregar tipos de escala
+  // Carregar tipos de escala (TODOS)
   const { data: tiposEscala, isLoading: tiposLoading } = useEntityData({
     key: 'tipos-escala-wizard',
     fetcher: async () => {
       const result = await listTiposEscala({
         page: 1,
-        pageSize: 100,
+        pageSize: 9999, // Buscar TODOS os tipos de escala
         orderBy: 'nome',
         orderDir: 'asc',
         ativo: true,
@@ -88,14 +94,14 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
     paginationEnabled: false,
   });
 
-  // Carregar eletricistas da equipe selecionada
+  // Carregar eletricistas da equipe selecionada (TODOS)
   const { data: eletricistas, isLoading: eletricistasLoading, mutate: reloadEletricistas } = useEntityData({
     key: `eletricistas-equipe-${equipeIdSelecionada}`,
     fetcher: async () => {
       if (!equipeIdSelecionada) return [];
       const result = await listEletricistas({
         page: 1,
-        pageSize: 100,
+        pageSize: 9999, // Buscar TODOS os eletricistas da equipe
         equipeId: equipeIdSelecionada,
         ativo: true,
       });
@@ -110,6 +116,16 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
       reloadEletricistas();
     }
   }, [equipeIdSelecionada, reloadEletricistas]);
+
+  // Debug: Log das equipes carregadas
+  useEffect(() => {
+    if (equipes) {
+      console.log('✅ Equipes disponíveis no Select:', {
+        total: equipes.length,
+        nomes: equipes.map((e: any) => e.nome),
+      });
+    }
+  }, [equipes]);
 
   // Step 1: Criar período
   const handleStep1Next = async () => {

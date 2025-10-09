@@ -113,10 +113,10 @@ export const tipoEscalaUpdateSchema = z
   );
 
 export const tipoEscalaFilterSchema = z.object({
-  page: z.number().int().positive(),
-  pageSize: z.number().int().positive(),
-  orderBy: z.string(),
-  orderDir: z.enum(['asc', 'desc']),
+  page: z.number().int().positive().default(1),
+  pageSize: z.number().int().positive().max(10000).default(10),
+  orderBy: z.string().default('nome'),
+  orderDir: z.enum(['asc', 'desc']).default('asc'),
   search: z.string().optional(),
   ativo: z.boolean().optional(),
   modoRepeticao: ModoRepeticaoEnum.optional(),

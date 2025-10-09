@@ -11,10 +11,10 @@ export const equipeUpdateSchema = equipeCreateSchema.extend({
 });
 
 export const equipeFilterSchema = z.object({
-  page: z.number().int(),
-  pageSize: z.number().int(),
-  orderBy: z.string(),
-  orderDir: z.enum(['asc', 'desc']),
+  page: z.number().int().default(1),
+  pageSize: z.number().int().max(10000).default(10),
+  orderBy: z.string().default('nome'),
+  orderDir: z.enum(['asc', 'desc']).default('asc'),
   search: z.string().optional(),
   include: z.any().optional(),
 });

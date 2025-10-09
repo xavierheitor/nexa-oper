@@ -45,12 +45,14 @@ export const eletricistaUpdateSchema = eletricistaCreateSchema.extend({
 
 export const eletricistaFilterSchema = z.object({
   page: z.number().int().positive().default(1),
-  pageSize: z.number().int().positive().max(100).default(10),
+  pageSize: z.number().int().positive().max(10000).default(10),
   orderBy: z.string().default('id'),
   orderDir: z.enum(['asc', 'desc']).default('asc'),
   search: z.string().optional(),
   include: z.any().optional(),
   contratoId: z.number().int('Contrato é obrigatório').optional(),
+  equipeId: z.number().int().optional(),
+  ativo: z.boolean().optional(),
 });
 
 // Schema para cadastro em lote

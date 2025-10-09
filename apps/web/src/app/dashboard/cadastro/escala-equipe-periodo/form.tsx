@@ -39,11 +39,16 @@ export default function EscalaEquipePeriodoForm({
   const { data: equipes, isLoading: equipesLoading } = useEntityData({
     key: 'equipes-form',
     fetcher: async () => {
+      console.log('🔍 Buscando equipes para form...');
       const result = await listEquipes({
         page: 1,
-        pageSize: 100,
+        pageSize: 9999, // Buscar TODAS as equipes
         orderBy: 'nome',
         orderDir: 'asc',
+      });
+      console.log('📊 Resultado da busca de equipes (form):', {
+        success: result.success,
+        totalEquipes: result.data?.data?.length || 0,
       });
       return result.success && result.data ? result.data.data : [];
     },
@@ -56,7 +61,7 @@ export default function EscalaEquipePeriodoForm({
     fetcher: async () => {
       const result = await listTiposEscala({
         page: 1,
-        pageSize: 100,
+        pageSize: 9999, // Buscar TODOS os tipos de escala
         orderBy: 'nome',
         orderDir: 'asc',
         ativo: true,
