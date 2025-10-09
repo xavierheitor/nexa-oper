@@ -42,9 +42,9 @@ export default function HorarioAberturaCatalogoForm({
     initialValues?.inicioTurnoHora || '08:00:00'
   );
 
-  const calcularHorarioFim = (inicio: string, duracao: number): string => {
+  const calcularHorarioFim = (inicio: string, duracao: number, intervalo: number = 0): string => {
     const [horas, minutos] = inicio.split(':').map(Number);
-    const totalMinutos = horas * 60 + minutos + duracao * 60;
+    const totalMinutos = horas * 60 + minutos + (duracao + intervalo) * 60;
     const horasFim = Math.floor(totalMinutos / 60) % 24;
     const minutosFim = totalMinutos % 60;
     return `${String(horasFim).padStart(2, '0')}:${String(minutosFim).padStart(2, '0')}`;
@@ -186,8 +186,8 @@ export default function HorarioAberturaCatalogoForm({
                 <ClockCircleOutlined />
                 <span>
                   Horário: {inicioHora.substring(0, 5)} às{' '}
-                  {calcularHorarioFim(inicioHora, duracaoHoras + duracaoIntervalo)}
-                  {' '}({duracaoHoras}h trabalho + {duracaoIntervalo}h intervalo)
+                  {calcularHorarioFim(inicioHora, duracaoHoras, duracaoIntervalo)}
+                  {' '}({duracaoHoras}h trabalho + {duracaoIntervalo}h intervalo = {duracaoHoras + duracaoIntervalo}h total)
                 </span>
               </Space>
             }

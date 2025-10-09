@@ -21,3 +21,20 @@ export const veiculoFilterSchema = z.object({
   search: z.string().optional(),
   include: z.any().optional(),
 });
+
+// Schema para cadastro em lote
+export const veiculoLoteItemSchema = z.object({
+  placa: z.string().min(1, 'Placa é obrigatória').max(255),
+  modelo: z.string().min(1, 'Modelo é obrigatório').max(255),
+  ano: z.coerce.number().int().min(1900).max(2100),
+});
+
+export const veiculoLoteSchema = z.object({
+  contratoId: z.number().int().positive('Contrato é obrigatório'),
+  baseId: z.number().int().positive('Base é obrigatória'),
+  tipoVeiculoId: z.number().int().positive('Tipo de veículo é obrigatório'),
+  veiculos: z.array(veiculoLoteItemSchema).min(1, 'Adicione pelo menos um veículo'),
+});
+
+export type VeiculoLoteInput = z.infer<typeof veiculoLoteSchema>;
+export type VeiculoLoteItem = z.infer<typeof veiculoLoteItemSchema>;

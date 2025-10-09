@@ -75,9 +75,12 @@ export class EquipeTurnoHistoricoRepository extends AbstractCrudRepository<
     data: EquipeTurnoHistoricoCreateInput,
     userId?: string
   ): Prisma.EquipeTurnoHistoricoCreateInput {
-    // Calcular fimTurnoHora
-    const [horas, minutos, segundos] = data.inicioTurnoHora.split(':').map(Number);
-    const totalMinutos = horas * 60 + minutos + data.duracaoHoras * 60;
+    // Calcular fimTurnoHora (duração + intervalo)
+    const [horas, minutos, segundos] = data.inicioTurnoHora
+      .split(':')
+      .map(Number);
+    const duracaoTotal = data.duracaoHoras + (data.duracaoIntervaloHoras || 0);
+    const totalMinutos = horas * 60 + minutos + duracaoTotal * 60;
     const horasFim = Math.floor(totalMinutos / 60) % 24;
     const minutosFim = totalMinutos % 60;
     const fimTurnoHora = `${String(horasFim).padStart(2, '0')}:${String(minutosFim).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
@@ -85,7 +88,9 @@ export class EquipeTurnoHistoricoRepository extends AbstractCrudRepository<
     return {
       equipe: { connect: { id: data.equipeId } },
       ...(data.horarioAberturaCatalogoId && {
-        horarioAberturaCatalogo: { connect: { id: data.horarioAberturaCatalogoId } },
+        horarioAberturaCatalogo: {
+          connect: { id: data.horarioAberturaCatalogoId },
+        },
       }),
       dataInicio: data.dataInicio,
       dataFim: data.dataFim,
@@ -129,29 +134,43 @@ export class EquipeTurnoHistoricoRepository extends AbstractCrudRepository<
   ): Promise<EquipeTurnoHistorico> {
     const { id, ...updateData } = data;
 
-    // Recalcular fimTurnoHora se necessário
+    // Recalcular fimTurnoHora se necessário (duração + intervalo)
     let fimTurnoHora: string | undefined;
     if (updateData.inicioTurnoHora && updateData.duracaoHoras) {
-      const [horas, minutos, segundos] = updateData.inicioTurnoHora.split(':').map(Number);
-      const totalMinutos = horas * 60 + minutos + updateData.duracaoHoras * 60;
+      const [horas, minutos, segundos] = updateData.inicioTurnoHora
+        .split(':')
+        .map(Number);
+      const duracaoTotal =
+        updateData.duracaoHoras + (updateData.duracaoIntervaloHoras || 0);
+      const totalMinutos = horas * 60 + minutos + duracaoTotal * 60;
       const horasFim = Math.floor(totalMinutos / 60) % 24;
       const minutosFim = totalMinutos % 60;
       fimTurnoHora = `${String(horasFim).padStart(2, '0')}:${String(minutosFim).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
     }
 
     const prismaData: Prisma.EquipeTurnoHistoricoUpdateInput = {
-      ...(updateData.equipeId && { equipe: { connect: { id: updateData.equipeId } } }),
+      ...(updateData.equipeId && {
+        equipe: { connect: { id: updateData.equipeId } },
+      }),
       ...(updateData.horarioAberturaCatalogoId && {
-        horarioAberturaCatalogo: { connect: { id: updateData.horarioAberturaCatalogoId } },
+        horarioAberturaCatalogo: {
+          connect: { id: updateData.horarioAberturaCatalogoId },
+        },
       }),
       ...(updateData.dataInicio && { dataInicio: updateData.dataInicio }),
       ...(updateData.dataFim !== undefined && { dataFim: updateData.dataFim }),
-      ...(updateData.inicioTurnoHora && { inicioTurnoHora: updateData.inicioTurnoHora }),
+      ...(updateData.inicioTurnoHora && {
+        inicioTurnoHora: updateData.inicioTurnoHora,
+      }),
       ...(updateData.duracaoHoras && { duracaoHoras: updateData.duracaoHoras }),
-      ...(updateData.duracaoIntervaloHoras !== undefined && { duracaoIntervaloHoras: updateData.duracaoIntervaloHoras }),
+      ...(updateData.duracaoIntervaloHoras !== undefined && {
+        duracaoIntervaloHoras: updateData.duracaoIntervaloHoras,
+      }),
       ...(fimTurnoHora && { fimTurnoHora }),
       ...(updateData.motivo !== undefined && { motivo: updateData.motivo }),
-      ...(updateData.observacoes !== undefined && { observacoes: updateData.observacoes }),
+      ...(updateData.observacoes !== undefined && {
+        observacoes: updateData.observacoes,
+      }),
       updatedAt: new Date(),
       updatedBy: userId || '',
     };

@@ -97,11 +97,16 @@ export class HorarioAberturaCatalogoService extends AbstractCrudService<
   }
 
   /**
-   * Calcula o horário de fim baseado no início e duração
+   * Calcula o horário de fim baseado no início, duração e intervalo
    */
-  calcularHorarioFim(inicio: string, duracaoHoras: number): string {
+  calcularHorarioFim(
+    inicio: string,
+    duracaoHoras: number,
+    intervaloHoras: number = 0
+  ): string {
     const [horas, minutos, segundos] = inicio.split(':').map(Number);
-    const totalMinutos = horas * 60 + minutos + duracaoHoras * 60;
+    const duracaoTotal = duracaoHoras + intervaloHoras;
+    const totalMinutos = horas * 60 + minutos + duracaoTotal * 60;
     const horasFim = Math.floor(totalMinutos / 60) % 24;
     const minutosFim = totalMinutos % 60;
     return `${String(horasFim).padStart(2, '0')}:${String(minutosFim).padStart(2, '0')}:${String(segundos || 0).padStart(2, '0')}`;

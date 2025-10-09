@@ -73,9 +73,9 @@ export default function EquipeTurnoHistoricoForm({
     paginationEnabled: false,
   });
 
-  const calcularHorarioFim = (inicio: string, duracao: number): string => {
+  const calcularHorarioFim = (inicio: string, duracao: number, intervalo: number = 0): string => {
     const [horas, minutos] = inicio.split(':').map(Number);
-    const totalMinutos = horas * 60 + minutos + duracao * 60;
+    const totalMinutos = horas * 60 + minutos + (duracao + intervalo) * 60;
     const horasFim = Math.floor(totalMinutos / 60) % 24;
     const minutosFim = totalMinutos % 60;
     return `${String(horasFim).padStart(2, '0')}:${String(minutosFim).padStart(2, '0')}`;
@@ -189,7 +189,8 @@ export default function EquipeTurnoHistoricoForm({
                 {horarioSelecionado.inicioTurnoHora.substring(0, 5)} às{' '}
                 {calcularHorarioFim(
                   horarioSelecionado.inicioTurnoHora,
-                  Number(horarioSelecionado.duracaoHoras) + Number(horarioSelecionado.duracaoIntervaloHoras)
+                  Number(horarioSelecionado.duracaoHoras),
+                  Number(horarioSelecionado.duracaoIntervaloHoras)
                 )}
               </span>
             </Space>

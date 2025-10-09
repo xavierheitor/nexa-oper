@@ -58,9 +58,9 @@ export default function HorarioCatalogoPage() {
     },
   });
 
-  const calcularHorarioFim = (inicio: string, duracao: number): string => {
+  const calcularHorarioFim = (inicio: string, duracao: number, intervalo: number = 0): string => {
     const [horas, minutos] = inicio.split(':').map(Number);
-    const totalMinutos = horas * 60 + minutos + duracao * 60;
+    const totalMinutos = horas * 60 + minutos + (duracao + intervalo) * 60;
     const horasFim = Math.floor(totalMinutos / 60) % 24;
     const minutosFim = totalMinutos % 60;
     return `${String(horasFim).padStart(2, '0')}:${String(minutosFim).padStart(2, '0')}`;
@@ -79,16 +79,17 @@ export default function HorarioCatalogoPage() {
       render: (_: unknown, record: HorarioAberturaCatalogo) => {
         const fim = calcularHorarioFim(
           record.inicioTurnoHora,
-          Number(record.duracaoHoras)
+          Number(record.duracaoHoras),
+          Number(record.duracaoIntervaloHoras)
         );
         const intervalo = Number(record.duracaoIntervaloHoras) > 0
-          ? ` (${record.duracaoIntervaloHoras}h intervalo)`
+          ? ` + ${record.duracaoIntervaloHoras}h int.`
           : '';
         return (
           <Space>
             <ClockCircleOutlined />
             <span>
-              {record.inicioTurnoHora.substring(0, 5)} às {fim} - {record.duracaoHoras}h{intervalo}
+              {record.inicioTurnoHora.substring(0, 5)} às {fim} ({record.duracaoHoras}h{intervalo})
             </span>
           </Space>
         );

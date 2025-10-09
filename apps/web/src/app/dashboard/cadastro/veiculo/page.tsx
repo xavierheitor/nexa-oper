@@ -22,11 +22,15 @@ import { getTextFilter } from '@/ui/components/tableFilters';
 
 // Importações do Prisma e Ant Design
 import { Base, Veiculo } from '@nexa-oper/db';
-import { App, Button, Card, Modal, Table, Tag } from 'antd';
+import { App, Button, Card, Modal, Table, Tag, Space } from 'antd';
 import { SwapOutlined } from '@ant-design/icons';
 
-// Importação do formulário local
+// Importação dos formulários locais
 import VeiculoForm, { VeiculoFormData } from './form';
+import VeiculoLoteForm from './lote-form';
+import { listContratos } from '@/lib/actions/contrato/list';
+import { listBases } from '@/lib/actions/base/list';
+import { listTiposVeiculo } from '@/lib/actions/tipoVeiculo/list';
 
 type VeiculoWithBase = Veiculo & { baseAtual?: Base | null };
 
@@ -37,6 +41,7 @@ export default function VeiculoPage() {
   const { message } = App.useApp();
   const [transferTarget, setTransferTarget] = useState<VeiculoWithBase | null>(null);
   const [isTransferLoading, setIsTransferLoading] = useState(false);
+  const [isLoteModalOpen, setIsLoteModalOpen] = useState(false);
 
 
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
@@ -61,6 +66,49 @@ export default function VeiculoPage() {
         // }
       },
     },
+  });
+
+  // Carregar dados para o formulário em lote
+  const { data: contratos } = useEntityData({
+    key: 'contratos-lote',
+    fetcher: async () => {
+      const result = await listContratos({
+        page: 1,
+        pageSize: 100,
+        orderBy: 'nome',
+        orderDir: 'asc',
+      });
+      return result.success && result.data ? result.data.data : [];
+    },
+    paginationEnabled: false,
+  });
+
+  const { data: bases } = useEntityData({
+    key: 'bases-lote',
+    fetcher: async () => {
+      const result = await listBases({
+        page: 1,
+        pageSize: 100,
+        orderBy: 'nome',
+        orderDir: 'asc',
+      });
+      return result.success && result.data ? result.data.data : [];
+    },
+    paginationEnabled: false,
+  });
+
+  const { data: tiposVeiculo } = useEntityData({
+    key: 'tipos-veiculo-lote',
+    fetcher: async () => {
+      const result = await listTiposVeiculo({
+        page: 1,
+        pageSize: 100,
+        orderBy: 'nome',
+        orderDir: 'asc',
+      });
+      return result.success && result.data ? result.data.data : [];
+    },
+    paginationEnabled: false,
   });
 
   // Configuração das colunas da tabela com ações integradas
@@ -265,10 +313,15 @@ export default function VeiculoPage() {
       <Card
         title="Veículos" // Título do card
         extra={
-          // Botão "Adicionar" no canto superior direito
-          <Button type="primary" onClick={() => controller.open()}>
-            Adicionar
-          </Button>
+          // Botões no canto superior direito
+          <Space>
+            <Button onClick={() => setIsLoteModalOpen(true)}>
+              Cadastro em Lote
+            </Button>
+            <Button type="primary" onClick={() => controller.open()}>
+              Adicionar
+            </Button>
+          </Space>
         }
       >
         {/* Tabela principal com dados dos veículos */}
@@ -316,6 +369,26 @@ export default function VeiculoPage() {
         title={transferTarget ? `Transferir ${transferTarget.placa}` : 'Transferir Base'}
         loading={isTransferLoading}
       />
+
+      {/* Modal de Cadastro em Lote */}
+      <Modal
+        title="Cadastro de Veículos em Lote"
+        open={isLoteModalOpen}
+        onCancel={() => setIsLoteModalOpen(false)}
+        footer={null}
+        width={1000}
+        destroyOnHidden
+      >
+        <VeiculoLoteForm
+          contratos={contratos || []}
+          bases={bases || []}
+          tiposVeiculo={tiposVeiculo || []}
+          onSuccess={() => {
+            setIsLoteModalOpen(false);
+            veiculos.mutate();
+          }}
+        />
+      </Modal>
 
     </>
   );
