@@ -193,6 +193,20 @@ export default function VeiculoPage() {
           );
         },
         width: 120,
+        filters: [
+          { text: 'Sem lotação', value: 'SEM_LOTACAO' },
+          ...(bases?.map(base => ({
+            text: base.nome,
+            value: base.id,
+          })) || []),
+        ],
+        onFilter: (value: any, record: any) => {
+          if (value === 'SEM_LOTACAO') {
+            return !record.baseAtual;
+          }
+          return record.baseAtual?.id === value;
+        },
+        filterSearch: true,
       },
       // Coluna Data de Criação - formatada para exibição
       {

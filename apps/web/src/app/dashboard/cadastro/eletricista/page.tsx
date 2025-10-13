@@ -69,41 +69,41 @@ export default function EletricistaPage() {
     key: 'contratos-lote',
     fetcher: unwrapFetcher(listContratos),
     paginationEnabled: false,
-    initialParams: { page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' },
+    initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
   const cargos = useEntityData<Cargo>({
     key: 'cargos-lote',
     fetcher: unwrapFetcher(listCargos),
     paginationEnabled: false,
-    initialParams: { page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' },
+    initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
   const bases = useEntityData<Base>({
     key: 'bases-lote',
     fetcher: unwrapFetcher(listBases),
     paginationEnabled: false,
-    initialParams: { page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' },
+    initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
   // Debug: Log dos dados carregados
-  console.log('🔍 Dados para o formulário de lote:', {
-    contratos: {
-      total: contratos.data?.length || 0,
-      primeiros: contratos.data?.slice(0, 2),
-      isLoading: contratos.isLoading,
-    },
-    cargos: {
-      total: cargos.data?.length || 0,
-      primeiros: cargos.data?.slice(0, 2),
-      isLoading: cargos.isLoading,
-    },
-    bases: {
-      total: bases.data?.length || 0,
-      primeiros: bases.data?.slice(0, 2),
-      isLoading: bases.isLoading,
-    },
-  });
+  // console.log('🔍 Dados para o formulário de lote:', {
+  //   contratos: {
+  //     total: contratos.data?.length || 0,
+  //     primeiros: contratos.data?.slice(0, 2),
+  //     isLoading: contratos.isLoading,
+  //   },
+  //   cargos: {
+  //     total: cargos.data?.length || 0,
+  //     primeiros: cargos.data?.slice(0, 2),
+  //     isLoading: cargos.isLoading,
+  //   },
+  //   bases: {
+  //     total: bases.data?.length || 0,
+  //     primeiros: bases.data?.slice(0, 2),
+  //     isLoading: bases.isLoading,
+  //   },
+  // });
 
 
   // Configuração das colunas da tabela com ações integradas
@@ -184,6 +184,20 @@ export default function EletricistaPage() {
           );
         },
         width: 120,
+        filters: [
+          { text: 'Sem lotação', value: 'SEM_LOTACAO' },
+          ...(bases.data?.map(base => ({
+            text: base.nome,
+            value: base.id,
+          })) || []),
+        ],
+        onFilter: (value: any, record: any) => {
+          if (value === 'SEM_LOTACAO') {
+            return !record.baseAtual;
+          }
+          return record.baseAtual?.id === value;
+        },
+        filterSearch: true,
       },
     ],
     {
