@@ -37,14 +37,14 @@
  * EXEMPLO DE USO:
  * ```typescript
  * // Modo criação
- * <AprForm 
+ * <AprForm
  *   onSubmit={handleCreate}
  *   loading={false}
  * />
- * 
+ *
  * // Modo edição
- * <AprForm 
- *   initialValues={{ 
+ * <AprForm
+ *   initialValues={{
  *     id: 1,
  *     nome: "APR Soldagem",
  *     perguntaIds: [1, 2, 3],
@@ -79,10 +79,10 @@ const { Title } = Typography;
 export interface AprFormData {
   /** Nome/título da APR */
   nome: string;
-  
+
   /** Array de IDs das perguntas APR selecionadas */
   perguntaIds: number[];
-  
+
   /** Array de IDs das opções de resposta APR selecionadas */
   opcaoRespostaIds: number[];
 }
@@ -96,10 +96,10 @@ export interface AprFormData {
 interface Props {
   /** Função chamada ao submeter o formulário */
   onSubmit: (values: AprFormData) => void;
-  
+
   /** Valores iniciais para preenchimento (modo edição) */
   initialValues?: Partial<AprFormData & { id: number }>;
-  
+
   /** Estado de loading durante operações */
   loading?: boolean;
 }
@@ -118,7 +118,7 @@ interface Props {
  * // Uso em modal de criação
  * const CreateModal = () => {
  *   const [loading, setLoading] = useState(false);
- *   
+ *
  *   const handleSubmit = async (data) => {
  *     setLoading(true);
  *     try {
@@ -131,10 +131,10 @@ interface Props {
  *       setLoading(false);
  *     }
  *   };
- *   
+ *
  *   return (
  *     <Modal title="Nova APR" open={isOpen}>
- *       <AprForm 
+ *       <AprForm
  *         onSubmit={handleSubmit}
  *         loading={loading}
  *       />
@@ -147,7 +147,7 @@ export default function AprForm({ onSubmit, initialValues, loading = false }: Pr
   const { message } = App.useApp();
   // Hook do Ant Design para controle do formulário
   const [form] = Form.useForm<AprFormData>();
-  
+
   // Estados para dados dos Transfer components
   const [perguntas, setPerguntas] = useState<AprPergunta[]>([]);
   const [opcoes, setOpcoes] = useState<AprOpcaoResposta[]>([]);
@@ -191,7 +191,7 @@ export default function AprForm({ onSubmit, initialValues, loading = false }: Pr
           listAprPerguntas({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
           listAprOpcoesResposta({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
         ]);
-        
+
         setPerguntas(perguntasRes.data?.data || []);
         setOpcoes(opcoesRes.data?.data || []);
       } catch (e) {
@@ -261,15 +261,15 @@ export default function AprForm({ onSubmit, initialValues, loading = false }: Pr
     >
       {/* Seção: Dados básicos da APR */}
       <Title level={5}>Dados da APR</Title>
-      <Form.Item 
-        name="nome" 
-        label="Nome da APR" 
+      <Form.Item
+        name="nome"
+        label="Nome da APR"
         rules={[
-          { required: true, message: 'Nome é obrigatório' }, 
+          { required: true, message: 'Nome é obrigatório' },
           { min: 1, max: 255, message: 'Nome deve ter entre 1 e 255 caracteres' }
         ]}
       >
-        <Input 
+        <Input
           autoFocus
           placeholder="Digite o nome da APR"
           showCount
@@ -278,9 +278,9 @@ export default function AprForm({ onSubmit, initialValues, loading = false }: Pr
       </Form.Item>
 
       {/* Transfer Component: Perguntas APR */}
-      <Card 
-        size="small" 
-        title="Perguntas APR" 
+      <Card
+        size="small"
+        title="Perguntas APR"
         style={{ marginTop: 12 }}
         loading={loadingSources}
       >
@@ -292,7 +292,7 @@ export default function AprForm({ onSubmit, initialValues, loading = false }: Pr
           listStyle={{ width: '48%', height: 300 }}
           titles={["Disponíveis", "Selecionadas"]}
           showSearch
-          filterOption={(inputValue, item) => 
+          filterOption={(inputValue, item) =>
             item.title!.toLowerCase().includes(inputValue.toLowerCase())
           }
           disabled={loadingSources}
@@ -300,9 +300,9 @@ export default function AprForm({ onSubmit, initialValues, loading = false }: Pr
       </Card>
 
       {/* Transfer Component: Opções de Resposta APR */}
-      <Card 
-        size="small" 
-        title="Opções de Resposta APR" 
+      <Card
+        size="small"
+        title="Opções de Resposta APR"
         style={{ marginTop: 12 }}
         loading={loadingSources}
       >
@@ -314,7 +314,7 @@ export default function AprForm({ onSubmit, initialValues, loading = false }: Pr
           listStyle={{ width: '48%', height: 300 }}
           titles={["Disponíveis", "Selecionadas"]}
           showSearch
-          filterOption={(inputValue, item) => 
+          filterOption={(inputValue, item) =>
             item.title!.toLowerCase().includes(inputValue.toLowerCase())
           }
           disabled={loadingSources}
@@ -323,10 +323,10 @@ export default function AprForm({ onSubmit, initialValues, loading = false }: Pr
 
       {/* Botão de submit */}
       <Form.Item style={{ marginTop: 16 }}>
-        <Button 
-          type="primary" 
-          htmlType="submit" 
-          block 
+        <Button
+          type="primary"
+          htmlType="submit"
+          block
           loading={loading || loadingSources}
           disabled={loadingSources}
         >
