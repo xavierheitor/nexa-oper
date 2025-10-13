@@ -23,7 +23,7 @@
  * EXEMPLO DE USO:
  * ```typescript
  * const service = new AprTipoAtividadeVinculoService();
- * 
+ *
  * // Criar/atualizar vínculo
  * const vinculo = await service.setMapping({
  *   tipoAtividadeId: 1,
@@ -48,6 +48,7 @@ import {
     setAprTipoAtividadeSchema,
 } from '../schemas/aprTipoAtividadeVinculoSchema';
 import { PaginatedResult } from '../types/common';
+import { prisma } from '../db/db.service';
 
 // Tipos derivados dos schemas Zod para type safety
 type SetAprTipoAtividade = z.infer<typeof setAprTipoAtividadeSchema>;
@@ -118,7 +119,7 @@ export class AprTipoAtividadeVinculoService extends AbstractCrudService<
    * // Se já existia APR 3 vinculada:
    * // - APR 3 é desvinculada (soft delete)
    * // - APR 5 é vinculada (novo registro ativo)
-   * 
+   *
    * // Atualizar vínculo existente
    * const novoVinculo = await service.setMapping({
    *   tipoAtividadeId: 2,
@@ -126,7 +127,20 @@ export class AprTipoAtividadeVinculoService extends AbstractCrudService<
    * }, "user123");
    * ```
    */
-  async setMapping(data: SetAprTipoAtividade, userId: string): Promise<AprTipoAtividadeRelacao> {
+  async setMapping(
+    data: SetAprTipoAtividade,
+    userId: string
+  ): Promise<AprTipoAtividadeRelacao> {
+    // Validação de regra de negócio: verificar se APR existe
+    const apr = await prisma.apr.findUnique({
+      where: { id: data.aprId },
+      select: { id: true },
+    });
+
+    if (!apr) {
+      throw new Error('APR não encontrado');
+    }
+
     return this.repo.setActiveMapping(data.tipoAtividadeId, data.aprId, userId);
   }
 
@@ -152,17 +166,19 @@ export class AprTipoAtividadeVinculoService extends AbstractCrudService<
    *     tipoAtividade: true
    *   }
    * });
-   * 
+   *
    * console.log(`Encontrados ${result.total} vínculos`);
    * console.log(`Página ${result.page} de ${result.totalPages}`);
-   * 
+   *
    * // Acessar dados dos relacionamentos
    * result.data.forEach(vinculo => {
    *   console.log(`${vinculo.tipoAtividade.nome} -> ${vinculo.apr.nome}`);
    * });
    * ```
    */
-  async list(params: AprTipoAtividadeVinculoFilter): Promise<PaginatedResult<AprTipoAtividadeRelacao>> {
+  async list(
+    params: AprTipoAtividadeVinculoFilter
+  ): Promise<PaginatedResult<AprTipoAtividadeRelacao>> {
     // Busca dados via repository com includes padrão
     const { items, total } = await this.repo.list({
       ...params,
@@ -171,7 +187,7 @@ export class AprTipoAtividadeVinculoService extends AbstractCrudService<
         tipoAtividade: true,
       },
     } as any);
-    
+
     // Transforma para formato padronizado de resposta
     return {
       data: items,

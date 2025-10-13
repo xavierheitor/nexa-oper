@@ -70,13 +70,17 @@ export class ChecklistTipoEquipeRelacaoRepository extends AbstractCrudRepository
     userId: string
   ): Promise<ChecklistTipoEquipeRelacao> {
     // Buscar o tipo do checklist que está sendo vinculado
+    // Validação de existência já foi feita no Service
     const checklist = await prisma.checklist.findUnique({
       where: { id: checklistId },
       select: { tipoChecklistId: true },
     });
 
+    // Proteção técnica contra dados inconsistentes
     if (!checklist) {
-      throw new Error('Checklist não encontrado');
+      throw new Error(
+        'Inconsistência de dados: checklist não encontrado no banco'
+      );
     }
 
     // Soft delete de checklists do mesmo tipo já vinculados a esta equipe

@@ -55,9 +55,6 @@ export class EletricistaRepository extends AbstractCrudRepository<
         ? undefined
         : Number(rawBaseId);
 
-    if (normalizedBaseId !== undefined && Number.isNaN(normalizedBaseId)) {
-      throw new Error('Base inválida para eletricista.');
-    }
     const createdBy = (eletricistaData as any).createdBy || userId || '';
     const createdAt = (eletricistaData as any).createdAt || new Date();
 
@@ -113,9 +110,6 @@ export class EletricistaRepository extends AbstractCrudRepository<
         ? undefined
         : Number(rawBaseId);
 
-    if (normalizedBaseId !== undefined && Number.isNaN(normalizedBaseId)) {
-      throw new Error('Base inválida para eletricista.');
-    }
     const updatedBy = (eletricistaData as any).updatedBy || userId || '';
     const updatedAt = (eletricistaData as any).updatedAt || new Date();
 

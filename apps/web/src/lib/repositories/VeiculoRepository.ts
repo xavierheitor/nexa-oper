@@ -52,10 +52,6 @@ export class VeiculoRepository extends AbstractCrudRepository<Veiculo, VeiculoFi
     const normalizedBaseId =
       baseId === undefined || baseId === null ? undefined : Number(baseId);
 
-    if (normalizedBaseId !== undefined && Number.isNaN(normalizedBaseId)) {
-      throw new Error('Base inválida para veículo.');
-    }
-
     return prisma.$transaction(async tx => {
       const veiculo = await tx.veiculo.create({
         data: this.toPrismaCreateData(veiculoData, userId),
@@ -109,10 +105,6 @@ export class VeiculoRepository extends AbstractCrudRepository<Veiculo, VeiculoFi
 
     const normalizedBaseId =
       baseId === undefined || baseId === null ? undefined : Number(baseId);
-
-    if (normalizedBaseId !== undefined && Number.isNaN(normalizedBaseId)) {
-      throw new Error('Base inválida para veículo.');
-    }
 
     return prisma.$transaction(async tx => {
       const veiculo = await tx.veiculo.update({

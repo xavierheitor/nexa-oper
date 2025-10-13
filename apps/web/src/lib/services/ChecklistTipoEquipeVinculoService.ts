@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { AbstractCrudService } from '../abstracts/AbstractCrudService';
 import { ChecklistTipoEquipeRelacaoRepository } from '../repositories/ChecklistTipoEquipeRelacaoRepository';
 import { PaginatedResult } from '../types/common';
+import { prisma } from '../db/db.service';
 
 export const setChecklistTipoEquipeSchema = z.object({
   tipoEquipeId: z.number().int(),
@@ -25,7 +26,21 @@ export class ChecklistTipoEquipeVinculoService extends AbstractCrudService<
   }
 
   async setMapping(data: z.infer<typeof setChecklistTipoEquipeSchema>, userId: string) {
-    return this.repo.setActiveMapping(data.tipoEquipeId, data.checklistId, userId);
+    // Validação de regra de negócio: verificar se checklist existe
+    const checklist = await prisma.checklist.findUnique({
+      where: { id: data.checklistId },
+      select: { id: true },
+    });
+
+    if (!checklist) {
+      throw new Error('Checklist não encontrado');
+    }
+
+    return this.repo.setActiveMapping(
+      data.tipoEquipeId,
+      data.checklistId,
+      userId
+    );
   }
 
   async list(params: Filter): Promise<PaginatedResult<ChecklistTipoEquipeRelacao>> {
