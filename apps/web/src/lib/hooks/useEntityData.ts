@@ -251,11 +251,19 @@ export function useEntityData<T>(options: {
   }, [params, key]);
 
   // Chave do SWR - inclui params apenas se paginação estiver habilitada
-  const swrKey = paginationEnabled ? [key, params] : key;
+  // Serializa params para garantir que SWR detecte mudanças
+  const swrKey = paginationEnabled ? `${key}-${JSON.stringify(params)}` : key;
 
   // Integração com SWR para cache e sincronização
-  const { data, error, isLoading, mutate } = useSWR(swrKey, () =>
-    fetcher(paginationEnabled ? params : undefined)
+  const { data, error, isLoading, mutate } = useSWR(
+    swrKey,
+    () => fetcher(paginationEnabled ? params : undefined),
+    {
+      // Revalidação otimizada
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      keepPreviousData: true, // Mantém dados anteriores durante loading
+    }
   );
 
   // Normaliza dados - funciona com array simples ou resultado paginado
@@ -277,7 +285,10 @@ export function useEntityData<T>(options: {
             total: data?.total ?? 0,
             totalPages: data?.totalPages ?? 0,
           };
-      console.log(`[useEntityData] 📦 Dados carregados para ${key}:`, logResult);
+      console.log(
+        `[useEntityData] 📦 Dados carregados para ${key}:`,
+        logResult
+      );
     }
   }, [data, key]);
 
@@ -295,20 +306,14 @@ export function useEntityData<T>(options: {
     const field = !Array.isArray(sorter) && sorter?.field;
     const order = !Array.isArray(sorter) && sorter?.order;
 
-    // Log para debugging
-    console.log(
-      `[useEntityData] 🎯 Filtros recebidos do AntD (${key}):`,
-      filters
-    );
-    console.log(`[useEntityData] 🎯 Ordenação recebida:`, field, order);
-
     // Atualiza parâmetros com novos valores da tabela
     setParams((prev: PaginatedParams) => ({
       ...prev,
       page: pagination?.current || 1,
       pageSize: pagination?.pageSize || 10,
+      // Mantém ordenação anterior se não houver nova ordenação
       orderBy: typeof field === 'string' ? field : prev.orderBy,
-      orderDir: order === 'descend' ? 'desc' : 'asc',
+      orderDir: order ? (order === 'descend' ? 'desc' : 'asc') : prev.orderDir,
       filters: filters,
     }));
   };
@@ -324,7 +329,7 @@ export function useEntityData<T>(options: {
       isLoading,
       error,
       mutate,
-      mutateKey: swrKey as [string, PaginatedParams],
+      mutateKey: [key, params] as [string, PaginatedParams],
       pagination: {
         current: params.page,
         pageSize: params.pageSize,

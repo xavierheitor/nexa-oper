@@ -27,6 +27,9 @@ import { PaginationParams } from '../types/common';
 
 interface EletricistaFilter extends PaginationParams {
   contratoId?: number;
+  cargoId?: number;
+  baseId?: number;
+  estado?: string;
 }
 
 export class EletricistaRepository extends AbstractCrudRepository<
@@ -45,9 +48,10 @@ export class EletricistaRepository extends AbstractCrudRepository<
     userId?: string,
     baseIdInput?: number
   ): Promise<Eletricista> {
-    const { baseId: dataBaseId, ...eletricistaData } = data as EletricistaCreate & {
-      baseId?: number;
-    };
+    const { baseId: dataBaseId, ...eletricistaData } =
+      data as EletricistaCreate & {
+        baseId?: number;
+      };
 
     const rawBaseId = baseIdInput ?? dataBaseId;
     const normalizedBaseId =
@@ -100,7 +104,11 @@ export class EletricistaRepository extends AbstractCrudRepository<
     userId?: string,
     baseIdInput?: number
   ): Promise<Eletricista> {
-    const { baseId: dataBaseId, id: _ignoredId, ...eletricistaData } = data as EletricistaUpdate & {
+    const {
+      baseId: dataBaseId,
+      id: _ignoredId,
+      ...eletricistaData
+    } = data as EletricistaUpdate & {
       baseId?: number;
     } & { id: number };
 
@@ -270,6 +278,78 @@ export class EletricistaRepository extends AbstractCrudRepository<
    */
   protected count(where: any): Promise<number> {
     return prisma.eletricista.count({ where });
+  }
+
+  /**
+   * Lista eletricistas com filtros server-side
+   *
+   * Sobrescreve o método base para adicionar suporte a filtros
+   * de relacionamentos (cargo, base, estado)
+   */
+  async list(
+    params: EletricistaFilter
+  ): Promise<{ items: Eletricista[]; total: number }> {
+    const {
+      page = 1,
+      pageSize = 10,
+      orderBy = 'id',
+      orderDir = 'asc',
+      search,
+      cargoId,
+      baseId,
+      estado,
+      contratoId,
+      include,
+    } = params;
+
+    const skip = (page - 1) * pageSize;
+
+    // Construir where com filtros server-side
+    const where: any = {
+      deletedAt: null,
+      ...(contratoId && { contratoId }),
+      ...(cargoId && { cargoId }),
+      ...(estado && { estado: { contains: estado, mode: 'insensitive' } }),
+      ...(search && {
+        OR: this.getSearchFields().map(field => ({
+          [field]: { contains: search, mode: 'insensitive' },
+        })),
+      }),
+    };
+
+    // Filtro de base é especial (relacionamento com histórico)
+    if (baseId) {
+      // Se baseId = -1, filtra "sem lotação"
+      if (baseId === -1) {
+        const eletricistasComBase =
+          await prisma.eletricistaBaseHistorico.findMany({
+            where: { dataFim: null, deletedAt: null },
+            select: { eletricistaId: true },
+          });
+        const idsComBase = eletricistasComBase.map(h => h.eletricistaId);
+        where.id = { notIn: idsComBase };
+      } else {
+        // Filtrar por base específica
+        const eletricistasNaBase =
+          await prisma.eletricistaBaseHistorico.findMany({
+            where: {
+              baseId,
+              dataFim: null,
+              deletedAt: null,
+            },
+            select: { eletricistaId: true },
+          });
+        const idsNaBase = eletricistasNaBase.map(h => h.eletricistaId);
+        where.id = { in: idsNaBase };
+      }
+    }
+
+    const [total, items] = await Promise.all([
+      prisma.eletricista.count({ where }),
+      this.findMany(where, { [orderBy]: orderDir }, skip, pageSize, include),
+    ]);
+
+    return { items, total };
   }
 
   /**

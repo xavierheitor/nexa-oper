@@ -17,6 +17,9 @@ export const equipeFilterSchema = z.object({
   orderDir: z.enum(['asc', 'desc']).default('asc'),
   search: z.string().optional(),
   include: z.any().optional(),
+  // Filtros server-side para relacionamentos
+  contratoId: z.number().int().optional(),
+  tipoEquipeId: z.number().int().optional(),
 });
 
 // Schema para cadastro em lote

@@ -53,6 +53,10 @@ export const eletricistaFilterSchema = z.object({
   contratoId: z.number().int('Contrato é obrigatório').optional(),
   equipeId: z.number().int().optional(),
   ativo: z.boolean().optional(),
+  // Filtros server-side para relacionamentos
+  cargoId: z.number().int().optional(),
+  baseId: z.number().int().optional(),
+  estado: z.string().optional(),
 });
 
 // Schema para cadastro em lote

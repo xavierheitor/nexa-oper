@@ -14,6 +14,7 @@ import { Base, Cargo, Contrato, Eletricista } from '@nexa-oper/db';
 
 // Importações do hook e utilitários da aplicação
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
@@ -25,7 +26,8 @@ import { transferEletricistaBase } from '../../../../lib/actions/eletricista/tra
 import { updateEletricista } from '../../../../lib/actions/eletricista/update';
 import { ActionResult } from '../../../../lib/types/common';
 import TransferBaseModal from '../../../../ui/components/TransferBaseModal';
-import { getSelectFilter, getTextFilter } from '../../../../ui/components/tableFilters';
+import { getTextFilter } from '../../../../ui/components/tableFilters';
+import TableExternalFilters from '../../../../ui/components/TableExternalFilters';
 import EletricistaForm, { EletricistaFormData } from './form';
 import EletricistaLoteForm from './lote-form';
 
@@ -50,7 +52,7 @@ export default function EletricistaPage() {
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
   const eletricistas = useEntityData<EletricistaWithBase>({
     key: 'eletricistas', // Chave única para o cache SWR
-    fetcher: unwrapFetcher(listEletricistas), // Função que busca os dados (Server Action)
+    fetcher: unwrapPaginatedFetcher(listEletricistas), // Função que busca os dados (Server Action)
     paginationEnabled: true, // Habilita paginação
     initialParams: {
       page: 1, // Página inicial
@@ -156,20 +158,14 @@ export default function EletricistaPage() {
         key: 'cargo',
         render: (_: unknown, record: any) => record.cargo?.nome || '-',
         width: 150,
-        filters: cargos.data?.map(cargo => ({
-          text: cargo.nome,
-          value: cargo.id,
-        })) || [],
-        onFilter: (value: any, record: any) => record.cargo?.id === value,
-        filterSearch: true,
       },
-      // Coluna Estado - com filtro de seleção
+      // Coluna Estado
       {
         title: 'Estado',
         dataIndex: 'estado',
         key: 'estado',
-        sorter: true, // Permite ordenação
-        ...getTextFilter<Eletricista>('estado', 'estado do eletricista'), // Adiciona filtro de busca textual
+        sorter: true,
+        width: 100,
       },
       // Coluna Base Atual
       {
@@ -184,20 +180,6 @@ export default function EletricistaPage() {
           );
         },
         width: 120,
-        filters: [
-          { text: 'Sem lotação', value: 'SEM_LOTACAO' },
-          ...(bases.data?.map(base => ({
-            text: base.nome,
-            value: base.id,
-          })) || []),
-        ],
-        onFilter: (value: any, record: any) => {
-          if (value === 'SEM_LOTACAO') {
-            return !record.baseAtual;
-          }
-          return record.baseAtual?.id === value;
-        },
-        filterSearch: true,
       },
     ],
     {
@@ -216,7 +198,7 @@ export default function EletricistaPage() {
       customActions: [
         {
           key: 'transfer-base',
-          label: 'Transferir Base',
+          label: '',
           type: 'link',
           icon: <SwapOutlined />,
           tooltip: 'Transferir eletricista para outra base',
@@ -338,6 +320,37 @@ export default function EletricistaPage() {
           </Space>
         }
       >
+        {/* Filtros externos (server-side) */}
+        <TableExternalFilters
+          filters={[
+            {
+              label: 'Base',
+              placeholder: 'Filtrar por base',
+              options: [
+                { label: 'Sem lotação', value: -1 },
+                ...(bases.data?.map(base => ({
+                  label: base.nome,
+                  value: base.id,
+                })) || []),
+              ],
+              onChange: (baseId) =>
+                eletricistas.setParams(prev => ({ ...prev, baseId, page: 1 })),
+              loading: bases.isLoading,
+            },
+            {
+              label: 'Cargo',
+              placeholder: 'Filtrar por cargo',
+              options: cargos.data?.map(cargo => ({
+                label: cargo.nome,
+                value: cargo.id,
+              })) || [],
+              onChange: (cargoId) =>
+                eletricistas.setParams(prev => ({ ...prev, cargoId, page: 1 })),
+              loading: cargos.isLoading,
+            },
+          ]}
+        />
+
         {/* Tabela principal com dados dos eletricistas */}
         <Table<EletricistaWithBase>
           columns={columns} // Colunas configuradas acima

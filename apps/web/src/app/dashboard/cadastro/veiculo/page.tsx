@@ -11,6 +11,7 @@ import { updateVeiculo } from '@/lib/actions/veiculo/update';
 
 // Importações dos hooks e utilitários da aplicação
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
@@ -19,6 +20,7 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import { ActionResult } from '@/lib/types/common';
 import TransferBaseModal from '@/ui/components/TransferBaseModal';
 import { getTextFilter } from '@/ui/components/tableFilters';
+import TableExternalFilters from '@/ui/components/TableExternalFilters';
 
 // Importações do Prisma e Ant Design
 import { Base, Veiculo } from '@nexa-oper/db';
@@ -47,7 +49,7 @@ export default function VeiculoPage() {
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
   const veiculos = useEntityData<VeiculoWithBase>({
     key: 'veiculos', // Chave única para o cache SWR
-    fetcher: unwrapFetcher(listVeiculos), // Função que busca os dados (Server Action)
+    fetcher: unwrapPaginatedFetcher(listVeiculos), // Função que busca os dados (Server Action)
     paginationEnabled: true, // Habilita paginação
     initialParams: {
       page: 1, // Página inicial
@@ -161,12 +163,6 @@ export default function VeiculoPage() {
         sorter: true,
         render: (nome: string) => nome || '-',
         width: 120,
-        filters: tiposVeiculo?.map(tipo => ({
-          text: tipo.nome,
-          value: tipo.id,
-        })) || [],
-        onFilter: (value: any, record: any) => record.tipoVeiculo?.id === value,
-        filterSearch: true,
       },
       // Coluna Contrato - relacionamento
       {
@@ -193,20 +189,6 @@ export default function VeiculoPage() {
           );
         },
         width: 120,
-        filters: [
-          { text: 'Sem lotação', value: 'SEM_LOTACAO' },
-          ...(bases?.map(base => ({
-            text: base.nome,
-            value: base.id,
-          })) || []),
-        ],
-        onFilter: (value: any, record: any) => {
-          if (value === 'SEM_LOTACAO') {
-            return !record.baseAtual;
-          }
-          return record.baseAtual?.id === value;
-        },
-        filterSearch: true,
       },
       // Coluna Data de Criação - formatada para exibição
       {
@@ -342,6 +324,35 @@ export default function VeiculoPage() {
           </Space>
         }
       >
+        {/* Filtros externos (server-side) */}
+        <TableExternalFilters
+          filters={[
+            {
+              label: 'Base',
+              placeholder: 'Filtrar por base',
+              options: [
+                { label: 'Sem lotação', value: -1 },
+                ...(bases?.map(base => ({
+                  label: base.nome,
+                  value: base.id,
+                })) || []),
+              ],
+              onChange: (baseId) =>
+                veiculos.setParams(prev => ({ ...prev, baseId, page: 1 })),
+            },
+            {
+              label: 'Tipo',
+              placeholder: 'Filtrar por tipo',
+              options: tiposVeiculo?.map(tipo => ({
+                label: tipo.nome,
+                value: tipo.id,
+              })) || [],
+              onChange: (tipoVeiculoId) =>
+                veiculos.setParams(prev => ({ ...prev, tipoVeiculoId, page: 1 })),
+            },
+          ]}
+        />
+
         {/* Tabela principal com dados dos veículos */}
         <Table<VeiculoWithBase>
           columns={columns} // Colunas configuradas acima

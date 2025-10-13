@@ -3,7 +3,10 @@ import { AbstractCrudRepository } from '../abstracts/AbstractCrudRepository';
 import { prisma } from '../db/db.service';
 import { PaginationParams } from '../types/common';
 
-interface EquipeFilter extends PaginationParams {}
+interface EquipeFilter extends PaginationParams {
+  contratoId?: number;
+  tipoEquipeId?: number;
+}
 
 export type EquipeCreateInput = {
   nome: string;
@@ -11,10 +14,7 @@ export type EquipeCreateInput = {
   contratoId: number;
 };
 
-export class EquipeRepository extends AbstractCrudRepository<
-  Equipe,
-  EquipeFilter
-> {
+export class EquipeRepository extends AbstractCrudRepository<Equipe, EquipeFilter> {
   private toPrismaCreateData(
     data: EquipeCreateInput,
     userId?: string
@@ -71,6 +71,48 @@ export class EquipeRepository extends AbstractCrudRepository<
 
   findById(id: number): Promise<Equipe | null> {
     return prisma.equipe.findUnique({ where: { id, deletedAt: null } });
+  }
+
+  /**
+   * Lista equipes com filtros server-side
+   *
+   * Sobrescreve o método base para adicionar suporte a filtros
+   * de relacionamentos (tipoEquipe, contrato)
+   */
+  async list(
+    params: EquipeFilter
+  ): Promise<{ items: Equipe[]; total: number }> {
+    const {
+      page = 1,
+      pageSize = 10,
+      orderBy = 'id',
+      orderDir = 'asc',
+      search,
+      contratoId,
+      tipoEquipeId,
+      include,
+    } = params;
+
+    const skip = (page - 1) * pageSize;
+
+    // Construir where com filtros server-side
+    const where: any = {
+      deletedAt: null,
+      ...(contratoId && { contratoId }),
+      ...(tipoEquipeId && { tipoEquipeId }),
+      ...(search && {
+        OR: this.getSearchFields().map(field => ({
+          [field]: { contains: search, mode: 'insensitive' },
+        })),
+      }),
+    };
+
+    const [total, items] = await Promise.all([
+      prisma.equipe.count({ where }),
+      this.findMany(where, { [orderBy]: orderDir }, skip, pageSize, include),
+    ]);
+
+    return { items, total };
   }
 
   protected getSearchFields(): string[] {

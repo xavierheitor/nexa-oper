@@ -4,7 +4,9 @@ import { prisma } from '../db/db.service';
 import { PaginationParams } from '../types/common';
 
 interface VeiculoFilter extends PaginationParams {
-  // Campos específicos de filtro podem ser adicionados aqui
+  contratoId?: number;
+  tipoVeiculoId?: number;
+  baseId?: number;
 }
 
 // Tipo para dados de criação (sem campos de auditoria)
@@ -151,6 +153,74 @@ export class VeiculoRepository extends AbstractCrudRepository<Veiculo, VeiculoFi
       return veiculo;
     });
   }
+  /**
+   * Lista veículos com filtros server-side
+   *
+   * Sobrescreve o método base para adicionar suporte a filtros
+   * de relacionamentos (tipoVeiculo, contrato, base)
+   */
+  async list(
+    params: VeiculoFilter
+  ): Promise<{ items: Veiculo[]; total: number }> {
+    const {
+      page = 1,
+      pageSize = 10,
+      orderBy = 'id',
+      orderDir = 'asc',
+      search,
+      contratoId,
+      tipoVeiculoId,
+      baseId,
+      include,
+    } = params;
+
+    const skip = (page - 1) * pageSize;
+
+    // Construir where com filtros server-side
+    const where: any = {
+      deletedAt: null,
+      ...(contratoId && { contratoId }),
+      ...(tipoVeiculoId && { tipoVeiculoId }),
+      ...(search && {
+        OR: this.getSearchFields().map(field => ({
+          [field]: { contains: search, mode: 'insensitive' },
+        })),
+      }),
+    };
+
+    // Filtro de base é especial (relacionamento com histórico)
+    if (baseId) {
+      // Se baseId = -1, filtra "sem lotação"
+      if (baseId === -1) {
+        const veiculosComBase = await prisma.veiculoBaseHistorico.findMany({
+          where: { dataFim: null, deletedAt: null },
+          select: { veiculoId: true },
+        });
+        const idsComBase = veiculosComBase.map(h => h.veiculoId);
+        where.id = { notIn: idsComBase };
+      } else {
+        // Filtrar por base específica
+        const veiculosNaBase = await prisma.veiculoBaseHistorico.findMany({
+          where: {
+            baseId,
+            dataFim: null,
+            deletedAt: null,
+          },
+          select: { veiculoId: true },
+        });
+        const idsNaBase = veiculosNaBase.map(h => h.veiculoId);
+        where.id = { in: idsNaBase };
+      }
+    }
+
+    const [total, items] = await Promise.all([
+      prisma.veiculo.count({ where }),
+      this.findMany(where, { [orderBy]: orderDir }, skip, pageSize, include),
+    ]);
+
+    return { items, total };
+  }
+
   delete(id: any, userId: string): Promise<Veiculo> {
     return prisma.veiculo.update({
       where: { id },

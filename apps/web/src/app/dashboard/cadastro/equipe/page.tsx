@@ -9,12 +9,14 @@ import { listContratos } from '@/lib/actions/contrato/list';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 
 import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
+import TableExternalFilters from '@/ui/components/TableExternalFilters';
 
 import { Contrato, Equipe, TipoEquipe } from '@nexa-oper/db';
 import { Button, Card, Modal, Table, Space } from 'antd';
@@ -28,7 +30,7 @@ export default function EquipePage() {
 
   const equipes = useEntityData<Equipe>({
     key: 'equipes',
-    fetcher: unwrapFetcher(listEquipes),
+    fetcher: unwrapPaginatedFetcher(listEquipes),
     paginationEnabled: true,
     initialParams: {
       page: 1,
@@ -88,12 +90,6 @@ export default function EquipePage() {
         sorter: true,
         render: (nome: string) => nome || '-',
         width: 160,
-        filters: tiposEquipe?.map(tipo => ({
-          text: tipo.nome,
-          value: tipo.id,
-        })) || [],
-        onFilter: (value: any, record: any) => record.tipoEquipe?.id === value,
-        filterSearch: true,
       },
       {
         title: 'Contrato',
@@ -157,6 +153,22 @@ export default function EquipePage() {
           </Space>
         }
       >
+        {/* Filtros externos (server-side) */}
+        <TableExternalFilters
+          filters={[
+            {
+              label: 'Tipo de Equipe',
+              placeholder: 'Filtrar por tipo',
+              options: tiposEquipe?.map(tipo => ({
+                label: tipo.nome,
+                value: tipo.id,
+              })) || [],
+              onChange: (tipoEquipeId) =>
+                equipes.setParams(prev => ({ ...prev, tipoEquipeId, page: 1 })),
+            },
+          ]}
+        />
+
         <Table<Equipe>
           columns={columns}
           dataSource={equipes.data}

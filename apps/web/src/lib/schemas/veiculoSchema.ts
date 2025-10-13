@@ -20,6 +20,10 @@ export const veiculoFilterSchema = z.object({
   orderDir: z.enum(['asc', 'desc']),
   search: z.string().optional(),
   include: z.any().optional(),
+  // Filtros server-side para relacionamentos
+  contratoId: z.number().int().optional(),
+  tipoVeiculoId: z.number().int().optional(),
+  baseId: z.number().int().optional(),
 });
 
 // Schema para cadastro em lote
