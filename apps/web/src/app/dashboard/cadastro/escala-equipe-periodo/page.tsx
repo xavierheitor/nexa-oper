@@ -74,7 +74,7 @@ const statusLabels = {
 };
 
 export default function EscalaEquipePeriodoPage() {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<EscalaEquipePeriodo | null>(null);
@@ -96,7 +96,7 @@ export default function EscalaEquipePeriodoPage() {
   });
 
   const handleGerarSlots = async (record: EscalaEquipePeriodo) => {
-    Modal.confirm({
+    modal.confirm({
       title: 'Gerar Slots de Escala',
       content: `Deseja gerar os slots para a escala da equipe ${record.equipe.nome}?`,
       okText: 'Sim, Gerar',
@@ -122,7 +122,7 @@ export default function EscalaEquipePeriodoPage() {
   };
 
   const handlePublicar = async (record: EscalaEquipePeriodo) => {
-    Modal.confirm({
+    modal.confirm({
       title: 'Publicar Escala',
       content: 'Após publicar, a escala não poderá ser editada. Deseja continuar?',
       okText: 'Sim, Publicar',
@@ -148,7 +148,7 @@ export default function EscalaEquipePeriodoPage() {
   };
 
   const handleArquivar = async (record: EscalaEquipePeriodo) => {
-    Modal.confirm({
+    modal.confirm({
       title: 'Arquivar Escala',
       content: 'Deseja arquivar esta escala?',
       okText: 'Sim, Arquivar',
@@ -308,7 +308,7 @@ export default function EscalaEquipePeriodoPage() {
   };
 
   const handleDelete = async (id: number) => {
-    Modal.confirm({
+    modal.confirm({
       title: 'Confirmar exclusão',
       content: 'Tem certeza que deseja excluir este período de escala?',
       okText: 'Sim',

@@ -20,6 +20,7 @@ export const equipeFilterSchema = z.object({
   // Filtros server-side para relacionamentos
   contratoId: z.number().int().optional(),
   tipoEquipeId: z.number().int().optional(),
+  baseId: z.number().int().optional(), // Filtro server-side de base atual
 });
 
 // Schema para cadastro em lote

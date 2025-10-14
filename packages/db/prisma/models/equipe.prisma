@@ -40,6 +40,8 @@ model Equipe {
   EquipeHorarioVigencia EquipeHorarioVigencia[]
 
   EquipeTurnoHistorico EquipeTurnoHistorico[]
+
+  EquipeBaseHistorico EquipeBaseHistorico[]
 }
 
 model EquipeSupervisor {

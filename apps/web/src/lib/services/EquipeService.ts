@@ -123,17 +123,30 @@ export class EquipeService extends AbstractCrudService<
   }
 
   /**
-   * Lista equipes com paginação
+   * Lista equipes com paginação e base atual
    *
    * @param params - Parâmetros de paginação e filtro
-   * @returns Resultado paginado
+   * @returns Resultado paginado com base atual de cada equipe
    */
-  async list(params: EquipeFilter): Promise<PaginatedResult<Equipe>> {
+  async list(
+    params: EquipeFilter
+  ): Promise<PaginatedResult<Equipe & { baseAtual?: any }>> {
     const { items, total } = await this.equipeRepo.list(params);
     const totalPages = Math.ceil(total / params.pageSize);
 
+    // Busca a base atual de cada equipe
+    const equipesComBase = await Promise.all(
+      items.map(async equipe => {
+        const baseAtual = await this.equipeRepo.findBaseAtual(equipe.id);
+        return {
+          ...equipe,
+          baseAtual,
+        };
+      })
+    );
+
     return {
-      data: items,
+      data: equipesComBase,
       total,
       totalPages,
       page: params.page,
@@ -148,5 +161,25 @@ export class EquipeService extends AbstractCrudService<
    */
   protected getSearchFields(): string[] {
     return ['nome'];
+  }
+
+  /**
+   * Busca a base atual de uma equipe
+   *
+   * @param equipeId - ID da equipe
+   * @returns Base atual ou null se não houver
+   */
+  async getBaseAtual(equipeId: number) {
+    return this.equipeRepo.findBaseAtual(equipeId);
+  }
+
+  /**
+   * Busca histórico de bases de uma equipe
+   *
+   * @param equipeId - ID da equipe
+   * @returns Array com histórico de bases
+   */
+  async getHistoricoBase(equipeId: number) {
+    return this.equipeRepo.findHistoricoBase(equipeId);
   }
 }

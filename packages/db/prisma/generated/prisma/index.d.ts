@@ -164,6 +164,11 @@ export type Eletricista = $Result.DefaultSelection<Prisma.$EletricistaPayload>
  */
 export type Cargo = $Result.DefaultSelection<Prisma.$CargoPayload>
 /**
+ * Model EquipeBaseHistorico
+ * 
+ */
+export type EquipeBaseHistorico = $Result.DefaultSelection<Prisma.$EquipeBaseHistoricoPayload>
+/**
  * Model TipoEquipe
  * 
  */
@@ -838,6 +843,16 @@ export class PrismaClient<
   get cargo(): Prisma.CargoDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.equipeBaseHistorico`: Exposes CRUD operations for the **EquipeBaseHistorico** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more EquipeBaseHistoricos
+    * const equipeBaseHistoricos = await prisma.equipeBaseHistorico.findMany()
+    * ```
+    */
+  get equipeBaseHistorico(): Prisma.EquipeBaseHistoricoDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.tipoEquipe`: Exposes CRUD operations for the **TipoEquipe** model.
     * Example usage:
     * ```ts
@@ -1506,6 +1521,7 @@ export namespace Prisma {
     EletricistaBaseHistorico: 'EletricistaBaseHistorico',
     Eletricista: 'Eletricista',
     Cargo: 'Cargo',
+    EquipeBaseHistorico: 'EquipeBaseHistorico',
     TipoEquipe: 'TipoEquipe',
     Equipe: 'Equipe',
     EquipeSupervisor: 'EquipeSupervisor',
@@ -1544,7 +1560,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "apr" | "aprPergunta" | "aprPerguntaRelacao" | "aprOpcaoResposta" | "aprOpcaoRespostaRelacao" | "aprTipoAtividadeRelacao" | "tipoAtividade" | "mobileUser" | "mobileSession" | "mobileToken" | "user" | "account" | "session" | "verificationToken" | "role" | "roleUser" | "base" | "tipoChecklist" | "checklist" | "checklistPergunta" | "checklistPerguntaRelacao" | "checklistOpcaoResposta" | "checklistOpcaoRespostaRelacao" | "checklistTipoVeiculoRelacao" | "checklistTipoEquipeRelacao" | "contrato" | "mobileContratoPermissao" | "eletricistaBaseHistorico" | "eletricista" | "cargo" | "tipoEquipe" | "equipe" | "equipeSupervisor" | "tipoEscala" | "tipoEscalaCicloPosicao" | "tipoEscalaSemanaMascara" | "escalaEquipePeriodo" | "slotEscala" | "eventoCobertura" | "equipeHorarioVigencia" | "horarioAberturaCatalogo" | "equipeTurnoHistorico" | "supervisor" | "test" | "turno" | "turnoEletricista" | "veiculoBaseHistorico" | "tipoVeiculo" | "veiculo" | "veiculoOdometro"
+      modelProps: "apr" | "aprPergunta" | "aprPerguntaRelacao" | "aprOpcaoResposta" | "aprOpcaoRespostaRelacao" | "aprTipoAtividadeRelacao" | "tipoAtividade" | "mobileUser" | "mobileSession" | "mobileToken" | "user" | "account" | "session" | "verificationToken" | "role" | "roleUser" | "base" | "tipoChecklist" | "checklist" | "checklistPergunta" | "checklistPerguntaRelacao" | "checklistOpcaoResposta" | "checklistOpcaoRespostaRelacao" | "checklistTipoVeiculoRelacao" | "checklistTipoEquipeRelacao" | "contrato" | "mobileContratoPermissao" | "eletricistaBaseHistorico" | "eletricista" | "cargo" | "equipeBaseHistorico" | "tipoEquipe" | "equipe" | "equipeSupervisor" | "tipoEscala" | "tipoEscalaCicloPosicao" | "tipoEscalaSemanaMascara" | "escalaEquipePeriodo" | "slotEscala" | "eventoCobertura" | "equipeHorarioVigencia" | "horarioAberturaCatalogo" | "equipeTurnoHistorico" | "supervisor" | "test" | "turno" | "turnoEletricista" | "veiculoBaseHistorico" | "tipoVeiculo" | "veiculo" | "veiculoOdometro"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3528,6 +3544,72 @@ export namespace Prisma {
           }
         }
       }
+      EquipeBaseHistorico: {
+        payload: Prisma.$EquipeBaseHistoricoPayload<ExtArgs>
+        fields: Prisma.EquipeBaseHistoricoFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.EquipeBaseHistoricoFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeBaseHistoricoPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.EquipeBaseHistoricoFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeBaseHistoricoPayload>
+          }
+          findFirst: {
+            args: Prisma.EquipeBaseHistoricoFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeBaseHistoricoPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.EquipeBaseHistoricoFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeBaseHistoricoPayload>
+          }
+          findMany: {
+            args: Prisma.EquipeBaseHistoricoFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeBaseHistoricoPayload>[]
+          }
+          create: {
+            args: Prisma.EquipeBaseHistoricoCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeBaseHistoricoPayload>
+          }
+          createMany: {
+            args: Prisma.EquipeBaseHistoricoCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.EquipeBaseHistoricoDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeBaseHistoricoPayload>
+          }
+          update: {
+            args: Prisma.EquipeBaseHistoricoUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeBaseHistoricoPayload>
+          }
+          deleteMany: {
+            args: Prisma.EquipeBaseHistoricoDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.EquipeBaseHistoricoUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.EquipeBaseHistoricoUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EquipeBaseHistoricoPayload>
+          }
+          aggregate: {
+            args: Prisma.EquipeBaseHistoricoAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateEquipeBaseHistorico>
+          }
+          groupBy: {
+            args: Prisma.EquipeBaseHistoricoGroupByArgs<ExtArgs>
+            result: $Utils.Optional<EquipeBaseHistoricoGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.EquipeBaseHistoricoCountArgs<ExtArgs>
+            result: $Utils.Optional<EquipeBaseHistoricoCountAggregateOutputType> | number
+          }
+        }
+      }
       TipoEquipe: {
         payload: Prisma.$TipoEquipePayload<ExtArgs>
         fields: Prisma.TipoEquipeFieldRefs
@@ -4970,6 +5052,7 @@ export namespace Prisma {
     eletricistaBaseHistorico?: EletricistaBaseHistoricoOmit
     eletricista?: EletricistaOmit
     cargo?: CargoOmit
+    equipeBaseHistorico?: EquipeBaseHistoricoOmit
     tipoEquipe?: TipoEquipeOmit
     equipe?: EquipeOmit
     equipeSupervisor?: EquipeSupervisorOmit
@@ -5343,11 +5426,13 @@ export namespace Prisma {
   export type BaseCountOutputType = {
     EletricistaBaseHistorico: number
     VeiculoBaseHistorico: number
+    EquipeBaseHistorico: number
   }
 
   export type BaseCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     EletricistaBaseHistorico?: boolean | BaseCountOutputTypeCountEletricistaBaseHistoricoArgs
     VeiculoBaseHistorico?: boolean | BaseCountOutputTypeCountVeiculoBaseHistoricoArgs
+    EquipeBaseHistorico?: boolean | BaseCountOutputTypeCountEquipeBaseHistoricoArgs
   }
 
   // Custom InputTypes
@@ -5373,6 +5458,13 @@ export namespace Prisma {
    */
   export type BaseCountOutputTypeCountVeiculoBaseHistoricoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: VeiculoBaseHistoricoWhereInput
+  }
+
+  /**
+   * BaseCountOutputType without action
+   */
+  export type BaseCountOutputTypeCountEquipeBaseHistoricoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EquipeBaseHistoricoWhereInput
   }
 
 
@@ -5751,6 +5843,7 @@ export namespace Prisma {
     EscalaEquipePeriodo: number
     EquipeHorarioVigencia: number
     EquipeTurnoHistorico: number
+    EquipeBaseHistorico: number
   }
 
   export type EquipeCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5759,6 +5852,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: boolean | EquipeCountOutputTypeCountEscalaEquipePeriodoArgs
     EquipeHorarioVigencia?: boolean | EquipeCountOutputTypeCountEquipeHorarioVigenciaArgs
     EquipeTurnoHistorico?: boolean | EquipeCountOutputTypeCountEquipeTurnoHistoricoArgs
+    EquipeBaseHistorico?: boolean | EquipeCountOutputTypeCountEquipeBaseHistoricoArgs
   }
 
   // Custom InputTypes
@@ -5805,6 +5899,13 @@ export namespace Prisma {
    */
   export type EquipeCountOutputTypeCountEquipeTurnoHistoricoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: EquipeTurnoHistoricoWhereInput
+  }
+
+  /**
+   * EquipeCountOutputType without action
+   */
+  export type EquipeCountOutputTypeCountEquipeBaseHistoricoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EquipeBaseHistoricoWhereInput
   }
 
 
@@ -22574,6 +22675,7 @@ export namespace Prisma {
     contrato?: boolean | ContratoDefaultArgs<ExtArgs>
     EletricistaBaseHistorico?: boolean | Base$EletricistaBaseHistoricoArgs<ExtArgs>
     VeiculoBaseHistorico?: boolean | Base$VeiculoBaseHistoricoArgs<ExtArgs>
+    EquipeBaseHistorico?: boolean | Base$EquipeBaseHistoricoArgs<ExtArgs>
     _count?: boolean | BaseCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["base"]>
 
@@ -22596,6 +22698,7 @@ export namespace Prisma {
     contrato?: boolean | ContratoDefaultArgs<ExtArgs>
     EletricistaBaseHistorico?: boolean | Base$EletricistaBaseHistoricoArgs<ExtArgs>
     VeiculoBaseHistorico?: boolean | Base$VeiculoBaseHistoricoArgs<ExtArgs>
+    EquipeBaseHistorico?: boolean | Base$EquipeBaseHistoricoArgs<ExtArgs>
     _count?: boolean | BaseCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -22605,6 +22708,7 @@ export namespace Prisma {
       contrato: Prisma.$ContratoPayload<ExtArgs>
       EletricistaBaseHistorico: Prisma.$EletricistaBaseHistoricoPayload<ExtArgs>[]
       VeiculoBaseHistorico: Prisma.$VeiculoBaseHistoricoPayload<ExtArgs>[]
+      EquipeBaseHistorico: Prisma.$EquipeBaseHistoricoPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -22959,6 +23063,7 @@ export namespace Prisma {
     contrato<T extends ContratoDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ContratoDefaultArgs<ExtArgs>>): Prisma__ContratoClient<$Result.GetResult<Prisma.$ContratoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     EletricistaBaseHistorico<T extends Base$EletricistaBaseHistoricoArgs<ExtArgs> = {}>(args?: Subset<T, Base$EletricistaBaseHistoricoArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EletricistaBaseHistoricoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     VeiculoBaseHistorico<T extends Base$VeiculoBaseHistoricoArgs<ExtArgs> = {}>(args?: Subset<T, Base$VeiculoBaseHistoricoArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VeiculoBaseHistoricoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    EquipeBaseHistorico<T extends Base$EquipeBaseHistoricoArgs<ExtArgs> = {}>(args?: Subset<T, Base$EquipeBaseHistoricoArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EquipeBaseHistoricoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -23385,6 +23490,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: VeiculoBaseHistoricoScalarFieldEnum | VeiculoBaseHistoricoScalarFieldEnum[]
+  }
+
+  /**
+   * Base.EquipeBaseHistorico
+   */
+  export type Base$EquipeBaseHistoricoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeBaseHistorico
+     */
+    select?: EquipeBaseHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeBaseHistorico
+     */
+    omit?: EquipeBaseHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeBaseHistoricoInclude<ExtArgs> | null
+    where?: EquipeBaseHistoricoWhereInput
+    orderBy?: EquipeBaseHistoricoOrderByWithRelationInput | EquipeBaseHistoricoOrderByWithRelationInput[]
+    cursor?: EquipeBaseHistoricoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EquipeBaseHistoricoScalarFieldEnum | EquipeBaseHistoricoScalarFieldEnum[]
   }
 
   /**
@@ -37223,6 +37352,1058 @@ export namespace Prisma {
 
 
   /**
+   * Model EquipeBaseHistorico
+   */
+
+  export type AggregateEquipeBaseHistorico = {
+    _count: EquipeBaseHistoricoCountAggregateOutputType | null
+    _avg: EquipeBaseHistoricoAvgAggregateOutputType | null
+    _sum: EquipeBaseHistoricoSumAggregateOutputType | null
+    _min: EquipeBaseHistoricoMinAggregateOutputType | null
+    _max: EquipeBaseHistoricoMaxAggregateOutputType | null
+  }
+
+  export type EquipeBaseHistoricoAvgAggregateOutputType = {
+    id: number | null
+    equipeId: number | null
+    baseId: number | null
+  }
+
+  export type EquipeBaseHistoricoSumAggregateOutputType = {
+    id: number | null
+    equipeId: number | null
+    baseId: number | null
+  }
+
+  export type EquipeBaseHistoricoMinAggregateOutputType = {
+    id: number | null
+    equipeId: number | null
+    baseId: number | null
+    dataInicio: Date | null
+    dataFim: Date | null
+    motivo: string | null
+    createdAt: Date | null
+    createdBy: string | null
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+  }
+
+  export type EquipeBaseHistoricoMaxAggregateOutputType = {
+    id: number | null
+    equipeId: number | null
+    baseId: number | null
+    dataInicio: Date | null
+    dataFim: Date | null
+    motivo: string | null
+    createdAt: Date | null
+    createdBy: string | null
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+  }
+
+  export type EquipeBaseHistoricoCountAggregateOutputType = {
+    id: number
+    equipeId: number
+    baseId: number
+    dataInicio: number
+    dataFim: number
+    motivo: number
+    createdAt: number
+    createdBy: number
+    updatedAt: number
+    updatedBy: number
+    deletedAt: number
+    deletedBy: number
+    _all: number
+  }
+
+
+  export type EquipeBaseHistoricoAvgAggregateInputType = {
+    id?: true
+    equipeId?: true
+    baseId?: true
+  }
+
+  export type EquipeBaseHistoricoSumAggregateInputType = {
+    id?: true
+    equipeId?: true
+    baseId?: true
+  }
+
+  export type EquipeBaseHistoricoMinAggregateInputType = {
+    id?: true
+    equipeId?: true
+    baseId?: true
+    dataInicio?: true
+    dataFim?: true
+    motivo?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+  }
+
+  export type EquipeBaseHistoricoMaxAggregateInputType = {
+    id?: true
+    equipeId?: true
+    baseId?: true
+    dataInicio?: true
+    dataFim?: true
+    motivo?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+  }
+
+  export type EquipeBaseHistoricoCountAggregateInputType = {
+    id?: true
+    equipeId?: true
+    baseId?: true
+    dataInicio?: true
+    dataFim?: true
+    motivo?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+    _all?: true
+  }
+
+  export type EquipeBaseHistoricoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which EquipeBaseHistorico to aggregate.
+     */
+    where?: EquipeBaseHistoricoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EquipeBaseHistoricos to fetch.
+     */
+    orderBy?: EquipeBaseHistoricoOrderByWithRelationInput | EquipeBaseHistoricoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: EquipeBaseHistoricoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EquipeBaseHistoricos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EquipeBaseHistoricos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned EquipeBaseHistoricos
+    **/
+    _count?: true | EquipeBaseHistoricoCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: EquipeBaseHistoricoAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: EquipeBaseHistoricoSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: EquipeBaseHistoricoMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: EquipeBaseHistoricoMaxAggregateInputType
+  }
+
+  export type GetEquipeBaseHistoricoAggregateType<T extends EquipeBaseHistoricoAggregateArgs> = {
+        [P in keyof T & keyof AggregateEquipeBaseHistorico]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateEquipeBaseHistorico[P]>
+      : GetScalarType<T[P], AggregateEquipeBaseHistorico[P]>
+  }
+
+
+
+
+  export type EquipeBaseHistoricoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EquipeBaseHistoricoWhereInput
+    orderBy?: EquipeBaseHistoricoOrderByWithAggregationInput | EquipeBaseHistoricoOrderByWithAggregationInput[]
+    by: EquipeBaseHistoricoScalarFieldEnum[] | EquipeBaseHistoricoScalarFieldEnum
+    having?: EquipeBaseHistoricoScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: EquipeBaseHistoricoCountAggregateInputType | true
+    _avg?: EquipeBaseHistoricoAvgAggregateInputType
+    _sum?: EquipeBaseHistoricoSumAggregateInputType
+    _min?: EquipeBaseHistoricoMinAggregateInputType
+    _max?: EquipeBaseHistoricoMaxAggregateInputType
+  }
+
+  export type EquipeBaseHistoricoGroupByOutputType = {
+    id: number
+    equipeId: number
+    baseId: number
+    dataInicio: Date
+    dataFim: Date | null
+    motivo: string | null
+    createdAt: Date
+    createdBy: string
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+    _count: EquipeBaseHistoricoCountAggregateOutputType | null
+    _avg: EquipeBaseHistoricoAvgAggregateOutputType | null
+    _sum: EquipeBaseHistoricoSumAggregateOutputType | null
+    _min: EquipeBaseHistoricoMinAggregateOutputType | null
+    _max: EquipeBaseHistoricoMaxAggregateOutputType | null
+  }
+
+  type GetEquipeBaseHistoricoGroupByPayload<T extends EquipeBaseHistoricoGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<EquipeBaseHistoricoGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof EquipeBaseHistoricoGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], EquipeBaseHistoricoGroupByOutputType[P]>
+            : GetScalarType<T[P], EquipeBaseHistoricoGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type EquipeBaseHistoricoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    equipeId?: boolean
+    baseId?: boolean
+    dataInicio?: boolean
+    dataFim?: boolean
+    motivo?: boolean
+    createdAt?: boolean
+    createdBy?: boolean
+    updatedAt?: boolean
+    updatedBy?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+    equipe?: boolean | EquipeDefaultArgs<ExtArgs>
+    base?: boolean | BaseDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["equipeBaseHistorico"]>
+
+
+
+  export type EquipeBaseHistoricoSelectScalar = {
+    id?: boolean
+    equipeId?: boolean
+    baseId?: boolean
+    dataInicio?: boolean
+    dataFim?: boolean
+    motivo?: boolean
+    createdAt?: boolean
+    createdBy?: boolean
+    updatedAt?: boolean
+    updatedBy?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+  }
+
+  export type EquipeBaseHistoricoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "equipeId" | "baseId" | "dataInicio" | "dataFim" | "motivo" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["equipeBaseHistorico"]>
+  export type EquipeBaseHistoricoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    equipe?: boolean | EquipeDefaultArgs<ExtArgs>
+    base?: boolean | BaseDefaultArgs<ExtArgs>
+  }
+
+  export type $EquipeBaseHistoricoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "EquipeBaseHistorico"
+    objects: {
+      equipe: Prisma.$EquipePayload<ExtArgs>
+      base: Prisma.$BasePayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      equipeId: number
+      baseId: number
+      dataInicio: Date
+      dataFim: Date | null
+      motivo: string | null
+      createdAt: Date
+      createdBy: string
+      updatedAt: Date | null
+      updatedBy: string | null
+      deletedAt: Date | null
+      deletedBy: string | null
+    }, ExtArgs["result"]["equipeBaseHistorico"]>
+    composites: {}
+  }
+
+  type EquipeBaseHistoricoGetPayload<S extends boolean | null | undefined | EquipeBaseHistoricoDefaultArgs> = $Result.GetResult<Prisma.$EquipeBaseHistoricoPayload, S>
+
+  type EquipeBaseHistoricoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<EquipeBaseHistoricoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: EquipeBaseHistoricoCountAggregateInputType | true
+    }
+
+  export interface EquipeBaseHistoricoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['EquipeBaseHistorico'], meta: { name: 'EquipeBaseHistorico' } }
+    /**
+     * Find zero or one EquipeBaseHistorico that matches the filter.
+     * @param {EquipeBaseHistoricoFindUniqueArgs} args - Arguments to find a EquipeBaseHistorico
+     * @example
+     * // Get one EquipeBaseHistorico
+     * const equipeBaseHistorico = await prisma.equipeBaseHistorico.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends EquipeBaseHistoricoFindUniqueArgs>(args: SelectSubset<T, EquipeBaseHistoricoFindUniqueArgs<ExtArgs>>): Prisma__EquipeBaseHistoricoClient<$Result.GetResult<Prisma.$EquipeBaseHistoricoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one EquipeBaseHistorico that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {EquipeBaseHistoricoFindUniqueOrThrowArgs} args - Arguments to find a EquipeBaseHistorico
+     * @example
+     * // Get one EquipeBaseHistorico
+     * const equipeBaseHistorico = await prisma.equipeBaseHistorico.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends EquipeBaseHistoricoFindUniqueOrThrowArgs>(args: SelectSubset<T, EquipeBaseHistoricoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__EquipeBaseHistoricoClient<$Result.GetResult<Prisma.$EquipeBaseHistoricoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first EquipeBaseHistorico that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EquipeBaseHistoricoFindFirstArgs} args - Arguments to find a EquipeBaseHistorico
+     * @example
+     * // Get one EquipeBaseHistorico
+     * const equipeBaseHistorico = await prisma.equipeBaseHistorico.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends EquipeBaseHistoricoFindFirstArgs>(args?: SelectSubset<T, EquipeBaseHistoricoFindFirstArgs<ExtArgs>>): Prisma__EquipeBaseHistoricoClient<$Result.GetResult<Prisma.$EquipeBaseHistoricoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first EquipeBaseHistorico that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EquipeBaseHistoricoFindFirstOrThrowArgs} args - Arguments to find a EquipeBaseHistorico
+     * @example
+     * // Get one EquipeBaseHistorico
+     * const equipeBaseHistorico = await prisma.equipeBaseHistorico.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends EquipeBaseHistoricoFindFirstOrThrowArgs>(args?: SelectSubset<T, EquipeBaseHistoricoFindFirstOrThrowArgs<ExtArgs>>): Prisma__EquipeBaseHistoricoClient<$Result.GetResult<Prisma.$EquipeBaseHistoricoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more EquipeBaseHistoricos that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EquipeBaseHistoricoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all EquipeBaseHistoricos
+     * const equipeBaseHistoricos = await prisma.equipeBaseHistorico.findMany()
+     * 
+     * // Get first 10 EquipeBaseHistoricos
+     * const equipeBaseHistoricos = await prisma.equipeBaseHistorico.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const equipeBaseHistoricoWithIdOnly = await prisma.equipeBaseHistorico.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends EquipeBaseHistoricoFindManyArgs>(args?: SelectSubset<T, EquipeBaseHistoricoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EquipeBaseHistoricoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a EquipeBaseHistorico.
+     * @param {EquipeBaseHistoricoCreateArgs} args - Arguments to create a EquipeBaseHistorico.
+     * @example
+     * // Create one EquipeBaseHistorico
+     * const EquipeBaseHistorico = await prisma.equipeBaseHistorico.create({
+     *   data: {
+     *     // ... data to create a EquipeBaseHistorico
+     *   }
+     * })
+     * 
+     */
+    create<T extends EquipeBaseHistoricoCreateArgs>(args: SelectSubset<T, EquipeBaseHistoricoCreateArgs<ExtArgs>>): Prisma__EquipeBaseHistoricoClient<$Result.GetResult<Prisma.$EquipeBaseHistoricoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many EquipeBaseHistoricos.
+     * @param {EquipeBaseHistoricoCreateManyArgs} args - Arguments to create many EquipeBaseHistoricos.
+     * @example
+     * // Create many EquipeBaseHistoricos
+     * const equipeBaseHistorico = await prisma.equipeBaseHistorico.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends EquipeBaseHistoricoCreateManyArgs>(args?: SelectSubset<T, EquipeBaseHistoricoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a EquipeBaseHistorico.
+     * @param {EquipeBaseHistoricoDeleteArgs} args - Arguments to delete one EquipeBaseHistorico.
+     * @example
+     * // Delete one EquipeBaseHistorico
+     * const EquipeBaseHistorico = await prisma.equipeBaseHistorico.delete({
+     *   where: {
+     *     // ... filter to delete one EquipeBaseHistorico
+     *   }
+     * })
+     * 
+     */
+    delete<T extends EquipeBaseHistoricoDeleteArgs>(args: SelectSubset<T, EquipeBaseHistoricoDeleteArgs<ExtArgs>>): Prisma__EquipeBaseHistoricoClient<$Result.GetResult<Prisma.$EquipeBaseHistoricoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one EquipeBaseHistorico.
+     * @param {EquipeBaseHistoricoUpdateArgs} args - Arguments to update one EquipeBaseHistorico.
+     * @example
+     * // Update one EquipeBaseHistorico
+     * const equipeBaseHistorico = await prisma.equipeBaseHistorico.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends EquipeBaseHistoricoUpdateArgs>(args: SelectSubset<T, EquipeBaseHistoricoUpdateArgs<ExtArgs>>): Prisma__EquipeBaseHistoricoClient<$Result.GetResult<Prisma.$EquipeBaseHistoricoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more EquipeBaseHistoricos.
+     * @param {EquipeBaseHistoricoDeleteManyArgs} args - Arguments to filter EquipeBaseHistoricos to delete.
+     * @example
+     * // Delete a few EquipeBaseHistoricos
+     * const { count } = await prisma.equipeBaseHistorico.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends EquipeBaseHistoricoDeleteManyArgs>(args?: SelectSubset<T, EquipeBaseHistoricoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more EquipeBaseHistoricos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EquipeBaseHistoricoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many EquipeBaseHistoricos
+     * const equipeBaseHistorico = await prisma.equipeBaseHistorico.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends EquipeBaseHistoricoUpdateManyArgs>(args: SelectSubset<T, EquipeBaseHistoricoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one EquipeBaseHistorico.
+     * @param {EquipeBaseHistoricoUpsertArgs} args - Arguments to update or create a EquipeBaseHistorico.
+     * @example
+     * // Update or create a EquipeBaseHistorico
+     * const equipeBaseHistorico = await prisma.equipeBaseHistorico.upsert({
+     *   create: {
+     *     // ... data to create a EquipeBaseHistorico
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the EquipeBaseHistorico we want to update
+     *   }
+     * })
+     */
+    upsert<T extends EquipeBaseHistoricoUpsertArgs>(args: SelectSubset<T, EquipeBaseHistoricoUpsertArgs<ExtArgs>>): Prisma__EquipeBaseHistoricoClient<$Result.GetResult<Prisma.$EquipeBaseHistoricoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of EquipeBaseHistoricos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EquipeBaseHistoricoCountArgs} args - Arguments to filter EquipeBaseHistoricos to count.
+     * @example
+     * // Count the number of EquipeBaseHistoricos
+     * const count = await prisma.equipeBaseHistorico.count({
+     *   where: {
+     *     // ... the filter for the EquipeBaseHistoricos we want to count
+     *   }
+     * })
+    **/
+    count<T extends EquipeBaseHistoricoCountArgs>(
+      args?: Subset<T, EquipeBaseHistoricoCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], EquipeBaseHistoricoCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a EquipeBaseHistorico.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EquipeBaseHistoricoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends EquipeBaseHistoricoAggregateArgs>(args: Subset<T, EquipeBaseHistoricoAggregateArgs>): Prisma.PrismaPromise<GetEquipeBaseHistoricoAggregateType<T>>
+
+    /**
+     * Group by EquipeBaseHistorico.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EquipeBaseHistoricoGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends EquipeBaseHistoricoGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: EquipeBaseHistoricoGroupByArgs['orderBy'] }
+        : { orderBy?: EquipeBaseHistoricoGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, EquipeBaseHistoricoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetEquipeBaseHistoricoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the EquipeBaseHistorico model
+   */
+  readonly fields: EquipeBaseHistoricoFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for EquipeBaseHistorico.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__EquipeBaseHistoricoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    equipe<T extends EquipeDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EquipeDefaultArgs<ExtArgs>>): Prisma__EquipeClient<$Result.GetResult<Prisma.$EquipePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    base<T extends BaseDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BaseDefaultArgs<ExtArgs>>): Prisma__BaseClient<$Result.GetResult<Prisma.$BasePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the EquipeBaseHistorico model
+   */
+  interface EquipeBaseHistoricoFieldRefs {
+    readonly id: FieldRef<"EquipeBaseHistorico", 'Int'>
+    readonly equipeId: FieldRef<"EquipeBaseHistorico", 'Int'>
+    readonly baseId: FieldRef<"EquipeBaseHistorico", 'Int'>
+    readonly dataInicio: FieldRef<"EquipeBaseHistorico", 'DateTime'>
+    readonly dataFim: FieldRef<"EquipeBaseHistorico", 'DateTime'>
+    readonly motivo: FieldRef<"EquipeBaseHistorico", 'String'>
+    readonly createdAt: FieldRef<"EquipeBaseHistorico", 'DateTime'>
+    readonly createdBy: FieldRef<"EquipeBaseHistorico", 'String'>
+    readonly updatedAt: FieldRef<"EquipeBaseHistorico", 'DateTime'>
+    readonly updatedBy: FieldRef<"EquipeBaseHistorico", 'String'>
+    readonly deletedAt: FieldRef<"EquipeBaseHistorico", 'DateTime'>
+    readonly deletedBy: FieldRef<"EquipeBaseHistorico", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * EquipeBaseHistorico findUnique
+   */
+  export type EquipeBaseHistoricoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeBaseHistorico
+     */
+    select?: EquipeBaseHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeBaseHistorico
+     */
+    omit?: EquipeBaseHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeBaseHistoricoInclude<ExtArgs> | null
+    /**
+     * Filter, which EquipeBaseHistorico to fetch.
+     */
+    where: EquipeBaseHistoricoWhereUniqueInput
+  }
+
+  /**
+   * EquipeBaseHistorico findUniqueOrThrow
+   */
+  export type EquipeBaseHistoricoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeBaseHistorico
+     */
+    select?: EquipeBaseHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeBaseHistorico
+     */
+    omit?: EquipeBaseHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeBaseHistoricoInclude<ExtArgs> | null
+    /**
+     * Filter, which EquipeBaseHistorico to fetch.
+     */
+    where: EquipeBaseHistoricoWhereUniqueInput
+  }
+
+  /**
+   * EquipeBaseHistorico findFirst
+   */
+  export type EquipeBaseHistoricoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeBaseHistorico
+     */
+    select?: EquipeBaseHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeBaseHistorico
+     */
+    omit?: EquipeBaseHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeBaseHistoricoInclude<ExtArgs> | null
+    /**
+     * Filter, which EquipeBaseHistorico to fetch.
+     */
+    where?: EquipeBaseHistoricoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EquipeBaseHistoricos to fetch.
+     */
+    orderBy?: EquipeBaseHistoricoOrderByWithRelationInput | EquipeBaseHistoricoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for EquipeBaseHistoricos.
+     */
+    cursor?: EquipeBaseHistoricoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EquipeBaseHistoricos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EquipeBaseHistoricos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EquipeBaseHistoricos.
+     */
+    distinct?: EquipeBaseHistoricoScalarFieldEnum | EquipeBaseHistoricoScalarFieldEnum[]
+  }
+
+  /**
+   * EquipeBaseHistorico findFirstOrThrow
+   */
+  export type EquipeBaseHistoricoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeBaseHistorico
+     */
+    select?: EquipeBaseHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeBaseHistorico
+     */
+    omit?: EquipeBaseHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeBaseHistoricoInclude<ExtArgs> | null
+    /**
+     * Filter, which EquipeBaseHistorico to fetch.
+     */
+    where?: EquipeBaseHistoricoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EquipeBaseHistoricos to fetch.
+     */
+    orderBy?: EquipeBaseHistoricoOrderByWithRelationInput | EquipeBaseHistoricoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for EquipeBaseHistoricos.
+     */
+    cursor?: EquipeBaseHistoricoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EquipeBaseHistoricos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EquipeBaseHistoricos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EquipeBaseHistoricos.
+     */
+    distinct?: EquipeBaseHistoricoScalarFieldEnum | EquipeBaseHistoricoScalarFieldEnum[]
+  }
+
+  /**
+   * EquipeBaseHistorico findMany
+   */
+  export type EquipeBaseHistoricoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeBaseHistorico
+     */
+    select?: EquipeBaseHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeBaseHistorico
+     */
+    omit?: EquipeBaseHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeBaseHistoricoInclude<ExtArgs> | null
+    /**
+     * Filter, which EquipeBaseHistoricos to fetch.
+     */
+    where?: EquipeBaseHistoricoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EquipeBaseHistoricos to fetch.
+     */
+    orderBy?: EquipeBaseHistoricoOrderByWithRelationInput | EquipeBaseHistoricoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing EquipeBaseHistoricos.
+     */
+    cursor?: EquipeBaseHistoricoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EquipeBaseHistoricos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EquipeBaseHistoricos.
+     */
+    skip?: number
+    distinct?: EquipeBaseHistoricoScalarFieldEnum | EquipeBaseHistoricoScalarFieldEnum[]
+  }
+
+  /**
+   * EquipeBaseHistorico create
+   */
+  export type EquipeBaseHistoricoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeBaseHistorico
+     */
+    select?: EquipeBaseHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeBaseHistorico
+     */
+    omit?: EquipeBaseHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeBaseHistoricoInclude<ExtArgs> | null
+    /**
+     * The data needed to create a EquipeBaseHistorico.
+     */
+    data: XOR<EquipeBaseHistoricoCreateInput, EquipeBaseHistoricoUncheckedCreateInput>
+  }
+
+  /**
+   * EquipeBaseHistorico createMany
+   */
+  export type EquipeBaseHistoricoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many EquipeBaseHistoricos.
+     */
+    data: EquipeBaseHistoricoCreateManyInput | EquipeBaseHistoricoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * EquipeBaseHistorico update
+   */
+  export type EquipeBaseHistoricoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeBaseHistorico
+     */
+    select?: EquipeBaseHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeBaseHistorico
+     */
+    omit?: EquipeBaseHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeBaseHistoricoInclude<ExtArgs> | null
+    /**
+     * The data needed to update a EquipeBaseHistorico.
+     */
+    data: XOR<EquipeBaseHistoricoUpdateInput, EquipeBaseHistoricoUncheckedUpdateInput>
+    /**
+     * Choose, which EquipeBaseHistorico to update.
+     */
+    where: EquipeBaseHistoricoWhereUniqueInput
+  }
+
+  /**
+   * EquipeBaseHistorico updateMany
+   */
+  export type EquipeBaseHistoricoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update EquipeBaseHistoricos.
+     */
+    data: XOR<EquipeBaseHistoricoUpdateManyMutationInput, EquipeBaseHistoricoUncheckedUpdateManyInput>
+    /**
+     * Filter which EquipeBaseHistoricos to update
+     */
+    where?: EquipeBaseHistoricoWhereInput
+    /**
+     * Limit how many EquipeBaseHistoricos to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * EquipeBaseHistorico upsert
+   */
+  export type EquipeBaseHistoricoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeBaseHistorico
+     */
+    select?: EquipeBaseHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeBaseHistorico
+     */
+    omit?: EquipeBaseHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeBaseHistoricoInclude<ExtArgs> | null
+    /**
+     * The filter to search for the EquipeBaseHistorico to update in case it exists.
+     */
+    where: EquipeBaseHistoricoWhereUniqueInput
+    /**
+     * In case the EquipeBaseHistorico found by the `where` argument doesn't exist, create a new EquipeBaseHistorico with this data.
+     */
+    create: XOR<EquipeBaseHistoricoCreateInput, EquipeBaseHistoricoUncheckedCreateInput>
+    /**
+     * In case the EquipeBaseHistorico was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<EquipeBaseHistoricoUpdateInput, EquipeBaseHistoricoUncheckedUpdateInput>
+  }
+
+  /**
+   * EquipeBaseHistorico delete
+   */
+  export type EquipeBaseHistoricoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeBaseHistorico
+     */
+    select?: EquipeBaseHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeBaseHistorico
+     */
+    omit?: EquipeBaseHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeBaseHistoricoInclude<ExtArgs> | null
+    /**
+     * Filter which EquipeBaseHistorico to delete.
+     */
+    where: EquipeBaseHistoricoWhereUniqueInput
+  }
+
+  /**
+   * EquipeBaseHistorico deleteMany
+   */
+  export type EquipeBaseHistoricoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which EquipeBaseHistoricos to delete
+     */
+    where?: EquipeBaseHistoricoWhereInput
+    /**
+     * Limit how many EquipeBaseHistoricos to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * EquipeBaseHistorico without action
+   */
+  export type EquipeBaseHistoricoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeBaseHistorico
+     */
+    select?: EquipeBaseHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeBaseHistorico
+     */
+    omit?: EquipeBaseHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeBaseHistoricoInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model TipoEquipe
    */
 
@@ -38525,6 +39706,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: boolean | Equipe$EscalaEquipePeriodoArgs<ExtArgs>
     EquipeHorarioVigencia?: boolean | Equipe$EquipeHorarioVigenciaArgs<ExtArgs>
     EquipeTurnoHistorico?: boolean | Equipe$EquipeTurnoHistoricoArgs<ExtArgs>
+    EquipeBaseHistorico?: boolean | Equipe$EquipeBaseHistoricoArgs<ExtArgs>
     _count?: boolean | EquipeCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["equipe"]>
 
@@ -38552,6 +39734,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: boolean | Equipe$EscalaEquipePeriodoArgs<ExtArgs>
     EquipeHorarioVigencia?: boolean | Equipe$EquipeHorarioVigenciaArgs<ExtArgs>
     EquipeTurnoHistorico?: boolean | Equipe$EquipeTurnoHistoricoArgs<ExtArgs>
+    EquipeBaseHistorico?: boolean | Equipe$EquipeBaseHistoricoArgs<ExtArgs>
     _count?: boolean | EquipeCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -38565,6 +39748,7 @@ export namespace Prisma {
       EscalaEquipePeriodo: Prisma.$EscalaEquipePeriodoPayload<ExtArgs>[]
       EquipeHorarioVigencia: Prisma.$EquipeHorarioVigenciaPayload<ExtArgs>[]
       EquipeTurnoHistorico: Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>[]
+      EquipeBaseHistorico: Prisma.$EquipeBaseHistoricoPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -38924,6 +40108,7 @@ export namespace Prisma {
     EscalaEquipePeriodo<T extends Equipe$EscalaEquipePeriodoArgs<ExtArgs> = {}>(args?: Subset<T, Equipe$EscalaEquipePeriodoArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EscalaEquipePeriodoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     EquipeHorarioVigencia<T extends Equipe$EquipeHorarioVigenciaArgs<ExtArgs> = {}>(args?: Subset<T, Equipe$EquipeHorarioVigenciaArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EquipeHorarioVigenciaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     EquipeTurnoHistorico<T extends Equipe$EquipeTurnoHistoricoArgs<ExtArgs> = {}>(args?: Subset<T, Equipe$EquipeTurnoHistoricoArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EquipeTurnoHistoricoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    EquipeBaseHistorico<T extends Equipe$EquipeBaseHistoricoArgs<ExtArgs> = {}>(args?: Subset<T, Equipe$EquipeBaseHistoricoArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EquipeBaseHistoricoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -39423,6 +40608,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: EquipeTurnoHistoricoScalarFieldEnum | EquipeTurnoHistoricoScalarFieldEnum[]
+  }
+
+  /**
+   * Equipe.EquipeBaseHistorico
+   */
+  export type Equipe$EquipeBaseHistoricoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EquipeBaseHistorico
+     */
+    select?: EquipeBaseHistoricoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EquipeBaseHistorico
+     */
+    omit?: EquipeBaseHistoricoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EquipeBaseHistoricoInclude<ExtArgs> | null
+    where?: EquipeBaseHistoricoWhereInput
+    orderBy?: EquipeBaseHistoricoOrderByWithRelationInput | EquipeBaseHistoricoOrderByWithRelationInput[]
+    cursor?: EquipeBaseHistoricoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EquipeBaseHistoricoScalarFieldEnum | EquipeBaseHistoricoScalarFieldEnum[]
   }
 
   /**
@@ -59077,6 +60286,24 @@ export namespace Prisma {
   export type CargoScalarFieldEnum = (typeof CargoScalarFieldEnum)[keyof typeof CargoScalarFieldEnum]
 
 
+  export const EquipeBaseHistoricoScalarFieldEnum: {
+    id: 'id',
+    equipeId: 'equipeId',
+    baseId: 'baseId',
+    dataInicio: 'dataInicio',
+    dataFim: 'dataFim',
+    motivo: 'motivo',
+    createdAt: 'createdAt',
+    createdBy: 'createdBy',
+    updatedAt: 'updatedAt',
+    updatedBy: 'updatedBy',
+    deletedAt: 'deletedAt',
+    deletedBy: 'deletedBy'
+  };
+
+  export type EquipeBaseHistoricoScalarFieldEnum = (typeof EquipeBaseHistoricoScalarFieldEnum)[keyof typeof EquipeBaseHistoricoScalarFieldEnum]
+
+
   export const TipoEquipeScalarFieldEnum: {
     id: 'id',
     nome: 'nome',
@@ -59725,6 +60952,16 @@ export namespace Prisma {
   };
 
   export type CargoOrderByRelevanceFieldEnum = (typeof CargoOrderByRelevanceFieldEnum)[keyof typeof CargoOrderByRelevanceFieldEnum]
+
+
+  export const EquipeBaseHistoricoOrderByRelevanceFieldEnum: {
+    motivo: 'motivo',
+    createdBy: 'createdBy',
+    updatedBy: 'updatedBy',
+    deletedBy: 'deletedBy'
+  };
+
+  export type EquipeBaseHistoricoOrderByRelevanceFieldEnum = (typeof EquipeBaseHistoricoOrderByRelevanceFieldEnum)[keyof typeof EquipeBaseHistoricoOrderByRelevanceFieldEnum]
 
 
   export const TipoEquipeOrderByRelevanceFieldEnum: {
@@ -61231,6 +62468,7 @@ export namespace Prisma {
     contrato?: XOR<ContratoScalarRelationFilter, ContratoWhereInput>
     EletricistaBaseHistorico?: EletricistaBaseHistoricoListRelationFilter
     VeiculoBaseHistorico?: VeiculoBaseHistoricoListRelationFilter
+    EquipeBaseHistorico?: EquipeBaseHistoricoListRelationFilter
   }
 
   export type BaseOrderByWithRelationInput = {
@@ -61246,6 +62484,7 @@ export namespace Prisma {
     contrato?: ContratoOrderByWithRelationInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoOrderByRelationAggregateInput
     VeiculoBaseHistorico?: VeiculoBaseHistoricoOrderByRelationAggregateInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoOrderByRelationAggregateInput
     _relevance?: BaseOrderByRelevanceInput
   }
 
@@ -61265,6 +62504,7 @@ export namespace Prisma {
     contrato?: XOR<ContratoScalarRelationFilter, ContratoWhereInput>
     EletricistaBaseHistorico?: EletricistaBaseHistoricoListRelationFilter
     VeiculoBaseHistorico?: VeiculoBaseHistoricoListRelationFilter
+    EquipeBaseHistorico?: EquipeBaseHistoricoListRelationFilter
   }, "id">
 
   export type BaseOrderByWithAggregationInput = {
@@ -62426,6 +63666,102 @@ export namespace Prisma {
     deletedBy?: StringNullableWithAggregatesFilter<"Cargo"> | string | null
   }
 
+  export type EquipeBaseHistoricoWhereInput = {
+    AND?: EquipeBaseHistoricoWhereInput | EquipeBaseHistoricoWhereInput[]
+    OR?: EquipeBaseHistoricoWhereInput[]
+    NOT?: EquipeBaseHistoricoWhereInput | EquipeBaseHistoricoWhereInput[]
+    id?: IntFilter<"EquipeBaseHistorico"> | number
+    equipeId?: IntFilter<"EquipeBaseHistorico"> | number
+    baseId?: IntFilter<"EquipeBaseHistorico"> | number
+    dataInicio?: DateTimeFilter<"EquipeBaseHistorico"> | Date | string
+    dataFim?: DateTimeNullableFilter<"EquipeBaseHistorico"> | Date | string | null
+    motivo?: StringNullableFilter<"EquipeBaseHistorico"> | string | null
+    createdAt?: DateTimeFilter<"EquipeBaseHistorico"> | Date | string
+    createdBy?: StringFilter<"EquipeBaseHistorico"> | string
+    updatedAt?: DateTimeNullableFilter<"EquipeBaseHistorico"> | Date | string | null
+    updatedBy?: StringNullableFilter<"EquipeBaseHistorico"> | string | null
+    deletedAt?: DateTimeNullableFilter<"EquipeBaseHistorico"> | Date | string | null
+    deletedBy?: StringNullableFilter<"EquipeBaseHistorico"> | string | null
+    equipe?: XOR<EquipeScalarRelationFilter, EquipeWhereInput>
+    base?: XOR<BaseScalarRelationFilter, BaseWhereInput>
+  }
+
+  export type EquipeBaseHistoricoOrderByWithRelationInput = {
+    id?: SortOrder
+    equipeId?: SortOrder
+    baseId?: SortOrder
+    dataInicio?: SortOrder
+    dataFim?: SortOrderInput | SortOrder
+    motivo?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrderInput | SortOrder
+    updatedBy?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    deletedBy?: SortOrderInput | SortOrder
+    equipe?: EquipeOrderByWithRelationInput
+    base?: BaseOrderByWithRelationInput
+    _relevance?: EquipeBaseHistoricoOrderByRelevanceInput
+  }
+
+  export type EquipeBaseHistoricoWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: EquipeBaseHistoricoWhereInput | EquipeBaseHistoricoWhereInput[]
+    OR?: EquipeBaseHistoricoWhereInput[]
+    NOT?: EquipeBaseHistoricoWhereInput | EquipeBaseHistoricoWhereInput[]
+    equipeId?: IntFilter<"EquipeBaseHistorico"> | number
+    baseId?: IntFilter<"EquipeBaseHistorico"> | number
+    dataInicio?: DateTimeFilter<"EquipeBaseHistorico"> | Date | string
+    dataFim?: DateTimeNullableFilter<"EquipeBaseHistorico"> | Date | string | null
+    motivo?: StringNullableFilter<"EquipeBaseHistorico"> | string | null
+    createdAt?: DateTimeFilter<"EquipeBaseHistorico"> | Date | string
+    createdBy?: StringFilter<"EquipeBaseHistorico"> | string
+    updatedAt?: DateTimeNullableFilter<"EquipeBaseHistorico"> | Date | string | null
+    updatedBy?: StringNullableFilter<"EquipeBaseHistorico"> | string | null
+    deletedAt?: DateTimeNullableFilter<"EquipeBaseHistorico"> | Date | string | null
+    deletedBy?: StringNullableFilter<"EquipeBaseHistorico"> | string | null
+    equipe?: XOR<EquipeScalarRelationFilter, EquipeWhereInput>
+    base?: XOR<BaseScalarRelationFilter, BaseWhereInput>
+  }, "id">
+
+  export type EquipeBaseHistoricoOrderByWithAggregationInput = {
+    id?: SortOrder
+    equipeId?: SortOrder
+    baseId?: SortOrder
+    dataInicio?: SortOrder
+    dataFim?: SortOrderInput | SortOrder
+    motivo?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrderInput | SortOrder
+    updatedBy?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    deletedBy?: SortOrderInput | SortOrder
+    _count?: EquipeBaseHistoricoCountOrderByAggregateInput
+    _avg?: EquipeBaseHistoricoAvgOrderByAggregateInput
+    _max?: EquipeBaseHistoricoMaxOrderByAggregateInput
+    _min?: EquipeBaseHistoricoMinOrderByAggregateInput
+    _sum?: EquipeBaseHistoricoSumOrderByAggregateInput
+  }
+
+  export type EquipeBaseHistoricoScalarWhereWithAggregatesInput = {
+    AND?: EquipeBaseHistoricoScalarWhereWithAggregatesInput | EquipeBaseHistoricoScalarWhereWithAggregatesInput[]
+    OR?: EquipeBaseHistoricoScalarWhereWithAggregatesInput[]
+    NOT?: EquipeBaseHistoricoScalarWhereWithAggregatesInput | EquipeBaseHistoricoScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"EquipeBaseHistorico"> | number
+    equipeId?: IntWithAggregatesFilter<"EquipeBaseHistorico"> | number
+    baseId?: IntWithAggregatesFilter<"EquipeBaseHistorico"> | number
+    dataInicio?: DateTimeWithAggregatesFilter<"EquipeBaseHistorico"> | Date | string
+    dataFim?: DateTimeNullableWithAggregatesFilter<"EquipeBaseHistorico"> | Date | string | null
+    motivo?: StringNullableWithAggregatesFilter<"EquipeBaseHistorico"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"EquipeBaseHistorico"> | Date | string
+    createdBy?: StringWithAggregatesFilter<"EquipeBaseHistorico"> | string
+    updatedAt?: DateTimeNullableWithAggregatesFilter<"EquipeBaseHistorico"> | Date | string | null
+    updatedBy?: StringNullableWithAggregatesFilter<"EquipeBaseHistorico"> | string | null
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"EquipeBaseHistorico"> | Date | string | null
+    deletedBy?: StringNullableWithAggregatesFilter<"EquipeBaseHistorico"> | string | null
+  }
+
   export type TipoEquipeWhereInput = {
     AND?: TipoEquipeWhereInput | TipoEquipeWhereInput[]
     OR?: TipoEquipeWhereInput[]
@@ -62523,6 +63859,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoListRelationFilter
     EquipeHorarioVigencia?: EquipeHorarioVigenciaListRelationFilter
     EquipeTurnoHistorico?: EquipeTurnoHistoricoListRelationFilter
+    EquipeBaseHistorico?: EquipeBaseHistoricoListRelationFilter
   }
 
   export type EquipeOrderByWithRelationInput = {
@@ -62543,6 +63880,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoOrderByRelationAggregateInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaOrderByRelationAggregateInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoOrderByRelationAggregateInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoOrderByRelationAggregateInput
     _relevance?: EquipeOrderByRelevanceInput
   }
 
@@ -62567,6 +63905,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoListRelationFilter
     EquipeHorarioVigencia?: EquipeHorarioVigenciaListRelationFilter
     EquipeTurnoHistorico?: EquipeTurnoHistoricoListRelationFilter
+    EquipeBaseHistorico?: EquipeBaseHistoricoListRelationFilter
   }, "id">
 
   export type EquipeOrderByWithAggregationInput = {
@@ -65521,6 +66860,7 @@ export namespace Prisma {
     contrato: ContratoCreateNestedOneWithoutBaseInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoCreateNestedManyWithoutBaseInput
     VeiculoBaseHistorico?: VeiculoBaseHistoricoCreateNestedManyWithoutBaseInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoCreateNestedManyWithoutBaseInput
   }
 
   export type BaseUncheckedCreateInput = {
@@ -65535,6 +66875,7 @@ export namespace Prisma {
     deletedBy?: string | null
     EletricistaBaseHistorico?: EletricistaBaseHistoricoUncheckedCreateNestedManyWithoutBaseInput
     VeiculoBaseHistorico?: VeiculoBaseHistoricoUncheckedCreateNestedManyWithoutBaseInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedCreateNestedManyWithoutBaseInput
   }
 
   export type BaseUpdateInput = {
@@ -65548,6 +66889,7 @@ export namespace Prisma {
     contrato?: ContratoUpdateOneRequiredWithoutBaseNestedInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoUpdateManyWithoutBaseNestedInput
     VeiculoBaseHistorico?: VeiculoBaseHistoricoUpdateManyWithoutBaseNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUpdateManyWithoutBaseNestedInput
   }
 
   export type BaseUncheckedUpdateInput = {
@@ -65562,6 +66904,7 @@ export namespace Prisma {
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     EletricistaBaseHistorico?: EletricistaBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput
     VeiculoBaseHistorico?: VeiculoBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput
   }
 
   export type BaseCreateManyInput = {
@@ -66774,6 +68117,106 @@ export namespace Prisma {
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
+  export type EquipeBaseHistoricoCreateInput = {
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    motivo?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    equipe: EquipeCreateNestedOneWithoutEquipeBaseHistoricoInput
+    base: BaseCreateNestedOneWithoutEquipeBaseHistoricoInput
+  }
+
+  export type EquipeBaseHistoricoUncheckedCreateInput = {
+    id?: number
+    equipeId: number
+    baseId: number
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    motivo?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type EquipeBaseHistoricoUpdateInput = {
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    equipe?: EquipeUpdateOneRequiredWithoutEquipeBaseHistoricoNestedInput
+    base?: BaseUpdateOneRequiredWithoutEquipeBaseHistoricoNestedInput
+  }
+
+  export type EquipeBaseHistoricoUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    equipeId?: IntFieldUpdateOperationsInput | number
+    baseId?: IntFieldUpdateOperationsInput | number
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type EquipeBaseHistoricoCreateManyInput = {
+    id?: number
+    equipeId: number
+    baseId: number
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    motivo?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type EquipeBaseHistoricoUpdateManyMutationInput = {
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type EquipeBaseHistoricoUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    equipeId?: IntFieldUpdateOperationsInput | number
+    baseId?: IntFieldUpdateOperationsInput | number
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
   export type TipoEquipeCreateInput = {
     nome: string
     createdAt?: Date | string
@@ -66871,6 +68314,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateInput = {
@@ -66889,6 +68333,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUpdateInput = {
@@ -66906,6 +68351,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateInput = {
@@ -66924,6 +68370,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeCreateManyInput = {
@@ -69867,11 +71314,21 @@ export namespace Prisma {
     none?: VeiculoBaseHistoricoWhereInput
   }
 
+  export type EquipeBaseHistoricoListRelationFilter = {
+    every?: EquipeBaseHistoricoWhereInput
+    some?: EquipeBaseHistoricoWhereInput
+    none?: EquipeBaseHistoricoWhereInput
+  }
+
   export type EletricistaBaseHistoricoOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type VeiculoBaseHistoricoOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type EquipeBaseHistoricoOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -70851,6 +72308,74 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
+  export type EquipeScalarRelationFilter = {
+    is?: EquipeWhereInput
+    isNot?: EquipeWhereInput
+  }
+
+  export type EquipeBaseHistoricoOrderByRelevanceInput = {
+    fields: EquipeBaseHistoricoOrderByRelevanceFieldEnum | EquipeBaseHistoricoOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type EquipeBaseHistoricoCountOrderByAggregateInput = {
+    id?: SortOrder
+    equipeId?: SortOrder
+    baseId?: SortOrder
+    dataInicio?: SortOrder
+    dataFim?: SortOrder
+    motivo?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type EquipeBaseHistoricoAvgOrderByAggregateInput = {
+    id?: SortOrder
+    equipeId?: SortOrder
+    baseId?: SortOrder
+  }
+
+  export type EquipeBaseHistoricoMaxOrderByAggregateInput = {
+    id?: SortOrder
+    equipeId?: SortOrder
+    baseId?: SortOrder
+    dataInicio?: SortOrder
+    dataFim?: SortOrder
+    motivo?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type EquipeBaseHistoricoMinOrderByAggregateInput = {
+    id?: SortOrder
+    equipeId?: SortOrder
+    baseId?: SortOrder
+    dataInicio?: SortOrder
+    dataFim?: SortOrder
+    motivo?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type EquipeBaseHistoricoSumOrderByAggregateInput = {
+    id?: SortOrder
+    equipeId?: SortOrder
+    baseId?: SortOrder
+  }
+
   export type TipoEquipeOrderByRelevanceInput = {
     fields: TipoEquipeOrderByRelevanceFieldEnum | TipoEquipeOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -71003,11 +72528,6 @@ export namespace Prisma {
     id?: SortOrder
     tipoEquipeId?: SortOrder
     contratoId?: SortOrder
-  }
-
-  export type EquipeScalarRelationFilter = {
-    is?: EquipeWhereInput
-    isNot?: EquipeWhereInput
   }
 
   export type SupervisorScalarRelationFilter = {
@@ -73144,6 +74664,13 @@ export namespace Prisma {
     connect?: VeiculoBaseHistoricoWhereUniqueInput | VeiculoBaseHistoricoWhereUniqueInput[]
   }
 
+  export type EquipeBaseHistoricoCreateNestedManyWithoutBaseInput = {
+    create?: XOR<EquipeBaseHistoricoCreateWithoutBaseInput, EquipeBaseHistoricoUncheckedCreateWithoutBaseInput> | EquipeBaseHistoricoCreateWithoutBaseInput[] | EquipeBaseHistoricoUncheckedCreateWithoutBaseInput[]
+    connectOrCreate?: EquipeBaseHistoricoCreateOrConnectWithoutBaseInput | EquipeBaseHistoricoCreateOrConnectWithoutBaseInput[]
+    createMany?: EquipeBaseHistoricoCreateManyBaseInputEnvelope
+    connect?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+  }
+
   export type EletricistaBaseHistoricoUncheckedCreateNestedManyWithoutBaseInput = {
     create?: XOR<EletricistaBaseHistoricoCreateWithoutBaseInput, EletricistaBaseHistoricoUncheckedCreateWithoutBaseInput> | EletricistaBaseHistoricoCreateWithoutBaseInput[] | EletricistaBaseHistoricoUncheckedCreateWithoutBaseInput[]
     connectOrCreate?: EletricistaBaseHistoricoCreateOrConnectWithoutBaseInput | EletricistaBaseHistoricoCreateOrConnectWithoutBaseInput[]
@@ -73156,6 +74683,13 @@ export namespace Prisma {
     connectOrCreate?: VeiculoBaseHistoricoCreateOrConnectWithoutBaseInput | VeiculoBaseHistoricoCreateOrConnectWithoutBaseInput[]
     createMany?: VeiculoBaseHistoricoCreateManyBaseInputEnvelope
     connect?: VeiculoBaseHistoricoWhereUniqueInput | VeiculoBaseHistoricoWhereUniqueInput[]
+  }
+
+  export type EquipeBaseHistoricoUncheckedCreateNestedManyWithoutBaseInput = {
+    create?: XOR<EquipeBaseHistoricoCreateWithoutBaseInput, EquipeBaseHistoricoUncheckedCreateWithoutBaseInput> | EquipeBaseHistoricoCreateWithoutBaseInput[] | EquipeBaseHistoricoUncheckedCreateWithoutBaseInput[]
+    connectOrCreate?: EquipeBaseHistoricoCreateOrConnectWithoutBaseInput | EquipeBaseHistoricoCreateOrConnectWithoutBaseInput[]
+    createMany?: EquipeBaseHistoricoCreateManyBaseInputEnvelope
+    connect?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
   }
 
   export type ContratoUpdateOneRequiredWithoutBaseNestedInput = {
@@ -73194,6 +74728,20 @@ export namespace Prisma {
     deleteMany?: VeiculoBaseHistoricoScalarWhereInput | VeiculoBaseHistoricoScalarWhereInput[]
   }
 
+  export type EquipeBaseHistoricoUpdateManyWithoutBaseNestedInput = {
+    create?: XOR<EquipeBaseHistoricoCreateWithoutBaseInput, EquipeBaseHistoricoUncheckedCreateWithoutBaseInput> | EquipeBaseHistoricoCreateWithoutBaseInput[] | EquipeBaseHistoricoUncheckedCreateWithoutBaseInput[]
+    connectOrCreate?: EquipeBaseHistoricoCreateOrConnectWithoutBaseInput | EquipeBaseHistoricoCreateOrConnectWithoutBaseInput[]
+    upsert?: EquipeBaseHistoricoUpsertWithWhereUniqueWithoutBaseInput | EquipeBaseHistoricoUpsertWithWhereUniqueWithoutBaseInput[]
+    createMany?: EquipeBaseHistoricoCreateManyBaseInputEnvelope
+    set?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    disconnect?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    delete?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    connect?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    update?: EquipeBaseHistoricoUpdateWithWhereUniqueWithoutBaseInput | EquipeBaseHistoricoUpdateWithWhereUniqueWithoutBaseInput[]
+    updateMany?: EquipeBaseHistoricoUpdateManyWithWhereWithoutBaseInput | EquipeBaseHistoricoUpdateManyWithWhereWithoutBaseInput[]
+    deleteMany?: EquipeBaseHistoricoScalarWhereInput | EquipeBaseHistoricoScalarWhereInput[]
+  }
+
   export type EletricistaBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput = {
     create?: XOR<EletricistaBaseHistoricoCreateWithoutBaseInput, EletricistaBaseHistoricoUncheckedCreateWithoutBaseInput> | EletricistaBaseHistoricoCreateWithoutBaseInput[] | EletricistaBaseHistoricoUncheckedCreateWithoutBaseInput[]
     connectOrCreate?: EletricistaBaseHistoricoCreateOrConnectWithoutBaseInput | EletricistaBaseHistoricoCreateOrConnectWithoutBaseInput[]
@@ -73220,6 +74768,20 @@ export namespace Prisma {
     update?: VeiculoBaseHistoricoUpdateWithWhereUniqueWithoutBaseInput | VeiculoBaseHistoricoUpdateWithWhereUniqueWithoutBaseInput[]
     updateMany?: VeiculoBaseHistoricoUpdateManyWithWhereWithoutBaseInput | VeiculoBaseHistoricoUpdateManyWithWhereWithoutBaseInput[]
     deleteMany?: VeiculoBaseHistoricoScalarWhereInput | VeiculoBaseHistoricoScalarWhereInput[]
+  }
+
+  export type EquipeBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput = {
+    create?: XOR<EquipeBaseHistoricoCreateWithoutBaseInput, EquipeBaseHistoricoUncheckedCreateWithoutBaseInput> | EquipeBaseHistoricoCreateWithoutBaseInput[] | EquipeBaseHistoricoUncheckedCreateWithoutBaseInput[]
+    connectOrCreate?: EquipeBaseHistoricoCreateOrConnectWithoutBaseInput | EquipeBaseHistoricoCreateOrConnectWithoutBaseInput[]
+    upsert?: EquipeBaseHistoricoUpsertWithWhereUniqueWithoutBaseInput | EquipeBaseHistoricoUpsertWithWhereUniqueWithoutBaseInput[]
+    createMany?: EquipeBaseHistoricoCreateManyBaseInputEnvelope
+    set?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    disconnect?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    delete?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    connect?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    update?: EquipeBaseHistoricoUpdateWithWhereUniqueWithoutBaseInput | EquipeBaseHistoricoUpdateWithWhereUniqueWithoutBaseInput[]
+    updateMany?: EquipeBaseHistoricoUpdateManyWithWhereWithoutBaseInput | EquipeBaseHistoricoUpdateManyWithWhereWithoutBaseInput[]
+    deleteMany?: EquipeBaseHistoricoScalarWhereInput | EquipeBaseHistoricoScalarWhereInput[]
   }
 
   export type ChecklistCreateNestedManyWithoutTipoChecklistInput = {
@@ -74252,6 +75814,34 @@ export namespace Prisma {
     deleteMany?: EletricistaScalarWhereInput | EletricistaScalarWhereInput[]
   }
 
+  export type EquipeCreateNestedOneWithoutEquipeBaseHistoricoInput = {
+    create?: XOR<EquipeCreateWithoutEquipeBaseHistoricoInput, EquipeUncheckedCreateWithoutEquipeBaseHistoricoInput>
+    connectOrCreate?: EquipeCreateOrConnectWithoutEquipeBaseHistoricoInput
+    connect?: EquipeWhereUniqueInput
+  }
+
+  export type BaseCreateNestedOneWithoutEquipeBaseHistoricoInput = {
+    create?: XOR<BaseCreateWithoutEquipeBaseHistoricoInput, BaseUncheckedCreateWithoutEquipeBaseHistoricoInput>
+    connectOrCreate?: BaseCreateOrConnectWithoutEquipeBaseHistoricoInput
+    connect?: BaseWhereUniqueInput
+  }
+
+  export type EquipeUpdateOneRequiredWithoutEquipeBaseHistoricoNestedInput = {
+    create?: XOR<EquipeCreateWithoutEquipeBaseHistoricoInput, EquipeUncheckedCreateWithoutEquipeBaseHistoricoInput>
+    connectOrCreate?: EquipeCreateOrConnectWithoutEquipeBaseHistoricoInput
+    upsert?: EquipeUpsertWithoutEquipeBaseHistoricoInput
+    connect?: EquipeWhereUniqueInput
+    update?: XOR<XOR<EquipeUpdateToOneWithWhereWithoutEquipeBaseHistoricoInput, EquipeUpdateWithoutEquipeBaseHistoricoInput>, EquipeUncheckedUpdateWithoutEquipeBaseHistoricoInput>
+  }
+
+  export type BaseUpdateOneRequiredWithoutEquipeBaseHistoricoNestedInput = {
+    create?: XOR<BaseCreateWithoutEquipeBaseHistoricoInput, BaseUncheckedCreateWithoutEquipeBaseHistoricoInput>
+    connectOrCreate?: BaseCreateOrConnectWithoutEquipeBaseHistoricoInput
+    upsert?: BaseUpsertWithoutEquipeBaseHistoricoInput
+    connect?: BaseWhereUniqueInput
+    update?: XOR<XOR<BaseUpdateToOneWithWhereWithoutEquipeBaseHistoricoInput, BaseUpdateWithoutEquipeBaseHistoricoInput>, BaseUncheckedUpdateWithoutEquipeBaseHistoricoInput>
+  }
+
   export type EquipeCreateNestedManyWithoutTipoEquipeInput = {
     create?: XOR<EquipeCreateWithoutTipoEquipeInput, EquipeUncheckedCreateWithoutTipoEquipeInput> | EquipeCreateWithoutTipoEquipeInput[] | EquipeUncheckedCreateWithoutTipoEquipeInput[]
     connectOrCreate?: EquipeCreateOrConnectWithoutTipoEquipeInput | EquipeCreateOrConnectWithoutTipoEquipeInput[]
@@ -74383,6 +75973,13 @@ export namespace Prisma {
     connect?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
   }
 
+  export type EquipeBaseHistoricoCreateNestedManyWithoutEquipeInput = {
+    create?: XOR<EquipeBaseHistoricoCreateWithoutEquipeInput, EquipeBaseHistoricoUncheckedCreateWithoutEquipeInput> | EquipeBaseHistoricoCreateWithoutEquipeInput[] | EquipeBaseHistoricoUncheckedCreateWithoutEquipeInput[]
+    connectOrCreate?: EquipeBaseHistoricoCreateOrConnectWithoutEquipeInput | EquipeBaseHistoricoCreateOrConnectWithoutEquipeInput[]
+    createMany?: EquipeBaseHistoricoCreateManyEquipeInputEnvelope
+    connect?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+  }
+
   export type EquipeSupervisorUncheckedCreateNestedManyWithoutEquipeInput = {
     create?: XOR<EquipeSupervisorCreateWithoutEquipeInput, EquipeSupervisorUncheckedCreateWithoutEquipeInput> | EquipeSupervisorCreateWithoutEquipeInput[] | EquipeSupervisorUncheckedCreateWithoutEquipeInput[]
     connectOrCreate?: EquipeSupervisorCreateOrConnectWithoutEquipeInput | EquipeSupervisorCreateOrConnectWithoutEquipeInput[]
@@ -74416,6 +76013,13 @@ export namespace Prisma {
     connectOrCreate?: EquipeTurnoHistoricoCreateOrConnectWithoutEquipeInput | EquipeTurnoHistoricoCreateOrConnectWithoutEquipeInput[]
     createMany?: EquipeTurnoHistoricoCreateManyEquipeInputEnvelope
     connect?: EquipeTurnoHistoricoWhereUniqueInput | EquipeTurnoHistoricoWhereUniqueInput[]
+  }
+
+  export type EquipeBaseHistoricoUncheckedCreateNestedManyWithoutEquipeInput = {
+    create?: XOR<EquipeBaseHistoricoCreateWithoutEquipeInput, EquipeBaseHistoricoUncheckedCreateWithoutEquipeInput> | EquipeBaseHistoricoCreateWithoutEquipeInput[] | EquipeBaseHistoricoUncheckedCreateWithoutEquipeInput[]
+    connectOrCreate?: EquipeBaseHistoricoCreateOrConnectWithoutEquipeInput | EquipeBaseHistoricoCreateOrConnectWithoutEquipeInput[]
+    createMany?: EquipeBaseHistoricoCreateManyEquipeInputEnvelope
+    connect?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
   }
 
   export type TipoEquipeUpdateOneRequiredWithoutEquipeNestedInput = {
@@ -74504,6 +76108,20 @@ export namespace Prisma {
     deleteMany?: EquipeTurnoHistoricoScalarWhereInput | EquipeTurnoHistoricoScalarWhereInput[]
   }
 
+  export type EquipeBaseHistoricoUpdateManyWithoutEquipeNestedInput = {
+    create?: XOR<EquipeBaseHistoricoCreateWithoutEquipeInput, EquipeBaseHistoricoUncheckedCreateWithoutEquipeInput> | EquipeBaseHistoricoCreateWithoutEquipeInput[] | EquipeBaseHistoricoUncheckedCreateWithoutEquipeInput[]
+    connectOrCreate?: EquipeBaseHistoricoCreateOrConnectWithoutEquipeInput | EquipeBaseHistoricoCreateOrConnectWithoutEquipeInput[]
+    upsert?: EquipeBaseHistoricoUpsertWithWhereUniqueWithoutEquipeInput | EquipeBaseHistoricoUpsertWithWhereUniqueWithoutEquipeInput[]
+    createMany?: EquipeBaseHistoricoCreateManyEquipeInputEnvelope
+    set?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    disconnect?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    delete?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    connect?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    update?: EquipeBaseHistoricoUpdateWithWhereUniqueWithoutEquipeInput | EquipeBaseHistoricoUpdateWithWhereUniqueWithoutEquipeInput[]
+    updateMany?: EquipeBaseHistoricoUpdateManyWithWhereWithoutEquipeInput | EquipeBaseHistoricoUpdateManyWithWhereWithoutEquipeInput[]
+    deleteMany?: EquipeBaseHistoricoScalarWhereInput | EquipeBaseHistoricoScalarWhereInput[]
+  }
+
   export type EquipeSupervisorUncheckedUpdateManyWithoutEquipeNestedInput = {
     create?: XOR<EquipeSupervisorCreateWithoutEquipeInput, EquipeSupervisorUncheckedCreateWithoutEquipeInput> | EquipeSupervisorCreateWithoutEquipeInput[] | EquipeSupervisorUncheckedCreateWithoutEquipeInput[]
     connectOrCreate?: EquipeSupervisorCreateOrConnectWithoutEquipeInput | EquipeSupervisorCreateOrConnectWithoutEquipeInput[]
@@ -74572,6 +76190,20 @@ export namespace Prisma {
     update?: EquipeTurnoHistoricoUpdateWithWhereUniqueWithoutEquipeInput | EquipeTurnoHistoricoUpdateWithWhereUniqueWithoutEquipeInput[]
     updateMany?: EquipeTurnoHistoricoUpdateManyWithWhereWithoutEquipeInput | EquipeTurnoHistoricoUpdateManyWithWhereWithoutEquipeInput[]
     deleteMany?: EquipeTurnoHistoricoScalarWhereInput | EquipeTurnoHistoricoScalarWhereInput[]
+  }
+
+  export type EquipeBaseHistoricoUncheckedUpdateManyWithoutEquipeNestedInput = {
+    create?: XOR<EquipeBaseHistoricoCreateWithoutEquipeInput, EquipeBaseHistoricoUncheckedCreateWithoutEquipeInput> | EquipeBaseHistoricoCreateWithoutEquipeInput[] | EquipeBaseHistoricoUncheckedCreateWithoutEquipeInput[]
+    connectOrCreate?: EquipeBaseHistoricoCreateOrConnectWithoutEquipeInput | EquipeBaseHistoricoCreateOrConnectWithoutEquipeInput[]
+    upsert?: EquipeBaseHistoricoUpsertWithWhereUniqueWithoutEquipeInput | EquipeBaseHistoricoUpsertWithWhereUniqueWithoutEquipeInput[]
+    createMany?: EquipeBaseHistoricoCreateManyEquipeInputEnvelope
+    set?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    disconnect?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    delete?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    connect?: EquipeBaseHistoricoWhereUniqueInput | EquipeBaseHistoricoWhereUniqueInput[]
+    update?: EquipeBaseHistoricoUpdateWithWhereUniqueWithoutEquipeInput | EquipeBaseHistoricoUpdateWithWhereUniqueWithoutEquipeInput[]
+    updateMany?: EquipeBaseHistoricoUpdateManyWithWhereWithoutEquipeInput | EquipeBaseHistoricoUpdateManyWithWhereWithoutEquipeInput[]
+    deleteMany?: EquipeBaseHistoricoScalarWhereInput | EquipeBaseHistoricoScalarWhereInput[]
   }
 
   export type EquipeCreateNestedOneWithoutEquipeSupervisorInput = {
@@ -77497,6 +79129,43 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type EquipeBaseHistoricoCreateWithoutBaseInput = {
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    motivo?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    equipe: EquipeCreateNestedOneWithoutEquipeBaseHistoricoInput
+  }
+
+  export type EquipeBaseHistoricoUncheckedCreateWithoutBaseInput = {
+    id?: number
+    equipeId: number
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    motivo?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type EquipeBaseHistoricoCreateOrConnectWithoutBaseInput = {
+    where: EquipeBaseHistoricoWhereUniqueInput
+    create: XOR<EquipeBaseHistoricoCreateWithoutBaseInput, EquipeBaseHistoricoUncheckedCreateWithoutBaseInput>
+  }
+
+  export type EquipeBaseHistoricoCreateManyBaseInputEnvelope = {
+    data: EquipeBaseHistoricoCreateManyBaseInput | EquipeBaseHistoricoCreateManyBaseInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ContratoUpsertWithoutBaseInput = {
     update: XOR<ContratoUpdateWithoutBaseInput, ContratoUncheckedUpdateWithoutBaseInput>
     create: XOR<ContratoCreateWithoutBaseInput, ContratoUncheckedCreateWithoutBaseInput>
@@ -77611,6 +79280,40 @@ export namespace Prisma {
     updatedBy?: StringNullableFilter<"VeiculoBaseHistorico"> | string | null
     deletedAt?: DateTimeNullableFilter<"VeiculoBaseHistorico"> | Date | string | null
     deletedBy?: StringNullableFilter<"VeiculoBaseHistorico"> | string | null
+  }
+
+  export type EquipeBaseHistoricoUpsertWithWhereUniqueWithoutBaseInput = {
+    where: EquipeBaseHistoricoWhereUniqueInput
+    update: XOR<EquipeBaseHistoricoUpdateWithoutBaseInput, EquipeBaseHistoricoUncheckedUpdateWithoutBaseInput>
+    create: XOR<EquipeBaseHistoricoCreateWithoutBaseInput, EquipeBaseHistoricoUncheckedCreateWithoutBaseInput>
+  }
+
+  export type EquipeBaseHistoricoUpdateWithWhereUniqueWithoutBaseInput = {
+    where: EquipeBaseHistoricoWhereUniqueInput
+    data: XOR<EquipeBaseHistoricoUpdateWithoutBaseInput, EquipeBaseHistoricoUncheckedUpdateWithoutBaseInput>
+  }
+
+  export type EquipeBaseHistoricoUpdateManyWithWhereWithoutBaseInput = {
+    where: EquipeBaseHistoricoScalarWhereInput
+    data: XOR<EquipeBaseHistoricoUpdateManyMutationInput, EquipeBaseHistoricoUncheckedUpdateManyWithoutBaseInput>
+  }
+
+  export type EquipeBaseHistoricoScalarWhereInput = {
+    AND?: EquipeBaseHistoricoScalarWhereInput | EquipeBaseHistoricoScalarWhereInput[]
+    OR?: EquipeBaseHistoricoScalarWhereInput[]
+    NOT?: EquipeBaseHistoricoScalarWhereInput | EquipeBaseHistoricoScalarWhereInput[]
+    id?: IntFilter<"EquipeBaseHistorico"> | number
+    equipeId?: IntFilter<"EquipeBaseHistorico"> | number
+    baseId?: IntFilter<"EquipeBaseHistorico"> | number
+    dataInicio?: DateTimeFilter<"EquipeBaseHistorico"> | Date | string
+    dataFim?: DateTimeNullableFilter<"EquipeBaseHistorico"> | Date | string | null
+    motivo?: StringNullableFilter<"EquipeBaseHistorico"> | string | null
+    createdAt?: DateTimeFilter<"EquipeBaseHistorico"> | Date | string
+    createdBy?: StringFilter<"EquipeBaseHistorico"> | string
+    updatedAt?: DateTimeNullableFilter<"EquipeBaseHistorico"> | Date | string | null
+    updatedBy?: StringNullableFilter<"EquipeBaseHistorico"> | string | null
+    deletedAt?: DateTimeNullableFilter<"EquipeBaseHistorico"> | Date | string | null
+    deletedBy?: StringNullableFilter<"EquipeBaseHistorico"> | string | null
   }
 
   export type ChecklistCreateWithoutTipoChecklistInput = {
@@ -78847,6 +80550,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateWithoutContratoInput = {
@@ -78864,6 +80568,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeCreateOrConnectWithoutContratoInput = {
@@ -78950,6 +80655,7 @@ export namespace Prisma {
     deletedBy?: string | null
     EletricistaBaseHistorico?: EletricistaBaseHistoricoCreateNestedManyWithoutBaseInput
     VeiculoBaseHistorico?: VeiculoBaseHistoricoCreateNestedManyWithoutBaseInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoCreateNestedManyWithoutBaseInput
   }
 
   export type BaseUncheckedCreateWithoutContratoInput = {
@@ -78963,6 +80669,7 @@ export namespace Prisma {
     deletedBy?: string | null
     EletricistaBaseHistorico?: EletricistaBaseHistoricoUncheckedCreateNestedManyWithoutBaseInput
     VeiculoBaseHistorico?: VeiculoBaseHistoricoUncheckedCreateNestedManyWithoutBaseInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedCreateNestedManyWithoutBaseInput
   }
 
   export type BaseCreateOrConnectWithoutContratoInput = {
@@ -79369,6 +81076,7 @@ export namespace Prisma {
     deletedBy?: string | null
     contrato: ContratoCreateNestedOneWithoutBaseInput
     VeiculoBaseHistorico?: VeiculoBaseHistoricoCreateNestedManyWithoutBaseInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoCreateNestedManyWithoutBaseInput
   }
 
   export type BaseUncheckedCreateWithoutEletricistaBaseHistoricoInput = {
@@ -79382,6 +81090,7 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     deletedBy?: string | null
     VeiculoBaseHistorico?: VeiculoBaseHistoricoUncheckedCreateNestedManyWithoutBaseInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedCreateNestedManyWithoutBaseInput
   }
 
   export type BaseCreateOrConnectWithoutEletricistaBaseHistoricoInput = {
@@ -79460,6 +81169,7 @@ export namespace Prisma {
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     contrato?: ContratoUpdateOneRequiredWithoutBaseNestedInput
     VeiculoBaseHistorico?: VeiculoBaseHistoricoUpdateManyWithoutBaseNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUpdateManyWithoutBaseNestedInput
   }
 
   export type BaseUncheckedUpdateWithoutEletricistaBaseHistoricoInput = {
@@ -79473,6 +81183,7 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     VeiculoBaseHistorico?: VeiculoBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput
   }
 
   export type CargoCreateWithoutEletricistaInput = {
@@ -79966,6 +81677,162 @@ export namespace Prisma {
     data: XOR<EletricistaUpdateManyMutationInput, EletricistaUncheckedUpdateManyWithoutCargoInput>
   }
 
+  export type EquipeCreateWithoutEquipeBaseHistoricoInput = {
+    nome: string
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    tipoEquipe: TipoEquipeCreateNestedOneWithoutEquipeInput
+    contrato: ContratoCreateNestedOneWithoutEquipeInput
+    EquipeSupervisor?: EquipeSupervisorCreateNestedManyWithoutEquipeInput
+    Turno?: TurnoCreateNestedManyWithoutEquipeInput
+    EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
+    EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
+  }
+
+  export type EquipeUncheckedCreateWithoutEquipeBaseHistoricoInput = {
+    id?: number
+    nome: string
+    tipoEquipeId: number
+    contratoId: number
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    EquipeSupervisor?: EquipeSupervisorUncheckedCreateNestedManyWithoutEquipeInput
+    Turno?: TurnoUncheckedCreateNestedManyWithoutEquipeInput
+    EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
+  }
+
+  export type EquipeCreateOrConnectWithoutEquipeBaseHistoricoInput = {
+    where: EquipeWhereUniqueInput
+    create: XOR<EquipeCreateWithoutEquipeBaseHistoricoInput, EquipeUncheckedCreateWithoutEquipeBaseHistoricoInput>
+  }
+
+  export type BaseCreateWithoutEquipeBaseHistoricoInput = {
+    nome: string
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    contrato: ContratoCreateNestedOneWithoutBaseInput
+    EletricistaBaseHistorico?: EletricistaBaseHistoricoCreateNestedManyWithoutBaseInput
+    VeiculoBaseHistorico?: VeiculoBaseHistoricoCreateNestedManyWithoutBaseInput
+  }
+
+  export type BaseUncheckedCreateWithoutEquipeBaseHistoricoInput = {
+    id?: number
+    nome: string
+    contratoId: number
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    EletricistaBaseHistorico?: EletricistaBaseHistoricoUncheckedCreateNestedManyWithoutBaseInput
+    VeiculoBaseHistorico?: VeiculoBaseHistoricoUncheckedCreateNestedManyWithoutBaseInput
+  }
+
+  export type BaseCreateOrConnectWithoutEquipeBaseHistoricoInput = {
+    where: BaseWhereUniqueInput
+    create: XOR<BaseCreateWithoutEquipeBaseHistoricoInput, BaseUncheckedCreateWithoutEquipeBaseHistoricoInput>
+  }
+
+  export type EquipeUpsertWithoutEquipeBaseHistoricoInput = {
+    update: XOR<EquipeUpdateWithoutEquipeBaseHistoricoInput, EquipeUncheckedUpdateWithoutEquipeBaseHistoricoInput>
+    create: XOR<EquipeCreateWithoutEquipeBaseHistoricoInput, EquipeUncheckedCreateWithoutEquipeBaseHistoricoInput>
+    where?: EquipeWhereInput
+  }
+
+  export type EquipeUpdateToOneWithWhereWithoutEquipeBaseHistoricoInput = {
+    where?: EquipeWhereInput
+    data: XOR<EquipeUpdateWithoutEquipeBaseHistoricoInput, EquipeUncheckedUpdateWithoutEquipeBaseHistoricoInput>
+  }
+
+  export type EquipeUpdateWithoutEquipeBaseHistoricoInput = {
+    nome?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    tipoEquipe?: TipoEquipeUpdateOneRequiredWithoutEquipeNestedInput
+    contrato?: ContratoUpdateOneRequiredWithoutEquipeNestedInput
+    EquipeSupervisor?: EquipeSupervisorUpdateManyWithoutEquipeNestedInput
+    Turno?: TurnoUpdateManyWithoutEquipeNestedInput
+    EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
+    EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
+  }
+
+  export type EquipeUncheckedUpdateWithoutEquipeBaseHistoricoInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nome?: StringFieldUpdateOperationsInput | string
+    tipoEquipeId?: IntFieldUpdateOperationsInput | number
+    contratoId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    EquipeSupervisor?: EquipeSupervisorUncheckedUpdateManyWithoutEquipeNestedInput
+    Turno?: TurnoUncheckedUpdateManyWithoutEquipeNestedInput
+    EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
+  }
+
+  export type BaseUpsertWithoutEquipeBaseHistoricoInput = {
+    update: XOR<BaseUpdateWithoutEquipeBaseHistoricoInput, BaseUncheckedUpdateWithoutEquipeBaseHistoricoInput>
+    create: XOR<BaseCreateWithoutEquipeBaseHistoricoInput, BaseUncheckedCreateWithoutEquipeBaseHistoricoInput>
+    where?: BaseWhereInput
+  }
+
+  export type BaseUpdateToOneWithWhereWithoutEquipeBaseHistoricoInput = {
+    where?: BaseWhereInput
+    data: XOR<BaseUpdateWithoutEquipeBaseHistoricoInput, BaseUncheckedUpdateWithoutEquipeBaseHistoricoInput>
+  }
+
+  export type BaseUpdateWithoutEquipeBaseHistoricoInput = {
+    nome?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    contrato?: ContratoUpdateOneRequiredWithoutBaseNestedInput
+    EletricistaBaseHistorico?: EletricistaBaseHistoricoUpdateManyWithoutBaseNestedInput
+    VeiculoBaseHistorico?: VeiculoBaseHistoricoUpdateManyWithoutBaseNestedInput
+  }
+
+  export type BaseUncheckedUpdateWithoutEquipeBaseHistoricoInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nome?: StringFieldUpdateOperationsInput | string
+    contratoId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    EletricistaBaseHistorico?: EletricistaBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput
+    VeiculoBaseHistorico?: VeiculoBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput
+  }
+
   export type EquipeCreateWithoutTipoEquipeInput = {
     nome: string
     createdAt?: Date | string
@@ -79980,6 +81847,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateWithoutTipoEquipeInput = {
@@ -79997,6 +81865,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeCreateOrConnectWithoutTipoEquipeInput = {
@@ -80351,6 +82220,43 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type EquipeBaseHistoricoCreateWithoutEquipeInput = {
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    motivo?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    base: BaseCreateNestedOneWithoutEquipeBaseHistoricoInput
+  }
+
+  export type EquipeBaseHistoricoUncheckedCreateWithoutEquipeInput = {
+    id?: number
+    baseId: number
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    motivo?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type EquipeBaseHistoricoCreateOrConnectWithoutEquipeInput = {
+    where: EquipeBaseHistoricoWhereUniqueInput
+    create: XOR<EquipeBaseHistoricoCreateWithoutEquipeInput, EquipeBaseHistoricoUncheckedCreateWithoutEquipeInput>
+  }
+
+  export type EquipeBaseHistoricoCreateManyEquipeInputEnvelope = {
+    data: EquipeBaseHistoricoCreateManyEquipeInput | EquipeBaseHistoricoCreateManyEquipeInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TipoEquipeUpsertWithoutEquipeInput = {
     update: XOR<TipoEquipeUpdateWithoutEquipeInput, TipoEquipeUncheckedUpdateWithoutEquipeInput>
     create: XOR<TipoEquipeCreateWithoutEquipeInput, TipoEquipeUncheckedCreateWithoutEquipeInput>
@@ -80612,6 +82518,22 @@ export namespace Prisma {
     deletedBy?: StringNullableFilter<"EquipeTurnoHistorico"> | string | null
   }
 
+  export type EquipeBaseHistoricoUpsertWithWhereUniqueWithoutEquipeInput = {
+    where: EquipeBaseHistoricoWhereUniqueInput
+    update: XOR<EquipeBaseHistoricoUpdateWithoutEquipeInput, EquipeBaseHistoricoUncheckedUpdateWithoutEquipeInput>
+    create: XOR<EquipeBaseHistoricoCreateWithoutEquipeInput, EquipeBaseHistoricoUncheckedCreateWithoutEquipeInput>
+  }
+
+  export type EquipeBaseHistoricoUpdateWithWhereUniqueWithoutEquipeInput = {
+    where: EquipeBaseHistoricoWhereUniqueInput
+    data: XOR<EquipeBaseHistoricoUpdateWithoutEquipeInput, EquipeBaseHistoricoUncheckedUpdateWithoutEquipeInput>
+  }
+
+  export type EquipeBaseHistoricoUpdateManyWithWhereWithoutEquipeInput = {
+    where: EquipeBaseHistoricoScalarWhereInput
+    data: XOR<EquipeBaseHistoricoUpdateManyMutationInput, EquipeBaseHistoricoUncheckedUpdateManyWithoutEquipeInput>
+  }
+
   export type EquipeCreateWithoutEquipeSupervisorInput = {
     nome: string
     createdAt?: Date | string
@@ -80626,6 +82548,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateWithoutEquipeSupervisorInput = {
@@ -80643,6 +82566,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeCreateOrConnectWithoutEquipeSupervisorInput = {
@@ -80703,6 +82627,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateWithoutEquipeSupervisorInput = {
@@ -80720,6 +82645,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
   }
 
   export type SupervisorUpsertWithoutEquipeSupervisorInput = {
@@ -81142,6 +83068,7 @@ export namespace Prisma {
     Turno?: TurnoCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateWithoutEscalaEquipePeriodoInput = {
@@ -81159,6 +83086,7 @@ export namespace Prisma {
     Turno?: TurnoUncheckedCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeCreateOrConnectWithoutEscalaEquipePeriodoInput = {
@@ -81280,6 +83208,7 @@ export namespace Prisma {
     Turno?: TurnoUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateWithoutEscalaEquipePeriodoInput = {
@@ -81297,6 +83226,7 @@ export namespace Prisma {
     Turno?: TurnoUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
   }
 
   export type TipoEscalaUpsertWithoutEscalasEquipePeriodoInput = {
@@ -81792,6 +83722,7 @@ export namespace Prisma {
     Turno?: TurnoCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateWithoutEquipeHorarioVigenciaInput = {
@@ -81809,6 +83740,7 @@ export namespace Prisma {
     Turno?: TurnoUncheckedCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeCreateOrConnectWithoutEquipeHorarioVigenciaInput = {
@@ -81841,6 +83773,7 @@ export namespace Prisma {
     Turno?: TurnoUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateWithoutEquipeHorarioVigenciaInput = {
@@ -81858,6 +83791,7 @@ export namespace Prisma {
     Turno?: TurnoUncheckedUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeTurnoHistoricoCreateWithoutHorarioAberturaCatalogoInput = {
@@ -81937,6 +83871,7 @@ export namespace Prisma {
     Turno?: TurnoCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateWithoutEquipeTurnoHistoricoInput = {
@@ -81954,6 +83889,7 @@ export namespace Prisma {
     Turno?: TurnoUncheckedCreateNestedManyWithoutEquipeInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeCreateOrConnectWithoutEquipeTurnoHistoricoInput = {
@@ -82022,6 +83958,7 @@ export namespace Prisma {
     Turno?: TurnoUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateWithoutEquipeTurnoHistoricoInput = {
@@ -82039,6 +83976,7 @@ export namespace Prisma {
     Turno?: TurnoUncheckedUpdateManyWithoutEquipeNestedInput
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
   }
 
   export type HorarioAberturaCatalogoUpsertWithoutHistoricosInput = {
@@ -82276,6 +84214,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaCreateNestedManyWithoutEquipeInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeUncheckedCreateWithoutTurnoInput = {
@@ -82293,6 +84232,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedCreateNestedManyWithoutEquipeInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedCreateNestedManyWithoutEquipeInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedCreateNestedManyWithoutEquipeInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedCreateNestedManyWithoutEquipeInput
   }
 
   export type EquipeCreateOrConnectWithoutTurnoInput = {
@@ -82400,6 +84340,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateWithoutTurnoInput = {
@@ -82417,6 +84358,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
   }
 
   export type TurnoEletricistaUpsertWithWhereUniqueWithoutTurnoInput = {
@@ -82663,6 +84605,7 @@ export namespace Prisma {
     deletedBy?: string | null
     contrato: ContratoCreateNestedOneWithoutBaseInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoCreateNestedManyWithoutBaseInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoCreateNestedManyWithoutBaseInput
   }
 
   export type BaseUncheckedCreateWithoutVeiculoBaseHistoricoInput = {
@@ -82676,6 +84619,7 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     deletedBy?: string | null
     EletricistaBaseHistorico?: EletricistaBaseHistoricoUncheckedCreateNestedManyWithoutBaseInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedCreateNestedManyWithoutBaseInput
   }
 
   export type BaseCreateOrConnectWithoutVeiculoBaseHistoricoInput = {
@@ -82748,6 +84692,7 @@ export namespace Prisma {
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     contrato?: ContratoUpdateOneRequiredWithoutBaseNestedInput
     EletricistaBaseHistorico?: EletricistaBaseHistoricoUpdateManyWithoutBaseNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUpdateManyWithoutBaseNestedInput
   }
 
   export type BaseUncheckedUpdateWithoutVeiculoBaseHistoricoInput = {
@@ -82761,6 +84706,7 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     EletricistaBaseHistorico?: EletricistaBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput
   }
 
   export type VeiculoCreateWithoutTipoVeiculoInput = {
@@ -83820,6 +85766,20 @@ export namespace Prisma {
     deletedBy?: string | null
   }
 
+  export type EquipeBaseHistoricoCreateManyBaseInput = {
+    id?: number
+    equipeId: number
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    motivo?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
   export type EletricistaBaseHistoricoUpdateWithoutBaseInput = {
     dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
     dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -83891,6 +85851,47 @@ export namespace Prisma {
   export type VeiculoBaseHistoricoUncheckedUpdateManyWithoutBaseInput = {
     id?: IntFieldUpdateOperationsInput | number
     veiculoId?: IntFieldUpdateOperationsInput | number
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type EquipeBaseHistoricoUpdateWithoutBaseInput = {
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    equipe?: EquipeUpdateOneRequiredWithoutEquipeBaseHistoricoNestedInput
+  }
+
+  export type EquipeBaseHistoricoUncheckedUpdateWithoutBaseInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    equipeId?: IntFieldUpdateOperationsInput | number
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type EquipeBaseHistoricoUncheckedUpdateManyWithoutBaseInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    equipeId?: IntFieldUpdateOperationsInput | number
     dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
     dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     motivo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84453,6 +86454,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateWithoutContratoInput = {
@@ -84470,6 +86472,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateManyWithoutContratoInput = {
@@ -84560,6 +86563,7 @@ export namespace Prisma {
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     EletricistaBaseHistorico?: EletricistaBaseHistoricoUpdateManyWithoutBaseNestedInput
     VeiculoBaseHistorico?: VeiculoBaseHistoricoUpdateManyWithoutBaseNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUpdateManyWithoutBaseNestedInput
   }
 
   export type BaseUncheckedUpdateWithoutContratoInput = {
@@ -84573,6 +86577,7 @@ export namespace Prisma {
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     EletricistaBaseHistorico?: EletricistaBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput
     VeiculoBaseHistorico?: VeiculoBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedUpdateManyWithoutBaseNestedInput
   }
 
   export type BaseUncheckedUpdateManyWithoutContratoInput = {
@@ -84925,6 +86930,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUpdateManyWithoutEquipeNestedInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateWithoutTipoEquipeInput = {
@@ -84942,6 +86948,7 @@ export namespace Prisma {
     EscalaEquipePeriodo?: EscalaEquipePeriodoUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeHorarioVigencia?: EquipeHorarioVigenciaUncheckedUpdateManyWithoutEquipeNestedInput
     EquipeTurnoHistorico?: EquipeTurnoHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
+    EquipeBaseHistorico?: EquipeBaseHistoricoUncheckedUpdateManyWithoutEquipeNestedInput
   }
 
   export type EquipeUncheckedUpdateManyWithoutTipoEquipeInput = {
@@ -85062,6 +87069,20 @@ export namespace Prisma {
     fimTurnoHora?: string | null
     motivo?: string | null
     observacoes?: string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type EquipeBaseHistoricoCreateManyEquipeInput = {
+    id?: number
+    baseId: number
+    dataInicio: Date | string
+    dataFim?: Date | string | null
+    motivo?: string | null
     createdAt?: Date | string
     createdBy: string
     updatedAt?: Date | string | null
@@ -85298,6 +87319,47 @@ export namespace Prisma {
     fimTurnoHora?: NullableStringFieldUpdateOperationsInput | string | null
     motivo?: NullableStringFieldUpdateOperationsInput | string | null
     observacoes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type EquipeBaseHistoricoUpdateWithoutEquipeInput = {
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    base?: BaseUpdateOneRequiredWithoutEquipeBaseHistoricoNestedInput
+  }
+
+  export type EquipeBaseHistoricoUncheckedUpdateWithoutEquipeInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    baseId?: IntFieldUpdateOperationsInput | number
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type EquipeBaseHistoricoUncheckedUpdateManyWithoutEquipeInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    baseId?: IntFieldUpdateOperationsInput | number
+    dataInicio?: DateTimeFieldUpdateOperationsInput | Date | string
+    dataFim?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

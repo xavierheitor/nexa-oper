@@ -15,4 +15,5 @@ model Base{
   // Relacionamentos com históricos
   EletricistaBaseHistorico EletricistaBaseHistorico[]
   VeiculoBaseHistorico VeiculoBaseHistorico[]
+  EquipeBaseHistorico EquipeBaseHistorico[]
 }

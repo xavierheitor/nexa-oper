@@ -117,6 +117,7 @@ export default function TransferBaseModal({
             placeholder="Selecione a nova base"
             loading={loadingBases}
             showSearch
+            autoFocus
             filterOption={(input, option) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }

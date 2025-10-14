@@ -14,39 +14,43 @@ EscalaEquipePeriodo (Período da Escala)
 
 **Conceito:** Cada tipo de escala define quantos eletricistas são necessários!
 
-#### Exemplos de Configuração:
+#### Exemplos de Configuração
 
 **Escala 4x2 (3 eletricistas):**
-```
+
+```bash
 Ciclo: 6 dias (4 trabalho + 2 folga)
 Eletricistas: 3 em ciclos defasados
 Cobertura: Sempre 2 por turno
 ```
 
 **Escala Espanhola (2 eletricistas):**
-```
+
+```bash
 Ciclo: 2 semanas
 Eletricistas: 2 sempre juntos
 Cobertura: 2 em todos os dias de trabalho, 0 no domingo da semana B
 ```
 
 **Escala Espanhola Premium (4 eletricistas):**
-```
+
+```bash
 Ciclo: 2 semanas
 Eletricistas: 4 sempre juntos
 Cobertura: 4 em todos os dias de trabalho
 ```
 
 **Escala 4x1 (5 eletricistas):**
-```
+
+```bash
 Ciclo: 5 dias (4 trabalho + 1 folga)
 Eletricistas: 5 em ciclos defasados
 Cobertura: Sempre 4 por turno
 ```
 
-#### Exemplo Visual 4x2 com 3 Eletricistas:
+#### Exemplo Visual 4x2 com 3 Eletricistas
 
-```
+```bash
 Legenda: T = Trabalho, F = Folga
 
 Dia:         1  2  3  4  5  6  7  8  9 10 11 12 13 14
@@ -81,7 +85,7 @@ Trabalhando:   2  2  2  2  2  2  2  2  2  2  2  2  2  2  ✅
 
 ### 4. Fluxo de Criação da Escala
 
-```
+```bash
 1. Criar EscalaEquipePeriodo
    ├── Escolher Equipe
    ├── Escolher Tipo de Escala (4x2)
@@ -103,12 +107,14 @@ Trabalhando:   2  2  2  2  2  2  2  2  2  2  2  2  2  2  ✅
 Para **Escala 4x2** com **3 eletricistas**:
 
 **Como Funciona:**
+
 1. Você informa a **data da próxima folga** de cada eletricista
 2. O sistema calcula o ciclo a partir dessa data
 3. Ciclo 4x2 = 6 dias (2 folga + 4 trabalho)
 
 **Exemplo:**
-```
+
+```bash
 Período: 01/01 a 31/01
 Eletricista A: próxima folga 05/01
   → Trabalha: 01-04, 07-10, 13-16, 19-22, 25-28
@@ -124,6 +130,7 @@ Eletricista C: próxima folga 07/01
 ```
 
 **Vantagens:**
+
 - ✅ Respeita a folga atual de cada eletricista
 - ✅ Flexível para qualquer configuração
 - ✅ Não precisa de defasagens pré-definidas
@@ -131,16 +138,19 @@ Eletricista C: próxima folga 07/01
 ### 6. Matemática da Cobertura (Exemplos)
 
 **Escala 4x2 (3 eletricistas):**
+
 - Ciclo: 6 dias (4T + 2F)
 - 3 eletricistas × 4 dias = 12 dias de trabalho por ciclo
 - 6 dias × 2 por turno = 12 dias ✅ Perfeito!
 
 **Escala 4x1 (5 eletricistas):**
+
 - Ciclo: 5 dias (4T + 1F)
 - 5 eletricistas × 4 dias = 20 dias de trabalho por ciclo
 - 5 dias × 4 por turno = 20 dias ✅ Perfeito!
 
 **Escala Espanhola (2 ou 4 eletricistas):**
+
 - Não há cálculo - trabalham sempre juntos
 - Quantidade = quantos você precisa no turno
 
@@ -156,7 +166,7 @@ da escala"
 
 ## Resumo Visual
 
-```
+```bash
 ┌──────────────────────────────────────────┐
 │   EscalaEquipePeriodo (Janeiro 2025)     │
 │   Equipe: Alpha | Tipo: 4x2              │
@@ -196,6 +206,7 @@ da escala"
 Acessar "Cadastro > Escalas > Períodos de Escala" → Clicar em **"Novo Período (Guiado)"**
 
 #### **Step 1: Configurações Básicas** 📋
+
 - Selecionar **Equipe**
 - Selecionar **Tipo de Escala** (4x2, Espanhola, etc)
 - Sistema mostra automaticamente quantos eletricistas são necessários
@@ -204,20 +215,24 @@ Acessar "Cadastro > Escalas > Períodos de Escala" → Clicar em **"Novo Períod
 - Clicar **"Próximo"** → Sistema salva o período
 
 #### **Step 2: Atribuir Eletricistas** 👥
+
 O wizard ajusta automaticamente baseado no tipo de escala:
 
 **Se Escala 4x2 (Ciclo):**
+
 - Selecionar **3 eletricistas** (limite automático)
 - Para cada um, informar **data da próxima folga**
 - Sistema valida que as datas estão dentro do período
 - Clicar **"Próximo"** → Sistema cria atribuições com ciclos defasados
 
 **Se Escala Espanhola (Semanal):**
+
 - Selecionar **2 eletricistas** (limite automático)
 - Não precisa informar datas (trabalham sempre juntos)
 - Clicar **"Próximo"** → Sistema cria atribuições juntas
 
 #### **Step 3: Gerar Slots** 📅
+
 - Mostra resumo do que foi feito
 - Clicar **"Gerar Slots e Finalizar"**
 - Sistema cria todos os slots (dias) do período
@@ -226,6 +241,7 @@ O wizard ajusta automaticamente baseado no tipo de escala:
 ### Fluxo Alternativo - Manual (para escalas existentes)
 
 Para escalas já criadas, você pode usar os botões individuais:
+
 - 📅 **Gerar Slots** - Criar/recriar slots
 - 👥 **Atribuir Eletricistas** - Atribuir/reatribuir eletricistas
 - ✓ **Publicar** - Tornar imutável
@@ -268,5 +284,5 @@ await atribuirEletricistas({
 
 ---
 
-**Documentação criada em:** 2025-01-08
-**Última atualização:** 2025-01-08 (Interface de atribuição implementada)
+**Documentação criada em:** 2025-01-08 **Última atualização:** 2025-01-08 (Interface de atribuição
+implementada)

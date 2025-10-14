@@ -1,0 +1,46 @@
+/**
+ * Modelo para Histórico de Bases de Equipes
+ *
+ * Este modelo rastreia todas as transferências de equipes entre bases,
+ * mantendo um histórico completo de onde cada equipe esteve e quando.
+ *
+ * CASOS DE USO:
+ * - Rastrear transferências de equipes entre bases
+ * - Auditoria de movimentações
+ * - Relatórios de histórico de bases
+ * - Controle de localização atual e passada
+ */
+
+model EquipeBaseHistorico {
+  id Int @id @default(autoincrement())
+
+  // Relacionamentos principais
+  equipeId Int
+  equipe   Equipe @relation(fields: [equipeId], references: [id])
+
+  baseId Int
+  base   Base @relation(fields: [baseId], references: [id])
+
+  // Controle de período
+  dataInicio DateTime  // Quando a equipe chegou nesta base
+  dataFim    DateTime? // Quando a equipe saiu desta base (null = ainda está na base)
+
+  // Motivo da transferência
+  motivo String? @db.VarChar(500) // Motivo da transferência (opcional)
+
+  // Auditoria
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Índices para performance
+  @@index([equipeId])
+  @@index([baseId])
+  @@index([dataInicio])
+  @@index([dataFim])
+  @@index([equipeId, dataInicio])
+}
+

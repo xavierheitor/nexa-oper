@@ -6,6 +6,7 @@ import { PaginationParams } from '../types/common';
 interface EquipeFilter extends PaginationParams {
   contratoId?: number;
   tipoEquipeId?: number;
+  baseId?: number;
 }
 
 export type EquipeCreateInput = {
@@ -14,7 +15,10 @@ export type EquipeCreateInput = {
   contratoId: number;
 };
 
-export class EquipeRepository extends AbstractCrudRepository<Equipe, EquipeFilter> {
+export class EquipeRepository extends AbstractCrudRepository<
+  Equipe,
+  EquipeFilter
+> {
   private toPrismaCreateData(
     data: EquipeCreateInput,
     userId?: string
@@ -77,7 +81,7 @@ export class EquipeRepository extends AbstractCrudRepository<Equipe, EquipeFilte
    * Lista equipes com filtros server-side
    *
    * Sobrescreve o método base para adicionar suporte a filtros
-   * de relacionamentos (tipoEquipe, contrato)
+   * de relacionamentos (tipoEquipe, contrato, base)
    */
   async list(
     params: EquipeFilter
@@ -90,6 +94,7 @@ export class EquipeRepository extends AbstractCrudRepository<Equipe, EquipeFilte
       search,
       contratoId,
       tipoEquipeId,
+      baseId,
       include,
     } = params;
 
@@ -106,6 +111,35 @@ export class EquipeRepository extends AbstractCrudRepository<Equipe, EquipeFilte
         })),
       }),
     };
+
+    // Filtro de base é especial (relacionamento com histórico)
+    if (baseId !== undefined) {
+      // Se baseId = -1, filtra "sem lotação"
+      if (baseId === -1) {
+        const equipesComBase = await prisma.equipeBaseHistorico.findMany({
+          where: { dataFim: null, deletedAt: null },
+          select: { equipeId: true },
+        });
+        const idsComBase = equipesComBase.map(h => h.equipeId);
+        where.id = idsComBase.length > 0 ? { notIn: idsComBase } : undefined;
+      } else {
+        // Filtrar por base específica
+        const equipesNaBase = await prisma.equipeBaseHistorico.findMany({
+          where: {
+            baseId,
+            dataFim: null,
+            deletedAt: null,
+          },
+          select: { equipeId: true },
+        });
+        const idsNaBase = equipesNaBase.map(h => h.equipeId);
+        // Se não encontrou nenhuma, retorna vazio
+        if (idsNaBase.length === 0) {
+          return { items: [], total: 0 };
+        }
+        where.id = { in: idsNaBase };
+      }
+    }
 
     const [total, items] = await Promise.all([
       prisma.equipe.count({ where }),
@@ -138,5 +172,51 @@ export class EquipeRepository extends AbstractCrudRepository<Equipe, EquipeFilte
   protected count(where: Prisma.EquipeWhereInput): Promise<number> {
     return prisma.equipe.count({ where });
   }
+
+  /**
+   * Busca a base atual de uma equipe
+   *
+   * @param equipeId - ID da equipe
+   * @returns Base atual ou null se não houver
+   */
+  async findBaseAtual(equipeId: number) {
+    const historico = await prisma.equipeBaseHistorico.findFirst({
+      where: {
+        equipeId,
+        dataFim: null,
+        deletedAt: null,
+      },
+      include: {
+        base: true,
+      },
+      orderBy: {
+        dataInicio: 'desc',
+      },
+    });
+
+    return historico?.base || null;
+  }
+
+  /**
+   * Busca histórico completo de bases de uma equipe
+   *
+   * @param equipeId - ID da equipe
+   * @returns Array com histórico de bases
+   */
+  async findHistoricoBase(equipeId: number) {
+    return prisma.equipeBaseHistorico.findMany({
+      where: {
+        equipeId,
+        deletedAt: null,
+      },
+      include: {
+        base: true,
+      },
+      orderBy: {
+        dataInicio: 'desc',
+      },
+    });
+  }
 }
+
 

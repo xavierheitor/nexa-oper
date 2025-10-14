@@ -470,6 +470,21 @@ exports.Prisma.CargoScalarFieldEnum = {
   deletedBy: 'deletedBy'
 };
 
+exports.Prisma.EquipeBaseHistoricoScalarFieldEnum = {
+  id: 'id',
+  equipeId: 'equipeId',
+  baseId: 'baseId',
+  dataInicio: 'dataInicio',
+  dataFim: 'dataFim',
+  motivo: 'motivo',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy',
+  updatedAt: 'updatedAt',
+  updatedBy: 'updatedBy',
+  deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy'
+};
+
 exports.Prisma.TipoEquipeScalarFieldEnum = {
   id: 'id',
   nome: 'nome',
@@ -967,6 +982,13 @@ exports.Prisma.CargoOrderByRelevanceFieldEnum = {
   deletedBy: 'deletedBy'
 };
 
+exports.Prisma.EquipeBaseHistoricoOrderByRelevanceFieldEnum = {
+  motivo: 'motivo',
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
+  deletedBy: 'deletedBy'
+};
+
 exports.Prisma.TipoEquipeOrderByRelevanceFieldEnum = {
   nome: 'nome',
   createdBy: 'createdBy',
@@ -1191,6 +1213,7 @@ exports.Prisma.ModelName = {
   EletricistaBaseHistorico: 'EletricistaBaseHistorico',
   Eletricista: 'Eletricista',
   Cargo: 'Cargo',
+  EquipeBaseHistorico: 'EquipeBaseHistorico',
   TipoEquipe: 'TipoEquipe',
   Equipe: 'Equipe',
   EquipeSupervisor: 'EquipeSupervisor',
