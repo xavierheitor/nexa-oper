@@ -99,7 +99,7 @@ export async function handleServerAction<TInput, TOutput>(
 ): Promise<ActionResult<TOutput>> {
   try {
     // ========================================
-    // 1. VERIFICAÇÃO DE AUTENTICAÇÃO
+    // 1. VERIFICAÇÃO DE AUTENTICAÇÃO E RENOVAÇÃO DE SESSÃO
     // ========================================
 
     // Obtém a sessão do usuário atual
@@ -121,6 +121,11 @@ export async function handleServerAction<TInput, TOutput>(
         redirectToLogin: true,
       };
     }
+
+    // SLIDING SESSION: Renova automaticamente a sessão em cada requisição
+    // Isso garante que usuários ativos nunca sejam deslogados
+    // A renovação só acontece se passou o updateAge (5 min) desde a última atualização
+    // O NextAuth gerencia isso automaticamente através dos callbacks JWT
 
     // ========================================
     // 2. VALIDAÇÃO DE DADOS

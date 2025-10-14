@@ -102,32 +102,48 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 
-  // Configurações de sessão
+  // Configurações de sessão com sliding window
   session: {
     strategy: 'jwt', // Usa JWT para gerenciar sessões (mais eficiente)
-    maxAge: 60 * 60, // Sessão expira em 1 hora (3600 segundos)
-    updateAge: 30 * 60, // Atualiza sessão a cada 30 minutos (1800 segundos)
+    maxAge: 8 * 60 * 60, // Sessão expira em 8 horas de INATIVIDADE (28800 segundos)
+    updateAge: 5 * 60, // Atualiza sessão a cada 5 minutos de ATIVIDADE (300 segundos)
   },
 
   // Callbacks personalizados para modificar JWT e sessão
   callbacks: {
     /**
-     * Callback JWT
+     * Callback JWT - Implementa Sliding Session
      *
      * Executado sempre que um JWT é criado, atualizado ou acessado.
-     * Permite adicionar dados personalizados ao token.
+     * Implementa renovação automática da sessão baseada em atividade.
+     *
+     * SLIDING SESSION:
+     * - A cada requisição, verifica se passou o updateAge (5 min)
+     * - Se sim, renova o token com novo tempo de expiração
+     * - maxAge (8h) só conta a partir da ÚLTIMA atividade
+     * - Inatividade de 8h = logout automático
+     * - Atividade constante = sessão infinita
      *
      * @param token - Token JWT atual
      * @param user - Dados do usuário (apenas no primeiro login)
-     * @returns Token JWT modificado
+     * @param trigger - Tipo de trigger (signin, update)
+     * @returns Token JWT modificado com timestamp atualizado
      */
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       // Se é o primeiro login (user existe), adiciona dados ao token
       if (user) {
         token.id = user.id; // ID do usuário
         token.username = user.username; // Nome de usuário
         token.email = user.email; // Email do usuário
+        token.lastActivity = Date.now(); // Timestamp da última atividade
       }
+
+      // Em toda requisição (trigger === 'update' ou undefined), atualiza lastActivity
+      // Isso implementa a sliding session - renova a cada atividade
+      if (trigger === 'update' || !trigger) {
+        token.lastActivity = Date.now();
+      }
+
       return token;
     },
 

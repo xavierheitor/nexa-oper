@@ -370,6 +370,9 @@ export default function EscalaEquipePeriodoPage() {
         footer={null}
         width={800}
         destroyOnHidden
+        maskClosable={false} // Não fecha ao clicar fora
+        keyboard={false} // Não fecha com ESC
+        closable={true} // Mantém o botão X (só fecha via botões "Cancelar" ou X)
       >
         <EscalaWizard
           onFinish={() => {

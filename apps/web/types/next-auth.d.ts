@@ -100,6 +100,7 @@ declare module 'next-auth' {
    * - id: ID do usuário
    * - username: Nome de usuário
    * - email: Email (opcional)
+   * - lastActivity: Timestamp da última atividade (para sliding session)
    *
    * NOTA: Estes dados são definidos no callback JWT do auth.config.ts
    */
@@ -107,6 +108,7 @@ declare module 'next-auth' {
     id: string; // ID do usuário no token
     username: string; // Nome de usuário no token
     email?: string; // Email no token (opcional)
+    lastActivity?: number; // Timestamp da última atividade (sliding session)
   }
 }
 
@@ -128,6 +130,7 @@ declare module 'next-auth/jwt' {
    * - id: ID do usuário
    * - username: Nome de usuário
    * - email: Email (obrigatório nesta versão)
+   * - lastActivity: Timestamp da última atividade
    *
    * DIFERENÇA: Nesta versão, email é obrigatório, não opcional
    */
@@ -135,5 +138,6 @@ declare module 'next-auth/jwt' {
     id: string; // ID do usuário
     username: string; // Nome de usuário
     email: string; // Email (obrigatório)
+    lastActivity?: number; // Timestamp da última atividade (sliding session)
   }
 }
