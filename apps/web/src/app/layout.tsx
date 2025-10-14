@@ -3,6 +3,7 @@ import '@ant-design/v5-patch-for-react-19';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '../ui/providers/ThemeProvider';
+import SessionProvider from '../ui/providers/SessionProvider';
 import './globals.css';
 
 
@@ -29,11 +30,13 @@ export default function RootLayout({
   return (
     <html lang='pt-br'>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <AntdRegistry>
-          <ThemeProvider>
-            {children}
-          </ThemeProvider>
-        </AntdRegistry>
+        <SessionProvider>
+          <AntdRegistry>
+            <ThemeProvider>
+              {children}
+            </ThemeProvider>
+          </AntdRegistry>
+        </SessionProvider>
       </body>
     </html>
   );
