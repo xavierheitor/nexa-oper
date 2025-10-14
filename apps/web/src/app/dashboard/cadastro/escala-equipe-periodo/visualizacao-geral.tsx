@@ -31,6 +31,7 @@ import {
   Alert,
   Table,
   Typography,
+  Tooltip,
 } from 'antd';
 import {
   CalendarOutlined,
@@ -82,6 +83,15 @@ interface EscalaComEquipe {
     Slots: number;
   };
   temHorario?: boolean;
+  horarioInfo?: {
+    id: number;
+    inicioTurnoHora: string;
+    duracaoHoras: number;
+    duracaoIntervaloHoras: number;
+    fimTurnoHora: string | null;
+    dataInicio: Date;
+    dataFim: Date | null;
+  } | null;
 }
 
 interface EscalasPorBase {
@@ -350,10 +360,14 @@ export default function VisualizacaoGeral({
                         <Space direction="vertical" size="small">
                           <div style={{ fontSize: '12px', color: '#666' }}>Horário:</div>
                           <div>
-                            {escala.temHorario ? (
-                              <Tag color="green" icon={<CheckCircleOutlined />}>
-                                Definido
-                              </Tag>
+                            {escala.temHorario && escala.horarioInfo ? (
+                              <Tooltip
+                                title={`${escala.horarioInfo.inicioTurnoHora.substring(0, 5)} (${escala.horarioInfo.duracaoHoras}h + ${escala.horarioInfo.duracaoIntervaloHoras}h int.)`}
+                              >
+                                <Tag color="green" icon={<CheckCircleOutlined />}>
+                                  {escala.horarioInfo.inicioTurnoHora.substring(0, 5)}
+                                </Tag>
+                              </Tooltip>
                             ) : (
                               <Tag color="default">-</Tag>
                             )}

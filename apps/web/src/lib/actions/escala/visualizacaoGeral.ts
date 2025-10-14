@@ -99,19 +99,62 @@ export const getVisualizacaoGeral = async (rawData: unknown) =>
             },
           });
 
-          // Verifica se tem horário definido (EquipeTurnoHistorico - tabela atual)
+          // Verifica se tem horário vigente que intersecta com o período da escala
+          // Um horário é considerado ativo se sua vigência sobrepõe o período da escala
           const temHorario = await prisma.equipeTurnoHistorico.findFirst({
             where: {
               equipeId: escala.equipe.id,
-              dataFim: null, // Apenas horário vigente (ativo)
               deletedAt: null,
+              dataInicio: { lte: escala.periodoFim }, // Começou antes ou durante o período
+              OR: [
+                { dataFim: null }, // Sem fim (vigente indefinidamente)
+                { dataFim: { gte: escala.periodoInicio } }, // Termina depois ou durante o período
+              ],
+            },
+            select: {
+              id: true,
+              inicioTurnoHora: true,
+              duracaoHoras: true,
+              duracaoIntervaloHoras: true,
+              fimTurnoHora: true,
+              dataInicio: true,
+              dataFim: true,
             },
           });
+
+          console.log(
+            `[VisualizacaoGeral] Equipe ${escala.equipe.nome} (ID: ${escala.equipe.id}):`,
+            {
+              periodoEscala: `${escala.periodoInicio} - ${escala.periodoFim}`,
+              temHorario: !!temHorario,
+              horarioEncontrado: temHorario
+                ? {
+                    id: temHorario.id,
+                    inicioTurnoHora: temHorario.inicioTurnoHora,
+                    duracaoHoras: temHorario.duracaoHoras,
+                    vigencia: `${temHorario.dataInicio} até ${temHorario.dataFim || 'indefinido'}`,
+                  }
+                : null,
+            }
+          );
 
           return {
             ...escala,
             equipeBaseAtual: baseHistorico?.base || null,
             temHorario: !!temHorario,
+            horarioInfo: temHorario
+              ? {
+                  id: temHorario.id,
+                  inicioTurnoHora: temHorario.inicioTurnoHora,
+                  duracaoHoras: Number(temHorario.duracaoHoras), // Converte Decimal para number
+                  duracaoIntervaloHoras: Number(
+                    temHorario.duracaoIntervaloHoras
+                  ), // Converte Decimal para number
+                  fimTurnoHora: temHorario.fimTurnoHora,
+                  dataInicio: temHorario.dataInicio,
+                  dataFim: temHorario.dataFim,
+                }
+              : null,
           };
         })
       );
