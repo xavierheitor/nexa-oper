@@ -9,6 +9,7 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Select, DatePicker, Input, Button, Space, Alert } from 'antd';
 import { useEntityData } from '@/lib/hooks/useEntityData';
+import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listEquipes } from '@/lib/actions/equipe/list';
 import { listTiposEscala } from '@/lib/actions/escala/tipoEscala';
 import dayjs from 'dayjs';
@@ -35,41 +36,53 @@ export default function EscalaEquipePeriodoForm({
   const [form] = Form.useForm();
   const [loading, setLoading] = React.useState(false);
 
-  // Carregar equipes
+  // Carregar equipes - usa unwrapFetcher para extrair corretamente o array
   const { data: equipes, isLoading: equipesLoading } = useEntityData({
     key: 'equipes-form',
-    fetcher: async () => {
-      console.log('🔍 Buscando equipes para form...');
-      const result = await listEquipes({
+    fetcher: unwrapFetcher((params) =>
+      listEquipes({
+        ...params,
         page: 1,
-        pageSize: 9999, // Buscar TODAS as equipes
+        pageSize: 1000, // Todas as equipes ativas
         orderBy: 'nome',
         orderDir: 'asc',
-      });
-      console.log('📊 Resultado da busca de equipes (form):', {
-        success: result.success,
-        totalEquipes: result.data?.data?.length || 0,
-      });
-      return result.success && result.data ? result.data.data : [];
-    },
+      })
+    ) as any,
     paginationEnabled: false,
   });
 
-  // Carregar tipos de escala
+  // Carregar tipos de escala - usa unwrapFetcher para extrair corretamente o array
   const { data: tiposEscala, isLoading: tiposLoading } = useEntityData({
     key: 'tipos-escala-form',
-    fetcher: async () => {
-      const result = await listTiposEscala({
+    fetcher: unwrapFetcher((params) =>
+      listTiposEscala({
+        ...params,
         page: 1,
-        pageSize: 9999, // Buscar TODOS os tipos de escala
+        pageSize: 1000, // Todos os tipos ativos
         orderBy: 'nome',
         orderDir: 'asc',
         ativo: true,
-      });
-      return result.success && result.data ? result.data.data : [];
-    },
+      })
+    ) as any,
     paginationEnabled: false,
   });
+
+  // Atualiza o formulário quando initialValues mudar (ao abrir modal de edição)
+  useEffect(() => {
+    if (initialValues) {
+      const formValues = {
+        equipeId: initialValues.equipeId,
+        tipoEscalaId: initialValues.tipoEscalaId,
+        observacoes: initialValues.observacoes,
+        periodo: initialValues.periodoInicio && initialValues.periodoFim
+          ? [dayjs(initialValues.periodoInicio), dayjs(initialValues.periodoFim)]
+          : undefined,
+      };
+      form.setFieldsValue(formValues);
+    } else {
+      form.resetFields();
+    }
+  }, [initialValues, form]);
 
   const handleSubmit = async (values: any) => {
     setLoading(true);
@@ -92,7 +105,9 @@ export default function EscalaEquipePeriodoForm({
   // Valores iniciais com conversão de datas
   const formInitialValues = initialValues
     ? {
-        ...initialValues,
+      equipeId: initialValues.equipeId,
+      tipoEscalaId: initialValues.tipoEscalaId,
+      observacoes: initialValues.observacoes,
         periodo: initialValues.periodoInicio && initialValues.periodoFim
           ? [dayjs(initialValues.periodoInicio), dayjs(initialValues.periodoFim)]
           : undefined,
@@ -149,7 +164,7 @@ export default function EscalaEquipePeriodoForm({
           }
           options={tiposEscala?.map((tipo: any) => ({
             value: tipo.id,
-            label: `${tipo.nome} - ${tipo.modoRepeticao === 'CICLO_DIAS' ? 'Ciclo' : 'Semanal'}`,
+            label: tipo.nome, // Apenas o nome, sem prefixo adicional
           }))}
         />
       </Form.Item>

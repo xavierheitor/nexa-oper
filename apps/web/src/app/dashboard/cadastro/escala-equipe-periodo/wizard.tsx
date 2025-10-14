@@ -23,6 +23,7 @@ import {
   App,
 } from 'antd';
 import { useEntityData } from '@/lib/hooks/useEntityData';
+import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listEquipes } from '@/lib/actions/equipe/list';
 import { listTiposEscala } from '@/lib/actions/escala/tipoEscala';
 import { listEletricistas } from '@/lib/actions/eletricista/list';
@@ -58,56 +59,49 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
   // Eletricistas selecionados com posição inicial
   const [eletricistasEscala, setEletricistasEscala] = useState<EletricistaEscala[]>([]);
 
-  // Carregar equipes (TODAS, sem paginação)
+  // Carregar equipes (TODAS, sem paginação) - usa unwrapFetcher
   const { data: equipes, isLoading: equipesLoading } = useEntityData({
     key: 'equipes-wizard',
-    fetcher: async () => {
-      console.log('🔍 Buscando equipes para wizard...');
-      const result = await listEquipes({
+    fetcher: unwrapFetcher((params) =>
+      listEquipes({
+        ...params,
         page: 1,
-        pageSize: 9999, // Buscar TODAS as equipes
+        pageSize: 1000, // Todas as equipes ativas
         orderBy: 'nome',
         orderDir: 'asc',
-      });
-      console.log('📊 Resultado da busca de equipes:', {
-        success: result.success,
-        totalEquipes: result.data?.data?.length || 0,
-        primeiras3: result.data?.data?.slice(0, 3).map((e: any) => e.nome),
-      });
-      return result.success && result.data ? result.data.data : [];
-    },
+      })
+    ) as any,
     paginationEnabled: false,
   });
 
-  // Carregar tipos de escala (TODOS)
+  // Carregar tipos de escala (TODOS) - usa unwrapFetcher
   const { data: tiposEscala, isLoading: tiposLoading } = useEntityData({
     key: 'tipos-escala-wizard',
-    fetcher: async () => {
-      const result = await listTiposEscala({
+    fetcher: unwrapFetcher((params) =>
+      listTiposEscala({
+        ...params,
         page: 1,
-        pageSize: 9999, // Buscar TODOS os tipos de escala
+        pageSize: 1000, // Todos os tipos ativos
         orderBy: 'nome',
         orderDir: 'asc',
         ativo: true,
-      });
-      return result.success && result.data ? result.data.data : [];
-    },
+      })
+    ) as any,
     paginationEnabled: false,
   });
 
-  // Carregar eletricistas da equipe selecionada (TODOS)
+  // Carregar eletricistas da equipe selecionada (TODOS) - usa unwrapFetcher
   const { data: eletricistas, isLoading: eletricistasLoading, mutate: reloadEletricistas } = useEntityData({
     key: `eletricistas-equipe-${equipeIdSelecionada}`,
-    fetcher: async () => {
-      if (!equipeIdSelecionada) return [];
-      const result = await listEletricistas({
+    fetcher: unwrapFetcher((params) => {
+      if (!equipeIdSelecionada) return Promise.resolve({ success: true, data: [] });
+      return listEletricistas({
+        ...params,
         page: 1,
-        pageSize: 9999, // Buscar TODOS os eletricistas da equipe
+        pageSize: 1000, // Todos os eletricistas da equipe
         equipeId: equipeIdSelecionada,
-        ativo: true,
       });
-      return result.success && result.data ? result.data.data : [];
-    },
+    }) as any,
     paginationEnabled: false,
   });
 
@@ -258,6 +252,9 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
               loading={equipesLoading}
               showSearch
               optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+              }
               onChange={(value) => setEquipeIdSelecionada(value)}
               options={equipes?.map((equipe: any) => ({
                 value: equipe.id,
@@ -276,13 +273,16 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
               loading={tiposLoading}
               showSearch
               optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+              }
               onChange={(value) => {
                 const tipo = tiposEscala?.find((t: any) => t.id === value);
                 setTipoEscalaSelecionado(tipo);
               }}
               options={tiposEscala?.map((tipo: any) => ({
                 value: tipo.id,
-                label: `${tipo.nome} - ${tipo.modoRepeticao === 'CICLO_DIAS' ? 'Ciclo' : 'Semanal'}`,
+                label: tipo.nome, // Apenas o nome, sem prefixo adicional
               }))}
             />
           </Form.Item>

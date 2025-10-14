@@ -203,7 +203,7 @@ export const escalaEquipePeriodoCreateSchema = z
     periodoInicio: z.coerce.date(),
     periodoFim: z.coerce.date(),
     tipoEscalaId: z.number().int().positive('Tipo de escala é obrigatório'),
-    observacoes: z.string().max(1000).optional(),
+    observacoes: z.string().max(1000).nullish(), // Aceita null, undefined ou string
   })
   .refine(data => data.periodoFim >= data.periodoInicio, {
     message: 'Período fim deve ser maior ou igual ao período início',
@@ -217,7 +217,7 @@ export const escalaEquipePeriodoUpdateSchema = z
     periodoInicio: z.coerce.date(),
     periodoFim: z.coerce.date(),
     tipoEscalaId: z.number().int().positive('Tipo de escala é obrigatório'),
-    observacoes: z.string().max(1000).optional(),
+    observacoes: z.string().max(1000).nullish(), // Aceita null, undefined ou string
     status: StatusEscalaEquipePeriodoEnum.optional(),
     versao: z.number().int().positive().optional(),
   })
