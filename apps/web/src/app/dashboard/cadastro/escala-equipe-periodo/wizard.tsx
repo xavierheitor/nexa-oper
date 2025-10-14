@@ -59,6 +59,9 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
   // Eletricistas selecionados com posição inicial
   const [eletricistasEscala, setEletricistasEscala] = useState<EletricistaEscala[]>([]);
 
+  // Filtro de busca de eletricistas
+  const [buscaEletricista, setBuscaEletricista] = useState('');
+
   // Carregar equipes (TODAS, sem paginação) - usa unwrapFetcher
   const { data: equipes, isLoading: equipesLoading } = useEntityData({
     key: 'equipes-wizard',
@@ -109,6 +112,7 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
   useEffect(() => {
     if (equipeIdSelecionada) {
       reloadEletricistas();
+      setBuscaEletricista(''); // Limpa o filtro ao trocar de equipe
     }
   }, [equipeIdSelecionada, reloadEletricistas]);
 
@@ -220,6 +224,32 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
     );
   };
 
+  // Filtra eletricistas mantendo os selecionados sempre visíveis
+  const eletricistasFilteredForDisplay = React.useMemo(() => {
+    if (!eletricistas) return [];
+
+    const busca = buscaEletricista.toLowerCase().trim();
+
+    if (!busca) {
+      return eletricistas; // Sem filtro, mostra todos
+    }
+
+    // Filtra por nome ou matrícula, mas sempre inclui os já selecionados
+    return eletricistas.filter((eletricista: any) => {
+      const estaSelecionado = eletricistasEscala.some(e => e.eletricistaId === eletricista.id);
+
+      if (estaSelecionado) {
+        return true; // Sempre mostra selecionados
+      }
+
+      // Para não selecionados, aplica o filtro
+      const nomeMatch = eletricista.nome?.toLowerCase().includes(busca);
+      const matriculaMatch = eletricista.matricula?.toLowerCase().includes(busca);
+
+      return nomeMatch || matriculaMatch;
+    });
+  }, [eletricistas, buscaEletricista, eletricistasEscala]);
+
   const steps = [
     {
       title: 'Configurações',
@@ -237,6 +267,15 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
 
   return (
     <div>
+      <style>{`
+        .row-selecionado {
+          background-color: #e6f4ff !important;
+        }
+        .row-selecionado:hover td {
+          background-color: #bae0ff !important;
+        }
+      `}</style>
+
       <Steps current={currentStep} items={steps} style={{ marginBottom: 32 }} />
 
       {/* Step 1: Configurações */}
@@ -332,12 +371,48 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
             showIcon
           />
 
-          <Card title="Eletricistas da Equipe" loading={eletricistasLoading}>
+          <Card
+            title={
+              <Space>
+                <span>Eletricistas da Equipe</span>
+                {buscaEletricista && (
+                  <span style={{ fontSize: '12px', fontWeight: 'normal', color: '#666' }}>
+                    ({eletricistasFilteredForDisplay.length} de {eletricistas?.length || 0} exibidos)
+                  </span>
+                )}
+              </Space>
+            }
+            loading={eletricistasLoading}
+          >
+            {/* Campo de busca */}
+            <Input
+              placeholder="Buscar por nome ou matrícula..."
+              value={buscaEletricista}
+              onChange={(e) => setBuscaEletricista(e.target.value)}
+              style={{ marginBottom: 16 }}
+              allowClear
+              prefix={<span>🔍</span>}
+            />
+
+            {buscaEletricista && (
+              <Alert
+                message={`Mostrando ${eletricistasFilteredForDisplay.length} eletricista(s). Selecionados permanecem visíveis mesmo fora do filtro.`}
+                type="info"
+                showIcon
+                closable
+                style={{ marginBottom: 16 }}
+              />
+            )}
+
             <Table
-              dataSource={eletricistas || []}
+              dataSource={eletricistasFilteredForDisplay}
               rowKey="id"
               pagination={false}
               size="small"
+              rowClassName={(record: any) => {
+                const estaSelecionado = eletricistasEscala.some(e => e.eletricistaId === record.id);
+                return estaSelecionado ? 'row-selecionado' : '';
+              }}
               columns={[
                 {
                   title: 'Participar',
@@ -389,8 +464,17 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
             {eletricistasEscala.length > 0 && (
               <Alert
                 style={{ marginTop: 16 }}
-                message={`${eletricistasEscala.length} eletricista(s) selecionado(s)`}
+                message={`${eletricistasEscala.length} de ${eletricistas?.length || 0} eletricista(s) selecionado(s) para escalar`}
                 type="success"
+                showIcon
+              />
+            )}
+
+            {eletricistas && eletricistas.length === 0 && (
+              <Alert
+                message="Nenhum eletricista encontrado nesta equipe"
+                description="Certifique-se de que a equipe selecionada possui eletricistas cadastrados e ativos."
+                type="warning"
                 showIcon
               />
             )}
