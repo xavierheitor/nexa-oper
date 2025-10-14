@@ -58,24 +58,20 @@ export class BaseService extends AbstractCrudService<
    * @param userId - ID do usuário que está criando
    * @returns Base criada
    */
-  async create(raw: unknown, userId: string): Promise<Base> {
-    // Valida os dados de entrada
-    const data = baseCreateSchema.parse(raw);
+  async create(raw: any, userId: string): Promise<Base> {
+    // Extrai campos de auditoria adicionados pelo handleServerAction
+    const { createdBy, createdAt, ...businessData } = raw;
 
-    // Adiciona campos de auditoria
-    const baseData: Base = {
-      id: 0, // Será ignorado pelo Prisma
+    // Valida os dados de negócio
+    const data = baseCreateSchema.parse(businessData);
+
+    // Reconstrói com auditoria
+    return this.repo.create({
       nome: data.nome,
       contratoId: data.contratoId,
-      createdBy: userId,
-      createdAt: new Date(),
-      updatedAt: null,
-      updatedBy: null,
-      deletedAt: null,
-      deletedBy: null,
-    };
-
-    return this.repo.create(baseData);
+      ...(createdBy && { createdBy }),
+      ...(createdAt && { createdAt }),
+    } as Base);
   }
 
   /**
@@ -85,17 +81,20 @@ export class BaseService extends AbstractCrudService<
    * @param userId - ID do usuário que está atualizando
    * @returns Base atualizada
    */
-  async update(raw: unknown, userId: string): Promise<Base> {
-    // Valida os dados de entrada
-    const data = baseUpdateSchema.parse(raw);
+  async update(raw: any, userId: string): Promise<Base> {
+    // Extrai campos de auditoria adicionados pelo handleServerAction
+    const { updatedBy, updatedAt, ...businessData } = raw;
+
+    // Valida os dados de negócio
+    const data = baseUpdateSchema.parse(businessData);
     const { id, ...rest } = data;
 
-    // Adiciona campos de auditoria
+    // Reconstrói com auditoria
     const updateData: Partial<Base> = {
       nome: rest.nome,
       contratoId: rest.contratoId,
-      updatedBy: userId,
-      updatedAt: new Date(),
+      ...(updatedBy && { updatedBy }),
+      ...(updatedAt && { updatedAt }),
     };
 
     return this.repo.update(id, updateData);

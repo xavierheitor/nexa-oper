@@ -35,11 +35,11 @@ export class EletricistaService extends AbstractCrudService<
   Eletricista
 > {
   private eletricistaRepo: EletricistaRepository;
-/**
- * Construtor do serviço
- *
- * Inicializa o repositório e registra o serviço no container
- */
+  /**
+   * Construtor do serviço
+   *
+   * Inicializa o repositório e registra o serviço no container
+   */
   constructor() {
     const repo = new EletricistaRepository();
     super(repo);
@@ -53,9 +53,12 @@ export class EletricistaService extends AbstractCrudService<
    * @param userId - ID do usuário que está criando
    * @returns Eletricista criado
    */
-  async create(raw: unknown, userId: string): Promise<Eletricista> {
-    // Valida os dados de entrada
-    const data = eletricistaCreateSchema.parse(raw);
+  async create(raw: any, userId: string): Promise<Eletricista> {
+    // Extrai campos de auditoria adicionados pelo handleServerAction
+    const { createdBy, createdAt, ...businessData } = raw;
+
+    // Valida os dados de negócio
+    const data = eletricistaCreateSchema.parse(businessData);
 
     const { baseId, ...eletricistaCoreData } = data;
     const normalizedBaseId =
@@ -65,15 +68,13 @@ export class EletricistaService extends AbstractCrudService<
       throw new Error('Base é obrigatória');
     }
 
-    // Adiciona campos de auditoria
-    const eletricistaData = {
-      ...eletricistaCoreData,
-      createdBy: userId,
-      createdAt: new Date(),
-    };
-
+    // Reconstrói com auditoria
     return this.eletricistaRepo.create(
-      eletricistaData as any,
+      {
+        ...eletricistaCoreData,
+        ...(createdBy && { createdBy }),
+        ...(createdAt && { createdAt }),
+      } as any,
       userId,
       normalizedBaseId
     );
@@ -86,9 +87,12 @@ export class EletricistaService extends AbstractCrudService<
    * @param userId - ID do usuário que está atualizando
    * @returns Eletricista atualizado
    */
-  async update(raw: unknown, userId: string): Promise<Eletricista> {
-    // Valida os dados de entrada
-    const data = eletricistaUpdateSchema.parse(raw);
+  async update(raw: any, userId: string): Promise<Eletricista> {
+    // Extrai campos de auditoria adicionados pelo handleServerAction
+    const { updatedBy, updatedAt, ...businessData } = raw;
+
+    // Valida os dados de negócio
+    const data = eletricistaUpdateSchema.parse(businessData);
 
     const { baseId, ...eletricistaCoreData } = data;
     const normalizedBaseId =
@@ -98,16 +102,14 @@ export class EletricistaService extends AbstractCrudService<
       throw new Error('Base inválida');
     }
 
-    // Adiciona campos de auditoria
-    const eletricistaData = {
-      ...eletricistaCoreData,
-      updatedBy: userId,
-      updatedAt: new Date(),
-    };
-
+    // Reconstrói com auditoria
     return this.eletricistaRepo.update(
       eletricistaCoreData.id,
-      eletricistaData as any,
+      {
+        ...eletricistaCoreData,
+        ...(updatedBy && { updatedBy }),
+        ...(updatedAt && { updatedAt }),
+      } as any,
       userId,
       normalizedBaseId
     );

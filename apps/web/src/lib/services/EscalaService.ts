@@ -80,10 +80,13 @@ export class EscalaService extends AbstractCrudService<
   /**
    * Cria uma nova escala aplicando campos de auditoria.
    */
-  async create(data: EscalaCreate, userId: string): Promise<EscalaWithRelations> {
+  async create(data: any, userId: string): Promise<EscalaWithRelations> {
+    // Extrai campos de auditoria adicionados pelo handleServerAction
+    const { createdBy, createdAt, ...businessData } = data;
+
     const now = new Date();
 
-    const horariosData = data.horarios.map(horario => ({
+    const horariosData = businessData.horarios.map((horario: any) => ({
       indiceCiclo: horario.indiceCiclo,
       diaSemana: horario.diaSemana ?? null,
       horaInicio: horario.horaInicio ?? null,
@@ -96,19 +99,21 @@ export class EscalaService extends AbstractCrudService<
       createdBy: userId,
     }));
 
+    // Reconstrói com auditoria do objeto principal
+    // Os horários (objetos aninhados) mantêm auditoria manual
     return this.escalaRepo.create({
-      nome: data.nome.trim(),
-      descricao: data.descricao?.trim() ?? null,
-      codigo: data.codigo?.trim() ?? null,
-      contrato: { connect: { id: data.contratoId } },
-      tipoVeiculo: data.tipoVeiculo ?? null,
-      diasCiclo: data.diasCiclo,
-      minimoEletricistas: data.minimoEletricistas,
-      maximoEletricistas: data.maximoEletricistas ?? null,
-      inicioCiclo: new Date(data.inicioCiclo),
-      ativo: data.ativo ?? true,
-      createdAt: now,
-      createdBy: userId,
+      nome: businessData.nome.trim(),
+      descricao: businessData.descricao?.trim() ?? null,
+      codigo: businessData.codigo?.trim() ?? null,
+      contrato: { connect: { id: businessData.contratoId } },
+      tipoVeiculo: businessData.tipoVeiculo ?? null,
+      diasCiclo: businessData.diasCiclo,
+      minimoEletricistas: businessData.minimoEletricistas,
+      maximoEletricistas: businessData.maximoEletricistas ?? null,
+      inicioCiclo: new Date(businessData.inicioCiclo),
+      ativo: businessData.ativo ?? true,
+      ...(createdBy && { createdBy }),
+      ...(createdAt && { createdAt }),
       horarios: {
         create: horariosData,
       },
@@ -118,27 +123,35 @@ export class EscalaService extends AbstractCrudService<
   /**
    * Atualiza dados da escala e substitui os horários do ciclo.
    */
-  async update(data: EscalaUpdate, userId: string): Promise<EscalaWithRelations> {
+  async update(data: any, userId: string): Promise<EscalaWithRelations> {
+    // Extrai campos de auditoria adicionados pelo handleServerAction
+    const { updatedBy, updatedAt, ...businessData } = data;
+
     const now = new Date();
 
-    await this.escalaRepo.update(data.id, {
-      nome: data.nome.trim(),
-      descricao: data.descricao?.trim() ?? null,
-      codigo: data.codigo?.trim() ?? null,
-      contrato: { connect: { id: data.contratoId } },
-      tipoVeiculo: data.tipoVeiculo ?? null,
-      diasCiclo: data.diasCiclo,
-      minimoEletricistas: data.minimoEletricistas,
-      maximoEletricistas: data.maximoEletricistas ?? null,
-      inicioCiclo: new Date(data.inicioCiclo),
-      ativo: data.ativo ?? true,
-      updatedAt: now,
-      updatedBy: userId,
+    // Reconstrói com auditoria
+    await this.escalaRepo.update(businessData.id, {
+      nome: businessData.nome.trim(),
+      descricao: businessData.descricao?.trim() ?? null,
+      codigo: businessData.codigo?.trim() ?? null,
+      contrato: { connect: { id: businessData.contratoId } },
+      tipoVeiculo: businessData.tipoVeiculo ?? null,
+      diasCiclo: businessData.diasCiclo,
+      minimoEletricistas: businessData.minimoEletricistas,
+      maximoEletricistas: businessData.maximoEletricistas ?? null,
+      inicioCiclo: new Date(businessData.inicioCiclo),
+      ativo: businessData.ativo ?? true,
+      ...(updatedBy && { updatedBy }),
+      ...(updatedAt && { updatedAt }),
     });
 
-    await this.escalaRepo.replaceHorarios(data.id, data.horarios, userId);
+    await this.escalaRepo.replaceHorarios(
+      businessData.id,
+      businessData.horarios,
+      userId
+    );
 
-    const updated = await this.escalaRepo.findById(data.id);
+    const updated = await this.escalaRepo.findById(businessData.id);
     if (!updated) {
       throw new Error('Escala não encontrada após atualização.');
     }
@@ -155,7 +168,9 @@ export class EscalaService extends AbstractCrudService<
   /**
    * Sobrescrevemos a listagem padrão para utilizar o filtro customizado.
    */
-  async list(params: EscalaFilter): Promise<PaginatedResult<EscalaWithRelations>> {
+  async list(
+    params: EscalaFilter
+  ): Promise<PaginatedResult<EscalaWithRelations>> {
     const finalParams: EscalaFilter = {
       page: params.page ?? 1,
       pageSize: params.pageSize ?? 10,
@@ -189,7 +204,10 @@ export class EscalaService extends AbstractCrudService<
   /**
    * Atribui eletricistas aos horários da escala.
    */
-  async assignEletricistas(data: EscalaAssign, userId: string): Promise<EscalaWithRelations> {
+  async assignEletricistas(
+    data: EscalaAssign,
+    userId: string
+  ): Promise<EscalaWithRelations> {
     const escala = await this.escalaRepo.findById(data.escalaId);
     if (!escala) {
       throw new Error('Escala não encontrada.');
@@ -208,7 +226,9 @@ export class EscalaService extends AbstractCrudService<
       horarioId: item.horarioId,
       eletricistaId: item.eletricistaId,
       ordemRotacao: item.ordemRotacao ?? 0,
-      vigenciaInicio: item.vigenciaInicio ? new Date(item.vigenciaInicio) : null,
+      vigenciaInicio: item.vigenciaInicio
+        ? new Date(item.vigenciaInicio)
+        : null,
       vigenciaFim: item.vigenciaFim ? new Date(item.vigenciaFim) : null,
       ativo: item.ativo ?? true,
     }));
@@ -239,7 +259,11 @@ export class EscalaService extends AbstractCrudService<
       current <= range.dataFim;
       current = new Date(current.getTime() + 24 * 60 * 60 * 1000)
     ) {
-      const indiceCiclo = this.getCycleIndex(escala.inicioCiclo, current, escala.diasCiclo);
+      const indiceCiclo = this.getCycleIndex(
+        escala.inicioCiclo,
+        current,
+        escala.diasCiclo
+      );
 
       const slots = escala.horarios
         .filter(horario => horario.indiceCiclo === indiceCiclo)
@@ -270,21 +294,28 @@ export class EscalaService extends AbstractCrudService<
    * Normaliza data removendo componente de horário (UTC).
    */
   private normalizeDate(date: Date): Date {
-    return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+    return new Date(
+      Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+    );
   }
 
   /**
    * Calcula diferença em dias entre duas datas normalizadas.
    */
   private differenceInDays(start: Date, end: Date): number {
-    const diff = this.normalizeDate(end).getTime() - this.normalizeDate(start).getTime();
+    const diff =
+      this.normalizeDate(end).getTime() - this.normalizeDate(start).getTime();
     return Math.round(diff / (1000 * 60 * 60 * 24));
   }
 
   /**
    * Calcula o índice do ciclo para uma determinada data.
    */
-  private getCycleIndex(inicioCiclo: Date, target: Date, diasCiclo: number): number {
+  private getCycleIndex(
+    inicioCiclo: Date,
+    target: Date,
+    diasCiclo: number
+  ): number {
     const start = this.normalizeDate(inicioCiclo);
     const current = this.normalizeDate(target);
     const diffDays = this.differenceInDays(start, current);
@@ -306,7 +337,9 @@ export class EscalaService extends AbstractCrudService<
     const dataFim = params.dataFim
       ? this.normalizeDate(new Date(params.dataFim))
       : this.normalizeDate(
-          new Date(dataInicio.getTime() + (escala.diasCiclo - 1) * 24 * 60 * 60 * 1000)
+          new Date(
+            dataInicio.getTime() + (escala.diasCiclo - 1) * 24 * 60 * 60 * 1000
+          )
         );
 
     if (this.differenceInDays(dataInicio, dataFim) < 0) {
@@ -329,8 +362,12 @@ export class EscalaService extends AbstractCrudService<
         return false;
       }
 
-      const inicio = alocacao.vigenciaInicio ? this.normalizeDate(alocacao.vigenciaInicio) : null;
-      const fim = alocacao.vigenciaFim ? this.normalizeDate(alocacao.vigenciaFim) : null;
+      const inicio = alocacao.vigenciaInicio
+        ? this.normalizeDate(alocacao.vigenciaInicio)
+        : null;
+      const fim = alocacao.vigenciaFim
+        ? this.normalizeDate(alocacao.vigenciaFim)
+        : null;
       const currentNormalized = this.normalizeDate(current);
 
       if (inicio && currentNormalized < inicio) {
@@ -352,10 +389,16 @@ export class EscalaService extends AbstractCrudService<
     });
 
     const selecionados = new Set<number>();
-    if (!horario.folga && sorted.length > 0 && horario.eletricistasNecessarios > 0) {
+    if (
+      !horario.folga &&
+      sorted.length > 0 &&
+      horario.eletricistasNecessarios > 0
+    ) {
       for (let i = 0; i < horario.eletricistasNecessarios; i += 1) {
         const offset =
-          (horario.rotacaoOffset + this.differenceInDays(escala.inicioCiclo, current) + i) %
+          (horario.rotacaoOffset +
+            this.differenceInDays(escala.inicioCiclo, current) +
+            i) %
           sorted.length;
         const index = offset < 0 ? offset + sorted.length : offset;
         selecionados.add(sorted[index].eletricistaId);
@@ -387,7 +430,9 @@ export class EscalaService extends AbstractCrudService<
   /**
    * Lista básica de escalas para selects.
    */
-  async listBasic(): Promise<Array<Pick<Escala, 'id' | 'nome'> & { contrato: Contrato }>> {
+  async listBasic(): Promise<
+    Array<Pick<Escala, 'id' | 'nome'> & { contrato: Contrato }>
+  > {
     const result = await this.escalaRepo.listWithFilters({
       page: 1,
       pageSize: 100,

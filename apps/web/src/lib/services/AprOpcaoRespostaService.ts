@@ -32,7 +32,7 @@
  * EXEMPLO DE USO:
  * ```typescript
  * const service = new AprOpcaoRespostaService();
- * 
+ *
  * // Criar opção de resposta com validação
  * const opcao = await service.create({
  *   nome: "Não Conforme",
@@ -113,12 +113,16 @@ export class AprOpcaoRespostaService extends AbstractCrudService<
    * }, "user123");
    * ```
    */
-  async create(data: AprOpcaoRespostaCreate, userId: string): Promise<AprOpcaoResposta> {
+  async create(data: any, userId: string): Promise<AprOpcaoResposta> {
+    // Extrai campos de auditoria adicionados pelo handleServerAction
+    const { createdBy, createdAt, ...businessData } = data;
+
+    // Reconstrói objeto com dados de negócio + auditoria
     return this.repoConcrete.create(
       {
-        nome: data.nome,
-        createdBy: userId,
-        createdAt: new Date(),
+        ...businessData,
+        ...(createdBy && { createdBy }),
+        ...(createdAt && { createdAt }),
       },
       userId
     );
@@ -146,10 +150,13 @@ export class AprOpcaoRespostaService extends AbstractCrudService<
    * }, "user123");
    * ```
    */
-  async update(data: AprOpcaoRespostaUpdate, userId: string): Promise<AprOpcaoResposta> {
+  async update(
+    data: AprOpcaoRespostaUpdate,
+    userId: string
+  ): Promise<AprOpcaoResposta> {
     // Extrai o ID e separa os dados de atualização
     const { id, ...updateData } = data;
-    
+
     return this.repoConcrete.update(id, updateData, userId);
   }
 
@@ -212,15 +219,17 @@ export class AprOpcaoRespostaService extends AbstractCrudService<
    *   orderDir: 'asc',
    *   search: 'Conforme'
    * });
-   * 
+   *
    * console.log(`Encontradas ${result.total} opções de resposta`);
    * console.log(`Página ${result.page} de ${result.totalPages}`);
    * ```
    */
-  async list(params: AprOpcaoRespostaFilter): Promise<PaginatedResult<AprOpcaoResposta>> {
+  async list(
+    params: AprOpcaoRespostaFilter
+  ): Promise<PaginatedResult<AprOpcaoResposta>> {
     // Busca dados via repository
     const { items, total } = await this.repoConcrete.list(params);
-    
+
     // Transforma para formato padronizado de resposta
     return {
       data: items,

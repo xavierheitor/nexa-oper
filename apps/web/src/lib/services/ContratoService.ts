@@ -58,18 +58,19 @@ export class ContratoService extends AbstractCrudService<
    * @param userId - ID do usuário que está criando
    * @returns Contrato criado
    */
-  async create(raw: unknown, userId: string): Promise<Contrato> {
-    // Valida os dados de entrada
-    const data = contratoCreateSchema.parse(raw);
+  async create(raw: any, userId: string): Promise<Contrato> {
+    // Extrai campos de auditoria adicionados pelo handleServerAction
+    const { createdBy, createdAt, ...businessData } = raw;
 
-    // Adiciona campos de auditoria
-    const contratoData = {
+    // Valida os dados de negócio
+    const data = contratoCreateSchema.parse(businessData);
+
+    // Reconstrói com auditoria
+    return this.repo.create({
       ...data,
-      createdBy: userId,
-      createdAt: new Date(),
-    };
-
-    return this.repo.create(contratoData as any);
+      ...(createdBy && { createdBy }),
+      ...(createdAt && { createdAt }),
+    } as any);
   }
 
   /**
@@ -79,19 +80,20 @@ export class ContratoService extends AbstractCrudService<
    * @param userId - ID do usuário que está atualizando
    * @returns Contrato atualizado
    */
-  async update(raw: unknown, userId: string): Promise<Contrato> {
-    // Valida os dados de entrada
-    const data = contratoUpdateSchema.parse(raw);
+  async update(raw: any, userId: string): Promise<Contrato> {
+    // Extrai campos de auditoria adicionados pelo handleServerAction
+    const { updatedBy, updatedAt, ...businessData } = raw;
+
+    // Valida os dados de negócio
+    const data = contratoUpdateSchema.parse(businessData);
     const { id, ...rest } = data;
 
-    // Adiciona campos de auditoria
-    const updateData = {
+    // Reconstrói com auditoria
+    return this.repo.update(id, {
       ...rest,
-      updatedBy: userId,
-      updatedAt: new Date(),
-    };
-
-    return this.repo.update(id, updateData as any);
+      ...(updatedBy && { updatedBy }),
+      ...(updatedAt && { updatedAt }),
+    } as any);
   }
 
   /**

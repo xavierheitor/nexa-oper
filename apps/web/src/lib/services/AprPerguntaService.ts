@@ -31,7 +31,7 @@
  * EXEMPLO DE USO:
  * ```typescript
  * const service = new AprPerguntaService();
- * 
+ *
  * // Criar pergunta com validação
  * const pergunta = await service.create({
  *   nome: "Você verificou os EPIs?"
@@ -110,12 +110,16 @@ export class AprPerguntaService extends AbstractCrudService<
    * }, "user123");
    * ```
    */
-  async create(data: AprPerguntaCreate, userId: string): Promise<AprPergunta> {
+  async create(data: any, userId: string): Promise<AprPergunta> {
+    // Extrai campos de auditoria adicionados pelo handleServerAction
+    const { createdBy, createdAt, ...businessData } = data;
+
+    // Reconstrói objeto com dados de negócio + auditoria
     return this.repoConcrete.create(
       {
-        nome: data.nome,
-        createdBy: userId,
-        createdAt: new Date(),
+        ...businessData,
+        ...(createdBy && { createdBy }),
+        ...(createdAt && { createdAt }),
       },
       userId
     );
@@ -145,7 +149,7 @@ export class AprPerguntaService extends AbstractCrudService<
   async update(data: AprPerguntaUpdate, userId: string): Promise<AprPergunta> {
     // Extrai o ID e separa os dados de atualização
     const { id, ...updateData } = data;
-    
+
     return this.repoConcrete.update(id, updateData, userId);
   }
 
@@ -208,7 +212,7 @@ export class AprPerguntaService extends AbstractCrudService<
    *   orderDir: 'asc',
    *   search: 'EPI'
    * });
-   * 
+   *
    * console.log(`Encontradas ${result.total} perguntas`);
    * console.log(`Página ${result.page} de ${result.totalPages}`);
    * ```
@@ -216,7 +220,7 @@ export class AprPerguntaService extends AbstractCrudService<
   async list(params: AprPerguntaFilter): Promise<PaginatedResult<AprPergunta>> {
     // Busca dados via repository
     const { items, total } = await this.repoConcrete.list(params);
-    
+
     // Transforma para formato padronizado de resposta
     return {
       data: items,

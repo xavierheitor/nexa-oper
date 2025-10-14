@@ -58,18 +58,19 @@ export class TipoEquipeService extends AbstractCrudService<
    * @param userId - ID do usuário que está criando
    * @returns Tipo de equipe criado
    */
-  async create(raw: unknown, userId: string): Promise<TipoEquipe> {
-    // Valida os dados de entrada
-    const data = tipoEquipeCreateSchema.parse(raw);
+  async create(raw: any, userId: string): Promise<TipoEquipe> {
+    // Extrai campos de auditoria adicionados pelo handleServerAction
+    const { createdBy, createdAt, ...businessData } = raw;
 
-    // Adiciona campos de auditoria
-    const tipoData = {
+    // Valida os dados de negócio
+    const data = tipoEquipeCreateSchema.parse(businessData);
+
+    // Reconstrói com auditoria
+    return this.repo.create({
       ...data,
-      createdBy: userId,
-      createdAt: new Date(),
-    };
-
-    return this.repo.create(tipoData as any);
+      ...(createdBy && { createdBy }),
+      ...(createdAt && { createdAt }),
+    } as any);
   }
 
   /**
@@ -79,19 +80,20 @@ export class TipoEquipeService extends AbstractCrudService<
    * @param userId - ID do usuário que está atualizando
    * @returns Tipo de equipe atualizado
    */
-  async update(raw: unknown, userId: string): Promise<TipoEquipe> {
-    // Valida os dados de entrada
-    const data = tipoEquipeUpdateSchema.parse(raw);
+  async update(raw: any, userId: string): Promise<TipoEquipe> {
+    // Extrai campos de auditoria adicionados pelo handleServerAction
+    const { updatedBy, updatedAt, ...businessData } = raw;
+
+    // Valida os dados de negócio
+    const data = tipoEquipeUpdateSchema.parse(businessData);
     const { id, ...rest } = data;
 
-    // Adiciona campos de auditoria
-    const updateData = {
+    // Reconstrói com auditoria
+    return this.repo.update(id, {
       ...rest,
-      updatedBy: userId,
-      updatedAt: new Date(),
-    };
-
-    return this.repo.update(id, updateData as any);
+      ...(updatedBy && { updatedBy }),
+      ...(updatedAt && { updatedAt }),
+    } as any);
   }
 
   /**

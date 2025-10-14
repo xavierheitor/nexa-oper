@@ -116,16 +116,22 @@ export class AprService extends AbstractCrudService<
    * }, "user123");
    * ```
    */
-  async create(data: AprCreate, userId: string): Promise<Apr> {
-    // Extrai arrays de IDs e dados base
-    const { perguntaIds = [], opcaoRespostaIds = [], ...aprData } = data;
+  async create(data: any, userId: string): Promise<Apr> {
+    // Extrai campos de auditoria adicionados pelo handleServerAction
+    const {
+      createdBy,
+      createdAt,
+      perguntaIds = [],
+      opcaoRespostaIds = [],
+      ...aprData
+    } = data;
 
-    // Cria a APR base
+    // Cria a APR base com auditoria
     const apr = await this.repoConcrete.create(
       {
         nome: aprData.nome,
-        createdBy: userId,
-        createdAt: new Date(),
+        ...(createdBy && { createdBy }),
+        ...(createdAt && { createdAt }),
       },
       userId
     );
