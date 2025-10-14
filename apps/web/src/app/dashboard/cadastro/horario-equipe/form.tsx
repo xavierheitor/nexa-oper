@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Input, TimePicker, InputNumber, Switch, Button, Space, Alert, Card } from 'antd';
 import { ClockCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -41,6 +41,35 @@ export default function HorarioAberturaCatalogoForm({
   const [inicioHora, setInicioHora] = useState<string>(
     initialValues?.inicioTurnoHora || '08:00:00'
   );
+
+  // Atualiza o formulário quando initialValues mudar (ao abrir modal de edição)
+  useEffect(() => {
+    if (initialValues) {
+      const formValues = {
+        nome: initialValues.nome,
+        inicioTurnoHora: initialValues.inicioTurnoHora
+          ? dayjs(initialValues.inicioTurnoHora, 'HH:mm:ss')
+          : dayjs('08:00:00', 'HH:mm:ss'),
+        duracaoHoras: initialValues.duracaoHoras || 8,
+        duracaoIntervaloHoras: initialValues.duracaoIntervaloHoras || 1,
+        ativo: initialValues.ativo ?? true,
+        observacoes: initialValues.observacoes,
+      };
+
+      form.setFieldsValue(formValues);
+
+      // Atualiza estados locais para preview
+      setDuracaoHoras(initialValues.duracaoHoras || 8);
+      setDuracaoIntervalo(initialValues.duracaoIntervaloHoras || 1);
+      setInicioHora(initialValues.inicioTurnoHora || '08:00:00');
+    } else {
+      // Reset para valores padrão quando não há initialValues
+      form.resetFields();
+      setDuracaoHoras(8);
+      setDuracaoIntervalo(1);
+      setInicioHora('08:00:00');
+    }
+  }, [initialValues, form]);
 
   const calcularHorarioFim = (inicio: string, duracao: number, intervalo: number = 0): string => {
     const [horas, minutos] = inicio.split(':').map(Number);

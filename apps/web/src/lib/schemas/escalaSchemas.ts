@@ -347,9 +347,12 @@ export const horarioAberturaCatalogoCreateSchema = z.object({
     .string()
     .regex(/^\d{2}:\d{2}:\d{2}$/, 'Formato deve ser HH:MM:SS'),
   duracaoHoras: z.coerce.number().positive('Duração deve ser positiva'),
-  duracaoIntervaloHoras: z.coerce.number().min(0, 'Intervalo não pode ser negativo').default(0),
+  duracaoIntervaloHoras: z.coerce
+    .number()
+    .min(0, 'Intervalo não pode ser negativo')
+    .default(0),
   ativo: z.boolean().optional().default(true),
-  observacoes: z.string().max(1000).optional(),
+  observacoes: z.string().max(1000).nullish(), // Aceita null, undefined ou string
 });
 
 export const horarioAberturaCatalogoUpdateSchema = horarioAberturaCatalogoCreateSchema.extend({
