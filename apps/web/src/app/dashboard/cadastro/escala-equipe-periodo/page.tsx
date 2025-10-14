@@ -34,6 +34,7 @@ import {
 import EscalaEquipePeriodoForm from './form';
 import EscalaWizard from './wizard';
 import VisualizarEscala from './visualizar';
+import VisualizacaoGeral from './visualizacao-geral';
 
 interface EscalaEquipePeriodo {
   id: number;
@@ -80,6 +81,7 @@ export default function EscalaEquipePeriodoPage() {
   const [editingItem, setEditingItem] = useState<EscalaEquipePeriodo | null>(null);
   const [isVisualizarOpen, setIsVisualizarOpen] = useState(false);
   const [visualizarEscalaId, setVisualizarEscalaId] = useState<number | null>(null);
+  const [isVisualizacaoGeralOpen, setIsVisualizacaoGeralOpen] = useState(false);
 
   const crud = useCrudController<EscalaEquipePeriodo>('escalaEquipePeriodo');
 
@@ -344,6 +346,12 @@ export default function EscalaEquipePeriodoPage() {
         <h1>Períodos de Escala</h1>
         <Space>
           <Button
+            icon={<EyeOutlined />}
+            onClick={() => setIsVisualizacaoGeralOpen(true)}
+          >
+            Visualização Geral
+          </Button>
+          <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleCreate}
@@ -398,7 +406,18 @@ export default function EscalaEquipePeriodoPage() {
         />
       </Modal>
 
-      {/* Modal de Visualização */}
+      {/* Modal de Visualização Geral (Agrupada por Base) */}
+      <VisualizacaoGeral
+        open={isVisualizacaoGeralOpen && !isVisualizarOpen}
+        onClose={() => setIsVisualizacaoGeralOpen(false)}
+        onVisualizarEscala={(escalaId) => {
+          setVisualizarEscalaId(escalaId);
+          setIsVisualizarOpen(true);
+          // NÃO fecha o modal geral - apenas oculta temporariamente
+        }}
+      />
+
+      {/* Modal de Visualização Individual - renderizado por cima */}
       {visualizarEscalaId && (
         <VisualizarEscala
           escalaId={visualizarEscalaId}
@@ -406,6 +425,8 @@ export default function EscalaEquipePeriodoPage() {
           onClose={() => {
             setIsVisualizarOpen(false);
             setVisualizarEscalaId(null);
+            // Ao fechar, volta para a visualização geral se ela estava aberta
+            // O estado isVisualizacaoGeralOpen permanece true, então ela reaparece
           }}
         />
       )}
