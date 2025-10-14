@@ -44,6 +44,7 @@
 'use client';
 
 import {
+  BarChartOutlined,
   CalendarOutlined,
   CarOutlined,
   CheckCircleOutlined,
@@ -328,6 +329,33 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
               label: <Link href='/dashboard/cadastro/usuario-mobile'>Usuários Móveis</Link>,
             },
           ],
+        },
+      ],
+    },
+    {
+      key: 'relatorios',
+      icon: <BarChartOutlined />,
+      label: 'Relatórios',
+      children: [
+        {
+          key: '/dashboard/relatorios/bases',
+          label: <Link href='/dashboard/relatorios/bases'>Bases</Link>,
+        },
+        {
+          key: '/dashboard/relatorios/veiculos',
+          label: <Link href='/dashboard/relatorios/veiculos'>Veículos</Link>,
+        },
+        {
+          key: '/dashboard/relatorios/equipes',
+          label: <Link href='/dashboard/relatorios/equipes'>Equipes</Link>,
+        },
+        {
+          key: '/dashboard/relatorios/eletricistas',
+          label: <Link href='/dashboard/relatorios/eletricistas'>Eletricistas</Link>,
+        },
+        {
+          key: '/dashboard/relatorios/escalas',
+          label: <Link href='/dashboard/relatorios/escalas'>Escalas</Link>,
         },
       ],
     },
