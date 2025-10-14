@@ -122,22 +122,6 @@ export const getVisualizacaoGeral = async (rawData: unknown) =>
             },
           });
 
-          console.log(
-            `[VisualizacaoGeral] Equipe ${escala.equipe.nome} (ID: ${escala.equipe.id}):`,
-            {
-              periodoEscala: `${escala.periodoInicio} - ${escala.periodoFim}`,
-              temHorario: !!temHorario,
-              horarioEncontrado: temHorario
-                ? {
-                    id: temHorario.id,
-                    inicioTurnoHora: temHorario.inicioTurnoHora,
-                    duracaoHoras: temHorario.duracaoHoras,
-                    vigencia: `${temHorario.dataInicio} até ${temHorario.dataFim || 'indefinido'}`,
-                  }
-                : null,
-            }
-          );
-
           return {
             ...escala,
             equipeBaseAtual: baseHistorico?.base || null,

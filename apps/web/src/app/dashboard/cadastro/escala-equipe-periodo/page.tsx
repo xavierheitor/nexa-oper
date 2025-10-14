@@ -7,7 +7,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Table, Button, Space, Modal, Tag, Tooltip, App } from 'antd';
+import { Table, Button, Space, Modal, Tag, Tooltip, App, Alert } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
@@ -31,6 +31,7 @@ import {
   publicarEscala,
   arquivarEscala,
 } from '@/lib/actions/escala/escalaEquipePeriodo';
+import { publicarEscalasEmLote } from '@/lib/actions/escala/publicarEmLote';
 import EscalaEquipePeriodoForm from './form';
 import EscalaWizard from './wizard';
 import VisualizarEscala from './visualizar';
@@ -98,9 +99,24 @@ export default function EscalaEquipePeriodoPage() {
   });
 
   const handleGerarSlots = async (record: EscalaEquipePeriodo) => {
+    const isPublicada = record.status === 'PUBLICADA';
+
     modal.confirm({
       title: 'Gerar Slots de Escala',
-      content: `Deseja gerar os slots para a escala da equipe ${record.equipe.nome}?`,
+      content: (
+        <div>
+          <p>Deseja gerar os slots para a escala da equipe {record.equipe.nome}?</p>
+          {isPublicada && (
+            <Alert
+              message="Escala Publicada"
+              description="Esta escala já está publicada. Apenas slots de dias futuros (a partir de hoje) serão gerados/atualizados. Dias passados são preservados como histórico."
+              type="info"
+              showIcon
+              style={{ marginTop: 12 }}
+            />
+          )}
+        </div>
+      ),
       okText: 'Sim, Gerar',
       cancelText: 'Cancelar',
       onOk: async () => {
@@ -126,14 +142,22 @@ export default function EscalaEquipePeriodoPage() {
   const handlePublicar = async (record: EscalaEquipePeriodo) => {
     modal.confirm({
       title: 'Publicar Escala',
-      content: 'Após publicar, a escala não poderá ser editada. Deseja continuar?',
+      content: (
+        <div>
+          <p>Após publicar, a escala estará disponível para uso.</p>
+          <p style={{ fontSize: '12px', color: '#666' }}>
+            Nota: A validação de composição mínima está desabilitada.
+            Você pode publicar mesmo que nem todos os dias tenham a quantidade ideal de eletricistas.
+          </p>
+        </div>
+      ),
       okText: 'Sim, Publicar',
       cancelText: 'Cancelar',
       onOk: async () => {
         try {
           const result = await publicarEscala({
             escalaEquipePeriodoId: record.id,
-            validarComposicao: true,
+            validarComposicao: false, // ✅ Validação desabilitada - pode publicar com qualquer composição
           });
 
           if (result.success) {
@@ -169,6 +193,71 @@ export default function EscalaEquipePeriodoPage() {
           }
         } catch (error) {
           message.error('Erro ao arquivar escala');
+        }
+      },
+    });
+  };
+
+  const handlePublicarTodas = async () => {
+    const escalasRascunho = (escalas.data as EscalaEquipePeriodo[]).filter(
+      e => e.status === 'RASCUNHO'
+    );
+
+    if (escalasRascunho.length === 0) {
+      message.info('Não há escalas em rascunho para publicar');
+      return;
+    }
+
+    modal.confirm({
+      title: 'Publicar Todas as Escalas em Rascunho',
+      content: (
+        <div>
+          <p>Você está prestes a publicar <strong>{escalasRascunho.length} escala(s)</strong> em rascunho.</p>
+          <p style={{ fontSize: '12px', color: '#666', marginTop: 12 }}>
+            Escalas que serão publicadas:
+          </p>
+          <ul style={{ fontSize: '12px', maxHeight: '200px', overflowY: 'auto' }}>
+            {escalasRascunho.map(e => (
+              <li key={e.id}>
+                <strong>{e.equipe.nome}</strong> - {e.tipoEscala.nome}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ),
+      okText: 'Sim, Publicar Todas',
+      cancelText: 'Cancelar',
+      width: 600,
+      onOk: async () => {
+        try {
+          const result = await publicarEscalasEmLote({
+            escalasIds: escalasRascunho.map(e => e.id),
+            validarComposicao: false,
+          });
+
+          if (result.success && result.data) {
+            const { sucesso, falhas, erros } = result.data;
+
+            if (falhas === 0) {
+              message.success(`✅ ${sucesso} escala(s) publicada(s) com sucesso!`);
+            } else {
+              message.warning(
+                `Publicação parcial: ${sucesso} sucesso, ${falhas} falha(s). ` +
+                `Verifique as escalas com erro.`
+              );
+
+              // Mostra erros específicos
+              erros.forEach(erro => {
+                console.error(`Escala ID ${erro.id}: ${erro.erro}`);
+              });
+            }
+
+            escalas.mutate();
+          } else {
+            message.error(result.error || 'Erro ao publicar escalas');
+          }
+        } catch (error) {
+          message.error('Erro ao publicar escalas');
         }
       },
     });
@@ -350,6 +439,16 @@ export default function EscalaEquipePeriodoPage() {
             onClick={() => setIsVisualizacaoGeralOpen(true)}
           >
             Visualização Geral
+          </Button>
+          <Button
+            icon={<CheckCircleOutlined />}
+            onClick={handlePublicarTodas}
+            disabled={
+              !escalas.data ||
+              (escalas.data as EscalaEquipePeriodo[]).filter(e => e.status === 'RASCUNHO').length === 0
+            }
+          >
+            Publicar Todas
           </Button>
           <Button
             type="primary"

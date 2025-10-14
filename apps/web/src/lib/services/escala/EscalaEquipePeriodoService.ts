@@ -108,12 +108,9 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       throw new Error('Escala não encontrada');
     }
 
-    // Não permitir edição de escalas publicadas
-    if (periodo.status === 'PUBLICADA' && data.status !== 'ARQUIVADA') {
-      throw new Error(
-        'Não é possível editar escalas publicadas. Arquive primeiro.'
-      );
-    }
+    // ✅ PERMITE editar escalas publicadas
+    // A proteção do histórico é feita na edição de slots individuais
+    // Aqui apenas atualizamos metadados da escala (observações, datas, etc)
 
     // @ts-ignore - Compatibilidade de tipos do repositório
     const updateInput: EscalaEquipePeriodoUpdateInput = {
@@ -220,8 +217,19 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       );
     }
 
-    const dataInicio =
-      input.mode === 'fromDate' ? input.fromDate! : periodo.periodoInicio;
+    // Determina data de início baseado no modo E no status da escala
+    let dataInicio: Date;
+    if (input.mode === 'fromDate' && input.fromDate) {
+      dataInicio = input.fromDate;
+    } else if (periodo.status === 'PUBLICADA') {
+      // ✅ PROTEÇÃO: Se publicada, não altera dias passados
+      // Apenas gera/atualiza slots a partir de hoje
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      dataInicio = hoje > new Date(periodo.periodoInicio) ? hoje : new Date(periodo.periodoInicio);
+    } else {
+      dataInicio = new Date(periodo.periodoInicio);
+    }
     const dataFim = periodo.periodoFim;
 
     const slotsToUpsert: Array<{
@@ -485,8 +493,10 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       );
     }
 
-    // Validar composição diária
-    await this.validarComposicaoMinimaDiaria(periodo.id);
+    // Validar composição diária (apenas se solicitado)
+    if (input.validarComposicao) {
+      await this.validarComposicaoMinimaDiaria(periodo.id);
+    }
 
     // Atualizar status e incrementar versão
     const updated = await prisma.escalaEquipePeriodo.update({
