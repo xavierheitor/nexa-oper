@@ -6,6 +6,16 @@
 export { AbrirTurnoDto, EletricistaTurnoDto } from './abrir-turno.dto';
 export { FecharTurnoDto } from './fechar-turno.dto';
 
+// DTOs para mobile
+export {
+  MobileAbrirTurnoDto,
+  TurnoMobileDto,
+  VeiculoMobileDto,
+  EquipeMobileDto,
+  EletricistaMobileDto,
+  ChecklistMobileDto
+} from './mobile-abrir-turno.dto';
+
 // DTOs de resposta
 export { TurnoResponseDto, EletricistaTurnoResponseDto } from './turno-response.dto';
 export { TurnoListResponseDto } from './turno-list-response.dto';

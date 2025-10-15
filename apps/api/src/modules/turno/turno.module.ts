@@ -29,7 +29,11 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@modules/engine/auth/auth.module';
 import { TurnoService } from './services/turno.service';
-import { TurnoController, TurnoSyncController } from './controllers';
+import {
+  TurnoController,
+  TurnoSyncController,
+  TurnoMobileController,
+} from './controllers';
 
 /**
  * Módulo responsável pelas operações de turnos
@@ -43,7 +47,7 @@ import { TurnoController, TurnoSyncController } from './controllers';
  */
 @Module({
   imports: [DatabaseModule, AuthModule],
-  controllers: [TurnoController, TurnoSyncController],
+  controllers: [TurnoController, TurnoSyncController, TurnoMobileController],
   providers: [TurnoService],
   exports: [TurnoService],
 })

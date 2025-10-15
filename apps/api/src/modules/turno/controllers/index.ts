@@ -4,3 +4,4 @@
 
 export { TurnoController } from './turno.controller';
 export { TurnoSyncController } from './turno-sync.controller';
+export { TurnoMobileController } from './turno-mobile.controller';
