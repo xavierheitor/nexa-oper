@@ -7,7 +7,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Table, Button, Space, Modal, Tag, Tooltip } from 'antd';
+import { Table, Button, Space, Modal, Tag, Tooltip, App } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
@@ -50,6 +50,7 @@ interface EquipeTurnoHistorico {
 }
 
 export default function EquipeHorarioPage() {
+  const { modal } = App.useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<EquipeTurnoHistorico | null>(null);
 
@@ -57,7 +58,15 @@ export default function EquipeHorarioPage() {
 
   const associacoes = useEntityData({
     key: 'equipeTurnoHistorico',
-    fetcher: unwrapFetcher(listEquipeTurnoHistorico) as any,
+    fetcher: async (params: any) => {
+      const data = await unwrapFetcher(listEquipeTurnoHistorico)(params);
+      // Converter Decimal para number para evitar erro de serialização
+      return data.map((item: any) => ({
+        ...item,
+        duracaoHoras: Number(item.duracaoHoras),
+        duracaoIntervaloHoras: Number(item.duracaoIntervaloHoras),
+      }));
+    },
     paginationEnabled: true,
     initialParams: {
       page: 1,
@@ -170,12 +179,17 @@ export default function EquipeHorarioPage() {
   };
 
   const handleEdit = (item: EquipeTurnoHistorico) => {
-    setEditingItem(item);
+    // Converter Decimal para number antes de passar para o formulário
+    setEditingItem({
+      ...item,
+      duracaoHoras: Number(item.duracaoHoras),
+      duracaoIntervaloHoras: Number(item.duracaoIntervaloHoras),
+    });
     setIsModalOpen(true);
   };
 
   const handleDelete = async (id: number) => {
-    Modal.confirm({
+    modal.confirm({
       title: 'Confirmar exclusão',
       content: 'Tem certeza que deseja excluir esta associação?',
       okText: 'Sim',

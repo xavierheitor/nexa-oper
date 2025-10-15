@@ -205,7 +205,9 @@ export default function VeiculoLoteForm({ contratos, bases, tiposVeiculo, onSucc
               value={contratoId}
               onChange={setContratoId}
               showSearch
-              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+              }
               options={contratos.map((c) => ({
                 value: c.id,
                 label: c.nome,
@@ -223,7 +225,9 @@ export default function VeiculoLoteForm({ contratos, bases, tiposVeiculo, onSucc
               value={baseId}
               onChange={setBaseId}
               showSearch
-              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+              }
               options={bases.map((b) => ({
                 value: b.id,
                 label: b.nome,
@@ -241,7 +245,9 @@ export default function VeiculoLoteForm({ contratos, bases, tiposVeiculo, onSucc
               value={tipoVeiculoId}
               onChange={setTipoVeiculoId}
               showSearch
-              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+              }
               options={tiposVeiculo.map((t) => ({
                 value: t.id,
                 label: t.nome,

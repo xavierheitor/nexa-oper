@@ -170,7 +170,9 @@ export default function EquipeLoteForm({ contratos, tiposEquipe, onSuccess }: Pr
               value={contratoId}
               onChange={setContratoId}
               showSearch
-              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+              }
               options={contratos.map((c) => ({
                 value: c.id,
                 label: c.nome,
@@ -188,7 +190,9 @@ export default function EquipeLoteForm({ contratos, tiposEquipe, onSuccess }: Pr
               value={tipoEquipeId}
               onChange={setTipoEquipeId}
               showSearch
-              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+              }
               options={tiposEquipe.map((t) => ({
                 value: t.id,
                 label: t.nome,

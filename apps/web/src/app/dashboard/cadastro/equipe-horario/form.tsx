@@ -147,7 +147,9 @@ export default function EquipeTurnoHistoricoForm({
           placeholder="Selecione uma equipe"
           loading={equipesLoading}
           showSearch
-          optionFilterProp="children"
+          filterOption={(input, option) =>
+            (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+          }
           options={equipes?.map((equipe: any) => ({
             value: equipe.id,
             label: equipe.nome,
@@ -165,7 +167,9 @@ export default function EquipeTurnoHistoricoForm({
           placeholder="Selecione um horário"
           loading={horariosLoading}
           showSearch
-          optionFilterProp="children"
+          filterOption={(input, option) =>
+            (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+          }
           onChange={(value) => {
             const horario = horarios?.find((h: any) => h.id === value);
             setHorarioSelecionado(horario);
