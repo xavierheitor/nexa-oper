@@ -37,9 +37,9 @@ export async function listEletricistasWithCurrentBase(params: {
 
     if (search) {
       whereClause.OR = [
-        { nome: { contains: search, mode: 'insensitive' } },
-        { matricula: { contains: search, mode: 'insensitive' } },
-        { telefone: { contains: search, mode: 'insensitive' } },
+        { nome: { contains: search } },
+        { matricula: { contains: search } },
+        { telefone: { contains: search } },
       ];
     }
 

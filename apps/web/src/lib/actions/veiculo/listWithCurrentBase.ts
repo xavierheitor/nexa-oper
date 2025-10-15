@@ -37,8 +37,8 @@ export async function listVeiculosWithCurrentBase(params: {
 
     if (search) {
       whereClause.OR = [
-        { placa: { contains: search, mode: 'insensitive' } },
-        { modelo: { contains: search, mode: 'insensitive' } },
+        { placa: { contains: search } },
+        { modelo: { contains: search } },
       ];
     }
 

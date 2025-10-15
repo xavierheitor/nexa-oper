@@ -18,8 +18,8 @@ import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher'
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
-import { App, Button, Card, Modal, Space, Table, Tag } from 'antd';
-import { SwapOutlined, PlusOutlined } from '@ant-design/icons';
+import { App, Button, Card, Input, Modal, Space, Table, Tag } from 'antd';
+import { SwapOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { createEletricista } from '../../../../lib/actions/eletricista/create';
 import { deleteEletricista } from '../../../../lib/actions/eletricista/delete';
 import { transferEletricistaBase } from '../../../../lib/actions/eletricista/transferBase';
@@ -218,6 +218,8 @@ export default function EletricistaPage() {
         ...values,
         contratoId: Number(values.contratoId),
         baseId: Number(values.baseId),
+        // Converter Dayjs para Date ou string ISO
+        admissao: values.admissao ? new Date(values.admissao as any) : undefined,
       };
 
       // Verifica se estamos editando (tem item selecionado) ou criando
@@ -320,6 +322,24 @@ export default function EletricistaPage() {
           </Space>
         }
       >
+        {/* Campo de busca por nome e matrícula */}
+        <Space direction="vertical" size="middle" style={{ width: '100%', marginBottom: 16 }}>
+          <Input.Search
+            placeholder="Buscar por nome ou matrícula..."
+            allowClear
+            enterButton={<SearchOutlined />}
+            size="large"
+            onSearch={(value) =>
+              eletricistas.setParams(prev => ({
+                ...prev,
+                search: value || undefined,
+                page: 1
+              }))
+            }
+            style={{ maxWidth: 400 }}
+          />
+        </Space>
+
         {/* Filtros externos (server-side) */}
         <TableExternalFilters
           filters={[

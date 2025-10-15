@@ -107,7 +107,7 @@ export class EquipeRepository extends AbstractCrudRepository<
       ...(tipoEquipeId && { tipoEquipeId }),
       ...(search && {
         OR: this.getSearchFields().map(field => ({
-          [field]: { contains: search, mode: 'insensitive' },
+          [field]: { contains: search },
         })),
       }),
     };

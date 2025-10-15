@@ -9,7 +9,7 @@
  * - Construção de where para busca
  * - Construção de paginação
  * - Suporte a múltiplos campos de ordenação
- * - Busca case-insensitive
+ * - Busca em múltiplos campos (case-insensitive no MySQL por padrão)
  *
  * COMO FUNCIONA:
  * 1. Recebe parâmetros de query
@@ -30,7 +30,7 @@
  *
  * // Busca em múltiplos campos
  * const where = QueryBuilder.buildSearchWhere('joão', ['name', 'email']);
- * // Resultado: { OR: [{ name: { contains: 'joão', mode: 'insensitive' } }, ...] }
+ * // Resultado: { OR: [{ name: { contains: 'joão' } }, ...] }
  *
  * // Paginação
  * const pagination = QueryBuilder.buildPagination(1, 10);
@@ -69,11 +69,12 @@ export class QueryBuilder {
   static buildSearchWhere(search: string | undefined, fields: string[]) {
     if (!search) return {};
 
+    // MySQL já faz busca case-insensitive por padrão
+    // Não usar 'mode: insensitive' pois MySQL não suporta
     return {
       OR: fields.map(field => ({
         [field]: {
           contains: search,
-          mode: 'insensitive' as const,
         },
       })),
     };

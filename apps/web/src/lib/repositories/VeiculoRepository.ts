@@ -183,7 +183,7 @@ export class VeiculoRepository extends AbstractCrudRepository<Veiculo, VeiculoFi
       ...(tipoVeiculoId && { tipoVeiculoId }),
       ...(search && {
         OR: this.getSearchFields().map(field => ({
-          [field]: { contains: search, mode: 'insensitive' },
+          [field]: { contains: search },
         })),
       }),
     };

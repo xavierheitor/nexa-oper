@@ -309,10 +309,10 @@ export class EletricistaRepository extends AbstractCrudRepository<
       deletedAt: null,
       ...(contratoId && { contratoId }),
       ...(cargoId && { cargoId }),
-      ...(estado && { estado: { contains: estado, mode: 'insensitive' } }),
+      ...(estado && { estado: { contains: estado } }),
       ...(search && {
         OR: this.getSearchFields().map(field => ({
-          [field]: { contains: search, mode: 'insensitive' },
+          [field]: { contains: search },
         })),
       }),
     };
