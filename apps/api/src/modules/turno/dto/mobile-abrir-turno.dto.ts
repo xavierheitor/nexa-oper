@@ -189,10 +189,10 @@ export class ChecklistMobileDto {
   @IsString()
   checklistNome: string;
 
-  @ApiProperty({ description: 'ID remoto do eletricista' })
-  @IsNotEmpty()
-  @IsInt()
-  eletricistaRemoteId: number;
+  @ApiProperty({ description: 'ID remoto do eletricista', required: false })
+  @IsOptional()
+  @IsInt({ message: 'eletricistaRemoteId deve ser um número inteiro' })
+  eletricistaRemoteId?: number;
 
   @ApiProperty({ description: 'Latitude' })
   @IsOptional()
