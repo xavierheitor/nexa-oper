@@ -305,6 +305,74 @@ exports.Prisma.BaseScalarFieldEnum = {
   deletedBy: 'deletedBy'
 };
 
+exports.Prisma.ChecklistPreenchidoScalarFieldEnum = {
+  id: 'id',
+  turnoId: 'turnoId',
+  checklistId: 'checklistId',
+  eletricistaId: 'eletricistaId',
+  dataPreenchimento: 'dataPreenchimento',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy',
+  updatedAt: 'updatedAt',
+  updatedBy: 'updatedBy',
+  deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy'
+};
+
+exports.Prisma.ChecklistRespostaScalarFieldEnum = {
+  id: 'id',
+  checklistPreenchidoId: 'checklistPreenchidoId',
+  perguntaId: 'perguntaId',
+  opcaoRespostaId: 'opcaoRespostaId',
+  dataResposta: 'dataResposta',
+  aguardandoFoto: 'aguardandoFoto',
+  fotosSincronizadas: 'fotosSincronizadas',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy',
+  updatedAt: 'updatedAt',
+  updatedBy: 'updatedBy',
+  deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy'
+};
+
+exports.Prisma.ChecklistPendenciaScalarFieldEnum = {
+  id: 'id',
+  checklistRespostaId: 'checklistRespostaId',
+  checklistPreenchidoId: 'checklistPreenchidoId',
+  turnoId: 'turnoId',
+  status: 'status',
+  observacaoProblema: 'observacaoProblema',
+  observacaoTratamento: 'observacaoTratamento',
+  tratadoPor: 'tratadoPor',
+  tratadoEm: 'tratadoEm',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy',
+  updatedAt: 'updatedAt',
+  updatedBy: 'updatedBy',
+  deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy'
+};
+
+exports.Prisma.ChecklistRespostaFotoScalarFieldEnum = {
+  id: 'id',
+  checklistRespostaId: 'checklistRespostaId',
+  checklistPendenciaId: 'checklistPendenciaId',
+  caminhoArquivo: 'caminhoArquivo',
+  urlPublica: 'urlPublica',
+  tamanhoBytes: 'tamanhoBytes',
+  mimeType: 'mimeType',
+  sincronizadoEm: 'sincronizadoEm',
+  metadados: 'metadados',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy',
+  updatedAt: 'updatedAt',
+  updatedBy: 'updatedBy',
+  deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy'
+};
+
 exports.Prisma.TipoChecklistScalarFieldEnum = {
   id: 'id',
   nome: 'nome',
@@ -776,6 +844,11 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
@@ -887,6 +960,47 @@ exports.Prisma.RoleOrderByRelevanceFieldEnum = {
 
 exports.Prisma.BaseOrderByRelevanceFieldEnum = {
   nome: 'nome',
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
+  deletedBy: 'deletedBy'
+};
+
+exports.Prisma.ChecklistPreenchidoOrderByRelevanceFieldEnum = {
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
+  deletedBy: 'deletedBy'
+};
+
+exports.Prisma.ChecklistRespostaOrderByRelevanceFieldEnum = {
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
+  deletedBy: 'deletedBy'
+};
+
+exports.Prisma.ChecklistPendenciaOrderByRelevanceFieldEnum = {
+  observacaoProblema: 'observacaoProblema',
+  observacaoTratamento: 'observacaoTratamento',
+  tratadoPor: 'tratadoPor',
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
+  deletedBy: 'deletedBy'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.ChecklistRespostaFotoOrderByRelevanceFieldEnum = {
+  caminhoArquivo: 'caminhoArquivo',
+  urlPublica: 'urlPublica',
+  mimeType: 'mimeType',
   createdBy: 'createdBy',
   updatedBy: 'updatedBy',
   deletedBy: 'deletedBy'
@@ -1130,6 +1244,13 @@ exports.Prisma.VeiculoOdometroOrderByRelevanceFieldEnum = {
   updatedBy: 'updatedBy',
   deletedBy: 'deletedBy'
 };
+exports.StatusPendencia = exports.$Enums.StatusPendencia = {
+  AGUARDANDO_TRATAMENTO: 'AGUARDANDO_TRATAMENTO',
+  EM_TRATAMENTO: 'EM_TRATAMENTO',
+  TRATADA: 'TRATADA',
+  REGISTRO_INCORRETO: 'REGISTRO_INCORRETO'
+};
+
 exports.ModoRepeticao = exports.$Enums.ModoRepeticao = {
   CICLO_DIAS: 'CICLO_DIAS',
   SEMANA_DEPENDENTE: 'SEMANA_DEPENDENTE'
@@ -1200,6 +1321,10 @@ exports.Prisma.ModelName = {
   Role: 'Role',
   RoleUser: 'RoleUser',
   Base: 'Base',
+  ChecklistPreenchido: 'ChecklistPreenchido',
+  ChecklistResposta: 'ChecklistResposta',
+  ChecklistPendencia: 'ChecklistPendencia',
+  ChecklistRespostaFoto: 'ChecklistRespostaFoto',
   TipoChecklist: 'TipoChecklist',
   Checklist: 'Checklist',
   ChecklistPergunta: 'ChecklistPergunta',

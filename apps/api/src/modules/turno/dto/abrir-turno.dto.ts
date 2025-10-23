@@ -5,9 +5,24 @@
  * para abrir um novo turno no sistema.
  */
 
-import { IsNotEmpty, IsString, IsInt, IsArray, Min, Max, MinLength, MaxLength, IsDateString, ArrayMinSize } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsInt,
+  IsArray,
+  Min,
+  Max,
+  MinLength,
+  MaxLength,
+  IsDateString,
+  ArrayMinSize,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { TURNO_VALIDATION_CONFIG } from '../constants/turno.constants';
+import { SalvarChecklistPreenchidoDto } from './checklist-preenchido.dto';
 
 /**
  * DTO para eletricista no turno
@@ -118,4 +133,18 @@ export class AbrirTurnoDto {
   @IsArray({ message: 'Eletricistas deve ser uma lista' })
   @ArrayMinSize(1, { message: 'Pelo menos um eletricista é obrigatório' })
   eletricistas: EletricistaTurnoDto[];
+
+  /**
+   * Lista de checklists preenchidos (opcional)
+   */
+  @ApiProperty({
+    description: 'Lista de checklists preenchidos (opcional)',
+    type: [SalvarChecklistPreenchidoDto],
+    required: false,
+  })
+  @IsOptional()
+  @IsArray({ message: 'Checklists deve ser uma lista' })
+  @ValidateNested({ each: true })
+  @Type(() => SalvarChecklistPreenchidoDto)
+  checklists?: SalvarChecklistPreenchidoDto[];
 }

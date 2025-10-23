@@ -26,13 +26,17 @@
  */
 
 import { Module } from '@nestjs/common';
+import { MulterModule } from '@nestjs/platform-express';
 import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@modules/engine/auth/auth.module';
 import { TurnoService } from './services/turno.service';
+import { ChecklistPreenchidoService } from './services/checklist-preenchido.service';
+import { ChecklistFotoService } from './services/checklist-foto.service';
 import {
   TurnoController,
   TurnoSyncController,
   TurnoMobileController,
+  ChecklistFotoController,
 } from './controllers';
 
 /**
@@ -46,9 +50,23 @@ import {
  * - Exporta services para uso em outros módulos
  */
 @Module({
-  imports: [DatabaseModule, AuthModule],
-  controllers: [TurnoController, TurnoSyncController, TurnoMobileController],
-  providers: [TurnoService],
-  exports: [TurnoService],
+  imports: [
+    DatabaseModule,
+    AuthModule,
+    MulterModule.register({
+      dest: './uploads/checklists',
+      limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB
+      },
+    }),
+  ],
+  controllers: [
+    TurnoController,
+    TurnoSyncController,
+    TurnoMobileController,
+    ChecklistFotoController,
+  ],
+  providers: [TurnoService, ChecklistPreenchidoService, ChecklistFotoService],
+  exports: [TurnoService, ChecklistPreenchidoService, ChecklistFotoService],
 })
 export class TurnoModule {}

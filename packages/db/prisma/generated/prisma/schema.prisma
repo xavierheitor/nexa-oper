@@ -270,6 +270,174 @@ model Base {
   EquipeBaseHistorico      EquipeBaseHistorico[]
 }
 
+/**
+ * Modelos para checklists preenchidos e sistema de pendências
+ * Este arquivo define os modelos para armazenar checklists preenchidos
+ * pelos eletricistas durante a abertura de turnos, incluindo respostas,
+ * pendências automáticas e sincronização de fotos.
+ */
+
+/**
+ * Checklist preenchido por um eletricista durante um turno
+ */
+model ChecklistPreenchido {
+  id Int @id @default(autoincrement())
+
+  // Relacionamentos principais
+  turnoId Int
+  turno   Turno @relation(fields: [turnoId], references: [id], onDelete: Cascade)
+
+  checklistId Int
+  checklist   Checklist @relation(fields: [checklistId], references: [id])
+
+  eletricistaId Int
+  eletricista   Eletricista @relation(fields: [eletricistaId], references: [id])
+
+  // Dados do preenchimento
+  dataPreenchimento DateTime
+  latitude          Float?
+  longitude         Float?
+
+  // Campos de auditoria
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Relacionamentos
+  ChecklistResposta  ChecklistResposta[]
+  ChecklistPendencia ChecklistPendencia[]
+
+  @@map("ChecklistPreenchidos")
+}
+
+/**
+ * Resposta individual de uma pergunta do checklist
+ */
+model ChecklistResposta {
+  id Int @id @default(autoincrement())
+
+  // Relacionamentos
+  checklistPreenchidoId Int
+  checklistPreenchido   ChecklistPreenchido @relation(fields: [checklistPreenchidoId], references: [id], onDelete: Cascade)
+
+  perguntaId Int
+  pergunta   ChecklistPergunta @relation(fields: [perguntaId], references: [id])
+
+  opcaoRespostaId Int
+  opcaoResposta   ChecklistOpcaoResposta @relation(fields: [opcaoRespostaId], references: [id])
+
+  // Dados da resposta
+  dataResposta DateTime
+
+  // Controle de fotos
+  aguardandoFoto     Boolean @default(false)
+  fotosSincronizadas Int     @default(0)
+
+  // Campos de auditoria
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Relacionamentos
+  ChecklistPendencia    ChecklistPendencia?
+  ChecklistRespostaFoto ChecklistRespostaFoto[]
+
+  @@map("ChecklistRespostas")
+}
+
+/**
+ * Pendência gerada automaticamente quando uma resposta tem geraPendencia=true
+ */
+model ChecklistPendencia {
+  id Int @id @default(autoincrement())
+
+  // Relacionamentos
+  checklistRespostaId Int               @unique
+  checklistResposta   ChecklistResposta @relation(fields: [checklistRespostaId], references: [id], onDelete: Cascade)
+
+  checklistPreenchidoId Int
+  checklistPreenchido   ChecklistPreenchido @relation(fields: [checklistPreenchidoId], references: [id], onDelete: Cascade)
+
+  turnoId Int
+  turno   Turno @relation(fields: [turnoId], references: [id], onDelete: Cascade)
+
+  // Status da pendência
+  status StatusPendencia @default(AGUARDANDO_TRATAMENTO)
+
+  // Observações
+  observacaoProblema   String?
+  observacaoTratamento String?
+
+  // Tratamento
+  tratadoPor String?   @db.VarChar(255)
+  tratadoEm  DateTime?
+
+  // Campos de auditoria
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Relacionamentos
+  ChecklistRespostaFoto ChecklistRespostaFoto[]
+
+  @@map("ChecklistPendencias")
+}
+
+/**
+ * Fotos sincronizadas de forma assíncrona para respostas com pendências
+ */
+model ChecklistRespostaFoto {
+  id Int @id @default(autoincrement())
+
+  // Relacionamentos
+  checklistRespostaId Int
+  checklistResposta   ChecklistResposta @relation(fields: [checklistRespostaId], references: [id], onDelete: Cascade)
+
+  checklistPendenciaId Int?
+  checklistPendencia   ChecklistPendencia? @relation(fields: [checklistPendenciaId], references: [id], onDelete: SetNull)
+
+  // Dados do arquivo
+  caminhoArquivo String  @db.VarChar(500)
+  urlPublica     String? @db.VarChar(500)
+  tamanhoBytes   BigInt
+  mimeType       String  @db.VarChar(100)
+
+  // Sincronização
+  sincronizadoEm DateTime
+
+  // Metadados (EXIF, geolocalização, etc)
+  metadados Json?
+
+  // Campos de auditoria
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@map("ChecklistRespostaFotos")
+}
+
+/**
+ * Enum para status das pendências
+ */
+enum StatusPendencia {
+  AGUARDANDO_TRATAMENTO
+  EM_TRATAMENTO
+  TRATADA
+  REGISTRO_INCORRETO
+}
+
 model TipoChecklist {
   id   Int    @id @default(autoincrement())
   nome String @db.VarChar(255)
@@ -304,6 +472,7 @@ model Checklist {
   ChecklistOpcaoRespostaRelacao ChecklistOpcaoRespostaRelacao[]
   ChecklistTipoVeiculoRelacao   ChecklistTipoVeiculoRelacao[]
   ChecklistTipoEquipeRelacao    ChecklistTipoEquipeRelacao[]
+  ChecklistPreenchidos          ChecklistPreenchido[]
 }
 
 model ChecklistPergunta {
@@ -318,6 +487,7 @@ model ChecklistPergunta {
   deletedBy String?   @db.VarChar(255)
 
   ChecklistPerguntaRelacao ChecklistPerguntaRelacao[]
+  ChecklistRespostas       ChecklistResposta[]
 }
 
 model ChecklistPerguntaRelacao {
@@ -344,6 +514,7 @@ model ChecklistOpcaoResposta {
   geraPendencia Boolean @default(false)
 
   checklistOpcaoRespostaRelacao ChecklistOpcaoRespostaRelacao[]
+  ChecklistRespostas            ChecklistResposta[]
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -527,6 +698,7 @@ model Eletricista {
 
   TurnoEletricistas        TurnoEletricista[]
   EletricistaBaseHistorico EletricistaBaseHistorico[]
+  ChecklistPreenchidos     ChecklistPreenchido[]
 
   EventoCobertura EventoCobertura[]
 
@@ -1070,7 +1242,9 @@ model Turno {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  TurnoEletricistas TurnoEletricista[]
+  TurnoEletricistas    TurnoEletricista[]
+  ChecklistPreenchidos ChecklistPreenchido[]
+  ChecklistPendencias  ChecklistPendencia[]
 }
 
 model TurnoEletricista {

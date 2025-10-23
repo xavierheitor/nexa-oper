@@ -21,6 +21,7 @@ model Eletricista {
 
   TurnoEletricistas        TurnoEletricista[]
   EletricistaBaseHistorico EletricistaBaseHistorico[]
+  ChecklistPreenchidos     ChecklistPreenchido[]
 
   EventoCobertura EventoCobertura[]
 

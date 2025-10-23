@@ -16,6 +16,11 @@ export {
   ChecklistMobileDto
 } from './mobile-abrir-turno.dto';
 
+export {
+  MobileFecharTurnoDto,
+  MobileFecharTurnoResponseDto,
+} from './mobile-fechar-turno.dto';
+
 // DTOs de resposta
 export { TurnoResponseDto, EletricistaTurnoResponseDto } from './turno-response.dto';
 export { TurnoListResponseDto } from './turno-list-response.dto';
@@ -23,3 +28,8 @@ export { TurnoQueryDto } from './turno-query.dto';
 
 // DTOs de sincronização
 export { TurnoSyncDto, EletricistaTurnoSyncDto } from './turno-sync.dto';
+
+// DTOs de checklist
+export * from './checklist-resposta.dto';
+export * from './checklist-preenchido.dto';
+export * from './checklist-foto.dto';

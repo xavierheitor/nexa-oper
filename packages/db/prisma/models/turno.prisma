@@ -24,6 +24,8 @@ model Turno {
   deletedBy String?   @db.VarChar(255)
 
   TurnoEletricistas TurnoEletricista[]
+  ChecklistPreenchidos ChecklistPreenchido[]
+  ChecklistPendencias ChecklistPendencia[]
 }
 
 model TurnoEletricista {

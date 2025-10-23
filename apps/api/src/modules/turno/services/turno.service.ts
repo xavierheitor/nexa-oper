@@ -36,39 +36,39 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from '@database/database.service';
 import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import {
-  extractAllowedContractIds,
-} from '@modules/engine/auth/utils/contract-helpers';
+import { extractAllowedContractIds } from '@modules/engine/auth/utils/contract-helpers';
 import {
   buildPaginationMeta,
   validatePaginationParams,
   normalizePaginationParams,
 } from '@common/utils/pagination';
-import { validateId, validateOptionalId } from '@common/utils/validation';
+import { validateId } from '@common/utils/validation';
 import {
   getDefaultUserContext,
   createAuditData,
   updateAuditData,
   deleteAuditData,
 } from '@common/utils/audit';
-import { ERROR_MESSAGES } from '@common/constants/errors';
-import { ORDER_CONFIG, ERROR_MESSAGES as TURNO_ERRORS, TURNO_STATUS } from '../constants/turno.constants';
+import { parseMobileDate } from '@common/utils/date-timezone';
+import {
+  ORDER_CONFIG,
+  ERROR_MESSAGES as TURNO_ERRORS,
+  TURNO_STATUS,
+} from '../constants/turno.constants';
 import {
   AbrirTurnoDto,
   FecharTurnoDto,
   TurnoListResponseDto,
   TurnoResponseDto,
   TurnoSyncDto,
-  TurnoQueryDto,
 } from '../dto';
-import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
+import { ChecklistPreenchidoService } from './checklist-preenchido.service';
 
 /**
  * Interface de parâmetros para consulta paginada interna
@@ -101,7 +101,10 @@ interface UserContext {
 export class TurnoService {
   private readonly logger = new Logger(TurnoService.name);
 
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly checklistPreenchidoService: ChecklistPreenchidoService
+  ) {}
 
   /**
    * Abre um novo turno com validações de conflito
@@ -112,9 +115,11 @@ export class TurnoService {
    */
   async abrirTurno(
     abrirDto: AbrirTurnoDto,
-    allowedContracts: ContractPermission[],
+    allowedContracts: ContractPermission[]
   ): Promise<TurnoResponseDto> {
-    this.logger.log(`Abrindo turno - Veículo: ${abrirDto.veiculoId}, Equipe: ${abrirDto.equipeId}`);
+    this.logger.log(
+      `Abrindo turno - Veículo: ${abrirDto.veiculoId}, Equipe: ${abrirDto.equipeId}`
+    );
 
     try {
       // Validação de permissões de contrato
@@ -137,61 +142,94 @@ export class TurnoService {
       // Dados de auditoria para criação
       const auditData = createAuditData(userContext);
 
-      // Criação do turno
-      const turno = await this.db.getPrisma().turno.create({
-        data: {
-          dataSolicitacao: new Date(),
-          dataInicio: new Date(abrirDto.dataInicio),
-          veiculoId: abrirDto.veiculoId,
-          equipeId: abrirDto.equipeId,
-          dispositivo: abrirDto.dispositivo,
-          kmInicio: abrirDto.kmInicio,
-          ...auditData,
-        },
-        include: {
-          veiculo: {
-            select: {
-              id: true,
-              placa: true,
-              modelo: true,
+      // Usar transação para garantir atomicidade
+      const resultado = await this.db
+        .getPrisma()
+        .$transaction(async transaction => {
+          // Criação do turno
+          const turno = await transaction.turno.create({
+            data: {
+              dataSolicitacao: new Date(),
+              dataInicio: parseMobileDate(abrirDto.dataInicio),
+              veiculoId: abrirDto.veiculoId,
+              equipeId: abrirDto.equipeId,
+              dispositivo: abrirDto.dispositivo,
+              kmInicio: abrirDto.kmInicio,
+              ...auditData,
             },
-          },
-          equipe: {
-            select: {
-              id: true,
-              nome: true,
-            },
-          },
-          TurnoEletricistas: {
             include: {
-              eletricista: {
+              veiculo: {
+                select: {
+                  id: true,
+                  placa: true,
+                  modelo: true,
+                },
+              },
+              equipe: {
                 select: {
                   id: true,
                   nome: true,
-                  matricula: true,
+                },
+              },
+              TurnoEletricistas: {
+                include: {
+                  eletricista: {
+                    select: {
+                      id: true,
+                      nome: true,
+                      matricula: true,
+                    },
+                  },
                 },
               },
             },
-          },
-        },
-      });
+          });
 
-      // Criação dos eletricistas do turno
-      await this.db.getPrisma().turnoEletricista.createMany({
-        data: abrirDto.eletricistas.map(eletricista => ({
-          turnoId: turno.id,
-          eletricistaId: eletricista.eletricistaId,
-          ...auditData,
-        })),
-      });
+          // Criação dos eletricistas do turno
+          await transaction.turnoEletricista.createMany({
+            data: abrirDto.eletricistas.map(eletricista => ({
+              turnoId: turno.id,
+              eletricistaId: eletricista.eletricistaId,
+              ...auditData,
+            })),
+          });
+
+          // Salvar checklists se fornecidos
+          let checklistsResult = null;
+          if (abrirDto.checklists && abrirDto.checklists.length > 0) {
+            checklistsResult =
+              await this.checklistPreenchidoService.salvarChecklistsDoTurno(
+                turno.id,
+                abrirDto.checklists,
+                transaction
+              );
+          }
+
+          return { turno, checklistsResult };
+        });
 
       // Busca o turno completo com relacionamentos
-      const turnoCompleto = await this.buscarTurnoCompleto(turno.id);
+      const turnoCompleto = await this.buscarTurnoCompleto(resultado.turno.id);
 
-      this.logger.log(`Turno aberto com sucesso - ID: ${turno.id}`);
-      return this.formatarTurnoResponse(turnoCompleto);
+      this.logger.log(`Turno aberto com sucesso - ID: ${resultado.turno.id}`);
+
+      // Adicionar informações de checklists na resposta se disponíveis
+      const response = this.formatarTurnoResponse(turnoCompleto);
+      if (resultado.checklistsResult) {
+        (response as any).checklistsSalvos =
+          resultado.checklistsResult.checklistsSalvos;
+        (response as any).pendenciasGeradas =
+          resultado.checklistsResult.pendenciasGeradas;
+        (response as any).respostasAguardandoFoto =
+          resultado.checklistsResult.respostasAguardandoFoto;
+      }
+
+      return response;
     } catch (error) {
-      if (error instanceof ConflictException || error instanceof NotFoundException) {
+      if (
+        error instanceof ConflictException ||
+        error instanceof NotFoundException
+      ) {
         throw error;
       }
       this.logger.error('Erro ao abrir turno:', error);
@@ -208,7 +246,7 @@ export class TurnoService {
    */
   async fecharTurno(
     fecharDto: FecharTurnoDto,
-    allowedContracts: ContractPermission[],
+    allowedContracts: ContractPermission[]
   ): Promise<TurnoResponseDto> {
     this.logger.log(`Fechando turno - ID: ${fecharDto.turnoId}`);
 
@@ -238,7 +276,7 @@ export class TurnoService {
       const turnoFechado = await this.db.getPrisma().turno.update({
         where: { id: fecharDto.turnoId },
         data: {
-          dataFim: new Date(fecharDto.dataFim),
+          dataFim: parseMobileDate(fecharDto.dataFim),
           KmFim: fecharDto.kmFim,
           ...auditData,
         },
@@ -273,7 +311,10 @@ export class TurnoService {
       this.logger.log(`Turno fechado com sucesso - ID: ${turnoFechado.id}`);
       return this.formatarTurnoResponse(turnoFechado);
     } catch (error) {
-      if (error instanceof NotFoundException || error instanceof ConflictException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ConflictException
+      ) {
         throw error;
       }
       this.logger.error('Erro ao fechar turno:', error);
@@ -290,16 +331,19 @@ export class TurnoService {
    */
   async findAll(
     params: FindAllParams,
-    allowedContracts: ContractPermission[],
+    allowedContracts: ContractPermission[]
   ): Promise<TurnoListResponseDto> {
     this.logger.log(
-      `Listando turnos - página: ${params.page}, limite: ${params.limit}, busca: ${params.search || 'nenhuma'}`,
+      `Listando turnos - página: ${params.page}, limite: ${params.limit}, busca: ${params.search || 'nenhuma'}`
     );
 
     try {
       // Validação de parâmetros de paginação
       validatePaginationParams(params.page, params.limit);
-      const { page, limit } = normalizePaginationParams(params.page, params.limit);
+      const { page, limit } = normalizePaginationParams(
+        params.page,
+        params.limit
+      );
 
       // Construção da cláusula WHERE
       const where = this.buildWhereClause(params, allowedContracts);
@@ -345,7 +389,7 @@ export class TurnoService {
       const meta = buildPaginationMeta(page, limit, total);
 
       this.logger.log(
-        `Listagem de turnos retornou ${data.length} registros de ${total} total`,
+        `Listagem de turnos retornou ${data.length} registros de ${total} total`
       );
 
       return {
@@ -367,13 +411,16 @@ export class TurnoService {
    * @returns Lista completa de turnos
    */
   async findAllForSync(
-    allowedContracts: ContractPermission[],
+    allowedContracts: ContractPermission[]
   ): Promise<TurnoSyncDto[]> {
     this.logger.log('Sincronizando turnos - retorno completo');
 
     try {
       // Construção da cláusula WHERE
-      const where = this.buildWhereClause({ page: 1, limit: 1000 }, allowedContracts);
+      const where = this.buildWhereClause(
+        { page: 1, limit: 1000 },
+        allowedContracts
+      );
 
       const data = await this.db.getPrisma().turno.findMany({
         where,
@@ -407,7 +454,7 @@ export class TurnoService {
       });
 
       this.logger.log(
-        `Sincronização de turnos retornou ${data.length} registros`,
+        `Sincronização de turnos retornou ${data.length} registros`
       );
       return data.map(turno => this.formatarTurnoSync(turno));
     } catch (error) {
@@ -425,7 +472,7 @@ export class TurnoService {
    */
   async findOne(
     id: number,
-    allowedContracts: ContractPermission[],
+    allowedContracts: ContractPermission[]
   ): Promise<TurnoResponseDto> {
     this.logger.log(`Buscando turno com ID: ${id}`);
 
@@ -434,7 +481,11 @@ export class TurnoService {
       validateId(id, 'ID do turno');
 
       // Construção da cláusula WHERE
-      const where = this.buildWhereClause({ page: 1, limit: 1000 }, allowedContracts, id);
+      const where = this.buildWhereClause(
+        { page: 1, limit: 1000 },
+        allowedContracts,
+        id
+      );
 
       const turno = await this.db.getPrisma().turno.findFirst({
         where,
@@ -490,7 +541,7 @@ export class TurnoService {
    */
   async remove(
     id: number,
-    allowedContracts: ContractPermission[],
+    allowedContracts: ContractPermission[]
   ): Promise<TurnoResponseDto> {
     this.logger.log(`Removendo turno com ID: ${id}`);
 
@@ -560,7 +611,10 @@ export class TurnoService {
     this.logger.log('Contando turnos');
 
     try {
-      const where = this.buildWhereClause({ page: 1, limit: 1000 }, allowedContracts);
+      const where = this.buildWhereClause(
+        { page: 1, limit: 1000 },
+        allowedContracts
+      );
       return await this.db.getPrisma().turno.count({ where });
     } catch (error) {
       this.logger.error('Erro ao contar turnos:', error);
@@ -571,7 +625,9 @@ export class TurnoService {
   /**
    * Valida se as entidades existem
    */
-  private async validateEntidadesExistem(abrirDto: AbrirTurnoDto): Promise<void> {
+  private async validateEntidadesExistem(
+    abrirDto: AbrirTurnoDto
+  ): Promise<void> {
     // Validação do veículo
     const veiculo = await this.db.getPrisma().veiculo.findFirst({
       where: { id: abrirDto.veiculoId, deletedAt: null },
@@ -651,18 +707,23 @@ export class TurnoService {
    * Valida dados de abertura
    */
   private validateDadosAbertura(abrirDto: AbrirTurnoDto): void {
-    const dataInicio = new Date(abrirDto.dataInicio);
+    const dataInicio = parseMobileDate(abrirDto.dataInicio);
     const agora = new Date();
 
     // Validação de data de início (não pode ser muito no futuro)
-    const diferencaHoras = (dataInicio.getTime() - agora.getTime()) / (1000 * 60 * 60);
+    const diferencaHoras =
+      (dataInicio.getTime() - agora.getTime()) / (1000 * 60 * 60);
     if (diferencaHoras > 24) {
-      throw new BadRequestException('Data de início não pode ser mais de 24 horas no futuro');
+      throw new BadRequestException(
+        'Data de início não pode ser mais de 24 horas no futuro'
+      );
     }
 
     // Validação de data de início (não pode ser muito no passado)
     if (diferencaHoras < -24) {
-      throw new BadRequestException('Data de início não pode ser mais de 24 horas no passado');
+      throw new BadRequestException(
+        'Data de início não pode ser mais de 24 horas no passado'
+      );
     }
   }
 
@@ -677,22 +738,29 @@ export class TurnoService {
 
     // Validação de quilometragem
     if (fecharDto.kmFim <= turno.kmInicio) {
-      throw new BadRequestException('Quilometragem de fechamento deve ser maior que a de abertura');
+      throw new BadRequestException(
+        'Quilometragem de fechamento deve ser maior que a de abertura'
+      );
     }
 
     // Validação de data de fechamento
-    const dataFim = new Date(fecharDto.dataFim);
-    const dataInicio = new Date(turno.dataInicio);
+    const dataFim = parseMobileDate(fecharDto.dataFim);
+    const dataInicio = parseMobileDate(turno.dataInicio.toISOString());
 
     if (dataFim <= dataInicio) {
-      throw new BadRequestException('Data de fechamento deve ser posterior à data de abertura');
+      throw new BadRequestException(
+        'Data de fechamento deve ser posterior à data de abertura'
+      );
     }
 
     // Validação de data de fechamento (não pode ser muito no futuro)
     const agora = new Date();
-    const diferencaHoras = (dataFim.getTime() - agora.getTime()) / (1000 * 60 * 60);
+    const diferencaHoras =
+      (dataFim.getTime() - agora.getTime()) / (1000 * 60 * 60);
     if (diferencaHoras > 1) {
-      throw new BadRequestException('Data de fechamento não pode ser mais de 1 hora no futuro');
+      throw new BadRequestException(
+        'Data de fechamento não pode ser mais de 1 hora no futuro'
+      );
     }
   }
 
@@ -807,7 +875,7 @@ export class TurnoService {
   private buildWhereClause(
     params: FindAllParams,
     allowedContracts: ContractPermission[],
-    id?: number,
+    id?: number
   ) {
     const where: any = {
       deletedAt: null,
@@ -821,7 +889,9 @@ export class TurnoService {
     // Filtro por busca
     if (params.search) {
       where.OR = [
-        { veiculo: { placa: { contains: params.search, mode: 'insensitive' } } },
+        {
+          veiculo: { placa: { contains: params.search, mode: 'insensitive' } },
+        },
         { equipe: { nome: { contains: params.search, mode: 'insensitive' } } },
         { dispositivo: { contains: params.search, mode: 'insensitive' } },
       ];

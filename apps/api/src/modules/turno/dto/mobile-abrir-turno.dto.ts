@@ -8,6 +8,7 @@
 import { IsNotEmpty, IsString, IsInt, IsArray, IsOptional, IsNumber, IsObject, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { ChecklistRespostaDto } from './checklist-resposta.dto';
 
 /**
  * DTO para dados do turno enviado pelo mobile
@@ -212,7 +213,9 @@ export class ChecklistMobileDto {
   @ApiProperty({ description: 'Respostas do checklist' })
   @IsOptional()
   @IsArray()
-  respostas?: any[];
+  @ValidateNested({ each: true })
+  @Type(() => ChecklistRespostaDto)
+  respostas?: ChecklistRespostaDto[];
 }
 
 /**

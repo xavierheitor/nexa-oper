@@ -32,6 +32,7 @@ model Checklist {
   ChecklistOpcaoRespostaRelacao ChecklistOpcaoRespostaRelacao[]
   ChecklistTipoVeiculoRelacao ChecklistTipoVeiculoRelacao[]
   ChecklistTipoEquipeRelacao ChecklistTipoEquipeRelacao[]
+  ChecklistPreenchidos ChecklistPreenchido[]
 }
 
 model ChecklistPergunta {
@@ -46,6 +47,7 @@ model ChecklistPergunta {
   deletedBy String?   @db.VarChar(255)
 
   ChecklistPerguntaRelacao ChecklistPerguntaRelacao[]
+  ChecklistRespostas ChecklistResposta[]
 }
 
 model ChecklistPerguntaRelacao {
@@ -72,6 +74,7 @@ model ChecklistOpcaoResposta {
   geraPendencia Boolean @default(false)
 
   checklistOpcaoRespostaRelacao ChecklistOpcaoRespostaRelacao[]
+  ChecklistRespostas ChecklistResposta[]
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
