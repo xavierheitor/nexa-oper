@@ -49,8 +49,11 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('🔄 Conectando ao banco de dados...');
     return this.prisma
       .$connect()
-      .then(() => {
+      .then(async () => {
+        // Configurar timezone usando offset GMT-3 (Horário de Brasília)
+        await this.prisma.$executeRaw`SET time_zone = '-03:00'`;
         this.logger.log('✅ Conectado ao banco de dados com sucesso!');
+        this.logger.log('🌐 Timezone configurado para GMT-3 (Brasília)');
       })
       .catch((error: unknown) => {
         this.logger.error('❌ Erro ao conectar ao banco:', error);

@@ -94,6 +94,15 @@ class DbService {
     if (process.env.NODE_ENV !== 'production') {
       global.prisma = this.prisma;
     }
+
+    // Configura timezone quando o Prisma se conectar (offset GMT-3 para Brasília)
+    this.prisma.$connect().then(async () => {
+      try {
+        await this.prisma.$executeRaw`SET time_zone = '-03:00'`;
+      } catch (error) {
+        console.error('Erro ao configurar timezone:', error);
+      }
+    });
   }
 
   /**

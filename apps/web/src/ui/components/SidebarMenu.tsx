@@ -48,6 +48,7 @@ import {
   CalendarOutlined,
   CarOutlined,
   CheckCircleOutlined,
+  ClockCircleOutlined,
   DashboardOutlined,
   FileProtectOutlined,
   FormOutlined,
@@ -358,6 +359,11 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           label: <Link href='/dashboard/relatorios/escalas'>Escalas</Link>,
         },
       ],
+    },
+    {
+      key: '/dashboard/turnos',
+      icon: <ClockCircleOutlined />,
+      label: <Link href='/dashboard/turnos'>Turnos</Link>,
     },
     {
       key: '/dashboard/pma',
