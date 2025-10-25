@@ -11,13 +11,27 @@
 
 import React, { useEffect, useState } from 'react';
 import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space } from 'antd';
-import { ClockCircleOutlined, TeamOutlined, CarOutlined, EnvironmentOutlined, CalendarOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, CalendarOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { listTurnos } from '@/lib/actions/turno/list';
+import { Column } from '@ant-design/plots';
+import { getStatsByTipoEquipe } from '@/lib/actions/turno/getStatsByTipoEquipe';
+import { getStatsByHoraETipoEquipe } from '@/lib/actions/turno/getStatsByHoraETipoEquipe';
 
 const { Title } = Typography;
+
+interface DadosGraficoTipoEquipe {
+  tipo: string;
+  quantidade: number;
+}
+
+interface DadosGraficoHora {
+  hora: string;
+  tipo: string;
+  quantidade: number;
+}
 
 /**
  * Interface para dados do turno
@@ -46,6 +60,10 @@ interface TurnoData {
 export default function TurnosPage() {
   const [turnosAbertos, setTurnosAbertos] = useState<TurnoData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingGrafico, setLoadingGrafico] = useState(true);
+  const [loadingGraficoHora, setLoadingGraficoHora] = useState(true);
+  const [dadosGrafico, setDadosGrafico] = useState<DadosGraficoTipoEquipe[]>([]);
+  const [dadosGraficoHora, setDadosGraficoHora] = useState<DadosGraficoHora[]>([]);
   const [stats, setStats] = useState({
     total: 0,
     totalDiarios: 0,
@@ -63,7 +81,7 @@ export default function TurnosPage() {
           status: 'ABERTO',
         });
 
-        // Buscar todos os turnos do dia (início do dia até agora)
+        // Buscar todos os turnos do dia (que começaram hoje entre 00:00:00 e 23:59:59)
         const hoje = new Date();
         const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0);
         const fimHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 23, 59, 59);
@@ -82,11 +100,10 @@ export default function TurnosPage() {
           // Calcular estatísticas
           const porBase: Record<string, number> = {};
           turnos.forEach((turno: any) => {
-            const base = turno.equipe?.nome?.split('-')[0] || 'Não identificada';
+            const base = turno.equipeNome?.split('-')[0] || 'Não identificada';
             porBase[base] = (porBase[base] || 0) + 1;
           });
 
-          // Contar turnos diários
           const totalDiarios = resultTodos.success && resultTodos.data ? (resultTodos.data.data?.length || 0) : 0;
 
           setStats({
@@ -94,6 +111,9 @@ export default function TurnosPage() {
             totalDiarios,
             porBase,
           });
+        } else if (resultAbertos.redirectToLogin) {
+          window.location.href = '/login';
+          return;
         }
       } catch (error) {
         console.error('Erro ao carregar turnos:', error);
@@ -103,6 +123,40 @@ export default function TurnosPage() {
     };
 
     fetchData();
+
+    // Buscar dados do gráfico
+    const fetchGrafico = async () => {
+      setLoadingGrafico(true);
+      try {
+        const result = await getStatsByTipoEquipe();
+        if (result.success && result.data) {
+          setDadosGrafico(result.data);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados do gráfico:', error);
+      } finally {
+        setLoadingGrafico(false);
+      }
+    };
+
+    fetchGrafico();
+
+    // Buscar dados do gráfico por hora e tipo
+    const fetchGraficoHora = async () => {
+      setLoadingGraficoHora(true);
+      try {
+        const result = await getStatsByHoraETipoEquipe();
+        if (result.success && result.data) {
+          setDadosGraficoHora(result.data);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados do gráfico por hora:', error);
+      } finally {
+        setLoadingGraficoHora(false);
+      }
+    };
+
+    fetchGraficoHora();
   }, []);
 
   const columns: ColumnsType<TurnoData> = [
@@ -117,15 +171,20 @@ export default function TurnosPage() {
       key: 'veiculo',
       render: (_: unknown, record: TurnoData) => (
         <Space direction="vertical" size={0}>
-          <span><strong>{record.veiculo.placa}</strong></span>
-          <span style={{ fontSize: '12px', color: '#666' }}>{record.veiculo.modelo}</span>
+          <span><strong>{record.veiculoPlaca}</strong></span>
+          <span style={{ fontSize: '12px', color: '#666' }}>{record.veiculoModelo}</span>
         </Space>
       ),
     },
     {
       title: 'Equipe',
-      dataIndex: ['equipe', 'nome'],
+      dataIndex: 'equipeNome',
       key: 'equipe',
+    },
+    {
+      title: 'Tipo de Equipe',
+      dataIndex: 'tipoEquipeNome',
+      key: 'tipoEquipe',
     },
     {
       title: 'Eletricistas',
@@ -151,21 +210,17 @@ export default function TurnosPage() {
       },
     },
     {
-      title: 'KM Início',
-      dataIndex: 'kmInicio',
-      key: 'kmInicio',
-      width: 100,
-    },
-    {
       title: 'Status',
-      dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: (status: string) => (
-        <Tag color={status === 'ABERTO' ? 'green' : 'default'}>
-          {status}
-        </Tag>
-      ),
+      render: (_: unknown, record: TurnoData) => {
+        const status = record.dataFim ? 'FECHADO' : 'ABERTO';
+        return (
+          <Tag color={status === 'ABERTO' ? 'green' : 'default'}>
+            {status}
+          </Tag>
+        );
+      },
     },
   ];
 
@@ -183,7 +238,7 @@ export default function TurnosPage() {
 
       {/* Estatísticas */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12}>
           <Card>
             <Statistic
               title="Total de Turnos Abertos"
@@ -193,7 +248,7 @@ export default function TurnosPage() {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12}>
           <Card>
             <Statistic
               title="Turnos Diários"
@@ -203,19 +258,84 @@ export default function TurnosPage() {
             />
           </Card>
         </Col>
+      </Row>
 
-        {Object.entries(stats.porBase).map(([base, quantidade]) => (
-          <Col xs={24} sm={12} lg={6} key={base}>
-            <Card>
-              <Statistic
-                title={`${base}`}
-                value={quantidade}
-                prefix={<EnvironmentOutlined />}
-                valueStyle={{ color: '#52c41a' }}
+      {/* Gráficos */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} md={7}>
+          <Card title="Turnos Diários por Tipo de Equipe">
+            {loadingGrafico ? (
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <Spin size="large" />
+              </div>
+            ) : dadosGrafico.length === 0 ? (
+              <Empty description="Nenhum dado disponível" />
+            ) : (
+              <Column
+                data={dadosGrafico}
+                xField="tipo"
+                yField="quantidade"
+                height={300}
+                columnWidthRatio={0.1}
+                label={{
+                  text: 'quantidade',
+                  position: 'top',
+                  style: {
+                    fill: '#000',
+                    fontWeight: 'bold',
+                  },
+                }}
+                style={{
+                  fill: '#1890ff',
+                }}
+                xAxis={{
+                  label: {
+                    autoRotate: true,
+                    autoHide: false,
+                  },
+                }}
               />
-            </Card>
-          </Col>
-        ))}
+            )}
+          </Card>
+        </Col>
+        <Col xs={24} md={17}>
+          <Card title="Turnos Diários por Hora">
+            {loadingGraficoHora ? (
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <Spin size="large" />
+              </div>
+            ) : dadosGraficoHora.length === 0 ? (
+              <Empty description="Nenhum dado disponível" />
+            ) : (
+              <Column
+                data={dadosGraficoHora}
+                xField="hora"
+                yField="quantidade"
+                seriesField="tipo"
+                height={300}
+                isStack={true}
+                label={{
+                  text: 'quantidade',
+                  position: 'inside',
+                  style: {
+                    fill: '#fff',
+                    fontWeight: 'bold',
+                    fontSize: 10,
+                  },
+                }}
+                legend={{
+                  position: 'top',
+                }}
+                xAxis={{
+                  label: {
+                    autoRotate: true,
+                    autoHide: false,
+                  },
+                }}
+              />
+            )}
+          </Card>
+        </Col>
       </Row>
 
       {/* Tabela de Turnos */}
