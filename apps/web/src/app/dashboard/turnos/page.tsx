@@ -19,6 +19,7 @@ import { listTurnos } from '@/lib/actions/turno/list';
 import { Column } from '@ant-design/plots';
 import { getStatsByTipoEquipe } from '@/lib/actions/turno/getStatsByTipoEquipe';
 import { getStatsByHoraETipoEquipe } from '@/lib/actions/turno/getStatsByHoraETipoEquipe';
+import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
 
 const { Title } = Typography;
 
@@ -30,6 +31,11 @@ interface DadosGraficoTipoEquipe {
 interface DadosGraficoHora {
   hora: string;
   tipo: string;
+  quantidade: number;
+}
+
+interface DadosGraficoBase {
+  base: string;
   quantidade: number;
 }
 
@@ -46,6 +52,8 @@ interface TurnoData {
   veiculoModelo: string;
   equipeId: number;
   equipeNome: string;
+  tipoEquipeNome: string;
+  baseNome: string;
   dispositivo: string;
   kmInicio: number;
   kmFim?: number;
@@ -62,8 +70,10 @@ export default function TurnosPage() {
   const [loading, setLoading] = useState(true);
   const [loadingGrafico, setLoadingGrafico] = useState(true);
   const [loadingGraficoHora, setLoadingGraficoHora] = useState(true);
+  const [loadingGraficoBase, setLoadingGraficoBase] = useState(true);
   const [dadosGrafico, setDadosGrafico] = useState<DadosGraficoTipoEquipe[]>([]);
   const [dadosGraficoHora, setDadosGraficoHora] = useState<DadosGraficoHora[]>([]);
+  const [dadosGraficoBase, setDadosGraficoBase] = useState<DadosGraficoBase[]>([]);
   const [stats, setStats] = useState({
     total: 0,
     totalDiarios: 0,
@@ -157,6 +167,23 @@ export default function TurnosPage() {
     };
 
     fetchGraficoHora();
+
+    // Buscar dados do gráfico por base
+    const fetchGraficoBase = async () => {
+      setLoadingGraficoBase(true);
+      try {
+        const result = await getStatsByBase();
+        if (result.success && result.data) {
+          setDadosGraficoBase(result.data);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados do gráfico por base:', error);
+      } finally {
+        setLoadingGraficoBase(false);
+      }
+    };
+
+    fetchGraficoBase();
   }, []);
 
   const columns: ColumnsType<TurnoData> = [
@@ -185,6 +212,11 @@ export default function TurnosPage() {
       title: 'Tipo de Equipe',
       dataIndex: 'tipoEquipeNome',
       key: 'tipoEquipe',
+    },
+    {
+      title: 'Base',
+      dataIndex: 'baseNome',
+      key: 'base',
     },
     {
       title: 'Eletricistas',
@@ -241,7 +273,7 @@ export default function TurnosPage() {
         <Col xs={24} sm={12}>
           <Card>
             <Statistic
-              title="Total de Turnos Abertos"
+              title="Turnos Abertos no momento"
               value={stats.total}
               prefix={<ClockCircleOutlined />}
               valueStyle={{ color: '#1890ff' }}
@@ -251,7 +283,7 @@ export default function TurnosPage() {
         <Col xs={24} sm={12}>
           <Card>
             <Statistic
-              title="Turnos Diários"
+              title="Aberturas totais do dia"
               value={stats.totalDiarios}
               prefix={<CalendarOutlined />}
               valueStyle={{ color: '#722ed1' }}
@@ -263,7 +295,7 @@ export default function TurnosPage() {
       {/* Gráficos */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} md={7}>
-          <Card title="Turnos Diários por Tipo de Equipe">
+          <Card title="Turnos por Tipo de Equipe">
             {loadingGrafico ? (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
                 <Spin size="large" />
@@ -294,6 +326,15 @@ export default function TurnosPage() {
                     autoHide: false,
                   },
                 }}
+                    yAxis={{
+                      tickCount: 5,
+                      label: {
+                        formatter: (text: string) => {
+                          const num = parseFloat(text);
+                          return Number.isInteger(num) ? num.toString() : '';
+                        },
+                      },
+                    }}
               />
             )}
           </Card>
@@ -330,6 +371,64 @@ export default function TurnosPage() {
                   label: {
                     autoRotate: true,
                     autoHide: false,
+                  },
+                }}
+                yAxis={{
+                  tickCount: 5,
+                  label: {
+                    formatter: (text: string) => {
+                      const num = parseFloat(text);
+                      return Number.isInteger(num) ? num.toString() : '';
+                    },
+                  },
+                }}
+              />
+            )}
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Gráfico de Turnos por Base */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24}>
+          <Card title="Turnos Diários por Base">
+            {loadingGraficoBase ? (
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <Spin size="large" />
+              </div>
+            ) : dadosGraficoBase.length === 0 ? (
+              <Empty description="Nenhum dado disponível" />
+            ) : (
+              <Column
+                data={dadosGraficoBase}
+                xField="base"
+                yField="quantidade"
+                height={300}
+                columnWidthRatio={0.3}
+                label={{
+                  text: 'quantidade',
+                  position: 'top',
+                  style: {
+                    fill: '#000',
+                    fontWeight: 'bold',
+                  },
+                }}
+                style={{
+                  fill: '#52c41a',
+                }}
+                xAxis={{
+                  label: {
+                    autoRotate: true,
+                    autoHide: false,
+                  },
+                }}
+                yAxis={{
+                  tickCount: 5,
+                  label: {
+                    formatter: (text: string) => {
+                      const num = parseFloat(text);
+                      return Number.isInteger(num) ? num.toString() : '';
+                    },
                   },
                 }}
               />

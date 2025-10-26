@@ -277,6 +277,16 @@ export class TurnoRepository extends AbstractCrudRepository<Turno, TurnoFilter> 
         equipe: {
           include: {
             tipoEquipe: true,
+            EquipeBaseHistorico: {
+              where: {
+                dataFim: null,
+                deletedAt: null,
+              },
+              include: {
+                base: true,
+              },
+              take: 1,
+            },
           },
         },
         TurnoEletricistas: {
@@ -295,6 +305,7 @@ export class TurnoRepository extends AbstractCrudRepository<Turno, TurnoFilter> 
       veiculoModelo: turno.veiculo?.modelo,
       equipeNome: turno.equipe?.nome,
       tipoEquipeNome: turno.equipe?.tipoEquipe?.nome,
+      baseNome: turno.equipe?.EquipeBaseHistorico?.[0]?.base?.nome || 'Sem base',
       eletricistas: turno.TurnoEletricistas?.map((te: any) => ({
         id: te.eletricista.id,
         nome: te.eletricista.nome,
