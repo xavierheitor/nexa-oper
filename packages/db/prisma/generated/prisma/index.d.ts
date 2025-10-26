@@ -267,6 +267,16 @@ export type HorarioAberturaCatalogo = $Result.DefaultSelection<Prisma.$HorarioAb
  */
 export type EquipeTurnoHistorico = $Result.DefaultSelection<Prisma.$EquipeTurnoHistoricoPayload>
 /**
+ * Model MobilePhoto
+ * 
+ */
+export type MobilePhoto = $Result.DefaultSelection<Prisma.$MobilePhotoPayload>
+/**
+ * Model MobileLocation
+ * 
+ */
+export type MobileLocation = $Result.DefaultSelection<Prisma.$MobileLocationPayload>
+/**
  * Model Supervisor
  * 
  */
@@ -1051,6 +1061,26 @@ export class PrismaClient<
   get equipeTurnoHistorico(): Prisma.EquipeTurnoHistoricoDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.mobilePhoto`: Exposes CRUD operations for the **MobilePhoto** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more MobilePhotos
+    * const mobilePhotos = await prisma.mobilePhoto.findMany()
+    * ```
+    */
+  get mobilePhoto(): Prisma.MobilePhotoDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.mobileLocation`: Exposes CRUD operations for the **MobileLocation** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more MobileLocations
+    * const mobileLocations = await prisma.mobileLocation.findMany()
+    * ```
+    */
+  get mobileLocation(): Prisma.MobileLocationDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.supervisor`: Exposes CRUD operations for the **Supervisor** model.
     * Example usage:
     * ```ts
@@ -1616,6 +1646,8 @@ export namespace Prisma {
     EquipeHorarioVigencia: 'EquipeHorarioVigencia',
     HorarioAberturaCatalogo: 'HorarioAberturaCatalogo',
     EquipeTurnoHistorico: 'EquipeTurnoHistorico',
+    MobilePhoto: 'MobilePhoto',
+    MobileLocation: 'MobileLocation',
     Supervisor: 'Supervisor',
     Test: 'Test',
     Turno: 'Turno',
@@ -1642,7 +1674,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "apr" | "aprPergunta" | "aprPerguntaRelacao" | "aprOpcaoResposta" | "aprOpcaoRespostaRelacao" | "aprTipoAtividadeRelacao" | "tipoAtividade" | "mobileUser" | "mobileSession" | "mobileToken" | "user" | "account" | "session" | "verificationToken" | "role" | "roleUser" | "base" | "checklistPreenchido" | "checklistResposta" | "checklistPendencia" | "checklistRespostaFoto" | "tipoChecklist" | "checklist" | "checklistPergunta" | "checklistPerguntaRelacao" | "checklistOpcaoResposta" | "checklistOpcaoRespostaRelacao" | "checklistTipoVeiculoRelacao" | "checklistTipoEquipeRelacao" | "contrato" | "mobileContratoPermissao" | "eletricistaBaseHistorico" | "eletricista" | "cargo" | "equipeBaseHistorico" | "tipoEquipe" | "equipe" | "equipeSupervisor" | "tipoEscala" | "tipoEscalaCicloPosicao" | "tipoEscalaSemanaMascara" | "escalaEquipePeriodo" | "slotEscala" | "eventoCobertura" | "equipeHorarioVigencia" | "horarioAberturaCatalogo" | "equipeTurnoHistorico" | "supervisor" | "test" | "turno" | "turnoEletricista" | "veiculoBaseHistorico" | "tipoVeiculo" | "veiculo" | "veiculoOdometro"
+      modelProps: "apr" | "aprPergunta" | "aprPerguntaRelacao" | "aprOpcaoResposta" | "aprOpcaoRespostaRelacao" | "aprTipoAtividadeRelacao" | "tipoAtividade" | "mobileUser" | "mobileSession" | "mobileToken" | "user" | "account" | "session" | "verificationToken" | "role" | "roleUser" | "base" | "checklistPreenchido" | "checklistResposta" | "checklistPendencia" | "checklistRespostaFoto" | "tipoChecklist" | "checklist" | "checklistPergunta" | "checklistPerguntaRelacao" | "checklistOpcaoResposta" | "checklistOpcaoRespostaRelacao" | "checklistTipoVeiculoRelacao" | "checklistTipoEquipeRelacao" | "contrato" | "mobileContratoPermissao" | "eletricistaBaseHistorico" | "eletricista" | "cargo" | "equipeBaseHistorico" | "tipoEquipe" | "equipe" | "equipeSupervisor" | "tipoEscala" | "tipoEscalaCicloPosicao" | "tipoEscalaSemanaMascara" | "escalaEquipePeriodo" | "slotEscala" | "eventoCobertura" | "equipeHorarioVigencia" | "horarioAberturaCatalogo" | "equipeTurnoHistorico" | "mobilePhoto" | "mobileLocation" | "supervisor" | "test" | "turno" | "turnoEletricista" | "veiculoBaseHistorico" | "tipoVeiculo" | "veiculo" | "veiculoOdometro"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4748,6 +4780,138 @@ export namespace Prisma {
           }
         }
       }
+      MobilePhoto: {
+        payload: Prisma.$MobilePhotoPayload<ExtArgs>
+        fields: Prisma.MobilePhotoFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MobilePhotoFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobilePhotoPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MobilePhotoFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobilePhotoPayload>
+          }
+          findFirst: {
+            args: Prisma.MobilePhotoFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobilePhotoPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MobilePhotoFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobilePhotoPayload>
+          }
+          findMany: {
+            args: Prisma.MobilePhotoFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobilePhotoPayload>[]
+          }
+          create: {
+            args: Prisma.MobilePhotoCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobilePhotoPayload>
+          }
+          createMany: {
+            args: Prisma.MobilePhotoCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.MobilePhotoDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobilePhotoPayload>
+          }
+          update: {
+            args: Prisma.MobilePhotoUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobilePhotoPayload>
+          }
+          deleteMany: {
+            args: Prisma.MobilePhotoDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MobilePhotoUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.MobilePhotoUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobilePhotoPayload>
+          }
+          aggregate: {
+            args: Prisma.MobilePhotoAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMobilePhoto>
+          }
+          groupBy: {
+            args: Prisma.MobilePhotoGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MobilePhotoGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MobilePhotoCountArgs<ExtArgs>
+            result: $Utils.Optional<MobilePhotoCountAggregateOutputType> | number
+          }
+        }
+      }
+      MobileLocation: {
+        payload: Prisma.$MobileLocationPayload<ExtArgs>
+        fields: Prisma.MobileLocationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MobileLocationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobileLocationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MobileLocationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobileLocationPayload>
+          }
+          findFirst: {
+            args: Prisma.MobileLocationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobileLocationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MobileLocationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobileLocationPayload>
+          }
+          findMany: {
+            args: Prisma.MobileLocationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobileLocationPayload>[]
+          }
+          create: {
+            args: Prisma.MobileLocationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobileLocationPayload>
+          }
+          createMany: {
+            args: Prisma.MobileLocationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.MobileLocationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobileLocationPayload>
+          }
+          update: {
+            args: Prisma.MobileLocationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobileLocationPayload>
+          }
+          deleteMany: {
+            args: Prisma.MobileLocationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MobileLocationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.MobileLocationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MobileLocationPayload>
+          }
+          aggregate: {
+            args: Prisma.MobileLocationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMobileLocation>
+          }
+          groupBy: {
+            args: Prisma.MobileLocationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MobileLocationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MobileLocationCountArgs<ExtArgs>
+            result: $Utils.Optional<MobileLocationCountAggregateOutputType> | number
+          }
+        }
+      }
       Supervisor: {
         payload: Prisma.$SupervisorPayload<ExtArgs>
         fields: Prisma.SupervisorFieldRefs
@@ -5415,6 +5579,8 @@ export namespace Prisma {
     equipeHorarioVigencia?: EquipeHorarioVigenciaOmit
     horarioAberturaCatalogo?: HorarioAberturaCatalogoOmit
     equipeTurnoHistorico?: EquipeTurnoHistoricoOmit
+    mobilePhoto?: MobilePhotoOmit
+    mobileLocation?: MobileLocationOmit
     supervisor?: SupervisorOmit
     test?: TestOmit
     turno?: TurnoOmit
@@ -56607,6 +56773,2209 @@ export namespace Prisma {
 
 
   /**
+   * Model MobilePhoto
+   */
+
+  export type AggregateMobilePhoto = {
+    _count: MobilePhotoCountAggregateOutputType | null
+    _avg: MobilePhotoAvgAggregateOutputType | null
+    _sum: MobilePhotoSumAggregateOutputType | null
+    _min: MobilePhotoMinAggregateOutputType | null
+    _max: MobilePhotoMaxAggregateOutputType | null
+  }
+
+  export type MobilePhotoAvgAggregateOutputType = {
+    id: number | null
+    turnoId: number | null
+    checklistPreenchidoId: number | null
+    checklistRespostaId: number | null
+    sequenciaAssinatura: number | null
+    servicoId: number | null
+    fileSize: number | null
+  }
+
+  export type MobilePhotoSumAggregateOutputType = {
+    id: number | null
+    turnoId: number | null
+    checklistPreenchidoId: number | null
+    checklistRespostaId: number | null
+    sequenciaAssinatura: number | null
+    servicoId: number | null
+    fileSize: number | null
+  }
+
+  export type MobilePhotoMinAggregateOutputType = {
+    id: number | null
+    turnoId: number | null
+    tipo: string | null
+    checklistPreenchidoId: number | null
+    checklistRespostaId: number | null
+    sequenciaAssinatura: number | null
+    servicoId: number | null
+    fileName: string | null
+    mimeType: string | null
+    fileSize: number | null
+    checksum: string | null
+    storagePath: string | null
+    url: string | null
+    capturedAt: Date | null
+    createdAt: Date | null
+    createdBy: string | null
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+  }
+
+  export type MobilePhotoMaxAggregateOutputType = {
+    id: number | null
+    turnoId: number | null
+    tipo: string | null
+    checklistPreenchidoId: number | null
+    checklistRespostaId: number | null
+    sequenciaAssinatura: number | null
+    servicoId: number | null
+    fileName: string | null
+    mimeType: string | null
+    fileSize: number | null
+    checksum: string | null
+    storagePath: string | null
+    url: string | null
+    capturedAt: Date | null
+    createdAt: Date | null
+    createdBy: string | null
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+  }
+
+  export type MobilePhotoCountAggregateOutputType = {
+    id: number
+    turnoId: number
+    tipo: number
+    checklistPreenchidoId: number
+    checklistRespostaId: number
+    sequenciaAssinatura: number
+    servicoId: number
+    fileName: number
+    mimeType: number
+    fileSize: number
+    checksum: number
+    storagePath: number
+    url: number
+    capturedAt: number
+    createdAt: number
+    createdBy: number
+    updatedAt: number
+    updatedBy: number
+    deletedAt: number
+    deletedBy: number
+    _all: number
+  }
+
+
+  export type MobilePhotoAvgAggregateInputType = {
+    id?: true
+    turnoId?: true
+    checklistPreenchidoId?: true
+    checklistRespostaId?: true
+    sequenciaAssinatura?: true
+    servicoId?: true
+    fileSize?: true
+  }
+
+  export type MobilePhotoSumAggregateInputType = {
+    id?: true
+    turnoId?: true
+    checklistPreenchidoId?: true
+    checklistRespostaId?: true
+    sequenciaAssinatura?: true
+    servicoId?: true
+    fileSize?: true
+  }
+
+  export type MobilePhotoMinAggregateInputType = {
+    id?: true
+    turnoId?: true
+    tipo?: true
+    checklistPreenchidoId?: true
+    checklistRespostaId?: true
+    sequenciaAssinatura?: true
+    servicoId?: true
+    fileName?: true
+    mimeType?: true
+    fileSize?: true
+    checksum?: true
+    storagePath?: true
+    url?: true
+    capturedAt?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+  }
+
+  export type MobilePhotoMaxAggregateInputType = {
+    id?: true
+    turnoId?: true
+    tipo?: true
+    checklistPreenchidoId?: true
+    checklistRespostaId?: true
+    sequenciaAssinatura?: true
+    servicoId?: true
+    fileName?: true
+    mimeType?: true
+    fileSize?: true
+    checksum?: true
+    storagePath?: true
+    url?: true
+    capturedAt?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+  }
+
+  export type MobilePhotoCountAggregateInputType = {
+    id?: true
+    turnoId?: true
+    tipo?: true
+    checklistPreenchidoId?: true
+    checklistRespostaId?: true
+    sequenciaAssinatura?: true
+    servicoId?: true
+    fileName?: true
+    mimeType?: true
+    fileSize?: true
+    checksum?: true
+    storagePath?: true
+    url?: true
+    capturedAt?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+    _all?: true
+  }
+
+  export type MobilePhotoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MobilePhoto to aggregate.
+     */
+    where?: MobilePhotoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MobilePhotos to fetch.
+     */
+    orderBy?: MobilePhotoOrderByWithRelationInput | MobilePhotoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MobilePhotoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MobilePhotos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MobilePhotos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned MobilePhotos
+    **/
+    _count?: true | MobilePhotoCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: MobilePhotoAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: MobilePhotoSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MobilePhotoMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MobilePhotoMaxAggregateInputType
+  }
+
+  export type GetMobilePhotoAggregateType<T extends MobilePhotoAggregateArgs> = {
+        [P in keyof T & keyof AggregateMobilePhoto]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMobilePhoto[P]>
+      : GetScalarType<T[P], AggregateMobilePhoto[P]>
+  }
+
+
+
+
+  export type MobilePhotoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MobilePhotoWhereInput
+    orderBy?: MobilePhotoOrderByWithAggregationInput | MobilePhotoOrderByWithAggregationInput[]
+    by: MobilePhotoScalarFieldEnum[] | MobilePhotoScalarFieldEnum
+    having?: MobilePhotoScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MobilePhotoCountAggregateInputType | true
+    _avg?: MobilePhotoAvgAggregateInputType
+    _sum?: MobilePhotoSumAggregateInputType
+    _min?: MobilePhotoMinAggregateInputType
+    _max?: MobilePhotoMaxAggregateInputType
+  }
+
+  export type MobilePhotoGroupByOutputType = {
+    id: number
+    turnoId: number
+    tipo: string
+    checklistPreenchidoId: number | null
+    checklistRespostaId: number | null
+    sequenciaAssinatura: number | null
+    servicoId: number | null
+    fileName: string
+    mimeType: string
+    fileSize: number
+    checksum: string
+    storagePath: string
+    url: string
+    capturedAt: Date | null
+    createdAt: Date
+    createdBy: string
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+    _count: MobilePhotoCountAggregateOutputType | null
+    _avg: MobilePhotoAvgAggregateOutputType | null
+    _sum: MobilePhotoSumAggregateOutputType | null
+    _min: MobilePhotoMinAggregateOutputType | null
+    _max: MobilePhotoMaxAggregateOutputType | null
+  }
+
+  type GetMobilePhotoGroupByPayload<T extends MobilePhotoGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MobilePhotoGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MobilePhotoGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MobilePhotoGroupByOutputType[P]>
+            : GetScalarType<T[P], MobilePhotoGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MobilePhotoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    turnoId?: boolean
+    tipo?: boolean
+    checklistPreenchidoId?: boolean
+    checklistRespostaId?: boolean
+    sequenciaAssinatura?: boolean
+    servicoId?: boolean
+    fileName?: boolean
+    mimeType?: boolean
+    fileSize?: boolean
+    checksum?: boolean
+    storagePath?: boolean
+    url?: boolean
+    capturedAt?: boolean
+    createdAt?: boolean
+    createdBy?: boolean
+    updatedAt?: boolean
+    updatedBy?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+  }, ExtArgs["result"]["mobilePhoto"]>
+
+
+
+  export type MobilePhotoSelectScalar = {
+    id?: boolean
+    turnoId?: boolean
+    tipo?: boolean
+    checklistPreenchidoId?: boolean
+    checklistRespostaId?: boolean
+    sequenciaAssinatura?: boolean
+    servicoId?: boolean
+    fileName?: boolean
+    mimeType?: boolean
+    fileSize?: boolean
+    checksum?: boolean
+    storagePath?: boolean
+    url?: boolean
+    capturedAt?: boolean
+    createdAt?: boolean
+    createdBy?: boolean
+    updatedAt?: boolean
+    updatedBy?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+  }
+
+  export type MobilePhotoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "turnoId" | "tipo" | "checklistPreenchidoId" | "checklistRespostaId" | "sequenciaAssinatura" | "servicoId" | "fileName" | "mimeType" | "fileSize" | "checksum" | "storagePath" | "url" | "capturedAt" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["mobilePhoto"]>
+
+  export type $MobilePhotoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MobilePhoto"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      turnoId: number
+      tipo: string
+      checklistPreenchidoId: number | null
+      checklistRespostaId: number | null
+      sequenciaAssinatura: number | null
+      servicoId: number | null
+      fileName: string
+      mimeType: string
+      fileSize: number
+      checksum: string
+      storagePath: string
+      url: string
+      capturedAt: Date | null
+      createdAt: Date
+      createdBy: string
+      updatedAt: Date | null
+      updatedBy: string | null
+      deletedAt: Date | null
+      deletedBy: string | null
+    }, ExtArgs["result"]["mobilePhoto"]>
+    composites: {}
+  }
+
+  type MobilePhotoGetPayload<S extends boolean | null | undefined | MobilePhotoDefaultArgs> = $Result.GetResult<Prisma.$MobilePhotoPayload, S>
+
+  type MobilePhotoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MobilePhotoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MobilePhotoCountAggregateInputType | true
+    }
+
+  export interface MobilePhotoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MobilePhoto'], meta: { name: 'MobilePhoto' } }
+    /**
+     * Find zero or one MobilePhoto that matches the filter.
+     * @param {MobilePhotoFindUniqueArgs} args - Arguments to find a MobilePhoto
+     * @example
+     * // Get one MobilePhoto
+     * const mobilePhoto = await prisma.mobilePhoto.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MobilePhotoFindUniqueArgs>(args: SelectSubset<T, MobilePhotoFindUniqueArgs<ExtArgs>>): Prisma__MobilePhotoClient<$Result.GetResult<Prisma.$MobilePhotoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one MobilePhoto that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MobilePhotoFindUniqueOrThrowArgs} args - Arguments to find a MobilePhoto
+     * @example
+     * // Get one MobilePhoto
+     * const mobilePhoto = await prisma.mobilePhoto.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MobilePhotoFindUniqueOrThrowArgs>(args: SelectSubset<T, MobilePhotoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MobilePhotoClient<$Result.GetResult<Prisma.$MobilePhotoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MobilePhoto that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MobilePhotoFindFirstArgs} args - Arguments to find a MobilePhoto
+     * @example
+     * // Get one MobilePhoto
+     * const mobilePhoto = await prisma.mobilePhoto.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MobilePhotoFindFirstArgs>(args?: SelectSubset<T, MobilePhotoFindFirstArgs<ExtArgs>>): Prisma__MobilePhotoClient<$Result.GetResult<Prisma.$MobilePhotoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MobilePhoto that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MobilePhotoFindFirstOrThrowArgs} args - Arguments to find a MobilePhoto
+     * @example
+     * // Get one MobilePhoto
+     * const mobilePhoto = await prisma.mobilePhoto.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MobilePhotoFindFirstOrThrowArgs>(args?: SelectSubset<T, MobilePhotoFindFirstOrThrowArgs<ExtArgs>>): Prisma__MobilePhotoClient<$Result.GetResult<Prisma.$MobilePhotoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more MobilePhotos that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MobilePhotoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all MobilePhotos
+     * const mobilePhotos = await prisma.mobilePhoto.findMany()
+     * 
+     * // Get first 10 MobilePhotos
+     * const mobilePhotos = await prisma.mobilePhoto.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const mobilePhotoWithIdOnly = await prisma.mobilePhoto.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MobilePhotoFindManyArgs>(args?: SelectSubset<T, MobilePhotoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MobilePhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a MobilePhoto.
+     * @param {MobilePhotoCreateArgs} args - Arguments to create a MobilePhoto.
+     * @example
+     * // Create one MobilePhoto
+     * const MobilePhoto = await prisma.mobilePhoto.create({
+     *   data: {
+     *     // ... data to create a MobilePhoto
+     *   }
+     * })
+     * 
+     */
+    create<T extends MobilePhotoCreateArgs>(args: SelectSubset<T, MobilePhotoCreateArgs<ExtArgs>>): Prisma__MobilePhotoClient<$Result.GetResult<Prisma.$MobilePhotoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many MobilePhotos.
+     * @param {MobilePhotoCreateManyArgs} args - Arguments to create many MobilePhotos.
+     * @example
+     * // Create many MobilePhotos
+     * const mobilePhoto = await prisma.mobilePhoto.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MobilePhotoCreateManyArgs>(args?: SelectSubset<T, MobilePhotoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a MobilePhoto.
+     * @param {MobilePhotoDeleteArgs} args - Arguments to delete one MobilePhoto.
+     * @example
+     * // Delete one MobilePhoto
+     * const MobilePhoto = await prisma.mobilePhoto.delete({
+     *   where: {
+     *     // ... filter to delete one MobilePhoto
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MobilePhotoDeleteArgs>(args: SelectSubset<T, MobilePhotoDeleteArgs<ExtArgs>>): Prisma__MobilePhotoClient<$Result.GetResult<Prisma.$MobilePhotoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one MobilePhoto.
+     * @param {MobilePhotoUpdateArgs} args - Arguments to update one MobilePhoto.
+     * @example
+     * // Update one MobilePhoto
+     * const mobilePhoto = await prisma.mobilePhoto.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MobilePhotoUpdateArgs>(args: SelectSubset<T, MobilePhotoUpdateArgs<ExtArgs>>): Prisma__MobilePhotoClient<$Result.GetResult<Prisma.$MobilePhotoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more MobilePhotos.
+     * @param {MobilePhotoDeleteManyArgs} args - Arguments to filter MobilePhotos to delete.
+     * @example
+     * // Delete a few MobilePhotos
+     * const { count } = await prisma.mobilePhoto.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MobilePhotoDeleteManyArgs>(args?: SelectSubset<T, MobilePhotoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MobilePhotos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MobilePhotoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many MobilePhotos
+     * const mobilePhoto = await prisma.mobilePhoto.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MobilePhotoUpdateManyArgs>(args: SelectSubset<T, MobilePhotoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one MobilePhoto.
+     * @param {MobilePhotoUpsertArgs} args - Arguments to update or create a MobilePhoto.
+     * @example
+     * // Update or create a MobilePhoto
+     * const mobilePhoto = await prisma.mobilePhoto.upsert({
+     *   create: {
+     *     // ... data to create a MobilePhoto
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the MobilePhoto we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MobilePhotoUpsertArgs>(args: SelectSubset<T, MobilePhotoUpsertArgs<ExtArgs>>): Prisma__MobilePhotoClient<$Result.GetResult<Prisma.$MobilePhotoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of MobilePhotos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MobilePhotoCountArgs} args - Arguments to filter MobilePhotos to count.
+     * @example
+     * // Count the number of MobilePhotos
+     * const count = await prisma.mobilePhoto.count({
+     *   where: {
+     *     // ... the filter for the MobilePhotos we want to count
+     *   }
+     * })
+    **/
+    count<T extends MobilePhotoCountArgs>(
+      args?: Subset<T, MobilePhotoCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MobilePhotoCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a MobilePhoto.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MobilePhotoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MobilePhotoAggregateArgs>(args: Subset<T, MobilePhotoAggregateArgs>): Prisma.PrismaPromise<GetMobilePhotoAggregateType<T>>
+
+    /**
+     * Group by MobilePhoto.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MobilePhotoGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MobilePhotoGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MobilePhotoGroupByArgs['orderBy'] }
+        : { orderBy?: MobilePhotoGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MobilePhotoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMobilePhotoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the MobilePhoto model
+   */
+  readonly fields: MobilePhotoFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for MobilePhoto.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MobilePhotoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the MobilePhoto model
+   */
+  interface MobilePhotoFieldRefs {
+    readonly id: FieldRef<"MobilePhoto", 'Int'>
+    readonly turnoId: FieldRef<"MobilePhoto", 'Int'>
+    readonly tipo: FieldRef<"MobilePhoto", 'String'>
+    readonly checklistPreenchidoId: FieldRef<"MobilePhoto", 'Int'>
+    readonly checklistRespostaId: FieldRef<"MobilePhoto", 'Int'>
+    readonly sequenciaAssinatura: FieldRef<"MobilePhoto", 'Int'>
+    readonly servicoId: FieldRef<"MobilePhoto", 'Int'>
+    readonly fileName: FieldRef<"MobilePhoto", 'String'>
+    readonly mimeType: FieldRef<"MobilePhoto", 'String'>
+    readonly fileSize: FieldRef<"MobilePhoto", 'Int'>
+    readonly checksum: FieldRef<"MobilePhoto", 'String'>
+    readonly storagePath: FieldRef<"MobilePhoto", 'String'>
+    readonly url: FieldRef<"MobilePhoto", 'String'>
+    readonly capturedAt: FieldRef<"MobilePhoto", 'DateTime'>
+    readonly createdAt: FieldRef<"MobilePhoto", 'DateTime'>
+    readonly createdBy: FieldRef<"MobilePhoto", 'String'>
+    readonly updatedAt: FieldRef<"MobilePhoto", 'DateTime'>
+    readonly updatedBy: FieldRef<"MobilePhoto", 'String'>
+    readonly deletedAt: FieldRef<"MobilePhoto", 'DateTime'>
+    readonly deletedBy: FieldRef<"MobilePhoto", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * MobilePhoto findUnique
+   */
+  export type MobilePhotoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobilePhoto
+     */
+    select?: MobilePhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobilePhoto
+     */
+    omit?: MobilePhotoOmit<ExtArgs> | null
+    /**
+     * Filter, which MobilePhoto to fetch.
+     */
+    where: MobilePhotoWhereUniqueInput
+  }
+
+  /**
+   * MobilePhoto findUniqueOrThrow
+   */
+  export type MobilePhotoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobilePhoto
+     */
+    select?: MobilePhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobilePhoto
+     */
+    omit?: MobilePhotoOmit<ExtArgs> | null
+    /**
+     * Filter, which MobilePhoto to fetch.
+     */
+    where: MobilePhotoWhereUniqueInput
+  }
+
+  /**
+   * MobilePhoto findFirst
+   */
+  export type MobilePhotoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobilePhoto
+     */
+    select?: MobilePhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobilePhoto
+     */
+    omit?: MobilePhotoOmit<ExtArgs> | null
+    /**
+     * Filter, which MobilePhoto to fetch.
+     */
+    where?: MobilePhotoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MobilePhotos to fetch.
+     */
+    orderBy?: MobilePhotoOrderByWithRelationInput | MobilePhotoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MobilePhotos.
+     */
+    cursor?: MobilePhotoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MobilePhotos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MobilePhotos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MobilePhotos.
+     */
+    distinct?: MobilePhotoScalarFieldEnum | MobilePhotoScalarFieldEnum[]
+  }
+
+  /**
+   * MobilePhoto findFirstOrThrow
+   */
+  export type MobilePhotoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobilePhoto
+     */
+    select?: MobilePhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobilePhoto
+     */
+    omit?: MobilePhotoOmit<ExtArgs> | null
+    /**
+     * Filter, which MobilePhoto to fetch.
+     */
+    where?: MobilePhotoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MobilePhotos to fetch.
+     */
+    orderBy?: MobilePhotoOrderByWithRelationInput | MobilePhotoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MobilePhotos.
+     */
+    cursor?: MobilePhotoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MobilePhotos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MobilePhotos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MobilePhotos.
+     */
+    distinct?: MobilePhotoScalarFieldEnum | MobilePhotoScalarFieldEnum[]
+  }
+
+  /**
+   * MobilePhoto findMany
+   */
+  export type MobilePhotoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobilePhoto
+     */
+    select?: MobilePhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobilePhoto
+     */
+    omit?: MobilePhotoOmit<ExtArgs> | null
+    /**
+     * Filter, which MobilePhotos to fetch.
+     */
+    where?: MobilePhotoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MobilePhotos to fetch.
+     */
+    orderBy?: MobilePhotoOrderByWithRelationInput | MobilePhotoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing MobilePhotos.
+     */
+    cursor?: MobilePhotoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MobilePhotos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MobilePhotos.
+     */
+    skip?: number
+    distinct?: MobilePhotoScalarFieldEnum | MobilePhotoScalarFieldEnum[]
+  }
+
+  /**
+   * MobilePhoto create
+   */
+  export type MobilePhotoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobilePhoto
+     */
+    select?: MobilePhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobilePhoto
+     */
+    omit?: MobilePhotoOmit<ExtArgs> | null
+    /**
+     * The data needed to create a MobilePhoto.
+     */
+    data: XOR<MobilePhotoCreateInput, MobilePhotoUncheckedCreateInput>
+  }
+
+  /**
+   * MobilePhoto createMany
+   */
+  export type MobilePhotoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many MobilePhotos.
+     */
+    data: MobilePhotoCreateManyInput | MobilePhotoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MobilePhoto update
+   */
+  export type MobilePhotoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobilePhoto
+     */
+    select?: MobilePhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobilePhoto
+     */
+    omit?: MobilePhotoOmit<ExtArgs> | null
+    /**
+     * The data needed to update a MobilePhoto.
+     */
+    data: XOR<MobilePhotoUpdateInput, MobilePhotoUncheckedUpdateInput>
+    /**
+     * Choose, which MobilePhoto to update.
+     */
+    where: MobilePhotoWhereUniqueInput
+  }
+
+  /**
+   * MobilePhoto updateMany
+   */
+  export type MobilePhotoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update MobilePhotos.
+     */
+    data: XOR<MobilePhotoUpdateManyMutationInput, MobilePhotoUncheckedUpdateManyInput>
+    /**
+     * Filter which MobilePhotos to update
+     */
+    where?: MobilePhotoWhereInput
+    /**
+     * Limit how many MobilePhotos to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MobilePhoto upsert
+   */
+  export type MobilePhotoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobilePhoto
+     */
+    select?: MobilePhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobilePhoto
+     */
+    omit?: MobilePhotoOmit<ExtArgs> | null
+    /**
+     * The filter to search for the MobilePhoto to update in case it exists.
+     */
+    where: MobilePhotoWhereUniqueInput
+    /**
+     * In case the MobilePhoto found by the `where` argument doesn't exist, create a new MobilePhoto with this data.
+     */
+    create: XOR<MobilePhotoCreateInput, MobilePhotoUncheckedCreateInput>
+    /**
+     * In case the MobilePhoto was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MobilePhotoUpdateInput, MobilePhotoUncheckedUpdateInput>
+  }
+
+  /**
+   * MobilePhoto delete
+   */
+  export type MobilePhotoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobilePhoto
+     */
+    select?: MobilePhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobilePhoto
+     */
+    omit?: MobilePhotoOmit<ExtArgs> | null
+    /**
+     * Filter which MobilePhoto to delete.
+     */
+    where: MobilePhotoWhereUniqueInput
+  }
+
+  /**
+   * MobilePhoto deleteMany
+   */
+  export type MobilePhotoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MobilePhotos to delete
+     */
+    where?: MobilePhotoWhereInput
+    /**
+     * Limit how many MobilePhotos to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * MobilePhoto without action
+   */
+  export type MobilePhotoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobilePhoto
+     */
+    select?: MobilePhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobilePhoto
+     */
+    omit?: MobilePhotoOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model MobileLocation
+   */
+
+  export type AggregateMobileLocation = {
+    _count: MobileLocationCountAggregateOutputType | null
+    _avg: MobileLocationAvgAggregateOutputType | null
+    _sum: MobileLocationSumAggregateOutputType | null
+    _min: MobileLocationMinAggregateOutputType | null
+    _max: MobileLocationMaxAggregateOutputType | null
+  }
+
+  export type MobileLocationAvgAggregateOutputType = {
+    id: number | null
+    turnoId: number | null
+    veiculoRemoteId: number | null
+    equipeRemoteId: number | null
+    latitude: number | null
+    longitude: number | null
+    accuracy: number | null
+    batteryLevel: number | null
+  }
+
+  export type MobileLocationSumAggregateOutputType = {
+    id: number | null
+    turnoId: number | null
+    veiculoRemoteId: number | null
+    equipeRemoteId: number | null
+    latitude: number | null
+    longitude: number | null
+    accuracy: number | null
+    batteryLevel: number | null
+  }
+
+  export type MobileLocationMinAggregateOutputType = {
+    id: number | null
+    turnoId: number | null
+    veiculoRemoteId: number | null
+    equipeRemoteId: number | null
+    latitude: number | null
+    longitude: number | null
+    accuracy: number | null
+    provider: string | null
+    batteryLevel: number | null
+    tagType: string | null
+    tagDetail: string | null
+    capturedAt: Date | null
+    signature: string | null
+    createdAt: Date | null
+    createdBy: string | null
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+  }
+
+  export type MobileLocationMaxAggregateOutputType = {
+    id: number | null
+    turnoId: number | null
+    veiculoRemoteId: number | null
+    equipeRemoteId: number | null
+    latitude: number | null
+    longitude: number | null
+    accuracy: number | null
+    provider: string | null
+    batteryLevel: number | null
+    tagType: string | null
+    tagDetail: string | null
+    capturedAt: Date | null
+    signature: string | null
+    createdAt: Date | null
+    createdBy: string | null
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+  }
+
+  export type MobileLocationCountAggregateOutputType = {
+    id: number
+    turnoId: number
+    veiculoRemoteId: number
+    equipeRemoteId: number
+    latitude: number
+    longitude: number
+    accuracy: number
+    provider: number
+    batteryLevel: number
+    tagType: number
+    tagDetail: number
+    capturedAt: number
+    signature: number
+    createdAt: number
+    createdBy: number
+    updatedAt: number
+    updatedBy: number
+    deletedAt: number
+    deletedBy: number
+    _all: number
+  }
+
+
+  export type MobileLocationAvgAggregateInputType = {
+    id?: true
+    turnoId?: true
+    veiculoRemoteId?: true
+    equipeRemoteId?: true
+    latitude?: true
+    longitude?: true
+    accuracy?: true
+    batteryLevel?: true
+  }
+
+  export type MobileLocationSumAggregateInputType = {
+    id?: true
+    turnoId?: true
+    veiculoRemoteId?: true
+    equipeRemoteId?: true
+    latitude?: true
+    longitude?: true
+    accuracy?: true
+    batteryLevel?: true
+  }
+
+  export type MobileLocationMinAggregateInputType = {
+    id?: true
+    turnoId?: true
+    veiculoRemoteId?: true
+    equipeRemoteId?: true
+    latitude?: true
+    longitude?: true
+    accuracy?: true
+    provider?: true
+    batteryLevel?: true
+    tagType?: true
+    tagDetail?: true
+    capturedAt?: true
+    signature?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+  }
+
+  export type MobileLocationMaxAggregateInputType = {
+    id?: true
+    turnoId?: true
+    veiculoRemoteId?: true
+    equipeRemoteId?: true
+    latitude?: true
+    longitude?: true
+    accuracy?: true
+    provider?: true
+    batteryLevel?: true
+    tagType?: true
+    tagDetail?: true
+    capturedAt?: true
+    signature?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+  }
+
+  export type MobileLocationCountAggregateInputType = {
+    id?: true
+    turnoId?: true
+    veiculoRemoteId?: true
+    equipeRemoteId?: true
+    latitude?: true
+    longitude?: true
+    accuracy?: true
+    provider?: true
+    batteryLevel?: true
+    tagType?: true
+    tagDetail?: true
+    capturedAt?: true
+    signature?: true
+    createdAt?: true
+    createdBy?: true
+    updatedAt?: true
+    updatedBy?: true
+    deletedAt?: true
+    deletedBy?: true
+    _all?: true
+  }
+
+  export type MobileLocationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MobileLocation to aggregate.
+     */
+    where?: MobileLocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MobileLocations to fetch.
+     */
+    orderBy?: MobileLocationOrderByWithRelationInput | MobileLocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MobileLocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MobileLocations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MobileLocations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned MobileLocations
+    **/
+    _count?: true | MobileLocationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: MobileLocationAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: MobileLocationSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MobileLocationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MobileLocationMaxAggregateInputType
+  }
+
+  export type GetMobileLocationAggregateType<T extends MobileLocationAggregateArgs> = {
+        [P in keyof T & keyof AggregateMobileLocation]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMobileLocation[P]>
+      : GetScalarType<T[P], AggregateMobileLocation[P]>
+  }
+
+
+
+
+  export type MobileLocationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MobileLocationWhereInput
+    orderBy?: MobileLocationOrderByWithAggregationInput | MobileLocationOrderByWithAggregationInput[]
+    by: MobileLocationScalarFieldEnum[] | MobileLocationScalarFieldEnum
+    having?: MobileLocationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MobileLocationCountAggregateInputType | true
+    _avg?: MobileLocationAvgAggregateInputType
+    _sum?: MobileLocationSumAggregateInputType
+    _min?: MobileLocationMinAggregateInputType
+    _max?: MobileLocationMaxAggregateInputType
+  }
+
+  export type MobileLocationGroupByOutputType = {
+    id: number
+    turnoId: number
+    veiculoRemoteId: number | null
+    equipeRemoteId: number | null
+    latitude: number
+    longitude: number
+    accuracy: number | null
+    provider: string | null
+    batteryLevel: number | null
+    tagType: string | null
+    tagDetail: string | null
+    capturedAt: Date
+    signature: string
+    createdAt: Date
+    createdBy: string
+    updatedAt: Date | null
+    updatedBy: string | null
+    deletedAt: Date | null
+    deletedBy: string | null
+    _count: MobileLocationCountAggregateOutputType | null
+    _avg: MobileLocationAvgAggregateOutputType | null
+    _sum: MobileLocationSumAggregateOutputType | null
+    _min: MobileLocationMinAggregateOutputType | null
+    _max: MobileLocationMaxAggregateOutputType | null
+  }
+
+  type GetMobileLocationGroupByPayload<T extends MobileLocationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MobileLocationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MobileLocationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MobileLocationGroupByOutputType[P]>
+            : GetScalarType<T[P], MobileLocationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MobileLocationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    turnoId?: boolean
+    veiculoRemoteId?: boolean
+    equipeRemoteId?: boolean
+    latitude?: boolean
+    longitude?: boolean
+    accuracy?: boolean
+    provider?: boolean
+    batteryLevel?: boolean
+    tagType?: boolean
+    tagDetail?: boolean
+    capturedAt?: boolean
+    signature?: boolean
+    createdAt?: boolean
+    createdBy?: boolean
+    updatedAt?: boolean
+    updatedBy?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+  }, ExtArgs["result"]["mobileLocation"]>
+
+
+
+  export type MobileLocationSelectScalar = {
+    id?: boolean
+    turnoId?: boolean
+    veiculoRemoteId?: boolean
+    equipeRemoteId?: boolean
+    latitude?: boolean
+    longitude?: boolean
+    accuracy?: boolean
+    provider?: boolean
+    batteryLevel?: boolean
+    tagType?: boolean
+    tagDetail?: boolean
+    capturedAt?: boolean
+    signature?: boolean
+    createdAt?: boolean
+    createdBy?: boolean
+    updatedAt?: boolean
+    updatedBy?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+  }
+
+  export type MobileLocationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "turnoId" | "veiculoRemoteId" | "equipeRemoteId" | "latitude" | "longitude" | "accuracy" | "provider" | "batteryLevel" | "tagType" | "tagDetail" | "capturedAt" | "signature" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["mobileLocation"]>
+
+  export type $MobileLocationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MobileLocation"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      turnoId: number
+      veiculoRemoteId: number | null
+      equipeRemoteId: number | null
+      latitude: number
+      longitude: number
+      accuracy: number | null
+      provider: string | null
+      batteryLevel: number | null
+      tagType: string | null
+      tagDetail: string | null
+      capturedAt: Date
+      signature: string
+      createdAt: Date
+      createdBy: string
+      updatedAt: Date | null
+      updatedBy: string | null
+      deletedAt: Date | null
+      deletedBy: string | null
+    }, ExtArgs["result"]["mobileLocation"]>
+    composites: {}
+  }
+
+  type MobileLocationGetPayload<S extends boolean | null | undefined | MobileLocationDefaultArgs> = $Result.GetResult<Prisma.$MobileLocationPayload, S>
+
+  type MobileLocationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MobileLocationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MobileLocationCountAggregateInputType | true
+    }
+
+  export interface MobileLocationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MobileLocation'], meta: { name: 'MobileLocation' } }
+    /**
+     * Find zero or one MobileLocation that matches the filter.
+     * @param {MobileLocationFindUniqueArgs} args - Arguments to find a MobileLocation
+     * @example
+     * // Get one MobileLocation
+     * const mobileLocation = await prisma.mobileLocation.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MobileLocationFindUniqueArgs>(args: SelectSubset<T, MobileLocationFindUniqueArgs<ExtArgs>>): Prisma__MobileLocationClient<$Result.GetResult<Prisma.$MobileLocationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one MobileLocation that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MobileLocationFindUniqueOrThrowArgs} args - Arguments to find a MobileLocation
+     * @example
+     * // Get one MobileLocation
+     * const mobileLocation = await prisma.mobileLocation.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MobileLocationFindUniqueOrThrowArgs>(args: SelectSubset<T, MobileLocationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MobileLocationClient<$Result.GetResult<Prisma.$MobileLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MobileLocation that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MobileLocationFindFirstArgs} args - Arguments to find a MobileLocation
+     * @example
+     * // Get one MobileLocation
+     * const mobileLocation = await prisma.mobileLocation.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MobileLocationFindFirstArgs>(args?: SelectSubset<T, MobileLocationFindFirstArgs<ExtArgs>>): Prisma__MobileLocationClient<$Result.GetResult<Prisma.$MobileLocationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MobileLocation that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MobileLocationFindFirstOrThrowArgs} args - Arguments to find a MobileLocation
+     * @example
+     * // Get one MobileLocation
+     * const mobileLocation = await prisma.mobileLocation.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MobileLocationFindFirstOrThrowArgs>(args?: SelectSubset<T, MobileLocationFindFirstOrThrowArgs<ExtArgs>>): Prisma__MobileLocationClient<$Result.GetResult<Prisma.$MobileLocationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more MobileLocations that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MobileLocationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all MobileLocations
+     * const mobileLocations = await prisma.mobileLocation.findMany()
+     * 
+     * // Get first 10 MobileLocations
+     * const mobileLocations = await prisma.mobileLocation.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const mobileLocationWithIdOnly = await prisma.mobileLocation.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MobileLocationFindManyArgs>(args?: SelectSubset<T, MobileLocationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MobileLocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a MobileLocation.
+     * @param {MobileLocationCreateArgs} args - Arguments to create a MobileLocation.
+     * @example
+     * // Create one MobileLocation
+     * const MobileLocation = await prisma.mobileLocation.create({
+     *   data: {
+     *     // ... data to create a MobileLocation
+     *   }
+     * })
+     * 
+     */
+    create<T extends MobileLocationCreateArgs>(args: SelectSubset<T, MobileLocationCreateArgs<ExtArgs>>): Prisma__MobileLocationClient<$Result.GetResult<Prisma.$MobileLocationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many MobileLocations.
+     * @param {MobileLocationCreateManyArgs} args - Arguments to create many MobileLocations.
+     * @example
+     * // Create many MobileLocations
+     * const mobileLocation = await prisma.mobileLocation.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MobileLocationCreateManyArgs>(args?: SelectSubset<T, MobileLocationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a MobileLocation.
+     * @param {MobileLocationDeleteArgs} args - Arguments to delete one MobileLocation.
+     * @example
+     * // Delete one MobileLocation
+     * const MobileLocation = await prisma.mobileLocation.delete({
+     *   where: {
+     *     // ... filter to delete one MobileLocation
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MobileLocationDeleteArgs>(args: SelectSubset<T, MobileLocationDeleteArgs<ExtArgs>>): Prisma__MobileLocationClient<$Result.GetResult<Prisma.$MobileLocationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one MobileLocation.
+     * @param {MobileLocationUpdateArgs} args - Arguments to update one MobileLocation.
+     * @example
+     * // Update one MobileLocation
+     * const mobileLocation = await prisma.mobileLocation.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MobileLocationUpdateArgs>(args: SelectSubset<T, MobileLocationUpdateArgs<ExtArgs>>): Prisma__MobileLocationClient<$Result.GetResult<Prisma.$MobileLocationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more MobileLocations.
+     * @param {MobileLocationDeleteManyArgs} args - Arguments to filter MobileLocations to delete.
+     * @example
+     * // Delete a few MobileLocations
+     * const { count } = await prisma.mobileLocation.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MobileLocationDeleteManyArgs>(args?: SelectSubset<T, MobileLocationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MobileLocations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MobileLocationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many MobileLocations
+     * const mobileLocation = await prisma.mobileLocation.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MobileLocationUpdateManyArgs>(args: SelectSubset<T, MobileLocationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one MobileLocation.
+     * @param {MobileLocationUpsertArgs} args - Arguments to update or create a MobileLocation.
+     * @example
+     * // Update or create a MobileLocation
+     * const mobileLocation = await prisma.mobileLocation.upsert({
+     *   create: {
+     *     // ... data to create a MobileLocation
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the MobileLocation we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MobileLocationUpsertArgs>(args: SelectSubset<T, MobileLocationUpsertArgs<ExtArgs>>): Prisma__MobileLocationClient<$Result.GetResult<Prisma.$MobileLocationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of MobileLocations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MobileLocationCountArgs} args - Arguments to filter MobileLocations to count.
+     * @example
+     * // Count the number of MobileLocations
+     * const count = await prisma.mobileLocation.count({
+     *   where: {
+     *     // ... the filter for the MobileLocations we want to count
+     *   }
+     * })
+    **/
+    count<T extends MobileLocationCountArgs>(
+      args?: Subset<T, MobileLocationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MobileLocationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a MobileLocation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MobileLocationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MobileLocationAggregateArgs>(args: Subset<T, MobileLocationAggregateArgs>): Prisma.PrismaPromise<GetMobileLocationAggregateType<T>>
+
+    /**
+     * Group by MobileLocation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MobileLocationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MobileLocationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MobileLocationGroupByArgs['orderBy'] }
+        : { orderBy?: MobileLocationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MobileLocationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMobileLocationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the MobileLocation model
+   */
+  readonly fields: MobileLocationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for MobileLocation.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MobileLocationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the MobileLocation model
+   */
+  interface MobileLocationFieldRefs {
+    readonly id: FieldRef<"MobileLocation", 'Int'>
+    readonly turnoId: FieldRef<"MobileLocation", 'Int'>
+    readonly veiculoRemoteId: FieldRef<"MobileLocation", 'Int'>
+    readonly equipeRemoteId: FieldRef<"MobileLocation", 'Int'>
+    readonly latitude: FieldRef<"MobileLocation", 'Float'>
+    readonly longitude: FieldRef<"MobileLocation", 'Float'>
+    readonly accuracy: FieldRef<"MobileLocation", 'Float'>
+    readonly provider: FieldRef<"MobileLocation", 'String'>
+    readonly batteryLevel: FieldRef<"MobileLocation", 'Int'>
+    readonly tagType: FieldRef<"MobileLocation", 'String'>
+    readonly tagDetail: FieldRef<"MobileLocation", 'String'>
+    readonly capturedAt: FieldRef<"MobileLocation", 'DateTime'>
+    readonly signature: FieldRef<"MobileLocation", 'String'>
+    readonly createdAt: FieldRef<"MobileLocation", 'DateTime'>
+    readonly createdBy: FieldRef<"MobileLocation", 'String'>
+    readonly updatedAt: FieldRef<"MobileLocation", 'DateTime'>
+    readonly updatedBy: FieldRef<"MobileLocation", 'String'>
+    readonly deletedAt: FieldRef<"MobileLocation", 'DateTime'>
+    readonly deletedBy: FieldRef<"MobileLocation", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * MobileLocation findUnique
+   */
+  export type MobileLocationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobileLocation
+     */
+    select?: MobileLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobileLocation
+     */
+    omit?: MobileLocationOmit<ExtArgs> | null
+    /**
+     * Filter, which MobileLocation to fetch.
+     */
+    where: MobileLocationWhereUniqueInput
+  }
+
+  /**
+   * MobileLocation findUniqueOrThrow
+   */
+  export type MobileLocationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobileLocation
+     */
+    select?: MobileLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobileLocation
+     */
+    omit?: MobileLocationOmit<ExtArgs> | null
+    /**
+     * Filter, which MobileLocation to fetch.
+     */
+    where: MobileLocationWhereUniqueInput
+  }
+
+  /**
+   * MobileLocation findFirst
+   */
+  export type MobileLocationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobileLocation
+     */
+    select?: MobileLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobileLocation
+     */
+    omit?: MobileLocationOmit<ExtArgs> | null
+    /**
+     * Filter, which MobileLocation to fetch.
+     */
+    where?: MobileLocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MobileLocations to fetch.
+     */
+    orderBy?: MobileLocationOrderByWithRelationInput | MobileLocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MobileLocations.
+     */
+    cursor?: MobileLocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MobileLocations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MobileLocations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MobileLocations.
+     */
+    distinct?: MobileLocationScalarFieldEnum | MobileLocationScalarFieldEnum[]
+  }
+
+  /**
+   * MobileLocation findFirstOrThrow
+   */
+  export type MobileLocationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobileLocation
+     */
+    select?: MobileLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobileLocation
+     */
+    omit?: MobileLocationOmit<ExtArgs> | null
+    /**
+     * Filter, which MobileLocation to fetch.
+     */
+    where?: MobileLocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MobileLocations to fetch.
+     */
+    orderBy?: MobileLocationOrderByWithRelationInput | MobileLocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MobileLocations.
+     */
+    cursor?: MobileLocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MobileLocations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MobileLocations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MobileLocations.
+     */
+    distinct?: MobileLocationScalarFieldEnum | MobileLocationScalarFieldEnum[]
+  }
+
+  /**
+   * MobileLocation findMany
+   */
+  export type MobileLocationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobileLocation
+     */
+    select?: MobileLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobileLocation
+     */
+    omit?: MobileLocationOmit<ExtArgs> | null
+    /**
+     * Filter, which MobileLocations to fetch.
+     */
+    where?: MobileLocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MobileLocations to fetch.
+     */
+    orderBy?: MobileLocationOrderByWithRelationInput | MobileLocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing MobileLocations.
+     */
+    cursor?: MobileLocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MobileLocations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MobileLocations.
+     */
+    skip?: number
+    distinct?: MobileLocationScalarFieldEnum | MobileLocationScalarFieldEnum[]
+  }
+
+  /**
+   * MobileLocation create
+   */
+  export type MobileLocationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobileLocation
+     */
+    select?: MobileLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobileLocation
+     */
+    omit?: MobileLocationOmit<ExtArgs> | null
+    /**
+     * The data needed to create a MobileLocation.
+     */
+    data: XOR<MobileLocationCreateInput, MobileLocationUncheckedCreateInput>
+  }
+
+  /**
+   * MobileLocation createMany
+   */
+  export type MobileLocationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many MobileLocations.
+     */
+    data: MobileLocationCreateManyInput | MobileLocationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MobileLocation update
+   */
+  export type MobileLocationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobileLocation
+     */
+    select?: MobileLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobileLocation
+     */
+    omit?: MobileLocationOmit<ExtArgs> | null
+    /**
+     * The data needed to update a MobileLocation.
+     */
+    data: XOR<MobileLocationUpdateInput, MobileLocationUncheckedUpdateInput>
+    /**
+     * Choose, which MobileLocation to update.
+     */
+    where: MobileLocationWhereUniqueInput
+  }
+
+  /**
+   * MobileLocation updateMany
+   */
+  export type MobileLocationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update MobileLocations.
+     */
+    data: XOR<MobileLocationUpdateManyMutationInput, MobileLocationUncheckedUpdateManyInput>
+    /**
+     * Filter which MobileLocations to update
+     */
+    where?: MobileLocationWhereInput
+    /**
+     * Limit how many MobileLocations to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MobileLocation upsert
+   */
+  export type MobileLocationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobileLocation
+     */
+    select?: MobileLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobileLocation
+     */
+    omit?: MobileLocationOmit<ExtArgs> | null
+    /**
+     * The filter to search for the MobileLocation to update in case it exists.
+     */
+    where: MobileLocationWhereUniqueInput
+    /**
+     * In case the MobileLocation found by the `where` argument doesn't exist, create a new MobileLocation with this data.
+     */
+    create: XOR<MobileLocationCreateInput, MobileLocationUncheckedCreateInput>
+    /**
+     * In case the MobileLocation was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MobileLocationUpdateInput, MobileLocationUncheckedUpdateInput>
+  }
+
+  /**
+   * MobileLocation delete
+   */
+  export type MobileLocationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobileLocation
+     */
+    select?: MobileLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobileLocation
+     */
+    omit?: MobileLocationOmit<ExtArgs> | null
+    /**
+     * Filter which MobileLocation to delete.
+     */
+    where: MobileLocationWhereUniqueInput
+  }
+
+  /**
+   * MobileLocation deleteMany
+   */
+  export type MobileLocationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MobileLocations to delete
+     */
+    where?: MobileLocationWhereInput
+    /**
+     * Limit how many MobileLocations to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * MobileLocation without action
+   */
+  export type MobileLocationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MobileLocation
+     */
+    select?: MobileLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MobileLocation
+     */
+    omit?: MobileLocationOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model Supervisor
    */
 
@@ -65771,6 +68140,57 @@ export namespace Prisma {
   export type EquipeTurnoHistoricoScalarFieldEnum = (typeof EquipeTurnoHistoricoScalarFieldEnum)[keyof typeof EquipeTurnoHistoricoScalarFieldEnum]
 
 
+  export const MobilePhotoScalarFieldEnum: {
+    id: 'id',
+    turnoId: 'turnoId',
+    tipo: 'tipo',
+    checklistPreenchidoId: 'checklistPreenchidoId',
+    checklistRespostaId: 'checklistRespostaId',
+    sequenciaAssinatura: 'sequenciaAssinatura',
+    servicoId: 'servicoId',
+    fileName: 'fileName',
+    mimeType: 'mimeType',
+    fileSize: 'fileSize',
+    checksum: 'checksum',
+    storagePath: 'storagePath',
+    url: 'url',
+    capturedAt: 'capturedAt',
+    createdAt: 'createdAt',
+    createdBy: 'createdBy',
+    updatedAt: 'updatedAt',
+    updatedBy: 'updatedBy',
+    deletedAt: 'deletedAt',
+    deletedBy: 'deletedBy'
+  };
+
+  export type MobilePhotoScalarFieldEnum = (typeof MobilePhotoScalarFieldEnum)[keyof typeof MobilePhotoScalarFieldEnum]
+
+
+  export const MobileLocationScalarFieldEnum: {
+    id: 'id',
+    turnoId: 'turnoId',
+    veiculoRemoteId: 'veiculoRemoteId',
+    equipeRemoteId: 'equipeRemoteId',
+    latitude: 'latitude',
+    longitude: 'longitude',
+    accuracy: 'accuracy',
+    provider: 'provider',
+    batteryLevel: 'batteryLevel',
+    tagType: 'tagType',
+    tagDetail: 'tagDetail',
+    capturedAt: 'capturedAt',
+    signature: 'signature',
+    createdAt: 'createdAt',
+    createdBy: 'createdBy',
+    updatedAt: 'updatedAt',
+    updatedBy: 'updatedBy',
+    deletedAt: 'deletedAt',
+    deletedBy: 'deletedBy'
+  };
+
+  export type MobileLocationScalarFieldEnum = (typeof MobileLocationScalarFieldEnum)[keyof typeof MobileLocationScalarFieldEnum]
+
+
   export const SupervisorScalarFieldEnum: {
     id: 'id',
     nome: 'nome',
@@ -66401,6 +68821,34 @@ export namespace Prisma {
   };
 
   export type EquipeTurnoHistoricoOrderByRelevanceFieldEnum = (typeof EquipeTurnoHistoricoOrderByRelevanceFieldEnum)[keyof typeof EquipeTurnoHistoricoOrderByRelevanceFieldEnum]
+
+
+  export const MobilePhotoOrderByRelevanceFieldEnum: {
+    tipo: 'tipo',
+    fileName: 'fileName',
+    mimeType: 'mimeType',
+    checksum: 'checksum',
+    storagePath: 'storagePath',
+    url: 'url',
+    createdBy: 'createdBy',
+    updatedBy: 'updatedBy',
+    deletedBy: 'deletedBy'
+  };
+
+  export type MobilePhotoOrderByRelevanceFieldEnum = (typeof MobilePhotoOrderByRelevanceFieldEnum)[keyof typeof MobilePhotoOrderByRelevanceFieldEnum]
+
+
+  export const MobileLocationOrderByRelevanceFieldEnum: {
+    provider: 'provider',
+    tagType: 'tagType',
+    tagDetail: 'tagDetail',
+    signature: 'signature',
+    createdBy: 'createdBy',
+    updatedBy: 'updatedBy',
+    deletedBy: 'deletedBy'
+  };
+
+  export type MobileLocationOrderByRelevanceFieldEnum = (typeof MobileLocationOrderByRelevanceFieldEnum)[keyof typeof MobileLocationOrderByRelevanceFieldEnum]
 
 
   export const SupervisorOrderByRelevanceFieldEnum: {
@@ -70756,6 +73204,261 @@ export namespace Prisma {
     updatedBy?: StringNullableWithAggregatesFilter<"EquipeTurnoHistorico"> | string | null
     deletedAt?: DateTimeNullableWithAggregatesFilter<"EquipeTurnoHistorico"> | Date | string | null
     deletedBy?: StringNullableWithAggregatesFilter<"EquipeTurnoHistorico"> | string | null
+  }
+
+  export type MobilePhotoWhereInput = {
+    AND?: MobilePhotoWhereInput | MobilePhotoWhereInput[]
+    OR?: MobilePhotoWhereInput[]
+    NOT?: MobilePhotoWhereInput | MobilePhotoWhereInput[]
+    id?: IntFilter<"MobilePhoto"> | number
+    turnoId?: IntFilter<"MobilePhoto"> | number
+    tipo?: StringFilter<"MobilePhoto"> | string
+    checklistPreenchidoId?: IntNullableFilter<"MobilePhoto"> | number | null
+    checklistRespostaId?: IntNullableFilter<"MobilePhoto"> | number | null
+    sequenciaAssinatura?: IntNullableFilter<"MobilePhoto"> | number | null
+    servicoId?: IntNullableFilter<"MobilePhoto"> | number | null
+    fileName?: StringFilter<"MobilePhoto"> | string
+    mimeType?: StringFilter<"MobilePhoto"> | string
+    fileSize?: IntFilter<"MobilePhoto"> | number
+    checksum?: StringFilter<"MobilePhoto"> | string
+    storagePath?: StringFilter<"MobilePhoto"> | string
+    url?: StringFilter<"MobilePhoto"> | string
+    capturedAt?: DateTimeNullableFilter<"MobilePhoto"> | Date | string | null
+    createdAt?: DateTimeFilter<"MobilePhoto"> | Date | string
+    createdBy?: StringFilter<"MobilePhoto"> | string
+    updatedAt?: DateTimeNullableFilter<"MobilePhoto"> | Date | string | null
+    updatedBy?: StringNullableFilter<"MobilePhoto"> | string | null
+    deletedAt?: DateTimeNullableFilter<"MobilePhoto"> | Date | string | null
+    deletedBy?: StringNullableFilter<"MobilePhoto"> | string | null
+  }
+
+  export type MobilePhotoOrderByWithRelationInput = {
+    id?: SortOrder
+    turnoId?: SortOrder
+    tipo?: SortOrder
+    checklistPreenchidoId?: SortOrderInput | SortOrder
+    checklistRespostaId?: SortOrderInput | SortOrder
+    sequenciaAssinatura?: SortOrderInput | SortOrder
+    servicoId?: SortOrderInput | SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    checksum?: SortOrder
+    storagePath?: SortOrder
+    url?: SortOrder
+    capturedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrderInput | SortOrder
+    updatedBy?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    deletedBy?: SortOrderInput | SortOrder
+    _relevance?: MobilePhotoOrderByRelevanceInput
+  }
+
+  export type MobilePhotoWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    checksum?: string
+    AND?: MobilePhotoWhereInput | MobilePhotoWhereInput[]
+    OR?: MobilePhotoWhereInput[]
+    NOT?: MobilePhotoWhereInput | MobilePhotoWhereInput[]
+    turnoId?: IntFilter<"MobilePhoto"> | number
+    tipo?: StringFilter<"MobilePhoto"> | string
+    checklistPreenchidoId?: IntNullableFilter<"MobilePhoto"> | number | null
+    checklistRespostaId?: IntNullableFilter<"MobilePhoto"> | number | null
+    sequenciaAssinatura?: IntNullableFilter<"MobilePhoto"> | number | null
+    servicoId?: IntNullableFilter<"MobilePhoto"> | number | null
+    fileName?: StringFilter<"MobilePhoto"> | string
+    mimeType?: StringFilter<"MobilePhoto"> | string
+    fileSize?: IntFilter<"MobilePhoto"> | number
+    storagePath?: StringFilter<"MobilePhoto"> | string
+    url?: StringFilter<"MobilePhoto"> | string
+    capturedAt?: DateTimeNullableFilter<"MobilePhoto"> | Date | string | null
+    createdAt?: DateTimeFilter<"MobilePhoto"> | Date | string
+    createdBy?: StringFilter<"MobilePhoto"> | string
+    updatedAt?: DateTimeNullableFilter<"MobilePhoto"> | Date | string | null
+    updatedBy?: StringNullableFilter<"MobilePhoto"> | string | null
+    deletedAt?: DateTimeNullableFilter<"MobilePhoto"> | Date | string | null
+    deletedBy?: StringNullableFilter<"MobilePhoto"> | string | null
+  }, "id" | "checksum">
+
+  export type MobilePhotoOrderByWithAggregationInput = {
+    id?: SortOrder
+    turnoId?: SortOrder
+    tipo?: SortOrder
+    checklistPreenchidoId?: SortOrderInput | SortOrder
+    checklistRespostaId?: SortOrderInput | SortOrder
+    sequenciaAssinatura?: SortOrderInput | SortOrder
+    servicoId?: SortOrderInput | SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    checksum?: SortOrder
+    storagePath?: SortOrder
+    url?: SortOrder
+    capturedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrderInput | SortOrder
+    updatedBy?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    deletedBy?: SortOrderInput | SortOrder
+    _count?: MobilePhotoCountOrderByAggregateInput
+    _avg?: MobilePhotoAvgOrderByAggregateInput
+    _max?: MobilePhotoMaxOrderByAggregateInput
+    _min?: MobilePhotoMinOrderByAggregateInput
+    _sum?: MobilePhotoSumOrderByAggregateInput
+  }
+
+  export type MobilePhotoScalarWhereWithAggregatesInput = {
+    AND?: MobilePhotoScalarWhereWithAggregatesInput | MobilePhotoScalarWhereWithAggregatesInput[]
+    OR?: MobilePhotoScalarWhereWithAggregatesInput[]
+    NOT?: MobilePhotoScalarWhereWithAggregatesInput | MobilePhotoScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"MobilePhoto"> | number
+    turnoId?: IntWithAggregatesFilter<"MobilePhoto"> | number
+    tipo?: StringWithAggregatesFilter<"MobilePhoto"> | string
+    checklistPreenchidoId?: IntNullableWithAggregatesFilter<"MobilePhoto"> | number | null
+    checklistRespostaId?: IntNullableWithAggregatesFilter<"MobilePhoto"> | number | null
+    sequenciaAssinatura?: IntNullableWithAggregatesFilter<"MobilePhoto"> | number | null
+    servicoId?: IntNullableWithAggregatesFilter<"MobilePhoto"> | number | null
+    fileName?: StringWithAggregatesFilter<"MobilePhoto"> | string
+    mimeType?: StringWithAggregatesFilter<"MobilePhoto"> | string
+    fileSize?: IntWithAggregatesFilter<"MobilePhoto"> | number
+    checksum?: StringWithAggregatesFilter<"MobilePhoto"> | string
+    storagePath?: StringWithAggregatesFilter<"MobilePhoto"> | string
+    url?: StringWithAggregatesFilter<"MobilePhoto"> | string
+    capturedAt?: DateTimeNullableWithAggregatesFilter<"MobilePhoto"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"MobilePhoto"> | Date | string
+    createdBy?: StringWithAggregatesFilter<"MobilePhoto"> | string
+    updatedAt?: DateTimeNullableWithAggregatesFilter<"MobilePhoto"> | Date | string | null
+    updatedBy?: StringNullableWithAggregatesFilter<"MobilePhoto"> | string | null
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"MobilePhoto"> | Date | string | null
+    deletedBy?: StringNullableWithAggregatesFilter<"MobilePhoto"> | string | null
+  }
+
+  export type MobileLocationWhereInput = {
+    AND?: MobileLocationWhereInput | MobileLocationWhereInput[]
+    OR?: MobileLocationWhereInput[]
+    NOT?: MobileLocationWhereInput | MobileLocationWhereInput[]
+    id?: IntFilter<"MobileLocation"> | number
+    turnoId?: IntFilter<"MobileLocation"> | number
+    veiculoRemoteId?: IntNullableFilter<"MobileLocation"> | number | null
+    equipeRemoteId?: IntNullableFilter<"MobileLocation"> | number | null
+    latitude?: FloatFilter<"MobileLocation"> | number
+    longitude?: FloatFilter<"MobileLocation"> | number
+    accuracy?: FloatNullableFilter<"MobileLocation"> | number | null
+    provider?: StringNullableFilter<"MobileLocation"> | string | null
+    batteryLevel?: IntNullableFilter<"MobileLocation"> | number | null
+    tagType?: StringNullableFilter<"MobileLocation"> | string | null
+    tagDetail?: StringNullableFilter<"MobileLocation"> | string | null
+    capturedAt?: DateTimeFilter<"MobileLocation"> | Date | string
+    signature?: StringFilter<"MobileLocation"> | string
+    createdAt?: DateTimeFilter<"MobileLocation"> | Date | string
+    createdBy?: StringFilter<"MobileLocation"> | string
+    updatedAt?: DateTimeNullableFilter<"MobileLocation"> | Date | string | null
+    updatedBy?: StringNullableFilter<"MobileLocation"> | string | null
+    deletedAt?: DateTimeNullableFilter<"MobileLocation"> | Date | string | null
+    deletedBy?: StringNullableFilter<"MobileLocation"> | string | null
+  }
+
+  export type MobileLocationOrderByWithRelationInput = {
+    id?: SortOrder
+    turnoId?: SortOrder
+    veiculoRemoteId?: SortOrderInput | SortOrder
+    equipeRemoteId?: SortOrderInput | SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    accuracy?: SortOrderInput | SortOrder
+    provider?: SortOrderInput | SortOrder
+    batteryLevel?: SortOrderInput | SortOrder
+    tagType?: SortOrderInput | SortOrder
+    tagDetail?: SortOrderInput | SortOrder
+    capturedAt?: SortOrder
+    signature?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrderInput | SortOrder
+    updatedBy?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    deletedBy?: SortOrderInput | SortOrder
+    _relevance?: MobileLocationOrderByRelevanceInput
+  }
+
+  export type MobileLocationWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    signature?: string
+    AND?: MobileLocationWhereInput | MobileLocationWhereInput[]
+    OR?: MobileLocationWhereInput[]
+    NOT?: MobileLocationWhereInput | MobileLocationWhereInput[]
+    turnoId?: IntFilter<"MobileLocation"> | number
+    veiculoRemoteId?: IntNullableFilter<"MobileLocation"> | number | null
+    equipeRemoteId?: IntNullableFilter<"MobileLocation"> | number | null
+    latitude?: FloatFilter<"MobileLocation"> | number
+    longitude?: FloatFilter<"MobileLocation"> | number
+    accuracy?: FloatNullableFilter<"MobileLocation"> | number | null
+    provider?: StringNullableFilter<"MobileLocation"> | string | null
+    batteryLevel?: IntNullableFilter<"MobileLocation"> | number | null
+    tagType?: StringNullableFilter<"MobileLocation"> | string | null
+    tagDetail?: StringNullableFilter<"MobileLocation"> | string | null
+    capturedAt?: DateTimeFilter<"MobileLocation"> | Date | string
+    createdAt?: DateTimeFilter<"MobileLocation"> | Date | string
+    createdBy?: StringFilter<"MobileLocation"> | string
+    updatedAt?: DateTimeNullableFilter<"MobileLocation"> | Date | string | null
+    updatedBy?: StringNullableFilter<"MobileLocation"> | string | null
+    deletedAt?: DateTimeNullableFilter<"MobileLocation"> | Date | string | null
+    deletedBy?: StringNullableFilter<"MobileLocation"> | string | null
+  }, "id" | "signature">
+
+  export type MobileLocationOrderByWithAggregationInput = {
+    id?: SortOrder
+    turnoId?: SortOrder
+    veiculoRemoteId?: SortOrderInput | SortOrder
+    equipeRemoteId?: SortOrderInput | SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    accuracy?: SortOrderInput | SortOrder
+    provider?: SortOrderInput | SortOrder
+    batteryLevel?: SortOrderInput | SortOrder
+    tagType?: SortOrderInput | SortOrder
+    tagDetail?: SortOrderInput | SortOrder
+    capturedAt?: SortOrder
+    signature?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrderInput | SortOrder
+    updatedBy?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    deletedBy?: SortOrderInput | SortOrder
+    _count?: MobileLocationCountOrderByAggregateInput
+    _avg?: MobileLocationAvgOrderByAggregateInput
+    _max?: MobileLocationMaxOrderByAggregateInput
+    _min?: MobileLocationMinOrderByAggregateInput
+    _sum?: MobileLocationSumOrderByAggregateInput
+  }
+
+  export type MobileLocationScalarWhereWithAggregatesInput = {
+    AND?: MobileLocationScalarWhereWithAggregatesInput | MobileLocationScalarWhereWithAggregatesInput[]
+    OR?: MobileLocationScalarWhereWithAggregatesInput[]
+    NOT?: MobileLocationScalarWhereWithAggregatesInput | MobileLocationScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"MobileLocation"> | number
+    turnoId?: IntWithAggregatesFilter<"MobileLocation"> | number
+    veiculoRemoteId?: IntNullableWithAggregatesFilter<"MobileLocation"> | number | null
+    equipeRemoteId?: IntNullableWithAggregatesFilter<"MobileLocation"> | number | null
+    latitude?: FloatWithAggregatesFilter<"MobileLocation"> | number
+    longitude?: FloatWithAggregatesFilter<"MobileLocation"> | number
+    accuracy?: FloatNullableWithAggregatesFilter<"MobileLocation"> | number | null
+    provider?: StringNullableWithAggregatesFilter<"MobileLocation"> | string | null
+    batteryLevel?: IntNullableWithAggregatesFilter<"MobileLocation"> | number | null
+    tagType?: StringNullableWithAggregatesFilter<"MobileLocation"> | string | null
+    tagDetail?: StringNullableWithAggregatesFilter<"MobileLocation"> | string | null
+    capturedAt?: DateTimeWithAggregatesFilter<"MobileLocation"> | Date | string
+    signature?: StringWithAggregatesFilter<"MobileLocation"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"MobileLocation"> | Date | string
+    createdBy?: StringWithAggregatesFilter<"MobileLocation"> | string
+    updatedAt?: DateTimeNullableWithAggregatesFilter<"MobileLocation"> | Date | string | null
+    updatedBy?: StringNullableWithAggregatesFilter<"MobileLocation"> | string | null
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"MobileLocation"> | Date | string | null
+    deletedBy?: StringNullableWithAggregatesFilter<"MobileLocation"> | string | null
   }
 
   export type SupervisorWhereInput = {
@@ -75813,6 +78516,315 @@ export namespace Prisma {
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
+  export type MobilePhotoCreateInput = {
+    turnoId: number
+    tipo: string
+    checklistPreenchidoId?: number | null
+    checklistRespostaId?: number | null
+    sequenciaAssinatura?: number | null
+    servicoId?: number | null
+    fileName: string
+    mimeType: string
+    fileSize: number
+    checksum: string
+    storagePath: string
+    url: string
+    capturedAt?: Date | string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type MobilePhotoUncheckedCreateInput = {
+    id?: number
+    turnoId: number
+    tipo: string
+    checklistPreenchidoId?: number | null
+    checklistRespostaId?: number | null
+    sequenciaAssinatura?: number | null
+    servicoId?: number | null
+    fileName: string
+    mimeType: string
+    fileSize: number
+    checksum: string
+    storagePath: string
+    url: string
+    capturedAt?: Date | string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type MobilePhotoUpdateInput = {
+    turnoId?: IntFieldUpdateOperationsInput | number
+    tipo?: StringFieldUpdateOperationsInput | string
+    checklistPreenchidoId?: NullableIntFieldUpdateOperationsInput | number | null
+    checklistRespostaId?: NullableIntFieldUpdateOperationsInput | number | null
+    sequenciaAssinatura?: NullableIntFieldUpdateOperationsInput | number | null
+    servicoId?: NullableIntFieldUpdateOperationsInput | number | null
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storagePath?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MobilePhotoUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    turnoId?: IntFieldUpdateOperationsInput | number
+    tipo?: StringFieldUpdateOperationsInput | string
+    checklistPreenchidoId?: NullableIntFieldUpdateOperationsInput | number | null
+    checklistRespostaId?: NullableIntFieldUpdateOperationsInput | number | null
+    sequenciaAssinatura?: NullableIntFieldUpdateOperationsInput | number | null
+    servicoId?: NullableIntFieldUpdateOperationsInput | number | null
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storagePath?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MobilePhotoCreateManyInput = {
+    id?: number
+    turnoId: number
+    tipo: string
+    checklistPreenchidoId?: number | null
+    checklistRespostaId?: number | null
+    sequenciaAssinatura?: number | null
+    servicoId?: number | null
+    fileName: string
+    mimeType: string
+    fileSize: number
+    checksum: string
+    storagePath: string
+    url: string
+    capturedAt?: Date | string | null
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type MobilePhotoUpdateManyMutationInput = {
+    turnoId?: IntFieldUpdateOperationsInput | number
+    tipo?: StringFieldUpdateOperationsInput | string
+    checklistPreenchidoId?: NullableIntFieldUpdateOperationsInput | number | null
+    checklistRespostaId?: NullableIntFieldUpdateOperationsInput | number | null
+    sequenciaAssinatura?: NullableIntFieldUpdateOperationsInput | number | null
+    servicoId?: NullableIntFieldUpdateOperationsInput | number | null
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storagePath?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MobilePhotoUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    turnoId?: IntFieldUpdateOperationsInput | number
+    tipo?: StringFieldUpdateOperationsInput | string
+    checklistPreenchidoId?: NullableIntFieldUpdateOperationsInput | number | null
+    checklistRespostaId?: NullableIntFieldUpdateOperationsInput | number | null
+    sequenciaAssinatura?: NullableIntFieldUpdateOperationsInput | number | null
+    servicoId?: NullableIntFieldUpdateOperationsInput | number | null
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storagePath?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MobileLocationCreateInput = {
+    turnoId: number
+    veiculoRemoteId?: number | null
+    equipeRemoteId?: number | null
+    latitude: number
+    longitude: number
+    accuracy?: number | null
+    provider?: string | null
+    batteryLevel?: number | null
+    tagType?: string | null
+    tagDetail?: string | null
+    capturedAt?: Date | string
+    signature: string
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type MobileLocationUncheckedCreateInput = {
+    id?: number
+    turnoId: number
+    veiculoRemoteId?: number | null
+    equipeRemoteId?: number | null
+    latitude: number
+    longitude: number
+    accuracy?: number | null
+    provider?: string | null
+    batteryLevel?: number | null
+    tagType?: string | null
+    tagDetail?: string | null
+    capturedAt?: Date | string
+    signature: string
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type MobileLocationUpdateInput = {
+    turnoId?: IntFieldUpdateOperationsInput | number
+    veiculoRemoteId?: NullableIntFieldUpdateOperationsInput | number | null
+    equipeRemoteId?: NullableIntFieldUpdateOperationsInput | number | null
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    accuracy?: NullableFloatFieldUpdateOperationsInput | number | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    batteryLevel?: NullableIntFieldUpdateOperationsInput | number | null
+    tagType?: NullableStringFieldUpdateOperationsInput | string | null
+    tagDetail?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    signature?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MobileLocationUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    turnoId?: IntFieldUpdateOperationsInput | number
+    veiculoRemoteId?: NullableIntFieldUpdateOperationsInput | number | null
+    equipeRemoteId?: NullableIntFieldUpdateOperationsInput | number | null
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    accuracy?: NullableFloatFieldUpdateOperationsInput | number | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    batteryLevel?: NullableIntFieldUpdateOperationsInput | number | null
+    tagType?: NullableStringFieldUpdateOperationsInput | string | null
+    tagDetail?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    signature?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MobileLocationCreateManyInput = {
+    id?: number
+    turnoId: number
+    veiculoRemoteId?: number | null
+    equipeRemoteId?: number | null
+    latitude: number
+    longitude: number
+    accuracy?: number | null
+    provider?: string | null
+    batteryLevel?: number | null
+    tagType?: string | null
+    tagDetail?: string | null
+    capturedAt?: Date | string
+    signature: string
+    createdAt?: Date | string
+    createdBy: string
+    updatedAt?: Date | string | null
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type MobileLocationUpdateManyMutationInput = {
+    turnoId?: IntFieldUpdateOperationsInput | number
+    veiculoRemoteId?: NullableIntFieldUpdateOperationsInput | number | null
+    equipeRemoteId?: NullableIntFieldUpdateOperationsInput | number | null
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    accuracy?: NullableFloatFieldUpdateOperationsInput | number | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    batteryLevel?: NullableIntFieldUpdateOperationsInput | number | null
+    tagType?: NullableStringFieldUpdateOperationsInput | string | null
+    tagDetail?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    signature?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MobileLocationUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    turnoId?: IntFieldUpdateOperationsInput | number
+    veiculoRemoteId?: NullableIntFieldUpdateOperationsInput | number | null
+    equipeRemoteId?: NullableIntFieldUpdateOperationsInput | number | null
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    accuracy?: NullableFloatFieldUpdateOperationsInput | number | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    batteryLevel?: NullableIntFieldUpdateOperationsInput | number | null
+    tagType?: NullableStringFieldUpdateOperationsInput | string | null
+    tagDetail?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    signature?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
   export type SupervisorCreateInput = {
     nome: string
     createdAt?: Date | string
@@ -80201,6 +83213,195 @@ export namespace Prisma {
     horarioAberturaCatalogoId?: SortOrder
     duracaoHoras?: SortOrder
     duracaoIntervaloHoras?: SortOrder
+  }
+
+  export type MobilePhotoOrderByRelevanceInput = {
+    fields: MobilePhotoOrderByRelevanceFieldEnum | MobilePhotoOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type MobilePhotoCountOrderByAggregateInput = {
+    id?: SortOrder
+    turnoId?: SortOrder
+    tipo?: SortOrder
+    checklistPreenchidoId?: SortOrder
+    checklistRespostaId?: SortOrder
+    sequenciaAssinatura?: SortOrder
+    servicoId?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    checksum?: SortOrder
+    storagePath?: SortOrder
+    url?: SortOrder
+    capturedAt?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type MobilePhotoAvgOrderByAggregateInput = {
+    id?: SortOrder
+    turnoId?: SortOrder
+    checklistPreenchidoId?: SortOrder
+    checklistRespostaId?: SortOrder
+    sequenciaAssinatura?: SortOrder
+    servicoId?: SortOrder
+    fileSize?: SortOrder
+  }
+
+  export type MobilePhotoMaxOrderByAggregateInput = {
+    id?: SortOrder
+    turnoId?: SortOrder
+    tipo?: SortOrder
+    checklistPreenchidoId?: SortOrder
+    checklistRespostaId?: SortOrder
+    sequenciaAssinatura?: SortOrder
+    servicoId?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    checksum?: SortOrder
+    storagePath?: SortOrder
+    url?: SortOrder
+    capturedAt?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type MobilePhotoMinOrderByAggregateInput = {
+    id?: SortOrder
+    turnoId?: SortOrder
+    tipo?: SortOrder
+    checklistPreenchidoId?: SortOrder
+    checklistRespostaId?: SortOrder
+    sequenciaAssinatura?: SortOrder
+    servicoId?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    checksum?: SortOrder
+    storagePath?: SortOrder
+    url?: SortOrder
+    capturedAt?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type MobilePhotoSumOrderByAggregateInput = {
+    id?: SortOrder
+    turnoId?: SortOrder
+    checklistPreenchidoId?: SortOrder
+    checklistRespostaId?: SortOrder
+    sequenciaAssinatura?: SortOrder
+    servicoId?: SortOrder
+    fileSize?: SortOrder
+  }
+
+  export type MobileLocationOrderByRelevanceInput = {
+    fields: MobileLocationOrderByRelevanceFieldEnum | MobileLocationOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type MobileLocationCountOrderByAggregateInput = {
+    id?: SortOrder
+    turnoId?: SortOrder
+    veiculoRemoteId?: SortOrder
+    equipeRemoteId?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    accuracy?: SortOrder
+    provider?: SortOrder
+    batteryLevel?: SortOrder
+    tagType?: SortOrder
+    tagDetail?: SortOrder
+    capturedAt?: SortOrder
+    signature?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type MobileLocationAvgOrderByAggregateInput = {
+    id?: SortOrder
+    turnoId?: SortOrder
+    veiculoRemoteId?: SortOrder
+    equipeRemoteId?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    accuracy?: SortOrder
+    batteryLevel?: SortOrder
+  }
+
+  export type MobileLocationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    turnoId?: SortOrder
+    veiculoRemoteId?: SortOrder
+    equipeRemoteId?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    accuracy?: SortOrder
+    provider?: SortOrder
+    batteryLevel?: SortOrder
+    tagType?: SortOrder
+    tagDetail?: SortOrder
+    capturedAt?: SortOrder
+    signature?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type MobileLocationMinOrderByAggregateInput = {
+    id?: SortOrder
+    turnoId?: SortOrder
+    veiculoRemoteId?: SortOrder
+    equipeRemoteId?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    accuracy?: SortOrder
+    provider?: SortOrder
+    batteryLevel?: SortOrder
+    tagType?: SortOrder
+    tagDetail?: SortOrder
+    capturedAt?: SortOrder
+    signature?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: SortOrder
+    updatedAt?: SortOrder
+    updatedBy?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type MobileLocationSumOrderByAggregateInput = {
+    id?: SortOrder
+    turnoId?: SortOrder
+    veiculoRemoteId?: SortOrder
+    equipeRemoteId?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    accuracy?: SortOrder
+    batteryLevel?: SortOrder
   }
 
   export type SupervisorOrderByRelevanceInput = {

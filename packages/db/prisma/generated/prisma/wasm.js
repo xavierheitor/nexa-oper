@@ -738,6 +738,51 @@ exports.Prisma.EquipeTurnoHistoricoScalarFieldEnum = {
   deletedBy: 'deletedBy'
 };
 
+exports.Prisma.MobilePhotoScalarFieldEnum = {
+  id: 'id',
+  turnoId: 'turnoId',
+  tipo: 'tipo',
+  checklistPreenchidoId: 'checklistPreenchidoId',
+  checklistRespostaId: 'checklistRespostaId',
+  sequenciaAssinatura: 'sequenciaAssinatura',
+  servicoId: 'servicoId',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  fileSize: 'fileSize',
+  checksum: 'checksum',
+  storagePath: 'storagePath',
+  url: 'url',
+  capturedAt: 'capturedAt',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy',
+  updatedAt: 'updatedAt',
+  updatedBy: 'updatedBy',
+  deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy'
+};
+
+exports.Prisma.MobileLocationScalarFieldEnum = {
+  id: 'id',
+  turnoId: 'turnoId',
+  veiculoRemoteId: 'veiculoRemoteId',
+  equipeRemoteId: 'equipeRemoteId',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  accuracy: 'accuracy',
+  provider: 'provider',
+  batteryLevel: 'batteryLevel',
+  tagType: 'tagType',
+  tagDetail: 'tagDetail',
+  capturedAt: 'capturedAt',
+  signature: 'signature',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy',
+  updatedAt: 'updatedAt',
+  updatedBy: 'updatedBy',
+  deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy'
+};
+
 exports.Prisma.SupervisorScalarFieldEnum = {
   id: 'id',
   nome: 'nome',
@@ -1193,6 +1238,28 @@ exports.Prisma.EquipeTurnoHistoricoOrderByRelevanceFieldEnum = {
   deletedBy: 'deletedBy'
 };
 
+exports.Prisma.MobilePhotoOrderByRelevanceFieldEnum = {
+  tipo: 'tipo',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  checksum: 'checksum',
+  storagePath: 'storagePath',
+  url: 'url',
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
+  deletedBy: 'deletedBy'
+};
+
+exports.Prisma.MobileLocationOrderByRelevanceFieldEnum = {
+  provider: 'provider',
+  tagType: 'tagType',
+  tagDetail: 'tagDetail',
+  signature: 'signature',
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
+  deletedBy: 'deletedBy'
+};
+
 exports.Prisma.SupervisorOrderByRelevanceFieldEnum = {
   nome: 'nome',
   createdBy: 'createdBy',
@@ -1351,6 +1418,8 @@ exports.Prisma.ModelName = {
   EquipeHorarioVigencia: 'EquipeHorarioVigencia',
   HorarioAberturaCatalogo: 'HorarioAberturaCatalogo',
   EquipeTurnoHistorico: 'EquipeTurnoHistorico',
+  MobilePhoto: 'MobilePhoto',
+  MobileLocation: 'MobileLocation',
   Supervisor: 'Supervisor',
   Test: 'Test',
   Turno: 'Turno',

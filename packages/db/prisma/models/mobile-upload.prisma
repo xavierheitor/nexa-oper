@@ -1,0 +1,60 @@
+model MobilePhoto {
+  id Int @id @default(autoincrement())
+
+  turnoId Int
+  tipo    String @db.VarChar(100)
+
+  checklistPreenchidoId Int?
+  checklistRespostaId   Int?
+  sequenciaAssinatura   Int?
+  servicoId             Int?
+
+  fileName    String @db.VarChar(255)
+  mimeType    String @db.VarChar(100)
+  fileSize    Int
+  checksum    String @db.VarChar(128) @unique
+  storagePath String @db.VarChar(1024)
+  url         String @db.VarChar(1024)
+
+  capturedAt DateTime? @default(now())
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@index([turnoId], map: "idx_mobile_photo_turno")
+}
+
+model MobileLocation {
+  id Int @id @default(autoincrement())
+
+  turnoId Int
+
+  veiculoRemoteId Int?
+  equipeRemoteId  Int?
+
+  latitude Float
+  longitude Float
+  accuracy Float?
+
+  provider     String? @db.VarChar(100)
+  batteryLevel Int?
+  tagType      String? @db.VarChar(100)
+  tagDetail    String? @db.VarChar(255)
+
+  capturedAt DateTime @default(now())
+  signature  String   @db.VarChar(128) @unique
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@index([turnoId], map: "idx_mobile_location_turno")
+  @@index([capturedAt], map: "idx_mobile_location_captured_at")
+}

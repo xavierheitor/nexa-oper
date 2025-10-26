@@ -51,6 +51,7 @@ import { AtividadeModule } from './modules/atividade';
 import { TurnoModule } from './modules/turno';
 import { TipoVeiculoModule } from './modules/tipo-veiculo/tipo-veiculo.module';
 import { TipoEquipeModule } from './modules/tipo-equipe/tipo-equipe.module';
+import { MobileUploadModule } from './modules/mobile-upload/mobile-upload.module';
 
 /**
  * Módulo raiz da aplicação
@@ -84,6 +85,7 @@ import { TipoEquipeModule } from './modules/tipo-equipe/tipo-equipe.module';
     // Módulos de autenticação e permissões
     AuthModule,
     ContractsModule,
+    MobileUploadModule,
 
     // TODO: Adicionar outros módulos conforme necessário
     // UserModule,
