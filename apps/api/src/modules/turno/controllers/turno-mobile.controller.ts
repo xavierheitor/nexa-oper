@@ -120,16 +120,26 @@ export class TurnoMobileController {
       };
 
       // Adicionar informações de checklists se disponíveis
-      if ((turnoResult as any).checklistsSalvos !== undefined) {
-        response.checklistsSalvos = (turnoResult as any).checklistsSalvos;
-        response.pendenciasGeradas = (turnoResult as any).pendenciasGeradas;
-        response.respostasAguardandoFoto = (
-          turnoResult as any
-        ).respostasAguardandoFoto;
+      const checklistsSalvos = (turnoResult as any).checklistsSalvos;
+      const pendenciasGeradas = (turnoResult as any).pendenciasGeradas;
+      const respostasAguardandoFoto = (turnoResult as any)
+        .respostasAguardandoFoto;
 
-        this.logger.log(
-          `Checklists processados: ${response.checklistsSalvos} salvos, ${response.pendenciasGeradas} pendências, ${response.respostasAguardandoFoto.length} aguardando foto`
-        );
+      if (checklistsSalvos !== undefined) {
+        response.checklistsSalvos = checklistsSalvos;
+
+        // Processamento assíncrono
+        if ((turnoResult as any).processamentoAssincrono) {
+          response.processamentoAssincrono = 'Em andamento';
+        } else {
+          // Dados síncronos (caso existam)
+          response.pendenciasGeradas = pendenciasGeradas || 0;
+          response.respostasAguardandoFoto = respostasAguardandoFoto || [];
+
+          this.logger.log(
+            `Checklists processados: ${response.checklistsSalvos} salvos, ${response.pendenciasGeradas || 0} pendências`
+          );
+        }
       }
 
       return response;

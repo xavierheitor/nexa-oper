@@ -27,10 +27,14 @@ export class ChecklistPreenchidoService {
   /**
    * Salva múltiplos checklists de um turno em transação
    *
+   * IMPORTANTE: Este método salva apenas os checklists básicos dentro da transação.
+   * O processamento de pendências e marcação de fotos é feito de forma assíncrona
+   * para evitar problemas de timeout de transação.
+   *
    * @param turnoId - ID do turno
    * @param checklists - Lista de checklists para salvar
    * @param transaction - Transação Prisma (opcional)
-   * @returns Resultado do salvamento
+   * @returns Resultado do salvamento básico
    */
   async salvarChecklistsDoTurno(
     turnoId: number,
@@ -38,10 +42,10 @@ export class ChecklistPreenchidoService {
     transaction?: any
   ): Promise<{
     checklistsSalvos: number;
-    pendenciasGeradas: number;
-    respostasAguardandoFoto: Array<{
-      checklistRespostaId: number;
-      perguntaId: number;
+    checklistsPreenchidos: Array<{
+      id: number;
+      checklistId: number;
+      respostas: any[];
     }>;
   }> {
     this.logger.log(
@@ -50,10 +54,10 @@ export class ChecklistPreenchidoService {
 
     const prisma = transaction || this.db.getPrisma();
     let checklistsSalvos = 0;
-    let pendenciasGeradas = 0;
-    const respostasAguardandoFoto: Array<{
-      checklistRespostaId: number;
-      perguntaId: number;
+    const checklistsPreenchidos: Array<{
+      id: number;
+      checklistId: number;
+      respostas: any[];
     }> = [];
 
     try {
@@ -74,37 +78,93 @@ export class ChecklistPreenchidoService {
 
         checklistsSalvos++;
 
-        // Processar pendências automáticas
+        // Armazenar dados para processamento posterior
+        checklistsPreenchidos.push({
+          id: checklistPreenchido.id,
+          checklistId: checklistData.checklistId,
+          respostas: checklistData.respostas,
+        });
+      }
+
+      this.logger.log(`Checklists básicos salvos: ${checklistsSalvos}`);
+
+      return {
+        checklistsSalvos,
+        checklistsPreenchidos,
+      };
+    } catch (error) {
+      this.logger.error('Erro ao salvar checklists do turno:', error);
+      throw new BadRequestException('Erro ao salvar checklists do turno');
+    }
+  }
+
+  /**
+   * Processa pendências e marcações de foto de forma assíncrona
+   *
+   * Este método é chamado após o salvamento dos checklists para processar
+   * pendências automáticas e marcar respostas que aguardam foto.
+   * É executado fora da transação principal para evitar timeouts.
+   *
+   * @param checklistsPreenchidos - Lista de checklists preenchidos para processar
+   * @returns Resultado do processamento assíncrono
+   */
+  async processarChecklistsAssincrono(
+    checklistsPreenchidos: Array<{
+      id: number;
+      checklistId: number;
+      respostas: any[];
+    }>
+  ): Promise<{
+    pendenciasGeradas: number;
+    respostasAguardandoFoto: Array<{
+      checklistRespostaId: number;
+      perguntaId: number;
+    }>;
+  }> {
+    this.logger.log(
+      `Processando ${checklistsPreenchidos.length} checklists de forma assíncrona`
+    );
+
+    let pendenciasGeradas = 0;
+    const respostasAguardandoFoto: Array<{
+      checklistRespostaId: number;
+      perguntaId: number;
+    }> = [];
+
+    try {
+      for (const checklistPreenchido of checklistsPreenchidos) {
+        // Processar pendências automáticas (fora da transação)
         const pendencias = await this.processarPendenciasAutomaticas(
           checklistPreenchido.id,
-          checklistData.respostas,
-          prisma
+          checklistPreenchido.respostas
         );
 
         pendenciasGeradas += pendencias.length;
 
-        // Marcar respostas que aguardam foto
+        // Marcar respostas que aguardam foto (fora da transação)
         const respostasComFoto = await this.marcarRespostasAguardandoFoto(
           checklistPreenchido.id,
-          checklistData.respostas,
-          prisma
+          checklistPreenchido.respostas
         );
 
         respostasAguardandoFoto.push(...respostasComFoto);
       }
 
       this.logger.log(
-        `Checklists salvos: ${checklistsSalvos}, Pendências: ${pendenciasGeradas}, Aguardando foto: ${respostasAguardandoFoto.length}`
+        `Processamento assíncrono concluído - Pendências: ${pendenciasGeradas}, Aguardando foto: ${respostasAguardandoFoto.length}`
       );
 
       return {
-        checklistsSalvos,
         pendenciasGeradas,
         respostasAguardandoFoto,
       };
     } catch (error) {
-      this.logger.error('Erro ao salvar checklists do turno:', error);
-      throw new BadRequestException('Erro ao salvar checklists do turno');
+      this.logger.error('Erro no processamento assíncrono:', error);
+      // Não lançar erro aqui para não afetar a resposta principal
+      return {
+        pendenciasGeradas: 0,
+        respostasAguardandoFoto: [],
+      };
     }
   }
 
@@ -203,15 +263,13 @@ export class ChecklistPreenchidoService {
    *
    * @param checklistPreenchidoId - ID do checklist preenchido
    * @param respostas - Respostas do checklist
-   * @param transaction - Transação Prisma (opcional)
    * @returns Lista de pendências criadas
    */
   async processarPendenciasAutomaticas(
     checklistPreenchidoId: number,
-    respostas: any[],
-    transaction?: any
+    respostas: any[]
   ): Promise<any[]> {
-    const prisma = transaction || this.db.getPrisma();
+    const prisma = this.db.getPrisma();
     const pendencias: any[] = [];
 
     // Buscar informações do checklist preenchido
@@ -269,15 +327,13 @@ export class ChecklistPreenchidoService {
    *
    * @param checklistPreenchidoId - ID do checklist preenchido
    * @param respostas - Respostas do checklist
-   * @param transaction - Transação Prisma (opcional)
    * @returns Lista de respostas que aguardam foto
    */
   async marcarRespostasAguardandoFoto(
     checklistPreenchidoId: number,
-    respostas: any[],
-    transaction?: any
+    respostas: any[]
   ): Promise<Array<{ checklistRespostaId: number; perguntaId: number }>> {
-    const prisma = transaction || this.db.getPrisma();
+    const prisma = this.db.getPrisma();
     const respostasAguardandoFoto: Array<{
       checklistRespostaId: number;
       perguntaId: number;

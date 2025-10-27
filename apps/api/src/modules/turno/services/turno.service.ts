@@ -194,10 +194,10 @@ export class TurnoService {
             })),
           });
 
-          // Salvar checklists se fornecidos
-          let checklistsResult = null;
+          // Salvar checklists básicos se fornecidos (dentro da transação)
+          let checklistsBasicResult = null;
           if (abrirDto.checklists && abrirDto.checklists.length > 0) {
-            checklistsResult =
+            checklistsBasicResult =
               await this.checklistPreenchidoService.salvarChecklistsDoTurno(
                 turno.id,
                 abrirDto.checklists,
@@ -205,7 +205,7 @@ export class TurnoService {
               );
           }
 
-          return { turno, checklistsResult };
+          return { turno, checklistsBasicResult };
         });
 
       // Busca o turno completo com relacionamentos
@@ -213,15 +213,33 @@ export class TurnoService {
 
       this.logger.log(`Turno aberto com sucesso - ID: ${resultado.turno.id}`);
 
-      // Adicionar informações de checklists na resposta se disponíveis
+      // Processar pendências e fotos de forma assíncrona (fora da transação)
+      const checklistsParaProcessar =
+        resultado.checklistsBasicResult?.checklistsPreenchidos;
+      if (checklistsParaProcessar && checklistsParaProcessar.length > 0) {
+        this.logger.log(
+          'Iniciando processamento assíncrono de pendências e fotos'
+        );
+
+        // Executar processamento assíncrono sem aguardar
+        this.checklistPreenchidoService
+          .processarChecklistsAssincrono(checklistsParaProcessar)
+          .then(resultadoAssincrono => {
+            this.logger.log(
+              `Processamento assíncrono concluído - Pendências: ${resultadoAssincrono.pendenciasGeradas}, Aguardando foto: ${resultadoAssincrono.respostasAguardandoFoto.length}`
+            );
+          })
+          .catch(error => {
+            this.logger.error('Erro no processamento assíncrono:', error);
+          });
+      }
+
+      // Adicionar informações básicas de checklists na resposta
       const response = this.formatarTurnoResponse(turnoCompleto);
-      if (resultado.checklistsResult) {
+      if (resultado.checklistsBasicResult) {
         (response as any).checklistsSalvos =
-          resultado.checklistsResult.checklistsSalvos;
-        (response as any).pendenciasGeradas =
-          resultado.checklistsResult.pendenciasGeradas;
-        (response as any).respostasAguardandoFoto =
-          resultado.checklistsResult.respostasAguardandoFoto;
+          resultado.checklistsBasicResult.checklistsSalvos;
+        (response as any).processamentoAssincrono = 'Em andamento';
       }
 
       return response;
