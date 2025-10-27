@@ -7,7 +7,7 @@
 
 import { IsNotEmpty, IsString, IsInt, IsArray, IsOptional, IsNumber, IsObject, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { ChecklistRespostaDto } from './checklist-resposta.dto';
 
 /**
@@ -55,13 +55,31 @@ export class TurnoMobileDto {
 
   @ApiProperty({ description: 'Latitude' })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined || value === '') return undefined;
+    const num = Number(value);
+    return isNaN(num) ? undefined : num;
+  })
   @IsNumber()
   latitude?: number;
 
   @ApiProperty({ description: 'Longitude' })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined || value === '') return undefined;
+    const num = Number(value);
+    return isNaN(num) ? undefined : num;
+  })
   @IsNumber()
   longitude?: number;
+
+  @ApiProperty({
+    description: 'ID do dispositivo móvel',
+    example: 'android_abc123def456',
+  })
+  @IsNotEmpty()
+  @IsString()
+  deviceId: string;
 }
 
 /**
@@ -197,11 +215,21 @@ export class ChecklistMobileDto {
 
   @ApiProperty({ description: 'Latitude' })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined || value === '') return undefined;
+    const num = Number(value);
+    return isNaN(num) ? undefined : num;
+  })
   @IsNumber()
   latitude?: number;
 
   @ApiProperty({ description: 'Longitude' })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined || value === '') return undefined;
+    const num = Number(value);
+    return isNaN(num) ? undefined : num;
+  })
   @IsNumber()
   longitude?: number;
 

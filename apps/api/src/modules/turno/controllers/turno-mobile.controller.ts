@@ -226,7 +226,7 @@ export class TurnoMobileController {
     return {
       veiculoId: mobileDto.turno.veiculoId,
       equipeId: mobileDto.turno.equipeId,
-      dispositivo: `mobile-${mobileDto.turno.idLocal || 'unknown'}`, // Gerar um ID de dispositivo baseado no ID local
+      dispositivo: mobileDto.turno.deviceId, // Usar o deviceId enviado pelo app
       dataInicio: parseMobileDate(mobileDto.turno.horaInicio).toISOString(),
       kmInicio: mobileDto.turno.kmInicial,
       eletricistas: eletricistas,
