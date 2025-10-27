@@ -150,6 +150,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       '/dashboard/cadastro/usuario': 'usuarios',
       '/dashboard/cadastro/usuario-mobile': 'usuarios',
 
+      // Submenus de Turnos
+      '/dashboard/turnos': 'turnos-menu',
+      '/dashboard/historico': 'turnos-menu',
+
       // Escalas
       '/dashboard/cadastro/escala': 'cadastro',
     };
@@ -361,9 +365,19 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       ],
     },
     {
-      key: '/dashboard/turnos',
+      key: 'turnos-menu',
       icon: <ClockCircleOutlined />,
-      label: <Link href='/dashboard/turnos'>Turnos</Link>,
+      label: 'Turnos',
+      children: [
+        {
+          key: '/dashboard/turnos',
+          label: <Link href='/dashboard/turnos'>Visão Geral</Link>,
+        },
+        {
+          key: '/dashboard/historico',
+          label: <Link href='/dashboard/historico'>Histórico</Link>,
+        },
+      ],
     },
     {
       key: '/dashboard/pma',
