@@ -10,8 +10,8 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space } from 'antd';
-import { ClockCircleOutlined, CalendarOutlined } from '@ant-design/icons';
+import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, Button, Tooltip } from 'antd';
+import { ClockCircleOutlined, CalendarOutlined, CheckOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
@@ -20,6 +20,8 @@ import { Column } from '@ant-design/plots';
 import { getStatsByTipoEquipe } from '@/lib/actions/turno/getStatsByTipoEquipe';
 import { getStatsByHoraETipoEquipe } from '@/lib/actions/turno/getStatsByHoraETipoEquipe';
 import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
+import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
+import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 
 const { Title } = Typography;
 
@@ -79,6 +81,12 @@ export default function TurnosPage() {
     totalDiarios: 0,
     porBase: {} as Record<string, number>,
   });
+
+  // Estados para os modais de checklist
+  const [checklistSelectorVisible, setChecklistSelectorVisible] = useState(false);
+  const [checklistViewerVisible, setChecklistViewerVisible] = useState(false);
+  const [selectedTurno, setSelectedTurno] = useState<TurnoData | null>(null);
+  const [selectedChecklist, setSelectedChecklist] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -186,6 +194,27 @@ export default function TurnosPage() {
     fetchGraficoBase();
   }, []);
 
+  // Funções para lidar com os modais de checklist
+  const handleViewChecklists = (turno: TurnoData) => {
+    setSelectedTurno(turno);
+    setChecklistSelectorVisible(true);
+  };
+
+  const handleSelectChecklist = (checklist: any) => {
+    setSelectedChecklist(checklist);
+    setChecklistViewerVisible(true);
+  };
+
+  const handleCloseChecklistSelector = () => {
+    setChecklistSelectorVisible(false);
+    setSelectedTurno(null);
+  };
+
+  const handleCloseChecklistViewer = () => {
+    setChecklistViewerVisible(false);
+    setSelectedChecklist(null);
+  };
+
   const columns: ColumnsType<TurnoData> = [
     {
       title: 'ID',
@@ -224,7 +253,9 @@ export default function TurnosPage() {
       render: (_: unknown, record: TurnoData) => (
         <Space direction="vertical" size={0}>
           {record.eletricistas?.map((elet) => (
-            <span key={elet.id}>{elet.nome}</span>
+            <Tooltip key={elet.id} title={`Matrícula: ${elet.matricula}`}>
+              <span style={{ cursor: 'help' }}>{elet.nome}</span>
+            </Tooltip>
           ))}
         </Space>
       ),
@@ -253,6 +284,21 @@ export default function TurnosPage() {
           </Tag>
         );
       },
+    },
+    {
+      title: 'Ações',
+      key: 'actions',
+      width: 120,
+      render: (_: unknown, record: TurnoData) => (
+        <Tooltip title="Ver Checklists">
+          <Button
+            type="primary"
+            size="small"
+            icon={<CheckOutlined />}
+            onClick={() => handleViewChecklists(record)}
+          />
+        </Tooltip>
+      ),
     },
   ];
 
@@ -453,6 +499,25 @@ export default function TurnosPage() {
           }}
         />
       </Card>
+
+      {/* Modais de Checklist */}
+      <ChecklistSelectorModal
+        visible={checklistSelectorVisible}
+        onClose={handleCloseChecklistSelector}
+        turnoId={selectedTurno?.id || 0}
+        turnoInfo={{
+          veiculoPlaca: selectedTurno?.veiculoPlaca || '',
+          equipeNome: selectedTurno?.equipeNome || '',
+          dataInicio: selectedTurno?.dataInicio || '',
+        }}
+        onSelectChecklist={handleSelectChecklist}
+      />
+
+      <ChecklistViewerModal
+        visible={checklistViewerVisible}
+        onClose={handleCloseChecklistViewer}
+        checklist={selectedChecklist}
+      />
     </div>
   );
 }

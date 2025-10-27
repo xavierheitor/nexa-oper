@@ -419,7 +419,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           margin: '16px 0',
         }}
       >
-        SYMPLA
+        NEXA
       </Title>
 
       <Menu

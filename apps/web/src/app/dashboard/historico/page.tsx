@@ -8,14 +8,17 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, DatePicker, Button } from 'antd';
-import { ClockCircleOutlined, CalendarOutlined, SearchOutlined } from '@ant-design/icons';
+import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, DatePicker, Button, Tooltip } from 'antd';
+import { ClockCircleOutlined, CalendarOutlined, SearchOutlined, CheckOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { listTurnos } from '@/lib/actions/turno/list';
 import { Column } from '@ant-design/plots';
 import { getStatsByTipoEquipe } from '@/lib/actions/turno/getStatsByTipoEquipe';
 import { getStatsByHoraETipoEquipe } from '@/lib/actions/turno/getStatsByHoraETipoEquipe';
 import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
+import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
+import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
+import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -80,6 +83,12 @@ export default function HistoricoPage() {
   });
   const [dataSelecionada, setDataSelecionada] = useState<dayjs.Dayjs>(dayjs());
 
+  // Estados para os modais de checklist
+  const [checklistSelectorVisible, setChecklistSelectorVisible] = useState(false);
+  const [checklistViewerVisible, setChecklistViewerVisible] = useState(false);
+  const [selectedTurno, setSelectedTurno] = useState<TurnoData | null>(null);
+  const [selectedChecklist, setSelectedChecklist] = useState<any>(null);
+
   const buscarHistorico = async (data: dayjs.Dayjs) => {
     setLoading(true);
     try {
@@ -97,7 +106,25 @@ export default function HistoricoPage() {
 
       if (result.success && result.data) {
         const turnos = result.data.data || [];
-        setTurnosHistorico(turnos);
+        const turnosMapeados: TurnoData[] = turnos.map((turno: any) => ({
+          id: turno.id,
+          dataSolicitacao: turno.dataSolicitacao,
+          dataInicio: turno.dataInicio,
+          dataFim: turno.dataFim,
+          veiculoId: turno.veiculoId,
+          veiculoPlaca: turno.veiculoPlaca || 'N/A',
+          veiculoModelo: turno.veiculoModelo || 'N/A',
+          equipeId: turno.equipeId,
+          equipeNome: turno.equipeNome || 'N/A',
+          tipoEquipeNome: turno.tipoEquipeNome || 'N/A',
+          baseNome: turno.baseNome || 'N/A',
+          dispositivo: turno.dispositivo,
+          kmInicio: turno.kmInicio,
+          kmFim: turno.kmFim,
+          status: turno.dataFim ? 'FECHADO' : 'ABERTO',
+          eletricistas: turno.eletricistas || [],
+        }));
+        setTurnosHistorico(turnosMapeados);
 
         // Calcular estatísticas
         const porBase: Record<string, number> = {};
@@ -132,32 +159,127 @@ export default function HistoricoPage() {
     }
   };
 
-  const buscarGraficos = async () => {
+  const buscarGraficos = async (data: dayjs.Dayjs) => {
     setLoadingGrafico(true);
     setLoadingGraficoHora(true);
     setLoadingGraficoBase(true);
 
     try {
-      // Buscar dados dos gráficos
-      const [resultTipo, resultHora, resultBase] = await Promise.all([
-        getStatsByTipoEquipe(),
-        getStatsByHoraETipoEquipe(),
-        getStatsByBase(),
-      ]);
+      // Calcular dados dos gráficos baseados nos turnos da data selecionada
+      const inicioDia = data.startOf('day').toDate();
+      const fimDia = data.endOf('day').toDate();
 
-      if (resultTipo.success && resultTipo.data) {
-        setDadosGrafico(resultTipo.data);
+      // Buscar todos os tipos de equipe do banco de dados
+      const resultTipos = await listTiposEquipe({
+        page: 1,
+        pageSize: 100,
+        orderBy: 'nome',
+        orderDir: 'asc',
+      });
+
+      if (!resultTipos.success || !resultTipos.data) {
+        throw new Error('Erro ao buscar tipos de equipe');
       }
+
+      const todosOsTipos = resultTipos.data.data?.map((tipo: any) => tipo.nome) || [];
+
+      // Buscar turnos da data específica para calcular estatísticas
+      const result = await listTurnos({
+        page: 1,
+        pageSize: 1000,
+        dataInicio: inicioDia,
+        dataFim: fimDia,
+      });
+
+      if (result.success && result.data) {
+        const turnos = result.data.data || [];
+
+        // Calcular estatísticas por tipo de equipe - sempre mostrar todos os tipos
+        const statsPorTipo: Record<string, number> = {};
+
+        // Inicializar todos os tipos com quantidade 0
+        todosOsTipos.forEach(tipo => {
+          statsPorTipo[tipo] = 0;
+        });
+
+        // Processar turnos existentes
+        turnos.forEach((turno: any) => {
+          const tipo = turno.tipoEquipeNome || 'Não identificado';
+          if (statsPorTipo[tipo] !== undefined) {
+            statsPorTipo[tipo] = (statsPorTipo[tipo] || 0) + 1;
+          }
+        });
+
+        const dadosTipo = Object.entries(statsPorTipo).map(([tipo, quantidade]) => ({
+          tipo,
+          quantidade,
+        }));
+        setDadosGrafico(dadosTipo);
+
+        // Calcular estatísticas por hora - sempre mostrar todas as 24 horas
+        const statsPorHora: Record<string, Record<string, number>> = {};
+
+        // Inicializar todas as horas de 0 a 23
+        for (let i = 0; i < 24; i++) {
+          statsPorHora[i] = {};
+        }
+
+        // Processar turnos existentes
+        turnos.forEach((turno: any) => {
+          const hora = new Date(turno.dataInicio).getHours();
+          const tipo = turno.tipoEquipeNome || 'Não identificado';
+          statsPorHora[hora][tipo] = (statsPorHora[hora][tipo] || 0) + 1;
+        });
+
+        // Usar todos os tipos de equipe do banco de dados
+        const tiposUnicos = todosOsTipos;
+
+        const dadosHora = Object.entries(statsPorHora).flatMap(([hora, tipos]) => {
+          // Se não há turnos nesta hora, mostrar todos os tipos com quantidade 0
+          if (Object.keys(tipos).length === 0) {
+            return tiposUnicos.map((tipo) => ({
+              hora: hora,
+              tipo,
+              quantidade: 0,
+            }));
+          }
+
+          // Se há turnos, mostrar os tipos existentes e preencher os ausentes com 0
+          return tiposUnicos.map((tipo) => ({
+            hora: hora,
+            tipo,
+            quantidade: tipos[tipo] || 0,
+          }));
+        });
+        setDadosGraficoHora(dadosHora);
+
+        // Calcular estatísticas por base - sempre mostrar todas as bases
+        const statsPorBase: Record<string, number> = {};
+
+        // Primeiro, obter todas as bases únicas do banco de dados
+        // Para garantir que mostramos todas as bases, mesmo as sem turnos
+        const todasAsBases = [...new Set(turnos.map((turno: any) => turno.baseNome || 'Não identificada'))];
+
+        // Inicializar todas as bases com quantidade 0
+        todasAsBases.forEach(base => {
+          statsPorBase[base] = 0;
+        });
+
+        // Processar turnos existentes
+        turnos.forEach((turno: any) => {
+          const base = turno.baseNome || 'Não identificada';
+          statsPorBase[base] = (statsPorBase[base] || 0) + 1;
+        });
+
+        const dadosBase = Object.entries(statsPorBase).map(([base, quantidade]) => ({
+          base,
+          quantidade,
+        }));
+        setDadosGraficoBase(dadosBase);
+      }
+
       setLoadingGrafico(false);
-
-      if (resultHora.success && resultHora.data) {
-        setDadosGraficoHora(resultHora.data);
-      }
       setLoadingGraficoHora(false);
-
-      if (resultBase.success && resultBase.data) {
-        setDadosGraficoBase(resultBase.data);
-      }
       setLoadingGraficoBase(false);
     } catch (error) {
       console.error('Erro ao carregar dados dos gráficos:', error);
@@ -170,23 +292,40 @@ export default function HistoricoPage() {
   useEffect(() => {
     // Carregar dados iniciais (hoje)
     buscarHistorico(dataSelecionada);
-    buscarGraficos();
-  }, []);
+    buscarGraficos(dataSelecionada);
+  }, [dataSelecionada]);
 
   const handleDataChange = (date: dayjs.Dayjs | null) => {
     if (date) {
       setDataSelecionada(date);
       buscarHistorico(date);
+      buscarGraficos(date);
     }
   };
 
+  // Funções para lidar com os modais de checklist
+  const handleViewChecklists = (turno: TurnoData) => {
+    setSelectedTurno(turno);
+    setChecklistSelectorVisible(true);
+  };
+
+  const handleSelectChecklist = (checklist: any) => {
+    setSelectedChecklist(checklist);
+    setChecklistViewerVisible(true);
+  };
+
+  const handleCloseChecklistSelector = () => {
+    setChecklistSelectorVisible(false);
+    setSelectedTurno(null);
+  };
+
+  const handleCloseChecklistViewer = () => {
+    setChecklistViewerVisible(false);
+    setSelectedChecklist(null);
+  };
+
   const columns: ColumnsType<TurnoData> = [
-    {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 80,
-    },
+
     {
       title: 'Veículo',
       key: 'veiculo',
@@ -218,7 +357,9 @@ export default function HistoricoPage() {
       render: (_: unknown, record: TurnoData) => (
         <Space direction="vertical" size={0}>
           {record.eletricistas?.map((elet) => (
-            <span key={elet.id}>{elet.nome}</span>
+            <Tooltip key={elet.id} title={`Matrícula: ${elet.matricula}`}>
+              <span style={{ cursor: 'help' }}>{elet.nome}</span>
+            </Tooltip>
           ))}
         </Space>
       ),
@@ -260,6 +401,21 @@ export default function HistoricoPage() {
           </Tag>
         );
       },
+    },
+    {
+      title: 'Ações',
+      key: 'actions',
+      width: 120,
+      render: (_: unknown, record: TurnoData) => (
+        <Tooltip title="Ver Checklists">
+          <Button
+            type="primary"
+            size="small"
+            icon={<CheckOutlined />}
+            onClick={() => handleViewChecklists(record)}
+          />
+        </Tooltip>
+      ),
     },
   ];
 
@@ -307,26 +463,8 @@ export default function HistoricoPage() {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={8}>
-          <Card>
-            <Statistic
-              title="Turnos Abertos"
-              value={stats.totalAbertos}
-              prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card>
-            <Statistic
-              title="Turnos Fechados"
-              value={stats.totalFechados}
-              prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#722ed1' }}
-            />
-          </Card>
-        </Col>
+
+
       </Row>
 
       {/* Gráficos */}
@@ -490,6 +628,25 @@ export default function HistoricoPage() {
           }}
         />
       </Card>
+
+      {/* Modais de Checklist */}
+      <ChecklistSelectorModal
+        visible={checklistSelectorVisible}
+        onClose={handleCloseChecklistSelector}
+        turnoId={selectedTurno?.id || 0}
+        turnoInfo={{
+          veiculoPlaca: selectedTurno?.veiculoPlaca || '',
+          equipeNome: selectedTurno?.equipeNome || '',
+          dataInicio: selectedTurno?.dataInicio || '',
+        }}
+        onSelectChecklist={handleSelectChecklist}
+      />
+
+      <ChecklistViewerModal
+        visible={checklistViewerVisible}
+        onClose={handleCloseChecklistViewer}
+        checklist={selectedChecklist}
+      />
     </div>
   );
 }
