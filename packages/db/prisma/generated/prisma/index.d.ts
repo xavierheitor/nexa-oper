@@ -24239,6 +24239,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoMinAggregateOutputType = {
     id: number | null
+    uuid: string | null
     turnoId: number | null
     checklistId: number | null
     eletricistaId: number | null
@@ -24255,6 +24256,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoMaxAggregateOutputType = {
     id: number | null
+    uuid: string | null
     turnoId: number | null
     checklistId: number | null
     eletricistaId: number | null
@@ -24271,6 +24273,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoCountAggregateOutputType = {
     id: number
+    uuid: number
     turnoId: number
     checklistId: number
     eletricistaId: number
@@ -24307,6 +24310,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoMinAggregateInputType = {
     id?: true
+    uuid?: true
     turnoId?: true
     checklistId?: true
     eletricistaId?: true
@@ -24323,6 +24327,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoMaxAggregateInputType = {
     id?: true
+    uuid?: true
     turnoId?: true
     checklistId?: true
     eletricistaId?: true
@@ -24339,6 +24344,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoCountAggregateInputType = {
     id?: true
+    uuid?: true
     turnoId?: true
     checklistId?: true
     eletricistaId?: true
@@ -24442,6 +24448,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoGroupByOutputType = {
     id: number
+    uuid: string
     turnoId: number
     checklistId: number
     eletricistaId: number
@@ -24477,6 +24484,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    uuid?: boolean
     turnoId?: boolean
     checklistId?: boolean
     eletricistaId?: boolean
@@ -24501,6 +24509,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoSelectScalar = {
     id?: boolean
+    uuid?: boolean
     turnoId?: boolean
     checklistId?: boolean
     eletricistaId?: boolean
@@ -24515,7 +24524,7 @@ export namespace Prisma {
     deletedBy?: boolean
   }
 
-  export type ChecklistPreenchidoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "turnoId" | "checklistId" | "eletricistaId" | "dataPreenchimento" | "latitude" | "longitude" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["checklistPreenchido"]>
+  export type ChecklistPreenchidoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "uuid" | "turnoId" | "checklistId" | "eletricistaId" | "dataPreenchimento" | "latitude" | "longitude" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["checklistPreenchido"]>
   export type ChecklistPreenchidoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     turno?: boolean | TurnoDefaultArgs<ExtArgs>
     checklist?: boolean | ChecklistDefaultArgs<ExtArgs>
@@ -24536,6 +24545,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
+      uuid: string
       turnoId: number
       checklistId: number
       eletricistaId: number
@@ -24923,6 +24933,7 @@ export namespace Prisma {
    */
   interface ChecklistPreenchidoFieldRefs {
     readonly id: FieldRef<"ChecklistPreenchido", 'Int'>
+    readonly uuid: FieldRef<"ChecklistPreenchido", 'String'>
     readonly turnoId: FieldRef<"ChecklistPreenchido", 'Int'>
     readonly checklistId: FieldRef<"ChecklistPreenchido", 'Int'>
     readonly eletricistaId: FieldRef<"ChecklistPreenchido", 'Int'>
@@ -56788,7 +56799,7 @@ export namespace Prisma {
     id: number | null
     turnoId: number | null
     checklistPreenchidoId: number | null
-    checklistRespostaId: number | null
+    checklistPerguntaId: number | null
     sequenciaAssinatura: number | null
     servicoId: number | null
     fileSize: number | null
@@ -56798,7 +56809,7 @@ export namespace Prisma {
     id: number | null
     turnoId: number | null
     checklistPreenchidoId: number | null
-    checklistRespostaId: number | null
+    checklistPerguntaId: number | null
     sequenciaAssinatura: number | null
     servicoId: number | null
     fileSize: number | null
@@ -56809,7 +56820,8 @@ export namespace Prisma {
     turnoId: number | null
     tipo: string | null
     checklistPreenchidoId: number | null
-    checklistRespostaId: number | null
+    checklistUuid: string | null
+    checklistPerguntaId: number | null
     sequenciaAssinatura: number | null
     servicoId: number | null
     fileName: string | null
@@ -56832,7 +56844,8 @@ export namespace Prisma {
     turnoId: number | null
     tipo: string | null
     checklistPreenchidoId: number | null
-    checklistRespostaId: number | null
+    checklistUuid: string | null
+    checklistPerguntaId: number | null
     sequenciaAssinatura: number | null
     servicoId: number | null
     fileName: string | null
@@ -56855,7 +56868,8 @@ export namespace Prisma {
     turnoId: number
     tipo: number
     checklistPreenchidoId: number
-    checklistRespostaId: number
+    checklistUuid: number
+    checklistPerguntaId: number
     sequenciaAssinatura: number
     servicoId: number
     fileName: number
@@ -56879,7 +56893,7 @@ export namespace Prisma {
     id?: true
     turnoId?: true
     checklistPreenchidoId?: true
-    checklistRespostaId?: true
+    checklistPerguntaId?: true
     sequenciaAssinatura?: true
     servicoId?: true
     fileSize?: true
@@ -56889,7 +56903,7 @@ export namespace Prisma {
     id?: true
     turnoId?: true
     checklistPreenchidoId?: true
-    checklistRespostaId?: true
+    checklistPerguntaId?: true
     sequenciaAssinatura?: true
     servicoId?: true
     fileSize?: true
@@ -56900,7 +56914,8 @@ export namespace Prisma {
     turnoId?: true
     tipo?: true
     checklistPreenchidoId?: true
-    checklistRespostaId?: true
+    checklistUuid?: true
+    checklistPerguntaId?: true
     sequenciaAssinatura?: true
     servicoId?: true
     fileName?: true
@@ -56923,7 +56938,8 @@ export namespace Prisma {
     turnoId?: true
     tipo?: true
     checklistPreenchidoId?: true
-    checklistRespostaId?: true
+    checklistUuid?: true
+    checklistPerguntaId?: true
     sequenciaAssinatura?: true
     servicoId?: true
     fileName?: true
@@ -56946,7 +56962,8 @@ export namespace Prisma {
     turnoId?: true
     tipo?: true
     checklistPreenchidoId?: true
-    checklistRespostaId?: true
+    checklistUuid?: true
+    checklistPerguntaId?: true
     sequenciaAssinatura?: true
     servicoId?: true
     fileName?: true
@@ -57056,7 +57073,8 @@ export namespace Prisma {
     turnoId: number
     tipo: string
     checklistPreenchidoId: number | null
-    checklistRespostaId: number | null
+    checklistUuid: string | null
+    checklistPerguntaId: number | null
     sequenciaAssinatura: number | null
     servicoId: number | null
     fileName: string
@@ -57098,7 +57116,8 @@ export namespace Prisma {
     turnoId?: boolean
     tipo?: boolean
     checklistPreenchidoId?: boolean
-    checklistRespostaId?: boolean
+    checklistUuid?: boolean
+    checklistPerguntaId?: boolean
     sequenciaAssinatura?: boolean
     servicoId?: boolean
     fileName?: boolean
@@ -57123,7 +57142,8 @@ export namespace Prisma {
     turnoId?: boolean
     tipo?: boolean
     checklistPreenchidoId?: boolean
-    checklistRespostaId?: boolean
+    checklistUuid?: boolean
+    checklistPerguntaId?: boolean
     sequenciaAssinatura?: boolean
     servicoId?: boolean
     fileName?: boolean
@@ -57141,7 +57161,7 @@ export namespace Prisma {
     deletedBy?: boolean
   }
 
-  export type MobilePhotoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "turnoId" | "tipo" | "checklistPreenchidoId" | "checklistRespostaId" | "sequenciaAssinatura" | "servicoId" | "fileName" | "mimeType" | "fileSize" | "checksum" | "storagePath" | "url" | "capturedAt" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["mobilePhoto"]>
+  export type MobilePhotoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "turnoId" | "tipo" | "checklistPreenchidoId" | "checklistUuid" | "checklistPerguntaId" | "sequenciaAssinatura" | "servicoId" | "fileName" | "mimeType" | "fileSize" | "checksum" | "storagePath" | "url" | "capturedAt" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["mobilePhoto"]>
 
   export type $MobilePhotoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "MobilePhoto"
@@ -57151,7 +57171,8 @@ export namespace Prisma {
       turnoId: number
       tipo: string
       checklistPreenchidoId: number | null
-      checklistRespostaId: number | null
+      checklistUuid: string | null
+      checklistPerguntaId: number | null
       sequenciaAssinatura: number | null
       servicoId: number | null
       fileName: string
@@ -57540,7 +57561,8 @@ export namespace Prisma {
     readonly turnoId: FieldRef<"MobilePhoto", 'Int'>
     readonly tipo: FieldRef<"MobilePhoto", 'String'>
     readonly checklistPreenchidoId: FieldRef<"MobilePhoto", 'Int'>
-    readonly checklistRespostaId: FieldRef<"MobilePhoto", 'Int'>
+    readonly checklistUuid: FieldRef<"MobilePhoto", 'String'>
+    readonly checklistPerguntaId: FieldRef<"MobilePhoto", 'Int'>
     readonly sequenciaAssinatura: FieldRef<"MobilePhoto", 'Int'>
     readonly servicoId: FieldRef<"MobilePhoto", 'Int'>
     readonly fileName: FieldRef<"MobilePhoto", 'String'>
@@ -67619,6 +67641,7 @@ export namespace Prisma {
 
   export const ChecklistPreenchidoScalarFieldEnum: {
     id: 'id',
+    uuid: 'uuid',
     turnoId: 'turnoId',
     checklistId: 'checklistId',
     eletricistaId: 'eletricistaId',
@@ -68145,7 +68168,8 @@ export namespace Prisma {
     turnoId: 'turnoId',
     tipo: 'tipo',
     checklistPreenchidoId: 'checklistPreenchidoId',
-    checklistRespostaId: 'checklistRespostaId',
+    checklistUuid: 'checklistUuid',
+    checklistPerguntaId: 'checklistPerguntaId',
     sequenciaAssinatura: 'sequenciaAssinatura',
     servicoId: 'servicoId',
     fileName: 'fileName',
@@ -68500,6 +68524,7 @@ export namespace Prisma {
 
 
   export const ChecklistPreenchidoOrderByRelevanceFieldEnum: {
+    uuid: 'uuid',
     createdBy: 'createdBy',
     updatedBy: 'updatedBy',
     deletedBy: 'deletedBy'
@@ -68825,6 +68850,7 @@ export namespace Prisma {
 
   export const MobilePhotoOrderByRelevanceFieldEnum: {
     tipo: 'tipo',
+    checklistUuid: 'checklistUuid',
     fileName: 'fileName',
     mimeType: 'mimeType',
     checksum: 'checksum',
@@ -70333,6 +70359,7 @@ export namespace Prisma {
     OR?: ChecklistPreenchidoWhereInput[]
     NOT?: ChecklistPreenchidoWhereInput | ChecklistPreenchidoWhereInput[]
     id?: IntFilter<"ChecklistPreenchido"> | number
+    uuid?: StringFilter<"ChecklistPreenchido"> | string
     turnoId?: IntFilter<"ChecklistPreenchido"> | number
     checklistId?: IntFilter<"ChecklistPreenchido"> | number
     eletricistaId?: IntFilter<"ChecklistPreenchido"> | number
@@ -70354,6 +70381,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoOrderByWithRelationInput = {
     id?: SortOrder
+    uuid?: SortOrder
     turnoId?: SortOrder
     checklistId?: SortOrder
     eletricistaId?: SortOrder
@@ -70376,6 +70404,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoWhereUniqueInput = Prisma.AtLeast<{
     id?: number
+    uuid?: string
     AND?: ChecklistPreenchidoWhereInput | ChecklistPreenchidoWhereInput[]
     OR?: ChecklistPreenchidoWhereInput[]
     NOT?: ChecklistPreenchidoWhereInput | ChecklistPreenchidoWhereInput[]
@@ -70396,10 +70425,11 @@ export namespace Prisma {
     eletricista?: XOR<EletricistaScalarRelationFilter, EletricistaWhereInput>
     ChecklistResposta?: ChecklistRespostaListRelationFilter
     ChecklistPendencia?: ChecklistPendenciaListRelationFilter
-  }, "id">
+  }, "id" | "uuid">
 
   export type ChecklistPreenchidoOrderByWithAggregationInput = {
     id?: SortOrder
+    uuid?: SortOrder
     turnoId?: SortOrder
     checklistId?: SortOrder
     eletricistaId?: SortOrder
@@ -70424,6 +70454,7 @@ export namespace Prisma {
     OR?: ChecklistPreenchidoScalarWhereWithAggregatesInput[]
     NOT?: ChecklistPreenchidoScalarWhereWithAggregatesInput | ChecklistPreenchidoScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"ChecklistPreenchido"> | number
+    uuid?: StringWithAggregatesFilter<"ChecklistPreenchido"> | string
     turnoId?: IntWithAggregatesFilter<"ChecklistPreenchido"> | number
     checklistId?: IntWithAggregatesFilter<"ChecklistPreenchido"> | number
     eletricistaId?: IntWithAggregatesFilter<"ChecklistPreenchido"> | number
@@ -73214,7 +73245,8 @@ export namespace Prisma {
     turnoId?: IntFilter<"MobilePhoto"> | number
     tipo?: StringFilter<"MobilePhoto"> | string
     checklistPreenchidoId?: IntNullableFilter<"MobilePhoto"> | number | null
-    checklistRespostaId?: IntNullableFilter<"MobilePhoto"> | number | null
+    checklistUuid?: StringNullableFilter<"MobilePhoto"> | string | null
+    checklistPerguntaId?: IntNullableFilter<"MobilePhoto"> | number | null
     sequenciaAssinatura?: IntNullableFilter<"MobilePhoto"> | number | null
     servicoId?: IntNullableFilter<"MobilePhoto"> | number | null
     fileName?: StringFilter<"MobilePhoto"> | string
@@ -73237,7 +73269,8 @@ export namespace Prisma {
     turnoId?: SortOrder
     tipo?: SortOrder
     checklistPreenchidoId?: SortOrderInput | SortOrder
-    checklistRespostaId?: SortOrderInput | SortOrder
+    checklistUuid?: SortOrderInput | SortOrder
+    checklistPerguntaId?: SortOrderInput | SortOrder
     sequenciaAssinatura?: SortOrderInput | SortOrder
     servicoId?: SortOrderInput | SortOrder
     fileName?: SortOrder
@@ -73265,7 +73298,8 @@ export namespace Prisma {
     turnoId?: IntFilter<"MobilePhoto"> | number
     tipo?: StringFilter<"MobilePhoto"> | string
     checklistPreenchidoId?: IntNullableFilter<"MobilePhoto"> | number | null
-    checklistRespostaId?: IntNullableFilter<"MobilePhoto"> | number | null
+    checklistUuid?: StringNullableFilter<"MobilePhoto"> | string | null
+    checklistPerguntaId?: IntNullableFilter<"MobilePhoto"> | number | null
     sequenciaAssinatura?: IntNullableFilter<"MobilePhoto"> | number | null
     servicoId?: IntNullableFilter<"MobilePhoto"> | number | null
     fileName?: StringFilter<"MobilePhoto"> | string
@@ -73287,7 +73321,8 @@ export namespace Prisma {
     turnoId?: SortOrder
     tipo?: SortOrder
     checklistPreenchidoId?: SortOrderInput | SortOrder
-    checklistRespostaId?: SortOrderInput | SortOrder
+    checklistUuid?: SortOrderInput | SortOrder
+    checklistPerguntaId?: SortOrderInput | SortOrder
     sequenciaAssinatura?: SortOrderInput | SortOrder
     servicoId?: SortOrderInput | SortOrder
     fileName?: SortOrder
@@ -73318,7 +73353,8 @@ export namespace Prisma {
     turnoId?: IntWithAggregatesFilter<"MobilePhoto"> | number
     tipo?: StringWithAggregatesFilter<"MobilePhoto"> | string
     checklistPreenchidoId?: IntNullableWithAggregatesFilter<"MobilePhoto"> | number | null
-    checklistRespostaId?: IntNullableWithAggregatesFilter<"MobilePhoto"> | number | null
+    checklistUuid?: StringNullableWithAggregatesFilter<"MobilePhoto"> | string | null
+    checklistPerguntaId?: IntNullableWithAggregatesFilter<"MobilePhoto"> | number | null
     sequenciaAssinatura?: IntNullableWithAggregatesFilter<"MobilePhoto"> | number | null
     servicoId?: IntNullableWithAggregatesFilter<"MobilePhoto"> | number | null
     fileName?: StringWithAggregatesFilter<"MobilePhoto"> | string
@@ -75452,6 +75488,7 @@ export namespace Prisma {
   }
 
   export type ChecklistPreenchidoCreateInput = {
+    uuid: string
     dataPreenchimento: Date | string
     latitude?: number | null
     longitude?: number | null
@@ -75470,6 +75507,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedCreateInput = {
     id?: number
+    uuid: string
     turnoId: number
     checklistId: number
     eletricistaId: number
@@ -75487,6 +75525,7 @@ export namespace Prisma {
   }
 
   export type ChecklistPreenchidoUpdateInput = {
+    uuid?: StringFieldUpdateOperationsInput | string
     dataPreenchimento?: DateTimeFieldUpdateOperationsInput | Date | string
     latitude?: NullableFloatFieldUpdateOperationsInput | number | null
     longitude?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -75505,6 +75544,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
+    uuid?: StringFieldUpdateOperationsInput | string
     turnoId?: IntFieldUpdateOperationsInput | number
     checklistId?: IntFieldUpdateOperationsInput | number
     eletricistaId?: IntFieldUpdateOperationsInput | number
@@ -75523,6 +75563,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoCreateManyInput = {
     id?: number
+    uuid: string
     turnoId: number
     checklistId: number
     eletricistaId: number
@@ -75538,6 +75579,7 @@ export namespace Prisma {
   }
 
   export type ChecklistPreenchidoUpdateManyMutationInput = {
+    uuid?: StringFieldUpdateOperationsInput | string
     dataPreenchimento?: DateTimeFieldUpdateOperationsInput | Date | string
     latitude?: NullableFloatFieldUpdateOperationsInput | number | null
     longitude?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -75551,6 +75593,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
+    uuid?: StringFieldUpdateOperationsInput | string
     turnoId?: IntFieldUpdateOperationsInput | number
     checklistId?: IntFieldUpdateOperationsInput | number
     eletricistaId?: IntFieldUpdateOperationsInput | number
@@ -78520,7 +78563,8 @@ export namespace Prisma {
     turnoId: number
     tipo: string
     checklistPreenchidoId?: number | null
-    checklistRespostaId?: number | null
+    checklistUuid?: string | null
+    checklistPerguntaId?: number | null
     sequenciaAssinatura?: number | null
     servicoId?: number | null
     fileName: string
@@ -78543,7 +78587,8 @@ export namespace Prisma {
     turnoId: number
     tipo: string
     checklistPreenchidoId?: number | null
-    checklistRespostaId?: number | null
+    checklistUuid?: string | null
+    checklistPerguntaId?: number | null
     sequenciaAssinatura?: number | null
     servicoId?: number | null
     fileName: string
@@ -78565,7 +78610,8 @@ export namespace Prisma {
     turnoId?: IntFieldUpdateOperationsInput | number
     tipo?: StringFieldUpdateOperationsInput | string
     checklistPreenchidoId?: NullableIntFieldUpdateOperationsInput | number | null
-    checklistRespostaId?: NullableIntFieldUpdateOperationsInput | number | null
+    checklistUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    checklistPerguntaId?: NullableIntFieldUpdateOperationsInput | number | null
     sequenciaAssinatura?: NullableIntFieldUpdateOperationsInput | number | null
     servicoId?: NullableIntFieldUpdateOperationsInput | number | null
     fileName?: StringFieldUpdateOperationsInput | string
@@ -78588,7 +78634,8 @@ export namespace Prisma {
     turnoId?: IntFieldUpdateOperationsInput | number
     tipo?: StringFieldUpdateOperationsInput | string
     checklistPreenchidoId?: NullableIntFieldUpdateOperationsInput | number | null
-    checklistRespostaId?: NullableIntFieldUpdateOperationsInput | number | null
+    checklistUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    checklistPerguntaId?: NullableIntFieldUpdateOperationsInput | number | null
     sequenciaAssinatura?: NullableIntFieldUpdateOperationsInput | number | null
     servicoId?: NullableIntFieldUpdateOperationsInput | number | null
     fileName?: StringFieldUpdateOperationsInput | string
@@ -78611,7 +78658,8 @@ export namespace Prisma {
     turnoId: number
     tipo: string
     checklistPreenchidoId?: number | null
-    checklistRespostaId?: number | null
+    checklistUuid?: string | null
+    checklistPerguntaId?: number | null
     sequenciaAssinatura?: number | null
     servicoId?: number | null
     fileName: string
@@ -78633,7 +78681,8 @@ export namespace Prisma {
     turnoId?: IntFieldUpdateOperationsInput | number
     tipo?: StringFieldUpdateOperationsInput | string
     checklistPreenchidoId?: NullableIntFieldUpdateOperationsInput | number | null
-    checklistRespostaId?: NullableIntFieldUpdateOperationsInput | number | null
+    checklistUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    checklistPerguntaId?: NullableIntFieldUpdateOperationsInput | number | null
     sequenciaAssinatura?: NullableIntFieldUpdateOperationsInput | number | null
     servicoId?: NullableIntFieldUpdateOperationsInput | number | null
     fileName?: StringFieldUpdateOperationsInput | string
@@ -78656,7 +78705,8 @@ export namespace Prisma {
     turnoId?: IntFieldUpdateOperationsInput | number
     tipo?: StringFieldUpdateOperationsInput | string
     checklistPreenchidoId?: NullableIntFieldUpdateOperationsInput | number | null
-    checklistRespostaId?: NullableIntFieldUpdateOperationsInput | number | null
+    checklistUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    checklistPerguntaId?: NullableIntFieldUpdateOperationsInput | number | null
     sequenciaAssinatura?: NullableIntFieldUpdateOperationsInput | number | null
     servicoId?: NullableIntFieldUpdateOperationsInput | number | null
     fileName?: StringFieldUpdateOperationsInput | string
@@ -80754,6 +80804,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoCountOrderByAggregateInput = {
     id?: SortOrder
+    uuid?: SortOrder
     turnoId?: SortOrder
     checklistId?: SortOrder
     eletricistaId?: SortOrder
@@ -80779,6 +80830,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoMaxOrderByAggregateInput = {
     id?: SortOrder
+    uuid?: SortOrder
     turnoId?: SortOrder
     checklistId?: SortOrder
     eletricistaId?: SortOrder
@@ -80795,6 +80847,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoMinOrderByAggregateInput = {
     id?: SortOrder
+    uuid?: SortOrder
     turnoId?: SortOrder
     checklistId?: SortOrder
     eletricistaId?: SortOrder
@@ -83226,7 +83279,8 @@ export namespace Prisma {
     turnoId?: SortOrder
     tipo?: SortOrder
     checklistPreenchidoId?: SortOrder
-    checklistRespostaId?: SortOrder
+    checklistUuid?: SortOrder
+    checklistPerguntaId?: SortOrder
     sequenciaAssinatura?: SortOrder
     servicoId?: SortOrder
     fileName?: SortOrder
@@ -83248,7 +83302,7 @@ export namespace Prisma {
     id?: SortOrder
     turnoId?: SortOrder
     checklistPreenchidoId?: SortOrder
-    checklistRespostaId?: SortOrder
+    checklistPerguntaId?: SortOrder
     sequenciaAssinatura?: SortOrder
     servicoId?: SortOrder
     fileSize?: SortOrder
@@ -83259,7 +83313,8 @@ export namespace Prisma {
     turnoId?: SortOrder
     tipo?: SortOrder
     checklistPreenchidoId?: SortOrder
-    checklistRespostaId?: SortOrder
+    checklistUuid?: SortOrder
+    checklistPerguntaId?: SortOrder
     sequenciaAssinatura?: SortOrder
     servicoId?: SortOrder
     fileName?: SortOrder
@@ -83282,7 +83337,8 @@ export namespace Prisma {
     turnoId?: SortOrder
     tipo?: SortOrder
     checklistPreenchidoId?: SortOrder
-    checklistRespostaId?: SortOrder
+    checklistUuid?: SortOrder
+    checklistPerguntaId?: SortOrder
     sequenciaAssinatura?: SortOrder
     servicoId?: SortOrder
     fileName?: SortOrder
@@ -83304,7 +83360,7 @@ export namespace Prisma {
     id?: SortOrder
     turnoId?: SortOrder
     checklistPreenchidoId?: SortOrder
-    checklistRespostaId?: SortOrder
+    checklistPerguntaId?: SortOrder
     sequenciaAssinatura?: SortOrder
     servicoId?: SortOrder
     fileSize?: SortOrder
@@ -90426,6 +90482,7 @@ export namespace Prisma {
   }
 
   export type ChecklistPreenchidoCreateWithoutChecklistRespostaInput = {
+    uuid: string
     dataPreenchimento: Date | string
     latitude?: number | null
     longitude?: number | null
@@ -90443,6 +90500,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedCreateWithoutChecklistRespostaInput = {
     id?: number
+    uuid: string
     turnoId: number
     checklistId: number
     eletricistaId: number
@@ -90616,6 +90674,7 @@ export namespace Prisma {
   }
 
   export type ChecklistPreenchidoUpdateWithoutChecklistRespostaInput = {
+    uuid?: StringFieldUpdateOperationsInput | string
     dataPreenchimento?: DateTimeFieldUpdateOperationsInput | Date | string
     latitude?: NullableFloatFieldUpdateOperationsInput | number | null
     longitude?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -90633,6 +90692,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedUpdateWithoutChecklistRespostaInput = {
     id?: IntFieldUpdateOperationsInput | number
+    uuid?: StringFieldUpdateOperationsInput | string
     turnoId?: IntFieldUpdateOperationsInput | number
     checklistId?: IntFieldUpdateOperationsInput | number
     eletricistaId?: IntFieldUpdateOperationsInput | number
@@ -90840,6 +90900,7 @@ export namespace Prisma {
   }
 
   export type ChecklistPreenchidoCreateWithoutChecklistPendenciaInput = {
+    uuid: string
     dataPreenchimento: Date | string
     latitude?: number | null
     longitude?: number | null
@@ -90857,6 +90918,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedCreateWithoutChecklistPendenciaInput = {
     id?: number
+    uuid: string
     turnoId: number
     checklistId: number
     eletricistaId: number
@@ -91020,6 +91082,7 @@ export namespace Prisma {
   }
 
   export type ChecklistPreenchidoUpdateWithoutChecklistPendenciaInput = {
+    uuid?: StringFieldUpdateOperationsInput | string
     dataPreenchimento?: DateTimeFieldUpdateOperationsInput | Date | string
     latitude?: NullableFloatFieldUpdateOperationsInput | number | null
     longitude?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -91037,6 +91100,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedUpdateWithoutChecklistPendenciaInput = {
     id?: IntFieldUpdateOperationsInput | number
+    uuid?: StringFieldUpdateOperationsInput | string
     turnoId?: IntFieldUpdateOperationsInput | number
     checklistId?: IntFieldUpdateOperationsInput | number
     eletricistaId?: IntFieldUpdateOperationsInput | number
@@ -91578,6 +91642,7 @@ export namespace Prisma {
   }
 
   export type ChecklistPreenchidoCreateWithoutChecklistInput = {
+    uuid: string
     dataPreenchimento: Date | string
     latitude?: number | null
     longitude?: number | null
@@ -91595,6 +91660,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedCreateWithoutChecklistInput = {
     id?: number
+    uuid: string
     turnoId: number
     eletricistaId: number
     dataPreenchimento: Date | string
@@ -91784,6 +91850,7 @@ export namespace Prisma {
     OR?: ChecklistPreenchidoScalarWhereInput[]
     NOT?: ChecklistPreenchidoScalarWhereInput | ChecklistPreenchidoScalarWhereInput[]
     id?: IntFilter<"ChecklistPreenchido"> | number
+    uuid?: StringFilter<"ChecklistPreenchido"> | string
     turnoId?: IntFilter<"ChecklistPreenchido"> | number
     checklistId?: IntFilter<"ChecklistPreenchido"> | number
     eletricistaId?: IntFilter<"ChecklistPreenchido"> | number
@@ -93523,6 +93590,7 @@ export namespace Prisma {
   }
 
   export type ChecklistPreenchidoCreateWithoutEletricistaInput = {
+    uuid: string
     dataPreenchimento: Date | string
     latitude?: number | null
     longitude?: number | null
@@ -93540,6 +93608,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedCreateWithoutEletricistaInput = {
     id?: number
+    uuid: string
     turnoId: number
     checklistId: number
     dataPreenchimento: Date | string
@@ -96543,6 +96612,7 @@ export namespace Prisma {
   }
 
   export type ChecklistPreenchidoCreateWithoutTurnoInput = {
+    uuid: string
     dataPreenchimento: Date | string
     latitude?: number | null
     longitude?: number | null
@@ -96560,6 +96630,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedCreateWithoutTurnoInput = {
     id?: number
+    uuid: string
     checklistId: number
     eletricistaId: number
     dataPreenchimento: Date | string
@@ -98723,6 +98794,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoCreateManyChecklistInput = {
     id?: number
+    uuid: string
     turnoId: number
     eletricistaId: number
     dataPreenchimento: Date | string
@@ -98868,6 +98940,7 @@ export namespace Prisma {
   }
 
   export type ChecklistPreenchidoUpdateWithoutChecklistInput = {
+    uuid?: StringFieldUpdateOperationsInput | string
     dataPreenchimento?: DateTimeFieldUpdateOperationsInput | Date | string
     latitude?: NullableFloatFieldUpdateOperationsInput | number | null
     longitude?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -98885,6 +98958,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedUpdateWithoutChecklistInput = {
     id?: IntFieldUpdateOperationsInput | number
+    uuid?: StringFieldUpdateOperationsInput | string
     turnoId?: IntFieldUpdateOperationsInput | number
     eletricistaId?: IntFieldUpdateOperationsInput | number
     dataPreenchimento?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -98902,6 +98976,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedUpdateManyWithoutChecklistInput = {
     id?: IntFieldUpdateOperationsInput | number
+    uuid?: StringFieldUpdateOperationsInput | string
     turnoId?: IntFieldUpdateOperationsInput | number
     eletricistaId?: IntFieldUpdateOperationsInput | number
     dataPreenchimento?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -99484,6 +99559,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoCreateManyEletricistaInput = {
     id?: number
+    uuid: string
     turnoId: number
     checklistId: number
     dataPreenchimento: Date | string
@@ -99604,6 +99680,7 @@ export namespace Prisma {
   }
 
   export type ChecklistPreenchidoUpdateWithoutEletricistaInput = {
+    uuid?: StringFieldUpdateOperationsInput | string
     dataPreenchimento?: DateTimeFieldUpdateOperationsInput | Date | string
     latitude?: NullableFloatFieldUpdateOperationsInput | number | null
     longitude?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -99621,6 +99698,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedUpdateWithoutEletricistaInput = {
     id?: IntFieldUpdateOperationsInput | number
+    uuid?: StringFieldUpdateOperationsInput | string
     turnoId?: IntFieldUpdateOperationsInput | number
     checklistId?: IntFieldUpdateOperationsInput | number
     dataPreenchimento?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -99638,6 +99716,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedUpdateManyWithoutEletricistaInput = {
     id?: IntFieldUpdateOperationsInput | number
+    uuid?: StringFieldUpdateOperationsInput | string
     turnoId?: IntFieldUpdateOperationsInput | number
     checklistId?: IntFieldUpdateOperationsInput | number
     dataPreenchimento?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -100737,6 +100816,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoCreateManyTurnoInput = {
     id?: number
+    uuid: string
     checklistId: number
     eletricistaId: number
     dataPreenchimento: Date | string
@@ -100800,6 +100880,7 @@ export namespace Prisma {
   }
 
   export type ChecklistPreenchidoUpdateWithoutTurnoInput = {
+    uuid?: StringFieldUpdateOperationsInput | string
     dataPreenchimento?: DateTimeFieldUpdateOperationsInput | Date | string
     latitude?: NullableFloatFieldUpdateOperationsInput | number | null
     longitude?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -100817,6 +100898,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedUpdateWithoutTurnoInput = {
     id?: IntFieldUpdateOperationsInput | number
+    uuid?: StringFieldUpdateOperationsInput | string
     checklistId?: IntFieldUpdateOperationsInput | number
     eletricistaId?: IntFieldUpdateOperationsInput | number
     dataPreenchimento?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -100834,6 +100916,7 @@ export namespace Prisma {
 
   export type ChecklistPreenchidoUncheckedUpdateManyWithoutTurnoInput = {
     id?: IntFieldUpdateOperationsInput | number
+    uuid?: StringFieldUpdateOperationsInput | string
     checklistId?: IntFieldUpdateOperationsInput | number
     eletricistaId?: IntFieldUpdateOperationsInput | number
     dataPreenchimento?: DateTimeFieldUpdateOperationsInput | Date | string

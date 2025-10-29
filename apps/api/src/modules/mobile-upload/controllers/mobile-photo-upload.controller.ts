@@ -85,12 +85,12 @@ export class MobilePhotoUploadController {
           example: 'servico',
           enum: [...SUPPORTED_MOBILE_PHOTO_TYPES],
         },
-        checklistPreenchidoId: {
-          type: 'integer',
+        checklistUuid: {
+          type: 'string',
           nullable: true,
-          example: 987,
+          example: '550e8400-e29b-41d4-a716-446655440000',
         },
-        checklistRespostaId: {
+        checklistPerguntaId: {
           type: 'integer',
           nullable: true,
           example: 654,
@@ -127,14 +127,9 @@ export class MobilePhotoUploadController {
   ): Promise<PhotoUploadResponseDto> {
     this.logger.log(`Recebendo foto do turno ${body.turnoId}`);
 
-    const result = await this.mobilePhotoUploadService.handleUpload(
-      file,
-      body
-    );
+    const result = await this.mobilePhotoUploadService.handleUpload(file, body);
 
-    res.status(
-      result.status === 'stored' ? HttpStatus.CREATED : HttpStatus.OK
-    );
+    res.status(result.status === 'stored' ? HttpStatus.CREATED : HttpStatus.OK);
 
     return result;
   }

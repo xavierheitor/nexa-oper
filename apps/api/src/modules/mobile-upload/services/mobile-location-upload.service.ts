@@ -30,53 +30,56 @@ export class MobileLocationUploadService {
     payload: LocationUploadDto
   ): Promise<LocationUploadResponseDto> {
     const signature = this.buildSignature(payload);
+    const audit = createAuditData(getDefaultUserContext());
 
     const prisma = this.db.getPrisma();
-    const existing = await prisma.mobileLocation.findUnique({
-      where: { signature },
-    });
 
-    if (existing) {
-      this.logger.debug(
-        `Localização duplicada detectada (signature=${signature}), ignorando nova inserção`
+    try {
+      // Tentar inserir diretamente - se já existir, será capturado pelo catch
+      await prisma.mobileLocation.create({
+        data: {
+          turnoId: payload.turnoId,
+          veiculoRemoteId: payload.veiculoRemoteId ?? null,
+          equipeRemoteId: payload.equipeRemoteId ?? null,
+          latitude: payload.latitude,
+          longitude: payload.longitude,
+          accuracy: payload.accuracy ?? null,
+          provider: payload.provider ?? null,
+          batteryLevel: payload.batteryLevel ?? null,
+          tagType: payload.tagType ?? null,
+          tagDetail: payload.tagDetail ?? null,
+          capturedAt: payload.capturedAt
+            ? new Date(payload.capturedAt)
+            : new Date(),
+          signature,
+          ...audit,
+        },
+      });
+
+      this.logger.log(
+        `Localização armazenada com sucesso para turno ${payload.turnoId}`
       );
 
       return {
         status: 'ok',
-        alreadyExisted: true,
+        alreadyExisted: false,
       };
+    } catch (error) {
+      // Se for erro de constraint única, significa que já existe
+      if (error.code === 'P2002' && error.meta?.target?.includes('signature')) {
+        this.logger.debug(
+          `Localização duplicada detectada (signature=${signature}), ignorando nova inserção`
+        );
+
+        return {
+          status: 'ok',
+          alreadyExisted: true,
+        };
+      }
+
+      // Se for outro erro, relançar
+      throw error;
     }
-
-    const audit = createAuditData(getDefaultUserContext());
-
-    await prisma.mobileLocation.create({
-      data: {
-        turnoId: payload.turnoId,
-        veiculoRemoteId: payload.veiculoRemoteId ?? null,
-        equipeRemoteId: payload.equipeRemoteId ?? null,
-        latitude: payload.latitude,
-        longitude: payload.longitude,
-        accuracy: payload.accuracy ?? null,
-        provider: payload.provider ?? null,
-        batteryLevel: payload.batteryLevel ?? null,
-        tagType: payload.tagType ?? null,
-        tagDetail: payload.tagDetail ?? null,
-        capturedAt: payload.capturedAt
-          ? new Date(payload.capturedAt)
-          : new Date(),
-        signature,
-        ...audit,
-      },
-    });
-
-    this.logger.log(
-      `Localização armazenada com sucesso para turno ${payload.turnoId}`
-    );
-
-    return {
-      status: 'ok',
-      alreadyExisted: false,
-    };
   }
 
   /**

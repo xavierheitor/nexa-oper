@@ -307,6 +307,7 @@ exports.Prisma.BaseScalarFieldEnum = {
 
 exports.Prisma.ChecklistPreenchidoScalarFieldEnum = {
   id: 'id',
+  uuid: 'uuid',
   turnoId: 'turnoId',
   checklistId: 'checklistId',
   eletricistaId: 'eletricistaId',
@@ -743,7 +744,8 @@ exports.Prisma.MobilePhotoScalarFieldEnum = {
   turnoId: 'turnoId',
   tipo: 'tipo',
   checklistPreenchidoId: 'checklistPreenchidoId',
-  checklistRespostaId: 'checklistRespostaId',
+  checklistUuid: 'checklistUuid',
+  checklistPerguntaId: 'checklistPerguntaId',
   sequenciaAssinatura: 'sequenciaAssinatura',
   servicoId: 'servicoId',
   fileName: 'fileName',
@@ -1011,6 +1013,7 @@ exports.Prisma.BaseOrderByRelevanceFieldEnum = {
 };
 
 exports.Prisma.ChecklistPreenchidoOrderByRelevanceFieldEnum = {
+  uuid: 'uuid',
   createdBy: 'createdBy',
   updatedBy: 'updatedBy',
   deletedBy: 'deletedBy'
@@ -1240,6 +1243,7 @@ exports.Prisma.EquipeTurnoHistoricoOrderByRelevanceFieldEnum = {
 
 exports.Prisma.MobilePhotoOrderByRelevanceFieldEnum = {
   tipo: 'tipo',
+  checklistUuid: 'checklistUuid',
   fileName: 'fileName',
   mimeType: 'mimeType',
   checksum: 'checksum',

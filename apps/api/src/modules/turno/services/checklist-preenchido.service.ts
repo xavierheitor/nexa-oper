@@ -186,6 +186,7 @@ export class ChecklistPreenchidoService {
     // Criar checklist preenchido
     const checklistPreenchido = await prisma.checklistPreenchido.create({
       data: {
+        uuid: checklistData.uuid, // ✅ UUID obrigatório
         turnoId,
         checklistId: checklistData.checklistId,
         eletricistaId: checklistData.eletricistaId,

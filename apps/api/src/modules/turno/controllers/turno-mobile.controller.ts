@@ -12,7 +12,6 @@ import {
   HttpStatus,
   Logger,
   UseGuards,
-  HttpException,
   BadRequestException,
   UseInterceptors,
 } from '@nestjs/common';
@@ -33,7 +32,10 @@ import {
 import { TurnoService } from '../services/turno.service';
 import { AbrirTurnoDto, EletricistaTurnoDto, FecharTurnoDto } from '../dto';
 import { parseMobileDate } from '@common/utils/date-timezone';
-import { createStandardErrorResponse, handleValidationError } from '@common/utils/error-response';
+import {
+  createStandardErrorResponse,
+  handleValidationError,
+} from '@common/utils/error-response';
 import { ValidationErrorInterceptor } from '@common/interceptors/validation-error.interceptor';
 
 /**
@@ -221,16 +223,20 @@ export class TurnoMobileController {
     // Converter checklists do formato mobile para formato padrão
     const checklists =
       mobileDto.checklists?.map(checklist => ({
+        uuid: checklist.uuid, // ✅ UUID obrigatório
         checklistId: checklist.checklistModeloId,
         eletricistaId:
           checklist.eletricistaRemoteId || mobileDto.eletricistas[0].remoteId,
-        dataPreenchimento: parseMobileDate(checklist.dataPreenchimento).toISOString(),
+        dataPreenchimento: parseMobileDate(
+          checklist.dataPreenchimento
+        ).toISOString(),
         latitude: checklist.latitude,
         longitude: checklist.longitude,
-        respostas: checklist.respostas?.map(resposta => ({
-          ...resposta,
-          dataResposta: parseMobileDate(resposta.dataResposta).toISOString(),
-        })) || [],
+        respostas:
+          checklist.respostas?.map(resposta => ({
+            ...resposta,
+            dataResposta: parseMobileDate(resposta.dataResposta).toISOString(),
+          })) || [],
       })) || [];
 
     return {

@@ -283,6 +283,9 @@ model Base {
 model ChecklistPreenchido {
   id Int @id @default(autoincrement())
 
+  // UUID único gerado pelo app mobile (obrigatório)
+  uuid String @unique @db.VarChar(36)
+
   // Relacionamentos principais
   turnoId Int
   turno   Turno @relation(fields: [turnoId], references: [id], onDelete: Cascade)
@@ -1186,7 +1189,8 @@ model MobilePhoto {
   tipo    String @db.VarChar(100)
 
   checklistPreenchidoId Int?
-  checklistRespostaId   Int?
+  checklistUuid         String? @db.VarChar(36) // UUID do checklist preenchido
+  checklistPerguntaId   Int? // ID remoto da pergunta (enviado como checklistPerguntaId pelo app)
   sequenciaAssinatura   Int?
   servicoId             Int?
 

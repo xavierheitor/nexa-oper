@@ -15,8 +15,17 @@ import { ChecklistRespostaDto } from './checklist-resposta.dto';
  */
 export class SalvarChecklistPreenchidoDto {
   @ApiProperty({
+    description: 'UUID único do checklist preenchido (gerado pelo app mobile)',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsString()
+  uuid!: string;
+
+  @ApiProperty({
     description: 'ID do modelo/template do checklist',
-    example: 3
+    example: 3,
   })
   @IsNotEmpty()
   @IsInt()
@@ -24,7 +33,7 @@ export class SalvarChecklistPreenchidoDto {
 
   @ApiProperty({
     description: 'ID do eletricista que preencheu',
-    example: 5
+    example: 5,
   })
   @IsNotEmpty()
   @IsInt()
@@ -32,7 +41,7 @@ export class SalvarChecklistPreenchidoDto {
 
   @ApiProperty({
     description: 'Data e hora do preenchimento',
-    example: '2025-10-22T20:10:27.000Z'
+    example: '2025-10-22T20:10:27.000Z',
   })
   @IsNotEmpty()
   @IsDateString()
@@ -41,7 +50,7 @@ export class SalvarChecklistPreenchidoDto {
   @ApiProperty({
     description: 'Latitude do local do preenchimento',
     example: -23.5505,
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsNumber()
@@ -50,7 +59,7 @@ export class SalvarChecklistPreenchidoDto {
   @ApiProperty({
     description: 'Longitude do local do preenchimento',
     example: -46.6333,
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsNumber()
@@ -58,7 +67,7 @@ export class SalvarChecklistPreenchidoDto {
 
   @ApiProperty({
     description: 'Lista de respostas do checklist',
-    type: [ChecklistRespostaDto]
+    type: [ChecklistRespostaDto],
   })
   @IsNotEmpty()
   @IsArray()

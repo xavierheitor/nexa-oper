@@ -84,3 +84,5 @@ Thumbs.db
 # Temporary folders
 tmp/
 temp/
+
+apps/api/uploads

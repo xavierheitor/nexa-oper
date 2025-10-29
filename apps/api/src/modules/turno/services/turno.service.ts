@@ -86,15 +86,6 @@ interface FindAllParams {
 }
 
 /**
- * Interface para contexto de usuário (placeholder)
- */
-interface UserContext {
-  userId: string;
-  userName: string;
-  roles: string[];
-}
-
-/**
  * Serviço responsável pelas operações de turnos
  */
 @Injectable()
@@ -115,6 +106,7 @@ export class TurnoService {
    */
   async abrirTurno(
     abrirDto: AbrirTurnoDto,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     allowedContracts: ContractPermission[]
   ): Promise<TurnoResponseDto> {
     this.logger.log(
@@ -123,7 +115,6 @@ export class TurnoService {
 
     try {
       // Validação de permissões de contrato
-      const allowedContractIds = extractAllowedContractIds(allowedContracts);
       // Por enquanto, turnos não têm restrição de contrato direta
       // mas mantemos a estrutura para futuras implementações
 
@@ -264,13 +255,13 @@ export class TurnoService {
    */
   async fecharTurno(
     fecharDto: FecharTurnoDto,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     allowedContracts: ContractPermission[]
   ): Promise<TurnoResponseDto> {
     this.logger.log(`Fechando turno - ID: ${fecharDto.turnoId}`);
 
     try {
       // Validação de permissões de contrato
-      const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
       // Validação do ID
       validateId(fecharDto.turnoId, 'ID do turno');
@@ -568,7 +559,7 @@ export class TurnoService {
       validateId(id, 'ID do turno');
 
       // Verificação de existência
-      const turno = await this.findOne(id, allowedContracts);
+      await this.findOne(id, allowedContracts);
 
       // Contexto do usuário
       const userContext = getDefaultUserContext();

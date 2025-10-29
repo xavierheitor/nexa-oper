@@ -16,7 +16,7 @@ import { SUPPORTED_MOBILE_PHOTO_TYPES } from '../constants/mobile-upload.constan
 
 export class PhotoUploadDto {
   @ApiProperty({
-    description: 'Identificador local do turno no aplicativo',
+    description: 'Identificador do turno na API (remoteId do app)',
     example: 123,
   })
   @Type(() => Number)
@@ -33,22 +33,22 @@ export class PhotoUploadDto {
   tipo!: string;
 
   @ApiPropertyOptional({
-    description: 'Identificador do checklist preenchido relacionado à foto',
-    example: 987,
+    description: 'UUID único do checklist preenchido (gerado pelo app mobile)',
+    example: '550e8400-e29b-41d4-a716-446655440000',
   })
-  @Type(() => Number)
-  @IsInt()
+  @IsString()
   @IsOptional()
-  checklistPreenchidoId?: number;
+  checklistUuid?: string;
 
   @ApiPropertyOptional({
-    description: 'Identificador da resposta do checklist relacionada à foto',
+    description:
+      'ID remoto da pergunta que gerou a pendência (enviado como checklistPerguntaId pelo app)',
     example: 654,
   })
   @Type(() => Number)
   @IsInt()
   @IsOptional()
-  checklistRespostaId?: number;
+  checklistPerguntaId?: number;
 
   @ApiPropertyOptional({
     description: 'Sequência da assinatura (1 ou 2) quando aplicável',

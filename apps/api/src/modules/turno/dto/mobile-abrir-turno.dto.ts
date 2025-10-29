@@ -193,10 +193,13 @@ export class EletricistaMobileDto {
  * DTO para checklist enviado pelo mobile
  */
 export class ChecklistMobileDto {
-  @ApiProperty({ description: 'ID local do checklist' })
+  @ApiProperty({
+    description: 'UUID único do checklist preenchido (gerado pelo app mobile)',
+    required: true,
+  })
   @IsNotEmpty()
-  @IsInt()
-  idLocal: number;
+  @IsString()
+  uuid!: string;
 
   @ApiProperty({ description: 'ID do modelo do checklist' })
   @IsNotEmpty()

@@ -212,33 +212,60 @@ export default function ChecklistViewerModal({
                         </Divider>
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
-                          {resposta.ChecklistRespostaFoto.map((foto) => (
-                            <Card
-                              key={foto.id}
-                              size="small"
-                              hoverable
-                              onClick={() => handleImagePreview(foto.urlPublica || foto.caminhoArquivo)}
-                              style={{ cursor: 'pointer' }}
-                            >
-                              <div style={{ textAlign: 'center' }}>
-                                <Image
-                                  src={foto.urlPublica || foto.caminhoArquivo}
-                                  alt={`Foto ${foto.id}`}
-                                  style={{ width: '100%', height: 120, objectFit: 'cover' }}
-                                  preview={false}
-                                />
-                                <div style={{ marginTop: 8 }}>
-                                  <Text type="secondary" style={{ fontSize: 12 }}>
-                                    Foto {foto.id}
-                                  </Text>
-                                  <br />
-                                  <Text type="secondary" style={{ fontSize: 10 }}>
-                                    {formatFileSize(foto.tamanhoBytes)} • {foto.mimeType}
-                                  </Text>
+                          {resposta.ChecklistRespostaFoto.map((foto) => {
+                            const imageSrc = foto.urlPublica || foto.caminhoArquivo;
+                            const hasValidSrc = imageSrc && imageSrc.trim() !== '';
+
+                            return (
+                              <Card
+                                key={foto.id}
+                                size="small"
+                                hoverable={hasValidSrc}
+                                onClick={() => hasValidSrc && handleImagePreview(imageSrc)}
+                                style={{ cursor: hasValidSrc ? 'pointer' : 'default' }}
+                              >
+                                <div style={{ textAlign: 'center' }}>
+                                  {hasValidSrc ? (
+                                    <Image
+                                      src={imageSrc}
+                                      alt={`Foto ${foto.id}`}
+                                      style={{ width: '100%', height: 120, objectFit: 'cover' }}
+                                      preview={false}
+                                    />
+                                  ) : (
+                                    <div style={{
+                                      width: '100%',
+                                      height: 120,
+                                      backgroundColor: '#f5f5f5',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      border: '1px dashed #d9d9d9'
+                                    }}>
+                                      <Text type="secondary">URL não disponível</Text>
+                                    </div>
+                                  )}
+                                  <div style={{ marginTop: 8 }}>
+                                    <Text type="secondary" style={{ fontSize: 12 }}>
+                                      Foto {foto.id}
+                                    </Text>
+                                    <br />
+                                    <Text type="secondary" style={{ fontSize: 10 }}>
+                                      {formatFileSize(foto.tamanhoBytes)} • {foto.mimeType}
+                                    </Text>
+                                    {!hasValidSrc && (
+                                      <>
+                                        <br />
+                                        <Text type="danger" style={{ fontSize: 10 }}>
+                                          URL: {imageSrc || 'vazio'}
+                                        </Text>
+                                      </>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            </Card>
-                          ))}
+                              </Card>
+                            );
+                          })}
                         </div>
                       </>
                     )}
@@ -262,14 +289,16 @@ export default function ChecklistViewerModal({
       </Modal>
 
       {/* Preview de Imagem */}
-      <Image
-        style={{ display: 'none' }}
-        src={previewImage}
-        preview={{
-          visible: imagePreviewVisible,
-          onVisibleChange: setImagePreviewVisible,
-        }}
-      />
+      {previewImage && previewImage.trim() !== '' && (
+        <Image
+          style={{ display: 'none' }}
+          src={previewImage}
+          preview={{
+            visible: imagePreviewVisible,
+            onVisibleChange: setImagePreviewVisible,
+          }}
+        />
+      )}
     </>
   );
 }
