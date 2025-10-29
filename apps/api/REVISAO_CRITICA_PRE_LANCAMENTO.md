@@ -180,7 +180,7 @@ const corsOrigins =
 
 ---
 
-### 6. **Falta de Rate Limiting**
+### 6. **Falta de Rate Limiting** - IMPLEMENTADO
 
 **Localização:**
 
@@ -208,7 +208,7 @@ const corsOrigins =
 
 ---
 
-### 7. **Singleton Pattern Anti-pattern no DatabaseService**
+### 7. **Singleton Pattern Anti-pattern no DatabaseService** - CORRIGIDO
 
 **Localização:**
 

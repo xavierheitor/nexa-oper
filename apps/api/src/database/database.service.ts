@@ -1,30 +1,29 @@
 /**
- * Serviço de Banco de Dados com Singleton Pattern
+ * Serviço de Banco de Dados
  *
- * Este serviço fornece acesso direto ao Prisma Client através de um singleton,
- * eliminando a necessidade de chamar getPrisma() repetidamente.
+ * Este serviço gerencia a conexão com o banco de dados usando Prisma Client,
+ * configurando automaticamente o timezone para GMT-3 (Brasília) e seguindo
+ * os padrões de injeção de dependência do NestJS.
  *
  * FUNCIONALIDADES:
- * - Singleton pattern para instância única do Prisma
- * - Acesso direto aos modelos (db.user, db.test, etc.)
  * - Gerenciamento automático de conexão/desconexão
+ * - Configuração automática de timezone (GMT-3)
  * - Logging integrado para desenvolvimento
  * - Health check para monitoramento
+ * - Compatível com injeção de dependência do NestJS
  *
  * COMO USAR:
  * ```typescript
- * // Antes (com boilerplate):
- * const users = await databaseService.getPrisma().user.findMany();
- *
- * // Agora (direto):
- * const users = await db.user.findMany();
+ * // Injeção de dependência (recomendado):
+ * constructor(private readonly db: DatabaseService) {}
+ * const users = await this.db.getPrisma().user.findMany();
  * ```
  *
  * BENEFÍCIOS:
- * - Menos boilerplate no código
- * - Acesso direto aos modelos
- * - Singleton garante uma única instância
- * - Mantém todos os recursos do Prisma
+ * - Segue padrões do NestJS
+ * - Timezone configurado automaticamente
+ * - Fácil de testar (mock simples)
+ * - Ciclo de vida gerenciado pelo NestJS
  */
 
 import {
@@ -45,32 +44,34 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         : ['error'],
   });
 
-  onModuleInit() {
+  async onModuleInit() {
     this.logger.log('🔄 Conectando ao banco de dados...');
-    return this.prisma
-      .$connect()
-      .then(async () => {
-        // Configurar timezone usando offset GMT-3 (Horário de Brasília)
-        await this.prisma.$executeRaw`SET time_zone = '-03:00'`;
-        this.logger.log('✅ Conectado ao banco de dados com sucesso!');
-        this.logger.log('🌐 Timezone configurado para GMT-3 (Brasília)');
-      })
-      .catch((error: unknown) => {
-        this.logger.error('❌ Erro ao conectar ao banco:', error);
-        throw error;
-      });
+    try {
+      await this.prisma.$connect();
+
+      // Configurar timezone para GMT-3 (Horário de Brasília)
+      // Isso garante que todas as operações de data/hora usem o timezone correto
+      await this.prisma.$executeRaw`SET time_zone = '-03:00'`;
+
+      // Verificar se o timezone foi configurado corretamente
+      const timezoneResult = await this.prisma.$queryRaw`SELECT @@session.time_zone as timezone`;
+      this.logger.log('✅ Conectado ao banco de dados com sucesso!');
+      this.logger.log(`🌐 Timezone configurado: ${JSON.stringify(timezoneResult)}`);
+
+    } catch (error: unknown) {
+      this.logger.error('❌ Erro ao conectar ao banco:', error);
+      throw error;
+    }
   }
 
-  onModuleDestroy() {
+  async onModuleDestroy() {
     this.logger.log('🔄 Desconectando do banco de dados...');
-    return this.prisma
-      .$disconnect()
-      .then(() => {
-        this.logger.log('✅ Desconectado do banco de dados com sucesso!');
-      })
-      .catch((error: unknown) => {
-        this.logger.error('❌ Erro ao desconectar do banco:', error);
-      });
+    try {
+      await this.prisma.$disconnect();
+      this.logger.log('✅ Desconectado do banco de dados com sucesso!');
+    } catch (error: unknown) {
+      this.logger.error('❌ Erro ao desconectar do banco:', error);
+    }
   }
 
   // Método para acessar o Prisma Client (mantido para compatibilidade)
@@ -113,34 +114,12 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   }
 }
 
-// Singleton instance para acesso direto
-let databaseServiceInstance: DatabaseService | null = null;
-
 /**
- * Função para obter a instância singleton do DatabaseService
+ * Exportação do PrismaClient para uso direto quando necessário
  *
- * @returns Instância única do DatabaseService
- */
-export function getDatabaseService(): DatabaseService {
-  if (!databaseServiceInstance) {
-    databaseServiceInstance = new DatabaseService();
-  }
-  return databaseServiceInstance;
-}
-
-/**
- * Exportação direta do Prisma Client através do singleton
+ * ATENÇÃO: Prefira usar injeção de dependência do DatabaseService
+ * em vez de importar diretamente o PrismaClient.
  *
- * Permite acesso direto aos modelos sem boilerplate:
- * - db.user.findMany()
- * - db.test.create()
- * - db.$queryRaw()
- * - etc.
+ * @deprecated Use DatabaseService via injeção de dependência
  */
-export const db: PrismaClient = new Proxy({} as PrismaClient, {
-  get(target, prop) {
-    const service = getDatabaseService();
-    const prisma = service.getPrisma();
-    return (prisma as any)[prop];
-  },
-});
+export { PrismaClient };

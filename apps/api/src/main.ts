@@ -30,6 +30,9 @@
  * - DATABASE_URL: String de conexão do banco de dados (obrigatório)
  * - JWT_SECRET: Chave secreta para assinatura de tokens JWT (obrigatório, mínimo 32 caracteres)
  * - CORS_ORIGINS: Origens permitidas para CORS, separadas por vírgula ou JSON array (opcional, padrão: todas as origens)
+ * - RATE_LIMIT_WINDOW_MS: Janela do rate limiting em ms (opcional, padrão: 60000)
+ * - RATE_LIMIT_MAX_PER_IP: Máximo por IP por janela (opcional, padrão: 20)
+ * - RATE_LIMIT_MAX_PER_USER: Máximo por usuário por janela (opcional, padrão: 5)
  *
  * @example
  * ```bash
@@ -50,7 +53,9 @@ import { resolve } from 'path';
 // Em desenvolvimento: __dirname é src/
 // Em produção (compilado): __dirname é dist/
 const envPath = resolve(
-  __dirname.includes('dist') ? __dirname.replace('/dist', '') : __dirname.replace('/src', ''),
+  __dirname.includes('dist')
+    ? __dirname.replace('/dist', '')
+    : __dirname.replace('/src', ''),
   '.env'
 );
 dotenv.config({ path: envPath });
@@ -120,9 +125,7 @@ function validateEnvironmentVariables(): void {
     logger.error(
       '💡 Configure as variáveis de ambiente necessárias antes de iniciar a aplicação.'
     );
-    throw new Error(
-      `Variáveis de ambiente inválidas: ${errors.join('; ')}`
-    );
+    throw new Error(`Variáveis de ambiente inválidas: ${errors.join('; ')}`);
   }
 
   logger.log('✅ Variáveis de ambiente validadas com sucesso');
@@ -144,17 +147,17 @@ function validateEnvironmentVariables(): void {
  * // CORS_ORIGINS='["https://app1.com","https://app2.com"]'
  * ```
  */
-function getCorsOrigins(): (string | boolean)[] | ((origin: string | undefined) => boolean) {
+function getCorsOrigins():
+  | (string | boolean)[]
+  | ((origin: string | undefined) => boolean) {
   const corsOriginsEnv = process.env.CORS_ORIGINS;
 
   // Se variável de ambiente não foi configurada
   if (!corsOriginsEnv || corsOriginsEnv.trim() === '') {
     // Em produção, permitir todas mas avisar
     if (process.env.NODE_ENV === 'production') {
-      return (origin: string | undefined) => {
-        // Permitir todas as origens para flexibilidade com múltiplos apps
-        return true;
-      };
+      // Permitir todas as origens para flexibilidade com múltiplos apps
+      return () => true;
     }
     // Em desenvolvimento, usar localhost padrão
     return ['http://localhost:3000', 'http://127.0.0.1:3000'];
@@ -176,7 +179,8 @@ function getCorsOrigins(): (string | boolean)[] | ((origin: string | undefined) 
     .map(origin => origin.trim())
     .filter(origin => origin.length > 0);
 
-  return origins.length > 0 ? origins : true;
+  // Se não encontrou origens válidas, permitir todas
+  return origins.length > 0 ? origins : () => true;
 }
 
 /**

@@ -35,7 +35,12 @@
  * ```
  */
 
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from '@database/database.module';
@@ -46,6 +51,7 @@ import { ChecklistModule } from '@modules/checklist/checklist.module';
 import { VeiculoModule } from '@modules/veiculo/veiculo.module';
 import { EletricistaModule } from '@modules/eletricista/eletricista.module';
 import { LoggerMiddleware } from '@common/middleware/logger.middleware';
+import { RateLimitMiddleware } from '@common/middleware/rate-limit.middleware';
 import { EquipeModule } from './modules/equipe';
 import { AtividadeModule } from './modules/atividade';
 import { TurnoModule } from './modules/turno';
@@ -133,9 +139,9 @@ export class AppModule implements NestModule {
     // Aplicar middleware de logging para todas as rotas
     consumer.apply(LoggerMiddleware).forRoutes('*');
 
-    // TODO: Adicionar outros middlewares conforme necessário
-    // consumer
-    //   .apply(AuthMiddleware)
-    //   .forRoutes({ path: 'protected/*', method: RequestMethod.ALL });
+    // Rate limiting específico para tentativas de login
+    consumer
+      .apply(RateLimitMiddleware)
+      .forRoutes({ path: 'auth/login', method: RequestMethod.POST });
   }
 }

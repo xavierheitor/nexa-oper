@@ -47,7 +47,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { db } from '@database/database.service';
+import { DatabaseService } from '@database/database.service';
 
 /**
  * Interface para permissão de contrato
@@ -115,7 +115,7 @@ export class ContractPermissionsService {
    *
    * Inicializa o serviço com configurações padrão de cache e logging.
    */
-  constructor() {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   /**
    * Invalida o cache de permissões para um usuário específico
@@ -211,7 +211,7 @@ export class ContractPermissionsService {
         `Verificando permissão: usuário ${userId} -> contrato ${contractId}`
       );
 
-      const permission = await db.mobileContratoPermissao.findFirst({
+      const permission = await this.databaseService.getPrisma().mobileContratoPermissao.findFirst({
         where: {
           mobileUserId: userId,
           contratoId: contractId,
@@ -268,7 +268,7 @@ export class ContractPermissionsService {
     try {
       this.logger.log(`Listando contratos permitidos para usuário ${userId}`);
 
-      const permissions = await db.mobileContratoPermissao.findMany({
+      const permissions = await this.databaseService.getPrisma().mobileContratoPermissao.findMany({
         where: {
           mobileUserId: userId,
           deletedAt: null,
@@ -345,7 +345,7 @@ export class ContractPermissionsService {
         `Verificando permissão múltipla: usuário ${userId} -> contratos [${contractIds.join(', ')}]`
       );
 
-      const permission = await db.mobileContratoPermissao.findFirst({
+      const permission = await this.databaseService.getPrisma().mobileContratoPermissao.findFirst({
         where: {
           mobileUserId: userId,
           contratoId: { in: contractIds },
