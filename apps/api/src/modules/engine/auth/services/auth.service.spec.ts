@@ -78,8 +78,8 @@ describe('AuthService', () => {
       expect(result).toMatchObject({
         token: expect.any(String),
         refreshToken: expect.any(String),
-        expiresAt: null,
-        refreshTokenExpiresAt: null,
+        expiresAt: expect.any(String),
+        refreshTokenExpiresAt: expect.any(String),
         usuario: {
           id: 1,
           nome: 'testuser',
@@ -148,8 +148,8 @@ describe('AuthService', () => {
       expect(result).toMatchObject({
         token: expect.any(String),
         refreshToken: expect.any(String),
-        expiresAt: null,
-        refreshTokenExpiresAt: null,
+        expiresAt: expect.any(String),
+        refreshTokenExpiresAt: expect.any(String),
         usuario: {
           id: 1,
           nome: 'testuser',

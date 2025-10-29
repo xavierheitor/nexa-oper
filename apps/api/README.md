@@ -72,7 +72,7 @@ import { DbService } from './db/db.service';
 @Injectable()
 export class MeuServico {
   constructor(private dbService: DbService) {}
-  
+
   async buscarTestes() {
     return await this.dbService.findAllTests();
   }
@@ -81,13 +81,48 @@ export class MeuServico {
 
 ## 📝 Variáveis de Ambiente
 
-Criar arquivo `.env` na raiz do projeto:
+Criar arquivo `.env` na raiz do projeto baseado no `.env.example`:
 
 ```env
 DATABASE_URL="mysql://usuario:senha@localhost:3306/banco"
 PORT=3001
 NODE_ENV=development
+JWT_SECRET="sua-chave-secreta-com-pelo-menos-32-caracteres"
 ```
+
+### 🔐 Configurando JWT_SECRET
+
+A variável `JWT_SECRET` é **obrigatória** e deve ser configurada antes de iniciar a aplicação.
+
+**Requisitos:**
+- Mínimo de 32 caracteres
+- Chave única e aleatória
+- **NUNCA** use valores simples como "secret"
+
+**Gerar uma chave segura:**
+
+```bash
+# Opção 1: Usando Node.js
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+
+# Opção 2: Usando OpenSSL (se disponível)
+openssl rand -base64 32
+
+# Opção 3: Usando Python
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+**Exemplo:**
+```bash
+# Execute o comando acima e copie o resultado
+# Depois adicione no seu .env:
+JWT_SECRET="/n2l+YTSOweoWU0lc3kaxli+AS64FnMYcf393VXAJ9E="
+```
+
+⚠️ **IMPORTANTE:**
+- Cada ambiente (desenvolvimento, staging, produção) deve ter sua própria chave única
+- **NUNCA** commite o arquivo `.env` no repositório
+- Use diferentes chaves para desenvolvimento e produção
 
 ## 🚀 Deploy
 

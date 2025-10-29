@@ -12,11 +12,11 @@ import { MobileUsersService } from '@modules/engine/mobile-users/services/mobile
  *
  * Este serviço gerencia toda a lógica de autenticação para usuários móveis,
  * incluindo login, geração de tokens JWT e refresh tokens. Implementa um
- * sistema de tokens que não expiram automaticamente, exigindo logout manual.
+ * sistema de tokens com expiração configurável para segurança.
  *
  * CARACTERÍSTICAS PRINCIPAIS:
- * - Tokens JWT sem expiração automática
- * - Validação de credenciais com bcrypt
+ * - Tokens JWT com expiração (access: 7 dias, refresh: 30 dias)
+ * - Valida ص de credenciais com bcrypt
  * - Geração de access e refresh tokens
  * - Sistema de refresh token para renovação
  * - Logging estruturado para auditoria
@@ -25,6 +25,7 @@ import { MobileUsersService } from '@modules/engine/mobile-users/services/mobile
  * - Senhas hasheadas com bcrypt
  * - Tokens assinados com JWT_SECRET
  * - Validação rigorosa de credenciais
+ * - Expiração de tokens para reduzir janela de ataque
  * - Tratamento seguro de erros
  *
  * @example
@@ -104,24 +105,32 @@ export class AuthService {
       matricula: user.username,
     };
 
-    // Gerar tokens JWT sem expiração
+    // Calcular datas de expiração
+    const accessTokenExpiresIn = '7d'; // Access token válido por 7 dias
+    const refreshTokenExpiresIn = '30d'; // Refresh token válido por 30 dias (1 mês)
+
+    const now = new Date();
+    const accessTokenExpiresAt = new Date(
+      now.getTime() + 7 * 24 * 60 * 60 * 1000
+    ); // +7 dias
+    const refreshTokenExpiresAt = new Date(
+      now.getTime() + 30 * 24 * 60 * 60 * 1000
+    ); // +30 dias
+
+    // Gerar tokens JWT com expiração
     const accessToken = this.jwtService.sign(payload, {
-      // ✅ Sem expiração - tokens válidos até logout manual
+      expiresIn: accessTokenExpiresIn,
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      // ✅ Sem expiração - tokens válidos até logout manual
+      expiresIn: refreshTokenExpiresIn,
     });
-
-    // Tokens não expiram - apenas logout manual
-    const expiresAt = null;
-    const refreshTokenExpiresAt = null;
 
     return {
       token: accessToken,
       refreshToken,
-      expiresAt,
-      refreshTokenExpiresAt,
+      expiresAt: accessTokenExpiresAt.toISOString(),
+      refreshTokenExpiresAt: refreshTokenExpiresAt.toISOString(),
       usuario: {
         id: user.id,
         nome: user.username ?? '',
@@ -176,26 +185,34 @@ export class AuthService {
         throw new ForbiddenException('Usuário não encontrado');
       }
 
-      // Gerar novos tokens com mesmo payload
+      // Calcular datas de expiração
+      const accessTokenExpiresIn = '7d'; // Access token válido por 7 dias
+      const refreshTokenExpiresIn = '30d'; // Refresh token válido por 30 dias (1 mês)
+
+      const now = new Date();
+      const accessTokenExpiresAt = new Date(
+        now.getTime() + 7 * 24 * 60 * 60 * 1000
+      ); // +7 dias
+      const refreshTokenExpiresAt = new Date(
+        now.getTime() + 30 * 24 * 60 * 60 * 1000
+      ); // +30 dias
+
+      // Gerar novos tokens com expiração
       const newAccessToken = this.jwtService.sign(
-        { sub: payload.sub, matricula: payload.matricula }
-        // ✅ Sem expiração - tokens válidos até logout manual
+        { sub: payload.sub, matricula: payload.matricula },
+        { expiresIn: accessTokenExpiresIn }
       );
 
       const newRefreshToken = this.jwtService.sign(
-        { sub: payload.sub, matricula: payload.matricula }
-        // ✅ Sem expiração - tokens válidos até logout manual
+        { sub: payload.sub, matricula: payload.matricula },
+        { expiresIn: refreshTokenExpiresIn }
       );
-
-      // Tokens não expiram - apenas logout manual
-      const expiresAt = null;
-      const refreshTokenExpiresAt = null;
 
       return {
         token: newAccessToken,
         refreshToken: newRefreshToken,
-        expiresAt,
-        refreshTokenExpiresAt,
+        expiresAt: accessTokenExpiresAt.toISOString(),
+        refreshTokenExpiresAt: refreshTokenExpiresAt.toISOString(),
         usuario: {
           id: user.id,
           nome: user.username ?? '',

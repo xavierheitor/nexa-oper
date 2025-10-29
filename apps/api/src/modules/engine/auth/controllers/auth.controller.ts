@@ -74,8 +74,8 @@ export class AuthController {
    * {
    *   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
    *   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-   *   "expiresAt": null,
-   *   "refreshTokenExpiresAt": null,
+   *   "expiresAt": "2024-01-08T10:00:00.000Z",
+   *   "refreshTokenExpiresAt": "2024-02-01T10:00:00.000Z",
    *   "usuario": {
    *     "id": 123,
    *     "nome": "user123",
@@ -131,8 +131,8 @@ export class AuthController {
    * {
    *   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
    *   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-   *   "expiresAt": null,
-   *   "refreshTokenExpiresAt": null,
+   *   "expiresAt": "2024-01-08T10:00:00.000Z",
+   *   "refreshTokenExpiresAt": "2024-02-01T10:00:00.000Z",
    *   "usuario": {
    *     "id": 123,
    *     "nome": "user123",

@@ -35,8 +35,10 @@ describe('AuthController', () => {
       const mockResponse = {
         token: 'mock-token',
         refreshToken: 'mock-refresh-token',
-        expiresAt: null,
-        refreshTokenExpiresAt: null,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        refreshTokenExpiresAt: new Date(
+          Date.now() + 30 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         usuario: {
           id: 1,
           nome: 'testuser',
@@ -62,8 +64,10 @@ describe('AuthController', () => {
       const mockResponse = {
         token: 'new-token',
         refreshToken: 'new-refresh-token',
-        expiresAt: null,
-        refreshTokenExpiresAt: null,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        refreshTokenExpiresAt: new Date(
+          Date.now() + 30 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         usuario: {
           id: 1,
           nome: 'testuser',

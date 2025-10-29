@@ -28,6 +28,7 @@
  * - PORT: Porta da aplicação (padrão: 3001)
  * - NODE_ENV: Ambiente de execução (development/production)
  * - DATABASE_URL: String de conexão do banco de dados
+ * - JWT_SECRET: Chave secreta para assinatura de tokens JWT (obrigatório, mínimo 32 caracteres)
  *
  * @example
  * ```bash
@@ -40,6 +41,19 @@
  * ```
  */
 
+// Carregar variáveis de ambiente do arquivo .env antes de qualquer outra coisa
+import * as dotenv from 'dotenv';
+import { resolve } from 'path';
+
+// Carregar .env do diretório raiz do projeto API
+// Em desenvolvimento: __dirname é src/
+// Em produção (compilado): __dirname é dist/
+const envPath = resolve(
+  __dirname.includes('dist') ? __dirname.replace('/dist', '') : __dirname.replace('/src', ''),
+  '.env'
+);
+dotenv.config({ path: envPath });
+
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -51,6 +65,67 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from '@common/filters/all-exceptions.filter';
 
 const execAsync = promisify(exec);
+
+/**
+ * Valida variáveis de ambiente críticas antes da inicialização
+ *
+ * Garante que todas as variáveis de ambiente obrigatórias estão
+ * configuradas e têm valores válidos antes de iniciar a aplicação.
+ *
+ * @throws {Error} Se alguma variável obrigatória estiver ausente ou inválida
+ */
+function validateEnvironmentVariables(): void {
+  const logger = new Logger('Bootstrap');
+
+  // Lista de variáveis obrigatórias e suas validações
+  const requiredEnvVars = [
+    {
+      name: 'JWT_SECRET',
+      value: process.env.JWT_SECRET,
+      validator: (val: string | undefined) => {
+        if (!val || val.trim() === '') {
+          return 'JWT_SECRET não pode estar vazio';
+        }
+        if (val === 'secret' || val.length < 32) {
+          return 'JWT_SECRET deve ser uma string segura com pelo menos 32 caracteres e não pode ser "secret"';
+        }
+        return null;
+      },
+    },
+    {
+      name: 'DATABASE_URL',
+      value: process.env.DATABASE_URL,
+      validator: (val: string | undefined) => {
+        if (!val || val.trim() === '') {
+          return 'DATABASE_URL não pode estar vazio';
+        }
+        return null;
+      },
+    },
+  ];
+
+  const errors: string[] = [];
+
+  for (const envVar of requiredEnvVars) {
+    const error = envVar.validator(envVar.value);
+    if (error) {
+      errors.push(`${envVar.name}: ${error}`);
+    }
+  }
+
+  if (errors.length > 0) {
+    logger.error('❌ Erro de validação de variáveis de ambiente:');
+    errors.forEach(error => logger.error(`  - ${error}`));
+    logger.error(
+      '💡 Configure as variáveis de ambiente necessárias antes de iniciar a aplicação.'
+    );
+    throw new Error(
+      `Variáveis de ambiente inválidas: ${errors.join('; ')}`
+    );
+  }
+
+  logger.log('✅ Variáveis de ambiente validadas com sucesso');
+}
 
 /**
  * Verifica se a porta está em uso
@@ -147,6 +222,9 @@ async function bootstrap(): Promise<void> {
 
   try {
     logger.log('🚀 Iniciando aplicação Nexa Oper API...');
+
+    // Validar variáveis de ambiente críticas antes de qualquer inicialização
+    validateEnvironmentVariables();
 
     // Limpar porta antes da inicialização
     const port = parseInt(process.env.PORT ?? '3001', 10);

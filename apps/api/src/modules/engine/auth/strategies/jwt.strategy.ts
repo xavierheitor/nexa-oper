@@ -2,28 +2,54 @@
  * Estratégia JWT para Autenticação Mobile
  *
  * Esta estratégia implementa a validação de tokens JWT para usuários móveis,
- * configurada para aceitar tokens que não expiram automaticamente. É responsável
- * por extrair e validar tokens do header Authorization das requisições.
+ * configurada para validar tokens com expiração. É responsável por extrair
+ * e validar tokens do header Authorization das requisições.
  *
  * CARACTERÍSTICAS:
  * - Extração automática de tokens do header Bearer
  * - Validação de assinatura com JWT_SECRET
- * - Ignora expiração (tokens válidos até logout manual)
+ * - Validação de expiração dos tokens
  * - Logging detalhado para debugging
  *
  * SEGURANÇA:
  * - Validação rigorosa de assinatura JWT
+ * - Validação de expiração de tokens
  * - Extração segura de tokens do header
- * - Tratamento de tokens inválidos
+ * - Tratamento de tokens inválidos ou expirados
  *
  * @fileoverview Estratégia Passport para validação de JWT tokens
  * @since 1.0.0
  * @author Nexa Oper Team
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+
+/**
+ * Obtém o JWT_SECRET validado
+ *
+ * Garante que JWT_SECRET está configurado e é seguro.
+ * A validação completa é feita no bootstrap, mas esta função
+ * fornece um erro claro se a variável não estiver disponível.
+ *
+ * @returns JWT_SECRET configurado
+ * @throws {Error} Se JWT_SECRET não estiver configurado
+ */
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || secret.trim() === '') {
+    throw new Error(
+      'JWT_SECRET não está configurado. Configure a variável de ambiente antes de iniciar a aplicação.'
+    );
+  }
+  if (secret === 'secret' || secret.length < 32) {
+    throw new Error(
+      'JWT_SECRET deve ser uma string segura com pelo menos 32 caracteres e não pode ser "secret"'
+    );
+  }
+  return secret;
+}
 
 /**
  * Estratégia JWT para autenticação de usuários móveis
@@ -33,6 +59,8 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+  private readonly logger = new Logger(JwtStrategy.name);
+
   /**
    * Construtor da JwtStrategy
    *
@@ -40,22 +68,22 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
    * de usuários móveis, incluindo extração de tokens e validação de assinatura.
    */
   constructor() {
+    const jwtSecret = getJwtSecret();
+
     super({
       // Extrair token do header Authorization: Bearer <token>
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 
-      // ✅ Tokens não expiram - apenas logout manual
-      // Esta configuração permite que tokens sejam válidos indefinidamente
-      // até que o usuário faça logout manualmente
-      ignoreExpiration: true,
+      // ✅ Validar expiração dos tokens
+      // Tokens expirados serão rejeitados automaticamente
+      ignoreExpiration: false,
 
       // Chave secreta para validação da assinatura JWT
-      secretOrKey: process.env.JWT_SECRET || 'secret',
+      secretOrKey: jwtSecret,
     });
 
-    console.log(
-      '[JWT STRATEGY] Inicializada com secret:',
-      process.env.JWT_SECRET || 'secret'
+    this.logger.log(
+      'JWT Strategy inicializada com validação de expiração habilitada'
     );
   }
 
@@ -85,8 +113,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
    * ```
    */
   validate(payload: any) {
-    console.log('[JWT STRATEGY] Validando payload:', payload);
-    console.log('[JWT STRATEGY] Token sub:', payload.sub);
+    this.logger.debug(`Validando payload JWT - sub: ${payload.sub}`);
 
     // Estruturar dados do usuário para uso nos controladores
     return {
