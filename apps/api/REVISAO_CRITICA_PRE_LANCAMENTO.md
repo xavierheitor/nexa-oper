@@ -21,7 +21,7 @@ problemas de média prioridade** que devem ser corrigidos antes do lançamento e
 
 ## 🔴 PROBLEMAS CRÍTICOS (DEVE CORRIGIR ANTES DO DEPLOY)
 
-### 1. **JWT_SECRET com Fallback Inseguro** - corrigido
+### 1. **JWT_SECRET com Fallback Inseguro** - CORRIGIDO
 
 **Localização:**
 
@@ -56,7 +56,7 @@ if (!jwtSecret || jwtSecret === 'secret') {
 
 ---
 
-### 2. **Tokens JWT Sem Expiração**
+### 2. **Tokens JWT Sem Expiração** - CORRIGIDO
 
 **Localização:**
 
@@ -86,7 +86,7 @@ if (!jwtSecret || jwtSecret === 'secret') {
 
 ---
 
-### 3. **Exposição de Informações Sensíveis em Logs**
+### 3. **Exposição de Informações Sensíveis em Logs** - CORRIGIDO
 
 **Localização:**
 
@@ -122,7 +122,7 @@ console.log('📥 Request:', {
 
 ---
 
-### 4. **CORS Configurado com Placeholder em Produção**
+### 4. **CORS Configurado com Placeholder em Produção** - CORRIGIDO
 
 **Localização:**
 
@@ -152,7 +152,7 @@ const corsOrigins =
 
 ---
 
-### 5. **Validação de Senha Muito Fraca**
+### 5. **Validação de Senha Muito Fraca** - IGNORADO
 
 **Localização:**
 

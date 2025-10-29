@@ -25,6 +25,7 @@ import {
   ContractPermission,
   getContractPermissionsService,
 } from '../services/contract-permissions.service';
+import { sanitizeData } from '@common/utils/logger';
 
 export const GetUserContracts = createParamDecorator(
   async (
@@ -42,7 +43,8 @@ export const GetUserContracts = createParamDecorator(
 
     logger.debug('=== DADOS DA REQUISIÇÃO ===');
     logger.debug(`Request object keys: ${Object.keys(request).join(', ')}`);
-    logger.debug(`User object: ${JSON.stringify(user)}`);
+    // Sanitiza dados do usuário para evitar exposição de informações sensíveis
+    logger.debug(`User object: ${JSON.stringify(sanitizeData(user))}`);
     logger.debug(`User ID: ${user?.id}`);
     logger.debug(`User tipo: ${typeof user}`);
     logger.debug(`User é null: ${user === null}`);
@@ -60,8 +62,9 @@ export const GetUserContracts = createParamDecorator(
       // Verificar se já está no cache da requisição
       if (request.userContracts) {
         logger.debug(`Cache hit para contratos do usuário ${user.id}`);
+        // Sanitiza contratos para evitar exposição de informações sensíveis
         logger.debug(
-          `Contratos do cache: ${JSON.stringify(request.userContracts)}`
+          `Contratos do cache: ${JSON.stringify(sanitizeData(request.userContracts))}`
         );
         logger.debug(
           `Tipo dos contratos do cache: ${typeof request.userContracts}`
@@ -107,14 +110,20 @@ export const GetUserContracts = createParamDecorator(
       if (result?.contracts && result.contracts.length > 0) {
         logger.debug('=== DETALHES DOS CONTRATOS ===');
         result.contracts.forEach((contract, index) => {
-          logger.debug(`Contrato ${index + 1}: ${JSON.stringify(contract)}`);
+          // Sanitiza contrato para evitar exposição de informações sensíveis
+          logger.debug(
+            `Contrato ${index + 1}: ${JSON.stringify(sanitizeData(contract))}`
+          );
         });
       }
 
       // Cache no contexto da requisição
       logger.debug('=== SALVANDO NO CACHE ===');
       request.userContracts = result.contracts;
-      logger.debug(`Cache salvo: ${JSON.stringify(request.userContracts)}`);
+      // Sanitiza cache para evitar exposição de informações sensíveis
+      logger.debug(
+        `Cache salvo: ${JSON.stringify(sanitizeData(request.userContracts))}`
+      );
 
       logger.log(
         `Injetados ${result.contracts.length} contratos para usuário ${user.id}`

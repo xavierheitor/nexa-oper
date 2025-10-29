@@ -164,3 +164,112 @@ export function formatLogMessage(
   const contextStr = context ? `[${context}]` : '';
   return `${timestamp} ${level.toUpperCase()} ${contextStr} ${message}`;
 }
+
+/**
+ * Lista de headers sensíveis que devem ser mascarados nos logs
+ */
+const SENSITIVE_HEADERS = [
+  'authorization',
+  'cookie',
+  'set-cookie',
+  'x-api-key',
+  'x-auth-token',
+  'x-access-token',
+  'x-refresh-token',
+] as const;
+
+/**
+ * Lista de campos sensíveis no body que devem ser mascarados nos logs
+ */
+const SENSITIVE_FIELDS = [
+  'password',
+  'senha',
+  'token',
+  'accessToken',
+  'refreshToken',
+  'jwt',
+  'secret',
+  'apiKey',
+  'apikey',
+  'authorization',
+  'auth',
+  'credentials',
+  'credential',
+] as const;
+
+/**
+ * Sanitiza headers removendo ou mascarando informações sensíveis
+ *
+ * Substitui valores de headers sensíveis por '****' para evitar
+ * exposição de tokens, cookies e outras credenciais nos logs.
+ *
+ * @param headers - Objeto com headers HTTP originais
+ * @returns Objeto com headers sanitizados (valores sensíveis substituídos por '****')
+ *
+ * @example
+ * ```typescript
+ * sanitizeHeaders({ authorization: 'Bearer abc123', 'content-type': 'application/json' })
+ * // Retorna: { authorization: '****', 'content-type': 'application/json' }
+ * ```
+ */
+export function sanitizeHeaders(headers: Record<string, any>): Record<string, any> {
+  const sanitized = { ...headers };
+
+  Object.keys(sanitized).forEach((key) => {
+    const lowerKey = key.toLowerCase();
+    if (SENSITIVE_HEADERS.some((sensitive) => lowerKey.includes(sensitive))) {
+      sanitized[key] = '****';
+    }
+  });
+
+  return sanitized;
+}
+
+/**
+ * Sanitiza dados (body, query, etc.) removendo ou mascarando campos sensíveis
+ *
+ * Substitui valores de campos sensíveis por '****' para evitar
+ * exposição de senhas, tokens e outras credenciais nos logs.
+ * Funciona recursivamente para objetos aninhados.
+ *
+ * @param data - Dados a serem sanitizados (objeto, array ou primitivo)
+ * @returns Dados sanitizados (campos sensíveis substituídos por '****')
+ *
+ * @example
+ * ```typescript
+ * sanitizeData({ username: 'user', password: 'secret123', email: 'user@example.com' })
+ * // Retorna: { username: 'user', password: '****', email: 'user@example.com' }
+ * ```
+ */
+export function sanitizeData(data: any): any {
+  // Caso primitivo, retorna como está
+  if (data === null || data === undefined) {
+    return data;
+  }
+
+  if (typeof data !== 'object') {
+    return data;
+  }
+
+  // Se for array, sanitiza cada elemento
+  if (Array.isArray(data)) {
+    return data.map((item) => sanitizeData(item));
+  }
+
+  // Se for objeto, sanitiza cada propriedade
+  const sanitized: Record<string, any> = {};
+
+  Object.keys(data).forEach((key) => {
+    const lowerKey = key.toLowerCase();
+
+    // Verifica se o campo é sensível
+    if (SENSITIVE_FIELDS.some((sensitive) => lowerKey.includes(sensitive))) {
+      sanitized[key] = '****';
+    } else {
+      // Recursivamente sanitiza valores aninhados
+      sanitized[key] = sanitizeData(data[key]);
+    }
+  });
+
+  return sanitized;
+}

@@ -38,6 +38,7 @@
 
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
+import { sanitizeHeaders, sanitizeData } from '../utils/logger';
 
 /**
  * Middleware responsável pelo logging automático de requisições HTTP.
@@ -94,11 +95,12 @@ export class LoggerMiddleware implements NestMiddleware {
     const startTime = Date.now();
 
     // Registra informações detalhadas da requisição recebida
+    // Sanitiza headers e body para evitar exposição de informações sensíveis
     console.log('📥 Request:', {
       method,
       url: originalUrl,
-      headers,
-      body,
+      headers: sanitizeHeaders(headers),
+      body: sanitizeData(body),
     });
 
     // Intercepta o método send() da resposta para capturar dados de saída
@@ -113,11 +115,13 @@ export class LoggerMiddleware implements NestMiddleware {
       const elapsed = Date.now() - startTime;
 
       // Registra informações detalhadas da resposta
+      // Sanitiza dados da resposta para evitar exposição de informações sensíveis
+      const responseData = this.tryParseJson(data);
       console.log('📤 Response:', {
         url: originalUrl,
         status: res.statusCode,
         time: `${elapsed}ms`,
-        response: this.tryParseJson(data),
+        response: sanitizeData(responseData),
       });
 
       // Chama o método send() original para enviar a resposta

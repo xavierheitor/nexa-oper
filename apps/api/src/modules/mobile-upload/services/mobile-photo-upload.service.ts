@@ -7,6 +7,7 @@ import { DatabaseService } from '@database/database.service';
 import { randomUUID, createHash } from 'crypto';
 import { dirname, extname, join, sep } from 'path';
 import { mkdir, writeFile } from 'fs/promises';
+import { sanitizeData } from '@common/utils/logger';
 import {
   ALLOWED_MOBILE_PHOTO_MIME_TYPES,
   MAX_MOBILE_PHOTO_FILE_SIZE,
@@ -49,16 +50,24 @@ export class MobilePhotoUploadService {
     file: MulterFile | undefined,
     payload: PhotoUploadDto
   ): Promise<PhotoUploadResponseDto> {
-    this.logger.log(`🚀 [UPLOAD] Iniciando upload - tipo: ${payload.tipo}, turnoId: ${payload.turnoId}`);
-    this.logger.log(`📋 [UPLOAD] Payload completo:`, JSON.stringify(payload, null, 2));
+    this.logger.log(
+      `🚀 [UPLOAD] Iniciando upload - tipo: ${payload.tipo}, turnoId: ${payload.turnoId}`
+    );
+    // Sanitiza payload para evitar exposição de informações sensíveis
+    this.logger.log(
+      `📋 [UPLOAD] Payload completo:`,
+      JSON.stringify(sanitizeData(payload), null, 2)
+    );
 
     if (!file) {
       throw new BadRequestException('Arquivo da foto é obrigatório');
     }
 
     // ✅ Validação: Rejeitar fotos de checklist sem UUID
-    if ((payload.tipo === 'checklistReprova' || payload.tipo === 'assinatura') &&
-        (!payload.checklistUuid || payload.checklistUuid.trim() === '')) {
+    if (
+      (payload.tipo === 'checklistReprova' || payload.tipo === 'assinatura') &&
+      (!payload.checklistUuid || payload.checklistUuid.trim() === '')
+    ) {
       throw new BadRequestException(
         `Fotos do tipo '${payload.tipo}' devem incluir checklistUuid obrigatório`
       );

@@ -27,8 +27,9 @@
  * VARIÁVEIS DE AMBIENTE:
  * - PORT: Porta da aplicação (padrão: 3001)
  * - NODE_ENV: Ambiente de execução (development/production)
- * - DATABASE_URL: String de conexão do banco de dados
+ * - DATABASE_URL: String de conexão do banco de dados (obrigatório)
  * - JWT_SECRET: Chave secreta para assinatura de tokens JWT (obrigatório, mínimo 32 caracteres)
+ * - CORS_ORIGINS: Origens permitidas para CORS, separadas por vírgula ou JSON array (opcional, padrão: todas as origens)
  *
  * @example
  * ```bash
@@ -125,6 +126,57 @@ function validateEnvironmentVariables(): void {
   }
 
   logger.log('✅ Variáveis de ambiente validadas com sucesso');
+}
+
+/**
+ * Parseia e valida origens CORS da variável de ambiente
+ *
+ * Suporta múltiplos formatos:
+ * - Variável de ambiente CORS_ORIGINS (separada por vírgula ou JSON array)
+ * - Se não configurado, permite todas as origens (com warning)
+ *
+ * @returns Array de origens permitidas ou função que sempre retorna true
+ *
+ * @example
+ * ```typescript
+ * // CORS_ORIGINS="https://app1.com,https://app2.com"
+ * // ou
+ * // CORS_ORIGINS='["https://app1.com","https://app2.com"]'
+ * ```
+ */
+function getCorsOrigins(): (string | boolean)[] | ((origin: string | undefined) => boolean) {
+  const corsOriginsEnv = process.env.CORS_ORIGINS;
+
+  // Se variável de ambiente não foi configurada
+  if (!corsOriginsEnv || corsOriginsEnv.trim() === '') {
+    // Em produção, permitir todas mas avisar
+    if (process.env.NODE_ENV === 'production') {
+      return (origin: string | undefined) => {
+        // Permitir todas as origens para flexibilidade com múltiplos apps
+        return true;
+      };
+    }
+    // Em desenvolvimento, usar localhost padrão
+    return ['http://localhost:3000', 'http://127.0.0.1:3000'];
+  }
+
+  try {
+    // Tentar parsear como JSON array
+    const parsed = JSON.parse(corsOriginsEnv);
+    if (Array.isArray(parsed)) {
+      return parsed.filter((origin: any) => typeof origin === 'string');
+    }
+  } catch {
+    // Se não for JSON, tratar como string separada por vírgula
+  }
+
+  // Parsear como string separada por vírgula
+  const origins = corsOriginsEnv
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(origin => origin.length > 0);
+
+  return origins.length > 0 ? origins : true;
 }
 
 /**
@@ -241,19 +293,57 @@ async function bootstrap(): Promise<void> {
     app.use(express.urlencoded({ extended: true, limit: '50mb' }));
     logger.log('✅ Configurado parsing JSON/URL com limite de 50MB');
 
-    // Configurar CORS para integração com aplicação web
-    const corsOrigins =
-      process.env.NODE_ENV === 'production'
-        ? ['https://seu-dominio.com'] // TODO: Atualizar com domínio real
-        : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+    // Configurar CORS para integração com múltiplos aplicativos
+    const corsOrigins = getCorsOrigins();
 
+    // Configuração otimizada de CORS com segurança
     app.enableCors({
       origin: corsOrigins,
-      credentials: true,
+      credentials: true, // Permite envio de cookies e credenciais
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'Accept',
+        'X-Requested-With',
+        'Origin',
+        'X-CSRF-Token',
+      ],
+      exposedHeaders: ['Authorization'], // Headers que o cliente pode ler
+      maxAge: 86400, // Cache de preflight por 24 horas (reduz requisições OPTIONS)
+      preflightContinue: false, // Não continuar se preflight falhar
+      optionsSuccessStatus: 204, // Status 204 para OPTIONS bem-sucedidos
     });
-    logger.log(`✅ CORS configurado para: ${corsOrigins.join(', ')}`);
+
+    // Log informativo sobre configuração CORS
+    if (typeof corsOrigins === 'function') {
+      logger.warn(
+        '⚠️  CORS configurado como PERMISSIVO (todas as origens permitidas)'
+      );
+      logger.warn(
+        '   Isso permite acesso de qualquer origem - adequado para APIs públicas'
+      );
+      logger.warn(
+        '   Para restringir, configure a variável CORS_ORIGINS com origens específicas'
+      );
+      if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGINS) {
+        logger.warn(
+          '   💡 Configure CORS_ORIGINS separada por vírgulas: "https://app1.com,https://app2.com"'
+        );
+      }
+    } else {
+      if (Array.isArray(corsOrigins)) {
+        const originsList = corsOrigins.join(', ');
+        logger.log(
+          `✅ CORS configurado para ${corsOrigins.length} origem(ens): ${originsList}`
+        );
+      } else {
+        logger.log(`✅ CORS configurado para: todas as origens`);
+      }
+      logger.log(
+        '   Headers permitidos otimizados, preflight cacheado por 24h'
+      );
+    }
 
     // Configurar timeout de requisições (5 minutos)
     app.use((req: Request, res: Response, next: NextFunction) => {
