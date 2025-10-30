@@ -119,6 +119,40 @@ python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 JWT_SECRET="/n2l+YTSOweoWU0lc3kaxli+AS64FnMYcf393VXAJ9E="
 ```
 
+## ✅ Qualidade e Padrões
+
+### Linters e Formatação
+- ESLint (regras fortalecidas): no-console (usar Logger), import/order, complexity, max-lines-per-file
+- Prettier: formatação consistente
+
+Comandos:
+```
+npm run lint        # Lint estrito (falha em warnings)
+npm run lint:fix    # Corrige problemas possíveis
+npm run format      # Formata arquivos suportados
+```
+
+### Commits e Pre-commit
+- Commitlint (conventional commits)
+- lint-staged + Husky (executa eslint/prettier nos arquivos staged)
+
+Scripts úteis:
+```
+npm run prepare     # instala hooks do husky
+```
+
+### Configuração por Ambiente
+`@nestjs/config` com validação Joi (arquivo `src/config/validation.ts`).
+Variáveis:
+- `JWT_SECRET` (mín. 32 chars, diferente de "secret")
+- `DATABASE_URL` (obrigatória)
+- `CORS_ORIGINS` (opcional)
+- `RATE_LIMIT_*` (opcionais com padrão seguro)
+
+### Observabilidade
+- Logging padronizado (`StandardLogger`) + sanitização (`sanitizeHeaders`, `sanitizeData`)
+- Interceptores globais: erros e operações
+
 ⚠️ **IMPORTANTE:**
 - Cada ambiente (desenvolvimento, staging, produção) deve ter sua própria chave única
 - **NUNCA** commite o arquivo `.env` no repositório

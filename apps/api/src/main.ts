@@ -64,12 +64,15 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as express from 'express';
+import helmet from 'helmet';
 import { NextFunction, Request, Response } from 'express';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from '@common/filters/all-exceptions.filter';
 import { StandardLogger } from '@common/utils/logger';
+import { getCorsOrigins } from '@common/utils/cors';
+import { ensurePortFree } from '@common/utils/ports';
 
 const execAsync = promisify(exec);
 
@@ -81,179 +84,9 @@ const execAsync = promisify(exec);
  *
  * @throws {Error} Se alguma variável obrigatória estiver ausente ou inválida
  */
-function validateEnvironmentVariables(): void {
-  const logger = new Logger('Bootstrap');
+// Validação de env agora é feita via @nestjs/config (Joi) no AppModule
 
-  // Lista de variáveis obrigatórias e suas validações
-  const requiredEnvVars = [
-    {
-      name: 'JWT_SECRET',
-      value: process.env.JWT_SECRET,
-      validator: (val: string | undefined) => {
-        if (!val || val.trim() === '') {
-          return 'JWT_SECRET não pode estar vazio';
-        }
-        if (val === 'secret' || val.length < 32) {
-          return 'JWT_SECRET deve ser uma string segura com pelo menos 32 caracteres e não pode ser "secret"';
-        }
-        return null;
-      },
-    },
-    {
-      name: 'DATABASE_URL',
-      value: process.env.DATABASE_URL,
-      validator: (val: string | undefined) => {
-        if (!val || val.trim() === '') {
-          return 'DATABASE_URL não pode estar vazio';
-        }
-        return null;
-      },
-    },
-  ];
-
-  const errors: string[] = [];
-
-  for (const envVar of requiredEnvVars) {
-    const error = envVar.validator(envVar.value);
-    if (error) {
-      errors.push(`${envVar.name}: ${error}`);
-    }
-  }
-
-  if (errors.length > 0) {
-    logger.error('❌ Erro de validação de variáveis de ambiente:');
-    errors.forEach(error => logger.error(`  - ${error}`));
-    logger.error(
-      '💡 Configure as variáveis de ambiente necessárias antes de iniciar a aplicação.'
-    );
-    throw new Error(`Variáveis de ambiente inválidas: ${errors.join('; ')}`);
-  }
-
-  logger.log('✅ Variáveis de ambiente validadas com sucesso');
-}
-
-/**
- * Parseia e valida origens CORS da variável de ambiente
- *
- * Suporta múltiplos formatos:
- * - Variável de ambiente CORS_ORIGINS (separada por vírgula ou JSON array)
- * - Se não configurado, permite todas as origens (com warning)
- *
- * @returns Array de origens permitidas ou função que sempre retorna true
- *
- * @example
- * ```typescript
- * // CORS_ORIGINS="https://app1.com,https://app2.com"
- * // ou
- * // CORS_ORIGINS='["https://app1.com","https://app2.com"]'
- * ```
- */
-function getCorsOrigins():
-  | (string | boolean)[]
-  | ((origin: string | undefined) => boolean) {
-  const corsOriginsEnv = process.env.CORS_ORIGINS;
-
-  // Se variável de ambiente não foi configurada
-  if (!corsOriginsEnv || corsOriginsEnv.trim() === '') {
-    // Em produção, permitir todas mas avisar
-    if (process.env.NODE_ENV === 'production') {
-      // Permitir todas as origens para flexibilidade com múltiplos apps
-      return () => true;
-    }
-    // Em desenvolvimento, usar localhost padrão
-    return ['http://localhost:3000', 'http://127.0.0.1:3000'];
-  }
-
-  try {
-    // Tentar parsear como JSON array
-    const parsed = JSON.parse(corsOriginsEnv);
-    if (Array.isArray(parsed)) {
-      return parsed.filter((origin: any) => typeof origin === 'string');
-    }
-  } catch {
-    // Se não for JSON, tratar como string separada por vírgula
-  }
-
-  // Parsear como string separada por vírgula
-  const origins = corsOriginsEnv
-    .split(',')
-    .map(origin => origin.trim())
-    .filter(origin => origin.length > 0);
-
-  // Se não encontrou origens válidas, permitir todas
-  return origins.length > 0 ? origins : () => true;
-}
-
-/**
- * Verifica se a porta está em uso
- * @param port - Porta a ser verificada
- * @returns True se a porta estiver em uso
- */
-async function isPortInUse(port: number): Promise<boolean> {
-  try {
-    const { stdout } = await execAsync(`lsof -ti:${port}`);
-    return stdout.trim().length > 0;
-  } catch {
-    // Se não encontrar processos, a porta está livre
-    return false;
-  }
-}
-
-/**
- * Mata processos que estão usando a porta
- * @param port - Porta a ser liberada
- */
-async function killPortProcesses(port: number, logger: StandardLogger): Promise<void> {
-  try {
-    const { stdout } = await execAsync(`lsof -ti:${port}`);
-    const pids = stdout
-      .trim()
-      .split('\n')
-      .filter(pid => pid.length > 0);
-
-    if (pids.length > 0) {
-      logger.log(
-        `🔄 Encontrados ${pids.length} processo(s) usando a porta ${port}`
-      );
-
-      for (const pid of pids) {
-        try {
-          await execAsync(`kill -9 ${pid}`);
-          logger.log(`✅ Processo ${pid} finalizado`);
-        } catch (error) {
-          logger.warn(`⚠️  Erro ao finalizar processo ${pid}:`, error.message);
-        }
-      }
-
-      // Aguardar um pouco para garantir que a porta foi liberada
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-  } catch {
-    logger.log(`ℹ️  Nenhum processo encontrado na porta ${port}`);
-  }
-}
-
-/**
- * Limpa a porta antes da inicialização
- * @param port - Porta a ser limpa
- */
-async function cleanupPort(port: number, logger: StandardLogger): Promise<void> {
-  logger.log(`🔍 Verificando porta ${port}...`);
-
-  if (await isPortInUse(port)) {
-    logger.warn(`⚠️  Porta ${port} está em uso. Liberando...`);
-    await killPortProcesses(port, logger);
-
-    // Verificar novamente
-    if (await isPortInUse(port)) {
-      throw new Error(`Falha ao liberar porta ${port}`);
-    } else {
-      logger.log(`✅ Porta ${port} liberada com sucesso`);
-    }
-  } else {
-    logger.log(`✅ Porta ${port} está livre`);
-  }
-}
+// CORS e gerenciamento de portas extraídos para utils
 
 /**
  * Função principal de inicialização da aplicação
@@ -280,18 +113,23 @@ async function bootstrap(): Promise<void> {
   try {
     logger.log('🚀 Iniciando aplicação Nexa Oper API...');
 
-    // Validar variáveis de ambiente críticas antes de qualquer inicialização
-    validateEnvironmentVariables();
-
     // Limpar porta antes da inicialização
     const port = parseInt(process.env.PORT ?? '3001', 10);
-    await cleanupPort(port, logger);
+    await ensurePortFree(port, msg => logger.log(msg));
 
     // Criar aplicação NestJS
     const app = await NestFactory.create(AppModule, {
       logger: ['log', 'error', 'warn', 'debug', 'verbose'],
       abortOnError: false, // Evita crash em caso de erro durante inicialização
     });
+
+    // Segurança: headers seguros com Helmet
+    app.use(
+      helmet({
+        contentSecurityPolicy: false, // desativado para não quebrar swagger
+        crossOriginEmbedderPolicy: false,
+      })
+    );
 
     // Configurar parsing de requisições com limites mais seguros
     // JSON/URL: 2MB (uploads grandes ficam a cargo do Multer)

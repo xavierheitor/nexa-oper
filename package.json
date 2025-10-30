@@ -45,7 +45,9 @@
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
-    "help": "echo '📜 Scripts disponíveis:' && echo '' && echo '🚀 Desenvolvimento:' && echo '  dev, build, lint, test, clean' && echo '' && echo '📦 Instalação:' && echo '  install:all, install:workspaces, install:web, install:api, install:db' && echo '' && echo '🗄️ Banco de Dados:' && echo '  db:generate, db:migrate:dev, db:migrate:deploy, db:studio, db:reset' && echo '' && echo '🌐 Aplicações:' && echo '  web:dev, web:build, web:start, api:dev, api:build, api:start' && echo '' && echo '🛠️ Setup:' && echo '  setup, setup:dev, reset, reset:hard' && echo '' && echo '🔍 Verificação:' && echo '  status, check, format, format:check, lint:all, type-check' && echo '' && echo '🐳 Docker:' && echo '  docker:up, docker:down, docker:logs'"
+    "help": "echo '📜 Scripts disponíveis:' && echo '' && echo '🚀 Desenvolvimento:' && echo '  dev, build, lint, test, clean' && echo '' && echo '📦 Instalação:' && echo '  install:all, install:workspaces, install:web, install:api, install:db' && echo '' && echo '🗄️ Banco de Dados:' && echo '  db:generate, db:migrate:dev, db:migrate:deploy, db:studio, db:reset' && echo '' && echo '🌐 Aplicações:' && echo '  web:dev, web:build, web:start, api:dev, api:build, api:start' && echo '' && echo '🛠️ Setup:' && echo '  setup, setup:dev, reset, reset:hard' && echo '' && echo '🔍 Verificação:' && echo '  status, check, format, format:check, lint:all, type-check' && echo '' && echo '🐳 Docker:' && echo '  docker:up, docker:down, docker:logs'",
+    "prepare": "husky install",
+    "lint-staged": "lint-staged"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.0.0",
@@ -62,7 +64,11 @@
     "eslint-plugin-unicorn": "^52.0.0",
     "prettier": "^3.0.0",
     "rimraf": "^6.0.1",
-    "turbo": "^2.0.0"
+    "turbo": "^2.0.0",
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10"
   },
   "keywords": [
     "monorepo",

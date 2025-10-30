@@ -39,7 +39,28 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      'no-console': 'off',
+      // Proibir console.* (usar Logger/StandardLogger)
+      'no-console': ['error', { allow: ['warn', 'error'] }],
+      // Ordenação de imports
+      'import/order': [
+        'error',
+        {
+          groups: [
+            'builtin',
+            'external',
+            'internal',
+            ['parent', 'sibling', 'index'],
+            'object',
+            'type',
+          ],
+          'newlines-between': 'always',
+          alphabetize: { order: 'asc', caseInsensitive: true },
+        },
+      ],
+      // Complexidade e tamanho
+      complexity: ['warn', 15],
+      'max-lines-per-function': ['warn', { max: 80, skipBlankLines: true, skipComments: true }],
+      'max-lines': ['warn', { max: 400, skipBlankLines: true, skipComments: true }],
       'no-debugger': 'error',
       // Configurações para compatibilidade com Prettier
       'prettier/prettier': [

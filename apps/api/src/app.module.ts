@@ -44,6 +44,8 @@ import {
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
+import { envValidationSchema } from './config/validation';
 import { DatabaseModule } from '@database/database.module';
 import { AprModule } from '@modules/apr/apr.module';
 import { AuthModule } from '@modules/engine/auth/auth.module';
@@ -61,6 +63,8 @@ import { TurnoModule } from './modules/turno';
 import { TipoVeiculoModule } from './modules/tipo-veiculo/tipo-veiculo.module';
 import { TipoEquipeModule } from './modules/tipo-equipe/tipo-equipe.module';
 import { MobileUploadModule } from './modules/mobile-upload/mobile-upload.module';
+import { HealthModule } from './health/health.module';
+import { MetricsModule } from './metrics/metrics.module';
 
 /**
  * Módulo raiz da aplicação
@@ -76,6 +80,12 @@ import { MobileUploadModule } from './modules/mobile-upload/mobile-upload.module
  */
 @Module({
   imports: [
+    // Configuração de ambiente global com schema (via @nestjs/config)
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema: envValidationSchema,
+    }),
+
     // Módulo de banco de dados - deve ser importado primeiro
     DatabaseModule,
 
@@ -95,6 +105,8 @@ import { MobileUploadModule } from './modules/mobile-upload/mobile-upload.module
     AuthModule,
     ContractsModule,
     MobileUploadModule,
+    HealthModule,
+    MetricsModule,
 
     // TODO: Adicionar outros módulos conforme necessário
     // UserModule,

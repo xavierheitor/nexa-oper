@@ -1,0 +1,34 @@
+name: API CI
+
+on:
+  push:
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/api-ci.yml'
+  pull_request:
+    paths:
+      - 'apps/api/**'
+
+jobs:
+  lint-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install root deps
+        run: npm ci
+      - name: Install API deps
+        run: npm run install:api
+      - name: Lint API
+        run: npm run lint --workspace=apps/api
+      - name: Prettier check API
+        run: npm run format:check --workspace=apps/api || true
+      - name: Type check API
+        run: npm run type-check --workspace=apps/api
+      - name: Build API
+        run: npm run build --workspace=apps/api
+
+

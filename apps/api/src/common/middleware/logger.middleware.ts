@@ -38,6 +38,7 @@
 
 import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
+import { MetricsService } from '../../metrics/metrics.service';
 import { sanitizeHeaders, sanitizeData } from '../utils/logger';
 
 /**
@@ -50,6 +51,7 @@ import { sanitizeHeaders, sanitizeData } from '../utils/logger';
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
   private readonly logger = new Logger(LoggerMiddleware.name);
+  constructor(private readonly metricsService?: MetricsService) {}
   /**
    * Método principal do middleware que intercepta requisições HTTP.
    *
@@ -126,6 +128,10 @@ export class LoggerMiddleware implements NestMiddleware {
       });
 
       // Chama o método send() original para enviar a resposta
+      try {
+        const route = originalUrl.split('?')[0] || originalUrl;
+        this.metricsService?.observeRequest(method, route, res.statusCode, elapsed / 1000);
+      } catch {}
       return originalSend(data);
     };
 
