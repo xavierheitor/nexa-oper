@@ -706,6 +706,12 @@ model Eletricista {
   EventoCobertura EventoCobertura[]
 
   SlotEscala SlotEscala[]
+
+  TurnoRealizadoEletricista TurnoRealizadoEletricista[]
+
+  Falta Falta[]
+
+  DivergenciaEscala DivergenciaEscala[]
 }
 
 model Cargo {
@@ -811,6 +817,14 @@ model Equipe {
   EquipeTurnoHistorico EquipeTurnoHistorico[]
 
   EquipeBaseHistorico EquipeBaseHistorico[]
+
+  TurnoRealizado TurnoRealizado[]
+
+  Falta Falta[]
+
+  DivergenciaEscala DivergenciaEscala[] @relation("EquipePrevista")
+
+  DivergenciaEscalaReal DivergenciaEscala[] @relation("EquipeReal")
 }
 
 model EquipeSupervisor {
@@ -1044,6 +1058,7 @@ model SlotEscala {
   deletedBy String?   @db.VarChar(255)
 
   Coberturas EventoCobertura[]
+  Falta      Falta[]
 
   // Um slot por (período, dia, eletricista)
   @@unique([escalaEquipePeriodoId, data, eletricistaId])
@@ -1180,6 +1195,162 @@ model EquipeTurnoHistorico {
   @@index([dataInicio])
   @@index([dataFim])
   @@index([equipeId, dataInicio])
+}
+
+/// =========================
+/// Histórico de Turnos, Faltas, Divergências e Justificativas
+/// =========================
+
+model TurnoRealizado {
+  id             Int      @id @default(autoincrement())
+  dataReferencia DateTime
+  equipeId       Int
+  equipe         Equipe   @relation(fields: [equipeId], references: [id])
+
+  origem     String    @db.VarChar(32) // mobile | backoffice
+  abertoEm   DateTime
+  abertoPor  String    @db.VarChar(255)
+  fechadoEm  DateTime?
+  fechadoPor String?   @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  createdBy String   @db.VarChar(255)
+
+  Itens TurnoRealizadoEletricista[]
+
+  @@index([dataReferencia])
+  @@index([equipeId, dataReferencia])
+}
+
+model TurnoRealizadoEletricista {
+  id               Int            @id @default(autoincrement())
+  turnoRealizadoId Int
+  turnoRealizado   TurnoRealizado @relation(fields: [turnoRealizadoId], references: [id])
+
+  eletricistaId Int
+  eletricista   Eletricista @relation(fields: [eletricistaId], references: [id])
+
+  status     String    @db.VarChar(16) // aberto | fechado
+  abertoEm   DateTime
+  fechadoEm  DateTime?
+  deviceInfo String?   @db.VarChar(1000)
+
+  createdAt DateTime @default(now())
+  createdBy String   @db.VarChar(255)
+
+  @@index([turnoRealizadoId])
+  @@index([eletricistaId])
+  @@index([status])
+}
+
+model Falta {
+  id             Int      @id @default(autoincrement())
+  dataReferencia DateTime
+  equipeId       Int
+  equipe         Equipe   @relation(fields: [equipeId], references: [id])
+
+  eletricistaId Int
+  eletricista   Eletricista @relation(fields: [eletricistaId], references: [id])
+
+  escalaSlotId Int?
+  escalaSlot   SlotEscala? @relation(fields: [escalaSlotId], references: [id])
+
+  motivoSistema String @db.VarChar(64) // falta_abertura
+  status        String @db.VarChar(16) // pendente | justificada | indeferida
+
+  createdAt DateTime @default(now())
+  createdBy String   @db.VarChar(255) // system | userId
+
+  Justificativas FaltaJustificativa[]
+
+  @@unique([dataReferencia, equipeId, eletricistaId, motivoSistema])
+  @@index([eletricistaId, dataReferencia])
+}
+
+model DivergenciaEscala {
+  id             Int      @id @default(autoincrement())
+  dataReferencia DateTime
+
+  equipePrevistaId Int
+  equipePrevista   Equipe @relation("EquipePrevista", fields: [equipePrevistaId], references: [id])
+
+  equipeRealId Int
+  equipeReal   Equipe @relation("EquipeReal", fields: [equipeRealId], references: [id])
+
+  eletricistaId Int
+  eletricista   Eletricista @relation(fields: [eletricistaId], references: [id])
+
+  tipo    String  @db.VarChar(64) // equipe_divergente
+  detalhe String? @db.VarChar(1000)
+
+  createdAt DateTime @default(now())
+  createdBy String   @db.VarChar(255)
+
+  @@unique([dataReferencia, eletricistaId, equipePrevistaId, equipeRealId])
+  @@index([dataReferencia])
+  @@index([eletricistaId])
+}
+
+model TipoJustificativa {
+  id        Int     @id @default(autoincrement())
+  nome      String  @db.VarChar(255)
+  descricao String? @db.VarChar(1000)
+  ativo     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  createdBy String   @db.VarChar(255)
+
+  Justificativas Justificativa[]
+
+  @@unique([nome])
+  @@index([ativo])
+}
+
+model Justificativa {
+  id     Int               @id @default(autoincrement())
+  tipoId Int
+  tipo   TipoJustificativa @relation(fields: [tipoId], references: [id])
+
+  descricao String?  @db.VarChar(1000)
+  createdAt DateTime @default(now())
+  createdBy String   @db.VarChar(255)
+
+  status    String    @db.VarChar(16) // pendente | aprovada | rejeitada
+  decidedBy String?   @db.VarChar(255)
+  decidedAt DateTime?
+
+  Anexos JustificativaAnexo[]
+  Faltas FaltaJustificativa[]
+
+  @@index([status])
+}
+
+model JustificativaAnexo {
+  id              Int           @id @default(autoincrement())
+  justificativaId Int
+  justificativa   Justificativa @relation(fields: [justificativaId], references: [id])
+
+  filePath   String   @db.VarChar(1000)
+  mimeType   String   @db.VarChar(255)
+  uploadedBy String   @db.VarChar(255)
+  uploadedAt DateTime @default(now())
+
+  @@index([justificativaId])
+}
+
+model FaltaJustificativa {
+  id      Int   @id @default(autoincrement())
+  faltaId Int
+  falta   Falta @relation(fields: [faltaId], references: [id])
+
+  justificativaId Int
+  justificativa   Justificativa @relation(fields: [justificativaId], references: [id])
+
+  linkedAt DateTime @default(now())
+
+  @@unique([faltaId, justificativaId])
+  @@index([faltaId])
+  @@index([justificativaId])
 }
 
 model MobilePhoto {

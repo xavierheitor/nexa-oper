@@ -739,6 +739,91 @@ exports.Prisma.EquipeTurnoHistoricoScalarFieldEnum = {
   deletedBy: 'deletedBy'
 };
 
+exports.Prisma.TurnoRealizadoScalarFieldEnum = {
+  id: 'id',
+  dataReferencia: 'dataReferencia',
+  equipeId: 'equipeId',
+  origem: 'origem',
+  abertoEm: 'abertoEm',
+  abertoPor: 'abertoPor',
+  fechadoEm: 'fechadoEm',
+  fechadoPor: 'fechadoPor',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.TurnoRealizadoEletricistaScalarFieldEnum = {
+  id: 'id',
+  turnoRealizadoId: 'turnoRealizadoId',
+  eletricistaId: 'eletricistaId',
+  status: 'status',
+  abertoEm: 'abertoEm',
+  fechadoEm: 'fechadoEm',
+  deviceInfo: 'deviceInfo',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.FaltaScalarFieldEnum = {
+  id: 'id',
+  dataReferencia: 'dataReferencia',
+  equipeId: 'equipeId',
+  eletricistaId: 'eletricistaId',
+  escalaSlotId: 'escalaSlotId',
+  motivoSistema: 'motivoSistema',
+  status: 'status',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.DivergenciaEscalaScalarFieldEnum = {
+  id: 'id',
+  dataReferencia: 'dataReferencia',
+  equipePrevistaId: 'equipePrevistaId',
+  equipeRealId: 'equipeRealId',
+  eletricistaId: 'eletricistaId',
+  tipo: 'tipo',
+  detalhe: 'detalhe',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.TipoJustificativaScalarFieldEnum = {
+  id: 'id',
+  nome: 'nome',
+  descricao: 'descricao',
+  ativo: 'ativo',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.JustificativaScalarFieldEnum = {
+  id: 'id',
+  tipoId: 'tipoId',
+  descricao: 'descricao',
+  createdAt: 'createdAt',
+  createdBy: 'createdBy',
+  status: 'status',
+  decidedBy: 'decidedBy',
+  decidedAt: 'decidedAt'
+};
+
+exports.Prisma.JustificativaAnexoScalarFieldEnum = {
+  id: 'id',
+  justificativaId: 'justificativaId',
+  filePath: 'filePath',
+  mimeType: 'mimeType',
+  uploadedBy: 'uploadedBy',
+  uploadedAt: 'uploadedAt'
+};
+
+exports.Prisma.FaltaJustificativaScalarFieldEnum = {
+  id: 'id',
+  faltaId: 'faltaId',
+  justificativaId: 'justificativaId',
+  linkedAt: 'linkedAt'
+};
+
 exports.Prisma.MobilePhotoScalarFieldEnum = {
   id: 'id',
   turnoId: 'turnoId',
@@ -1241,6 +1326,50 @@ exports.Prisma.EquipeTurnoHistoricoOrderByRelevanceFieldEnum = {
   deletedBy: 'deletedBy'
 };
 
+exports.Prisma.TurnoRealizadoOrderByRelevanceFieldEnum = {
+  origem: 'origem',
+  abertoPor: 'abertoPor',
+  fechadoPor: 'fechadoPor',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.TurnoRealizadoEletricistaOrderByRelevanceFieldEnum = {
+  status: 'status',
+  deviceInfo: 'deviceInfo',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.FaltaOrderByRelevanceFieldEnum = {
+  motivoSistema: 'motivoSistema',
+  status: 'status',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.DivergenciaEscalaOrderByRelevanceFieldEnum = {
+  tipo: 'tipo',
+  detalhe: 'detalhe',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.TipoJustificativaOrderByRelevanceFieldEnum = {
+  nome: 'nome',
+  descricao: 'descricao',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.JustificativaOrderByRelevanceFieldEnum = {
+  descricao: 'descricao',
+  createdBy: 'createdBy',
+  status: 'status',
+  decidedBy: 'decidedBy'
+};
+
+exports.Prisma.JustificativaAnexoOrderByRelevanceFieldEnum = {
+  filePath: 'filePath',
+  mimeType: 'mimeType',
+  uploadedBy: 'uploadedBy'
+};
+
 exports.Prisma.MobilePhotoOrderByRelevanceFieldEnum = {
   tipo: 'tipo',
   checklistUuid: 'checklistUuid',
@@ -1422,6 +1551,14 @@ exports.Prisma.ModelName = {
   EquipeHorarioVigencia: 'EquipeHorarioVigencia',
   HorarioAberturaCatalogo: 'HorarioAberturaCatalogo',
   EquipeTurnoHistorico: 'EquipeTurnoHistorico',
+  TurnoRealizado: 'TurnoRealizado',
+  TurnoRealizadoEletricista: 'TurnoRealizadoEletricista',
+  Falta: 'Falta',
+  DivergenciaEscala: 'DivergenciaEscala',
+  TipoJustificativa: 'TipoJustificativa',
+  Justificativa: 'Justificativa',
+  JustificativaAnexo: 'JustificativaAnexo',
+  FaltaJustificativa: 'FaltaJustificativa',
   MobilePhoto: 'MobilePhoto',
   MobileLocation: 'MobileLocation',
   Supervisor: 'Supervisor',

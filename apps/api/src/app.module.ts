@@ -65,6 +65,8 @@ import { TipoEquipeModule } from './modules/tipo-equipe/tipo-equipe.module';
 import { MobileUploadModule } from './modules/mobile-upload/mobile-upload.module';
 import { HealthModule } from './health/health.module';
 import { MetricsModule } from './metrics/metrics.module';
+import { TurnoRealizadoModule } from './modules/turno-realizado/turno-realizado.module';
+import { JustificativasModule } from './modules/justificativas/justificativas.module';
 
 /**
  * Módulo raiz da aplicação
@@ -107,6 +109,8 @@ import { MetricsModule } from './metrics/metrics.module';
     MobileUploadModule,
     HealthModule,
     MetricsModule,
+    TurnoRealizadoModule,
+    JustificativasModule,
 
     // TODO: Adicionar outros módulos conforme necessário
     // UserModule,

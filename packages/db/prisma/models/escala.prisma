@@ -214,6 +214,7 @@ model SlotEscala {
   @@unique([escalaEquipePeriodoId, data, eletricistaId])
   @@index([data])
   @@index([eletricistaId, data])
+  Falta Falta[]
 }
 
 /// =========================

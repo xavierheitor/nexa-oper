@@ -26,6 +26,12 @@ model Eletricista {
   EventoCobertura EventoCobertura[]
 
   SlotEscala SlotEscala[]
+
+  TurnoRealizadoEletricista TurnoRealizadoEletricista[]
+
+  Falta Falta[]
+
+  DivergenciaEscala DivergenciaEscala[]
 }
 
 

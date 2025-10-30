@@ -42,6 +42,14 @@ model Equipe {
   EquipeTurnoHistorico EquipeTurnoHistorico[]
 
   EquipeBaseHistorico EquipeBaseHistorico[]
+
+  TurnoRealizado TurnoRealizado[]
+
+  Falta Falta[]
+
+  DivergenciaEscala DivergenciaEscala[] @relation("EquipePrevista")
+
+  DivergenciaEscalaReal DivergenciaEscala[] @relation("EquipeReal")
 }
 
 model EquipeSupervisor {
