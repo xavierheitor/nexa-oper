@@ -289,7 +289,7 @@ export const db: PrismaClient = new Proxy({} as PrismaClient, {...});
 
 ---
 
-### 9. **Timeout de Requisição Muito Alto (5 minutos)**
+### 9. **Timeout de Requisição Muito Alto (5 minutos)** ✅ **CORRIGIDO**
 
 **Localização:**
 
@@ -313,11 +313,26 @@ const timeoutMs = 300000; // 5 minutos
 - Usar timeouts específicos por endpoint se necessário
 - Implementar timeouts diferentes para uploads
 
-**Prioridade:** 🟠 **ALTA - DEVE SER REVISADO**
+**Implementação Realizada:**
+
+- Timeout global ajustado para 1 minuto em `apps/api/src/main.ts`
+- Log atualizado para refletir novo limite
+
+```ts
+// apps/api/src/main.ts
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const timeoutMs = 60_000; // 1 minuto
+  req.setTimeout(timeoutMs);
+  res.setTimeout(timeoutMs);
+  next();
+});
+```
+
+**Prioridade:** ✅ **CONCLUÍDO**
 
 ---
 
-### 10. **Limite de Upload de 50MB Muito Generoso**
+### 10. **Limite de Upload de 50MB Muito Generoso** ✅ **CORRIGIDO**
 
 **Localização:**
 
@@ -341,11 +356,25 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 - Reduzir limite de JSON/URL para 1-2MB
 - Validar tamanho antes de processar
 
-**Prioridade:** 🟠 **ALTA - DEVE SER REVISADO**
+**Implementação Realizada:**
+
+- JSON/URL reduzidos para 2MB em `apps/api/src/main.ts`
+- Upload de fotos mantém limite elevado via Multer (`15MB`)
+
+```ts
+// apps/api/src/main.ts
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
+// apps/api/src/modules/mobile-upload/constants/mobile-upload.constants.ts
+export const MAX_MOBILE_PHOTO_FILE_SIZE = 15 * 1024 * 1024; // 15MB
+```
+
+**Prioridade:** ✅ **CONCLUÍDO**
 
 ---
 
-### 11. **Falta de Validação de JWT_SECRET na Inicialização**
+### 11. **Falta de Validação de JWT_SECRET na Inicialização** ✅ **CORRIGIDO**
 
 **Localização:**
 
@@ -356,12 +385,34 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 - Aplicação pode iniciar sem JWT_SECRET válido
 - Erro só aparece quando alguém tenta autenticar
 
-**Solução:**
+**Implementação Realizada:**
 
-- Validar todas as variáveis de ambiente obrigatórias na inicialização
-- Lançar erro e impedir inicialização se JWT_SECRET estiver ausente/inválido
+- Validação centralizada no bootstrap em `apps/api/src/main.ts` (função `validateEnvironmentVariables()`), chamada antes de iniciar a aplicação.
+- Regras para `JWT_SECRET`: não vazio, diferente de `"secret"` e mínimo de 32 caracteres.
+- `DATABASE_URL` também validado.
+- Validação adicional no `AuthModule` ao registrar o `JwtModule` (função `getJwtSecret()`).
 
-**Prioridade:** 🔴 **CRÍTICA - DEVE SER IMPLEMENTADO**
+```ts
+// apps/api/src/main.ts
+function validateEnvironmentVariables(): void {
+  const requiredEnvVars = [
+    {
+      name: 'JWT_SECRET',
+      value: process.env.JWT_SECRET,
+      validator: (val?: string) => {
+        if (!val || val.trim() === '') return 'JWT_SECRET não pode estar vazio';
+        if (val === 'secret' || val.length < 32)
+          return 'JWT_SECRET deve ter pelo menos 32 caracteres e não pode ser "secret"';
+        return null;
+      },
+    },
+    { name: 'DATABASE_URL', value: process.env.DATABASE_URL, validator: v => (!v || v.trim() === '' ? 'DATABASE_URL não pode estar vazio' : null) },
+  ];
+  // Lança erro e impede inicialização se inválido
+}
+```
+
+**Prioridade:** ✅ **CONCLUÍDO**
 
 ---
 

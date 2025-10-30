@@ -293,10 +293,11 @@ async function bootstrap(): Promise<void> {
       abortOnError: false, // Evita crash em caso de erro durante inicialização
     });
 
-    // Configurar parsing de requisições com limite generoso
-    app.use(express.json({ limit: '50mb' }));
-    app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-    logger.log('✅ Configurado parsing JSON/URL com limite de 50MB');
+    // Configurar parsing de requisições com limites mais seguros
+    // JSON/URL: 2MB (uploads grandes ficam a cargo do Multer)
+    app.use(express.json({ limit: '2mb' }));
+    app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+    logger.log('✅ Parsing JSON/URL configurado: limite de 2MB');
 
     // Configurar CORS para integração com múltiplos aplicativos
     const corsOrigins = getCorsOrigins();
@@ -350,14 +351,14 @@ async function bootstrap(): Promise<void> {
       );
     }
 
-    // Configurar timeout de requisições (5 minutos)
+    // Configurar timeout de requisições (1 minuto)
     app.use((req: Request, res: Response, next: NextFunction) => {
-      const timeoutMs = 300000; // 5 minutos
+      const timeoutMs = 60_000; // 1 minuto
       req.setTimeout(timeoutMs);
       res.setTimeout(timeoutMs);
       next();
     });
-    logger.log('✅ Timeout de requisições configurado para 5 minutos');
+    logger.log('✅ Timeout de requisições configurado para 1 minuto');
 
     // Configurar validação global de DTOs
     app.useGlobalPipes(
