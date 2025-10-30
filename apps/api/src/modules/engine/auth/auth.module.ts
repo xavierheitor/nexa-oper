@@ -7,6 +7,7 @@ import { ContractPermissionsService } from './services/contract-permissions.serv
 import { ContractPermissionsGuard } from './guards/contract-permissions.guard';
 import { PassportModule } from '@nestjs/passport';
 import { MobileUsersModule } from '../mobile-users/mobile-users.module';
+import { DatabaseModule } from '@database/database.module';
 
 /**
  * Obtém o JWT_SECRET validado
@@ -35,6 +36,7 @@ function getJwtSecret(): string {
 
 @Module({
   imports: [
+    DatabaseModule,
     MobileUsersModule,
     PassportModule,
     JwtModule.register({

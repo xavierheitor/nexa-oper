@@ -41,6 +41,7 @@ import {
   NestModule,
   RequestMethod,
 } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from '@database/database.module';
@@ -52,6 +53,8 @@ import { VeiculoModule } from '@modules/veiculo/veiculo.module';
 import { EletricistaModule } from '@modules/eletricista/eletricista.module';
 import { LoggerMiddleware } from '@common/middleware/logger.middleware';
 import { RateLimitMiddleware } from '@common/middleware/rate-limit.middleware';
+import { ErrorLoggingInterceptor } from '@common/interceptors/error-logging.interceptor';
+import { OperationLoggingInterceptor } from '@common/interceptors/operation-logging.interceptor';
 import { EquipeModule } from './modules/equipe';
 import { AtividadeModule } from './modules/atividade';
 import { TurnoModule } from './modules/turno';

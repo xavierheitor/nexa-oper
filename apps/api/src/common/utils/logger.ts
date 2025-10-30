@@ -13,7 +13,6 @@
  */
 
 import { Logger, HttpException, HttpStatus } from '@nestjs/common';
-import { sanitizeData } from './logger';
 
 /**
  * Níveis de log padronizados

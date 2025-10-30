@@ -23,7 +23,7 @@
 import { createParamDecorator, ExecutionContext, Logger } from '@nestjs/common';
 import {
   ContractPermission,
-  getContractPermissionsService,
+  ContractPermissionsService,
 } from '../services/contract-permissions.service';
 import { sanitizeData } from '@common/utils/logger';
 
@@ -76,9 +76,9 @@ export const GetUserContracts = createParamDecorator(
       }
 
       logger.debug('=== BUSCANDO SERVIÇO ===');
-      // Obter serviço de permissões via singleton
+      // Obter serviço de permissões via injeção de dependência
       logger.debug('Buscando ContractPermissionsService...');
-      const contractPermissionsService = getContractPermissionsService();
+      const contractPermissionsService = request.app.get(ContractPermissionsService);
 
       if (!contractPermissionsService) {
         logger.error('=== SERVIÇO NÃO ENCONTRADO ===');
@@ -109,7 +109,7 @@ export const GetUserContracts = createParamDecorator(
 
       if (result?.contracts && result.contracts.length > 0) {
         logger.debug('=== DETALHES DOS CONTRATOS ===');
-        result.contracts.forEach((contract, index) => {
+        result.contracts.forEach((contract: ContractPermission, index: number) => {
           // Sanitiza contrato para evitar exposição de informações sensíveis
           logger.debug(
             `Contrato ${index + 1}: ${JSON.stringify(sanitizeData(contract))}`
@@ -170,8 +170,8 @@ export const GetUserContractsInfo = createParamDecorator(
         return request.userContractsInfo;
       }
 
-      // Obter serviço de permissões via singleton
-      const contractPermissionsService = getContractPermissionsService();
+      // Obter serviço de permissões via injeção de dependência
+      const contractPermissionsService = request.app.get(ContractPermissionsService);
 
       if (!contractPermissionsService) {
         logger.warn(

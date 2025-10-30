@@ -398,19 +398,4 @@ export class ContractPermissionsService {
   }
 }
 
-// Singleton helper para uso em contextos fora do Nest DI
-let contractPermissionsServiceInstance: ContractPermissionsService | null =
-  null;
-
-/**
- * Obtém instância singleton do ContractPermissionsService.
- *
- * Útil em cenários onde não é possível injetar o serviço via Nest DI,
- * como decorators personalizados.
- */
-export function getContractPermissionsService(): ContractPermissionsService {
-  if (!contractPermissionsServiceInstance) {
-    contractPermissionsServiceInstance = new ContractPermissionsService();
-  }
-  return contractPermissionsServiceInstance;
-}
+// Singleton removido - use injeção de dependência em vez de singleton manual

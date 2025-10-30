@@ -203,7 +203,7 @@ async function isPortInUse(port: number): Promise<boolean> {
  * Mata processos que estão usando a porta
  * @param port - Porta a ser liberada
  */
-async function killPortProcesses(port: number): Promise<void> {
+async function killPortProcesses(port: number, logger: StandardLogger): Promise<void> {
   try {
     const { stdout } = await execAsync(`lsof -ti:${port}`);
     const pids = stdout
@@ -237,12 +237,12 @@ async function killPortProcesses(port: number): Promise<void> {
  * Limpa a porta antes da inicialização
  * @param port - Porta a ser limpa
  */
-async function cleanupPort(port: number): Promise<void> {
+async function cleanupPort(port: number, logger: StandardLogger): Promise<void> {
   logger.log(`🔍 Verificando porta ${port}...`);
 
   if (await isPortInUse(port)) {
     logger.warn(`⚠️  Porta ${port} está em uso. Liberando...`);
-    await killPortProcesses(port);
+    await killPortProcesses(port, logger);
 
     // Verificar novamente
     if (await isPortInUse(port)) {
@@ -285,7 +285,7 @@ async function bootstrap(): Promise<void> {
 
     // Limpar porta antes da inicialização
     const port = parseInt(process.env.PORT ?? '3001', 10);
-    await cleanupPort(port);
+    await cleanupPort(port, logger);
 
     // Criar aplicação NestJS
     const app = await NestFactory.create(AppModule, {

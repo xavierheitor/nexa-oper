@@ -17,7 +17,6 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  Logger,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
@@ -26,12 +25,13 @@ import { LOG_OPERATION_KEY, LogOperationOptions } from '../decorators/log-operat
 import {
   logOperationWithContext,
   logErrorStructured,
-  LogContext
+  LogContext,
+  StandardLogger
 } from '../utils/logger';
 
 @Injectable()
 export class OperationLoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(OperationLoggingInterceptor.name);
+  private readonly logger = new StandardLogger(OperationLoggingInterceptor.name);
 
   constructor(private readonly reflector: Reflector) {}
 
@@ -58,7 +58,7 @@ export class OperationLoggingInterceptor implements NestInterceptor {
       metadata: {
         method: methodName,
         url: request.url,
-        method: request.method,
+        httpMethod: request.method,
         ...logOptions.context?.metadata,
       },
     };

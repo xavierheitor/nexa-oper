@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -43,6 +44,8 @@ import { MobileUsersService } from '@modules/engine/mobile-users/services/mobile
  */
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   /**
    * Construtor do AuthService
    *

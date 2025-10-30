@@ -29,7 +29,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { sanitizeHeaders, sanitizeData } from '../../../common/utils/logger';
+import { sanitizeHeaders, sanitizeData } from '@common/utils/logger';
 
 /**
  * Guard de Autenticação JWT

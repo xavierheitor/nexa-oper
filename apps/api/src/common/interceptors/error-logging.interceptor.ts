@@ -17,17 +17,16 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  Logger,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { logErrorStructured, LogContext } from '../utils/logger';
+import { logErrorStructured, LogContext, StandardLogger } from '../utils/logger';
 
 @Injectable()
 export class ErrorLoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(ErrorLoggingInterceptor.name);
+  private readonly logger = new StandardLogger(ErrorLoggingInterceptor.name);
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
