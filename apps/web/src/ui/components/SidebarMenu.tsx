@@ -60,6 +60,7 @@ import { Layout, Menu, Typography } from 'antd';
 import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 import React from 'react';
 
 const { Sider } = Layout;
@@ -380,16 +381,6 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       ],
     },
     {
-      key: '/dashboard/pma',
-      icon: <FormOutlined />,
-      label: <Link href='/dashboard/pma'>Plano de Manutenção</Link>,
-    },
-    {
-      key: '/dashboard/anomalias',
-      icon: <FormOutlined />,
-      label: <Link href='/dashboard/anomalias'>Anomalias</Link>,
-    },
-    {
       key: 'logout',
       icon: <LogoutOutlined />,
       label: <span onClick={() => signOut({ callbackUrl: '/' })}>Sair</span>,
@@ -411,16 +402,26 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
         backgroundColor: '#1D3557', // Mantém o tema azul do sidebar
       }}
     >
-      <Title
-        level={3}
+      <div
         style={{
-          color: '#F1FAEE',
-          textAlign: 'center',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
           margin: '16px 0',
         }}
       >
-        NEXA
-      </Title>
+        <Image src='/logo.png' alt='NEXA' width={24} height={24} />
+        <Title
+          level={3}
+          style={{
+            color: '#F1FAEE',
+            margin: 0,
+          }}
+        >
+          NEXA
+        </Title>
+      </div>
 
       <Menu
         mode='inline'
