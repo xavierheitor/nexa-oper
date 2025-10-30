@@ -113,15 +113,22 @@ async function bootstrap(): Promise<void> {
   try {
     logger.log('🚀 Iniciando aplicação Nexa Oper API...');
 
-    // Limpar porta antes da inicialização
+    // Limpar porta apenas em desenvolvimento
     const port = parseInt(process.env.PORT ?? '3001', 10);
-    await ensurePortFree(port, msg => logger.log(msg));
+    if (process.env.NODE_ENV !== 'production') {
+      await ensurePortFree(port, msg => logger.log(msg));
+    } else {
+      logger.log('ℹ️  Verificação de porta/kill desabilitada em produção');
+    }
 
     // Criar aplicação NestJS
     const app = await NestFactory.create(AppModule, {
-      logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+      logger: ['log', 'error', 'warn', 'debug'],
       abortOnError: false, // Evita crash em caso de erro durante inicialização
     });
+
+    // Expor contexto global para resoluções excepcionais (ex.: decorators)
+    (global as any).NEST_APP = app;
 
     // Segurança: headers seguros com Helmet
     app.use(

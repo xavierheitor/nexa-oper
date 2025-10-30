@@ -54,8 +54,8 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
-  Logger,
 } from '@nestjs/common';
+import { StandardLogger, sanitizeData } from '@common/utils/logger';
 import { Request, Response } from 'express';
 
 /**
@@ -70,7 +70,7 @@ import { Request, Response } from 'express';
  */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  private readonly logger = new Logger(AllExceptionsFilter.name);
+  private readonly logger = new StandardLogger(AllExceptionsFilter.name);
   /**
    * Método principal que processa todas as exceções interceptadas.
    *
@@ -115,16 +115,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus() // Para HttpException, usa o status definido
         : HttpStatus.INTERNAL_SERVER_ERROR; // Para outros erros, usa 500
 
-    // Extrai a mensagem de erro apropriada baseada no tipo de exceção
-    const errorResponse =
-      exception instanceof HttpException
-        ? exception.getResponse() // Para HttpException, usa a resposta definida
-        : {
-            message: 'Internal server error', // Para outros erros, mensagem genérica em produção
-            ...(process.env.NODE_ENV !== 'production' && {
-              error: exception instanceof Error ? exception.message : String(exception),
-            }), // Detalhes apenas em desenvolvimento
-          };
+    // Extrai e normaliza mensagem segura para o cliente
+    let safeMessage: string | string[] = 'Internal server error';
+    if (exception instanceof HttpException) {
+      const resp = exception.getResponse() as any;
+      const msg = typeof resp === 'string' ? resp : resp?.message;
+      safeMessage = Array.isArray(msg) ? msg : msg ?? exception.message;
+    } else if (process.env.NODE_ENV !== 'production' && exception instanceof Error) {
+      safeMessage = exception.message;
+    }
 
     // Cria payload estruturado para logging com informações relevantes
     const logPayload = {
@@ -132,44 +131,28 @@ export class AllExceptionsFilter implements ExceptionFilter {
       method: request.method,
       url: request.url,
       status,
-      message: errorResponse,
+      message: safeMessage,
+      headers: sanitizeData(request.headers),
+      body: sanitizeData((request as any).body),
     };
 
     // Registra log com severidade baseada no status HTTP usando Logger
     if (status >= 500) {
-      // Erros de servidor (5xx) são registrados como errors críticos
       const errorMessage = exception instanceof Error ? exception.message : 'Internal Server Error';
       const errorStack = exception instanceof Error ? exception.stack : undefined;
-      this.logger.error(
-        `🔥 Server Error [${status}]: ${errorMessage} - ${request.method} ${request.url}`,
-        errorStack,
-        'AllExceptionsFilter'
-      );
+      this.logger.error(`[500] ${request.method} ${request.url} - ${errorMessage}`, errorStack);
     } else if (status >= 400) {
-      // Erros de cliente (4xx) são registrados como warnings
-      const errorMessage =
-        exception instanceof HttpException
-          ? JSON.stringify(exception.getResponse())
-          : 'Client Error';
-      this.logger.warn(
-        `⚠️ Client Error [${status}]: ${errorMessage} - ${request.method} ${request.url}`,
-        'AllExceptionsFilter'
-      );
+      this.logger.warn(`[${status}] ${request.method} ${request.url} - ${JSON.stringify(safeMessage)}`);
     }
 
     // Prepara mensagem de erro para o cliente (sanitizada)
-    const clientMessage =
-      errorResponse instanceof Object
-        ? errorResponse // Se errorResponse é objeto, usa diretamente
-        : { message: errorResponse }; // Se é string, encapsula em objeto
-
-    // Envia resposta HTTP padronizada ao cliente
+    // Envia resposta HTTP padronizada ao cliente (sanitizada)
     // Em produção, não expõe stack traces ou detalhes internos
     response.status(status).json({
       statusCode: status, // Código de status HTTP
       timestamp: new Date().toISOString(), // Timestamp da ocorrência do erro
       path: request.url, // URL onde o erro ocorreu
-      message: clientMessage,
+      message: safeMessage,
     });
   }
 }

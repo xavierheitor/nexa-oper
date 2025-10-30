@@ -33,22 +33,22 @@ export const GetUserContracts = createParamDecorator(
     ctx: ExecutionContext
   ): Promise<ContractPermission[]> => {
     const logger = new Logger('GetUserContracts');
-    logger.debug('=== INÍCIO GetUserContracts DECORATOR ===');
-    logger.debug(`Timestamp: ${new Date().toISOString()}`);
-    logger.debug(`data recebido: ${JSON.stringify(data)}`);
-    logger.debug(`ExecutionContext tipo: ${ctx.getType()}`);
+    logger.verbose('=== INÍCIO GetUserContracts DECORATOR ===');
+    logger.verbose(`Timestamp: ${new Date().toISOString()}`);
+    logger.verbose(`data recebido: ${JSON.stringify(data)}`);
+    logger.verbose(`ExecutionContext tipo: ${ctx.getType()}`);
 
     const request = ctx.switchToHttp().getRequest();
     const user = request.user;
 
-    logger.debug('=== DADOS DA REQUISIÇÃO ===');
-    logger.debug(`Request object keys: ${Object.keys(request).join(', ')}`);
+    logger.verbose('=== DADOS DA REQUISIÇÃO ===');
+    logger.verbose(`Request object keys: ${Object.keys(request).join(', ')}`);
     // Sanitiza dados do usuário para evitar exposição de informações sensíveis
-    logger.debug(`User object: ${JSON.stringify(sanitizeData(user))}`);
-    logger.debug(`User ID: ${user?.id}`);
-    logger.debug(`User tipo: ${typeof user}`);
-    logger.debug(`User é null: ${user === null}`);
-    logger.debug(`User é undefined: ${user === undefined}`);
+    logger.verbose(`User object: ${JSON.stringify(sanitizeData(user))}`);
+    logger.verbose(`User ID: ${user?.id}`);
+    logger.verbose(`User tipo: ${typeof user}`);
+    logger.verbose(`User é null: ${user === null}`);
+    logger.verbose(`User é undefined: ${user === undefined}`);
 
     if (!user || !user.id) {
       logger.warn('=== USUÁRIO NÃO AUTENTICADO ===');
@@ -58,27 +58,31 @@ export const GetUserContracts = createParamDecorator(
     }
 
     try {
-      logger.debug('=== VERIFICANDO CACHE ===');
+      logger.verbose('=== VERIFICANDO CACHE ===');
       // Verificar se já está no cache da requisição
       if (request.userContracts) {
-        logger.debug(`Cache hit para contratos do usuário ${user.id}`);
+        logger.verbose(`Cache hit para contratos do usuário ${user.id}`);
         // Sanitiza contratos para evitar exposição de informações sensíveis
-        logger.debug(
+        logger.verbose(
           `Contratos do cache: ${JSON.stringify(sanitizeData(request.userContracts))}`
         );
-        logger.debug(
+        logger.verbose(
           `Tipo dos contratos do cache: ${typeof request.userContracts}`
         );
-        logger.debug(`É array: ${Array.isArray(request.userContracts)}`);
-        logger.debug(`Quantidade: ${request.userContracts?.length || 0}`);
-        logger.debug('=== RETORNANDO DO CACHE ===');
+        logger.verbose(`É array: ${Array.isArray(request.userContracts)}`);
+        logger.verbose(`Quantidade: ${request.userContracts?.length || 0}`);
+        logger.verbose('=== RETORNANDO DO CACHE ===');
         return request.userContracts;
       }
 
-      logger.debug('=== BUSCANDO SERVIÇO ===');
+      logger.verbose('=== BUSCANDO SERVIÇO ===');
       // Obter serviço de permissões via injeção de dependência
-      logger.debug('Buscando ContractPermissionsService...');
-      const contractPermissionsService = request.app.get(ContractPermissionsService);
+      logger.verbose('Buscando ContractPermissionsService...');
+      let contractPermissionsService = request.app.get?.(ContractPermissionsService);
+      if (!contractPermissionsService) {
+        const appCtx = (global as any).NEST_APP;
+        contractPermissionsService = appCtx?.get?.(ContractPermissionsService, { strict: false });
+      }
 
       if (!contractPermissionsService) {
         logger.error('=== SERVIÇO NÃO ENCONTRADO ===');
@@ -88,24 +92,24 @@ export const GetUserContracts = createParamDecorator(
         return [];
       }
 
-      logger.debug(
+      logger.verbose(
         `ContractPermissionsService encontrado: ${!!contractPermissionsService}`
       );
-      logger.debug(`Tipo do serviço: ${typeof contractPermissionsService}`);
+      logger.verbose(`Tipo do serviço: ${typeof contractPermissionsService}`);
 
-      logger.debug('=== CHAMANDO getUserContracts ===');
+      logger.verbose('=== CHAMANDO getUserContracts ===');
       // Buscar contratos do usuário
-      logger.debug(`Chamando getUserContracts para usuário ${user.id}...`);
+      logger.verbose(`Chamando getUserContracts para usuário ${user.id}...`);
       const result = await contractPermissionsService.getUserContracts(user.id);
 
-      logger.debug('=== RESULTADO getUserContracts ===');
-      logger.debug(`Resultado getUserContracts: ${JSON.stringify(result)}`);
-      logger.debug(`Tipo do resultado: ${typeof result}`);
-      logger.debug(`Resultado é null: ${result === null}`);
-      logger.debug(`Resultado é undefined: ${result === undefined}`);
-      logger.debug(`Contratos retornados: ${result?.contracts?.length || 0}`);
-      logger.debug(`Tipo dos contratos: ${typeof result?.contracts}`);
-      logger.debug(`Contratos é array: ${Array.isArray(result?.contracts)}`);
+      logger.verbose('=== RESULTADO getUserContracts ===');
+      logger.verbose(`Resultado getUserContracts: ${JSON.stringify(result)}`);
+      logger.verbose(`Tipo do resultado: ${typeof result}`);
+      logger.verbose(`Resultado é null: ${result === null}`);
+      logger.verbose(`Resultado é undefined: ${result === undefined}`);
+      logger.verbose(`Contratos retornados: ${result?.contracts?.length || 0}`);
+      logger.verbose(`Tipo dos contratos: ${typeof result?.contracts}`);
+      logger.verbose(`Contratos é array: ${Array.isArray(result?.contracts)}`);
 
       if (result?.contracts && result.contracts.length > 0) {
         logger.debug('=== DETALHES DOS CONTRATOS ===');

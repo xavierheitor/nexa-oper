@@ -48,40 +48,40 @@ export class SyncAuditRemoverInterceptor implements NestInterceptor {
    * Intercepta a resposta e remove campos de auditoria se for rota de sync
    */
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    this.logger.debug('=== INÍCIO SyncAuditRemoverInterceptor ===');
-    this.logger.debug(`Timestamp: ${new Date().toISOString()}`);
+    this.logger.verbose('=== INÍCIO SyncAuditRemoverInterceptor ===');
+    this.logger.verbose(`Timestamp: ${new Date().toISOString()}`);
 
     const request = context.switchToHttp().getRequest();
-    this.logger.debug(`Request URL: ${request.url}`);
-    this.logger.debug(`Request method: ${request.method}`);
-    this.logger.debug(`Request headers: ${JSON.stringify(request.headers)}`);
+    this.logger.verbose(`Request URL: ${request.url}`);
+    this.logger.verbose(`Request method: ${request.method}`);
+    this.logger.verbose(`Request headers: ${JSON.stringify(request.headers)}`);
 
     const isSyncRoute = request.url?.includes('/sync');
-    this.logger.debug(`É endpoint de sync: ${isSyncRoute}`);
+    this.logger.verbose(`É endpoint de sync: ${isSyncRoute}`);
 
     if (!isSyncRoute) {
-      this.logger.debug('Não é endpoint de sync, passando sem interceptar');
+      this.logger.verbose('Não é endpoint de sync, passando sem interceptar');
       return next.handle();
     }
 
-    this.logger.debug(`Interceptando endpoint de sync: ${request.url}`);
+    this.logger.verbose(`Interceptando endpoint de sync: ${request.url}`);
 
     return next.handle().pipe(
       map(data => {
-        this.logger.debug('=== PROCESSANDO RESPOSTA ===');
-        this.logger.debug(`Dados recebidos: ${JSON.stringify(data)}`);
-        this.logger.debug(`Tipo dos dados: ${typeof data}`);
-        this.logger.debug(`É array: ${Array.isArray(data)}`);
-        this.logger.debug(
+        this.logger.verbose('=== PROCESSANDO RESPOSTA ===');
+        this.logger.verbose(`Dados recebidos: ${JSON.stringify(data)}`);
+        this.logger.verbose(`Tipo dos dados: ${typeof data}`);
+        this.logger.verbose(`É array: ${Array.isArray(data)}`);
+        this.logger.verbose(
           `É objeto: ${typeof data === 'object' && data !== null}`
         );
 
         const processedData = this.removeAuditFields(data);
 
-        this.logger.debug(
+        this.logger.verbose(
           `Dados processados: ${JSON.stringify(processedData)}`
         );
-        this.logger.debug('=== FIM SyncAuditRemoverInterceptor ===');
+        this.logger.verbose('=== FIM SyncAuditRemoverInterceptor ===');
 
         return processedData;
       })
@@ -92,78 +92,78 @@ export class SyncAuditRemoverInterceptor implements NestInterceptor {
    * Remove campos de auditoria de dados recursivamente
    */
   private removeAuditFields(data: any): any {
-    this.logger.debug('=== INÍCIO removeAuditFields ===');
-    this.logger.debug(`Dados recebidos: ${JSON.stringify(data)}`);
-    this.logger.debug(`Tipo dos dados: ${typeof data}`);
-    this.logger.debug(`É null: ${data === null}`);
-    this.logger.debug(`É undefined: ${data === undefined}`);
+    this.logger.verbose('=== INÍCIO removeAuditFields ===');
+    this.logger.verbose(`Dados recebidos: ${JSON.stringify(data)}`);
+    this.logger.verbose(`Tipo dos dados: ${typeof data}`);
+    this.logger.verbose(`É null: ${data === null}`);
+    this.logger.verbose(`É undefined: ${data === undefined}`);
 
     if (!data) {
-      this.logger.debug('Dados são falsy, retornando como estão');
+      this.logger.verbose('Dados são falsy, retornando como estão');
       return data;
     }
 
     // Se for array, processa cada item
     if (Array.isArray(data)) {
-      this.logger.debug(`Processando array com ${data.length} itens`);
+      this.logger.verbose(`Processando array com ${data.length} itens`);
       const processed = data.map((item, index) => {
-        this.logger.debug(
+        this.logger.verbose(
           `Processando item ${index + 1} do array: ${JSON.stringify(item)}`
         );
         const result = this.removeAuditFields(item);
-        this.logger.debug(
+        this.logger.verbose(
           `Item ${index + 1} processado: ${JSON.stringify(result)}`
         );
         return result;
       });
-      this.logger.debug(`Array processado: ${JSON.stringify(processed)}`);
+      this.logger.verbose(`Array processado: ${JSON.stringify(processed)}`);
       return processed;
     }
 
     // Se for objeto, remove campos de auditoria
     if (typeof data === 'object' && data !== null) {
-      this.logger.debug('Processando objeto');
-      this.logger.debug(`Campos originais: ${Object.keys(data).join(', ')}`);
+      this.logger.verbose('Processando objeto');
+      this.logger.verbose(`Campos originais: ${Object.keys(data).join(', ')}`);
 
       const cleanedData = { ...data };
 
       // Remove campos de auditoria
-      this.logger.debug(
+      this.logger.verbose(
         `Campos de auditoria a remover: ${this.AUDIT_FIELDS.join(', ')}`
       );
       this.AUDIT_FIELDS.forEach(field => {
         if (Object.prototype.hasOwnProperty.call(cleanedData, field)) {
-          this.logger.debug(
+          this.logger.verbose(
             `Removendo campo de auditoria: ${field} = ${cleanedData[field]}`
           );
           delete cleanedData[field];
         }
       });
 
-      this.logger.debug(
+      this.logger.verbose(
         `Campos após remoção: ${Object.keys(cleanedData).join(', ')}`
       );
 
       // Processa propriedades aninhadas recursivamente
       Object.keys(cleanedData).forEach(key => {
         if (typeof cleanedData[key] === 'object' && cleanedData[key] !== null) {
-          this.logger.debug(`Processando campo aninhado: ${key}`);
+          this.logger.verbose(`Processando campo aninhado: ${key}`);
           const originalValue = cleanedData[key];
           cleanedData[key] = this.removeAuditFields(originalValue);
-          this.logger.debug(
+          this.logger.verbose(
             `Campo ${key} processado: ${JSON.stringify(cleanedData[key])}`
           );
         }
       });
 
-      this.logger.debug(`Objeto final: ${JSON.stringify(cleanedData)}`);
-      this.logger.debug('=== FIM removeAuditFields ===');
+      this.logger.verbose(`Objeto final: ${JSON.stringify(cleanedData)}`);
+      this.logger.verbose('=== FIM removeAuditFields ===');
       return cleanedData;
     }
 
     // Para primitivos, retorna como está
-    this.logger.debug('Dados são primitivos, retornando como estão');
-    this.logger.debug('=== FIM removeAuditFields ===');
+    this.logger.verbose('Dados são primitivos, retornando como estão');
+    this.logger.verbose('=== FIM removeAuditFields ===');
     return data;
   }
 }

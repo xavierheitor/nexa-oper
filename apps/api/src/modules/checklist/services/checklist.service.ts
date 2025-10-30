@@ -70,6 +70,7 @@ import {
   CreateChecklistDto,
   UpdateChecklistDto,
 } from '../dto';
+import { buildPagination, buildPagedResponse } from '@common/utils/pagination';
 import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
 import {
   AUDIT_CONFIG,
@@ -225,8 +226,8 @@ export class ChecklistService {
       // Construir filtros de busca
       const whereClause = this.buildWhereClause(search, tipoChecklistId);
 
-      // Calcular offset para paginação
-      const skip = (page - 1) * limit;
+      // Calcular paginação via util compartilhado
+      const { skip, take, page: currPage, pageSize } = buildPagination({ page, pageSize: limit });
 
       // Executar consultas em paralelo para otimização
       const [data, total] = await Promise.all([
@@ -234,7 +235,7 @@ export class ChecklistService {
           where: whereClause,
           orderBy: ORDER_CONFIG.DEFAULT_ORDER,
           skip,
-          take: limit,
+          take,
           select: {
             id: true,
             nome: true,
@@ -258,14 +259,8 @@ export class ChecklistService {
         }),
       ]);
 
-      const meta = this.buildPaginationMeta(total, page, limit);
-
-      const result: ChecklistListResponseDto = {
-        data: data as ChecklistResponseDto[],
-        meta,
-        search,
-        timestamp: new Date(),
-      };
+      const paged = buildPagedResponse(data as ChecklistResponseDto[], total, currPage, pageSize);
+      const result: ChecklistListResponseDto = { ...paged, search, timestamp: new Date() } as any;
 
       this.logger.log(
         `Encontrados ${total} checklists (${data.length} nesta página)`

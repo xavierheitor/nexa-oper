@@ -48,10 +48,7 @@ import {
   extractAllowedContractIds,
   ensureContractPermission,
 } from '@modules/engine/auth/utils/contract-helpers';
-import {
-  buildPaginationMeta,
-  validatePaginationParams,
-} from '@common/utils/pagination';
+import { buildPagination, buildPagedResponse } from '@common/utils/pagination';
 import { validateId, validateOptionalId } from '@common/utils/validation';
 import {
   getDefaultUserContext,
@@ -103,7 +100,13 @@ export class VeiculoService {
    * Valida parâmetros de paginação
    */
   private validatePaginationParams(page: number, limit: number): void {
-    validatePaginationParams(page, limit);
+    // Mantém validação básica local para não depender de helpers externos
+    if (page < 1) {
+      throw new BadRequestException('Página inválida');
+    }
+    if (limit < 1 || limit > 100) {
+      throw new BadRequestException('Limite inválido');
+    }
   }
 
   /**
@@ -210,7 +213,17 @@ export class VeiculoService {
     page: number,
     limit: number
   ): PaginationMetaDto {
-    return buildPaginationMeta(total, page, limit);
+    const totalPages = Math.max(1, Math.ceil(total / Math.max(1, limit)));
+    return {
+      total,
+      page,
+      limit, // requerido por PaginationMetaDto
+      // manter compatibilidade com respostas que usam pageSize
+      pageSize: limit as unknown as never,
+      totalPages,
+      hasPrevious: page > 1,
+      hasNext: page < totalPages,
+    } as unknown as PaginationMetaDto;
   }
 
   /**
@@ -310,14 +323,14 @@ export class VeiculoService {
         allowedContractIds
       );
 
-      const skip = (page - 1) * limit;
+      const { skip, take, page: currPage, pageSize } = buildPagination({ page, pageSize: limit });
 
       const [data, total] = await Promise.all([
         this.db.getPrisma().veiculo.findMany({
           where: whereClause,
           orderBy: ORDER_CONFIG.DEFAULT_ORDER,
           skip,
-          take: limit,
+          take,
           select: {
             id: true,
             placa: true,
@@ -349,14 +362,8 @@ export class VeiculoService {
         this.db.getPrisma().veiculo.count({ where: whereClause }),
       ]);
 
-      const meta = this.buildPaginationMeta(total, page, limit);
-
-      return {
-        data: data as VeiculoResponseDto[],
-        meta,
-        search,
-        timestamp: new Date(),
-      };
+      const paged = buildPagedResponse(data as VeiculoResponseDto[], total, currPage, pageSize);
+      return { ...paged, search, timestamp: new Date() } as any;
     } catch (error) {
       this.logger.error('Erro ao listar veículos:', error);
       throw new BadRequestException('Erro ao listar veículos');

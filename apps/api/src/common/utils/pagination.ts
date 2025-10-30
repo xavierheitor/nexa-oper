@@ -1,3 +1,38 @@
+export interface PaginationQuery {
+  page?: number | string;
+  pageSize?: number | string;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc' | string;
+}
+
+export function buildPagination(query: PaginationQuery) {
+  const page = Math.max(1, Number(query.page) || 1);
+  const pageSize = Math.min(100, Math.max(1, Number(query.pageSize) || 20));
+  const skip = (page - 1) * pageSize;
+  const take = pageSize;
+  const orderBy = query.sortBy
+    ? { [query.sortBy]: (query.sortDir?.toLowerCase() === 'desc' ? 'desc' : 'asc') as 'asc' | 'desc' }
+    : undefined;
+  return { page, pageSize, skip, take, orderBy } as const;
+}
+
+export function buildPagedResponse<T>(
+  items: T[],
+  total: number,
+  page: number,
+  pageSize: number
+) {
+  return {
+    data: items,
+    meta: {
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize) || 1,
+    },
+  } as const;
+}
+
 /**
  * Utilitários de Paginação Compartilhados
  *

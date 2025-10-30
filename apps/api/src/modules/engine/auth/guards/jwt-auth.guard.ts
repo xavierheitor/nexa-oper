@@ -50,24 +50,24 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
    * @returns Promise<boolean> - true se pode prosseguir com autenticação
    */
   canActivate(context: ExecutionContext) {
-    this.logger.debug('=== INÍCIO JwtAuthGuard canActivate ===');
-    this.logger.debug(`Timestamp: ${new Date().toISOString()}`);
-    this.logger.debug(`Context type: ${context.getType()}`);
+    this.logger.verbose('=== INÍCIO JwtAuthGuard canActivate ===');
+    this.logger.verbose(`Timestamp: ${new Date().toISOString()}`);
+    this.logger.verbose(`Context type: ${context.getType()}`);
 
     const request = context.switchToHttp().getRequest();
-    this.logger.debug(`Request URL: ${request.url}`);
-    this.logger.debug(`Request method: ${request.method}`);
+    this.logger.verbose(`Request URL: ${request.url}`);
+    this.logger.verbose(`Request method: ${request.method}`);
     // Sanitiza headers para evitar exposição de tokens e credenciais
-    this.logger.debug(
+    this.logger.verbose(
       `Headers: ${JSON.stringify(sanitizeHeaders(request.headers))}`
     );
     // Authorization header já está sanitizado no objeto headers
-    this.logger.debug(
+    this.logger.verbose(
       `Authorization header: ${request.headers.authorization ? '****' : 'não presente'}`
     );
 
     // Delegar verificação para o AuthGuard do Passport
-    this.logger.debug('Delegando verificação para AuthGuard do Passport...');
+    this.logger.verbose('Delegando verificação para AuthGuard do Passport...');
     return super.canActivate(context);
   }
 
@@ -86,15 +86,15 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
    * @throws {UnauthorizedException} Quando autenticação falha
    */
   handleRequest(err: any, user: any, info: any) {
-    this.logger.debug('=== INÍCIO JwtAuthGuard handleRequest ===');
-    this.logger.debug(`Timestamp: ${new Date().toISOString()}`);
-    this.logger.debug(`Erro: ${JSON.stringify(err)}`);
+    this.logger.verbose('=== INÍCIO JwtAuthGuard handleRequest ===');
+    this.logger.verbose(`Timestamp: ${new Date().toISOString()}`);
+    this.logger.verbose(`Erro: ${JSON.stringify(err)}`);
     // Sanitiza dados do usuário para evitar exposição de informações sensíveis
-    this.logger.debug(`Usuário: ${JSON.stringify(sanitizeData(user))}`);
-    this.logger.debug(`Info: ${JSON.stringify(info)}`);
-    this.logger.debug(`Tipo do erro: ${typeof err}`);
-    this.logger.debug(`Tipo do usuário: ${typeof user}`);
-    this.logger.debug(`Tipo da info: ${typeof info}`);
+    this.logger.verbose(`Usuário: ${JSON.stringify(sanitizeData(user))}`);
+    this.logger.verbose(`Info: ${JSON.stringify(info)}`);
+    this.logger.verbose(`Tipo do erro: ${typeof err}`);
+    this.logger.verbose(`Tipo do usuário: ${typeof user}`);
+    this.logger.verbose(`Tipo da info: ${typeof info}`);
 
     // Verificar se houve erro ou se usuário não foi encontrado
     if (err || !user) {
@@ -107,12 +107,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     // Retornar dados do usuário autenticado
-    this.logger.debug('=== AUTENTICAÇÃO BEM-SUCEDIDA ===');
+    this.logger.verbose('=== AUTENTICAÇÃO BEM-SUCEDIDA ===');
     // Sanitiza dados do usuário para evitar exposição de informações sensíveis
-    this.logger.debug(
+    this.logger.verbose(
       `Usuário autenticado: ${JSON.stringify(sanitizeData(user))}`
     );
-    this.logger.debug('=== FIM JwtAuthGuard handleRequest ===');
+    this.logger.verbose('=== FIM JwtAuthGuard handleRequest ===');
     return user;
   }
 }
