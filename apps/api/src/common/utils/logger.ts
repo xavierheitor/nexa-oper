@@ -1,11 +1,19 @@
 /**
- * Utilitários de Logging Padronizados
+ * Sistema de Logging Robusto e Tratamento de Erros
  *
- * Centraliza formatação e níveis de log para garantir
- * consistência entre diferentes módulos da aplicação.
+ * Centraliza formatação, níveis de log e tratamento de erros para garantir
+ * consistência, rastreabilidade e facilidade de debugging em toda a aplicação.
+ *
+ * CARACTERÍSTICAS:
+ * - Logging estruturado com contexto
+ * - Tratamento de erros padronizado
+ * - Sanitização automática de dados sensíveis
+ * - Diferentes níveis por ambiente
+ * - Rastreamento de requisições
  */
 
-import { Logger } from '@nestjs/common';
+import { Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { sanitizeData } from './logger';
 
 /**
  * Níveis de log padronizados
@@ -44,49 +52,130 @@ export const LOG_CONFIG = {
 } as const;
 
 /**
- * Logger padronizado com formatação consistente
+ * Interface para contexto de logging
+ */
+export interface LogContext {
+  userId?: string | number;
+  requestId?: string;
+  operation?: string;
+  module?: string;
+  metadata?: Record<string, any>;
+}
+
+/**
+ * Interface para erros estruturados
+ */
+export interface StructuredError {
+  message: string;
+  code?: string;
+  statusCode?: number;
+  context?: LogContext;
+  stack?: string;
+  timestamp: string;
+  metadata?: Record<string, any>;
+}
+
+/**
+ * Logger padronizado com formatação consistente e tratamento de erros
  */
 export class StandardLogger extends Logger {
   /**
    * Log de operação (CRUD, sync, etc.)
    */
   operation(message: string, context?: string): void {
-    this.log(`${LOG_CONFIG.PREFIXES.OPERATION} ${message}`, context);
+    this.log(`${LOG_CONFIG.PREFIXES.OPERATION} ${message}`, context || this.context);
   }
 
   /**
    * Log de validação
    */
   validation(message: string, context?: string): void {
-    this.debug(`${LOG_CONFIG.PREFIXES.VALIDATION} ${message}`, context);
+    if (shouldLogDebug()) {
+      this.debug(`${LOG_CONFIG.PREFIXES.VALIDATION} ${message}`, context || this.context);
+    }
   }
 
   /**
    * Log de banco de dados
    */
   database(message: string, context?: string): void {
-    this.debug(`${LOG_CONFIG.PREFIXES.DATABASE} ${message}`, context);
+    if (shouldLogDebug()) {
+      this.debug(`${LOG_CONFIG.PREFIXES.DATABASE} ${message}`, context || this.context);
+    }
   }
 
   /**
    * Log de autenticação
    */
   auth(message: string, context?: string): void {
-    this.debug(`${LOG_CONFIG.PREFIXES.AUTH} ${message}`, context);
+    if (shouldLogDebug()) {
+      this.debug(`${LOG_CONFIG.PREFIXES.AUTH} ${message}`, context || this.context);
+    }
   }
 
   /**
    * Log de sincronização
    */
   sync(message: string, context?: string): void {
-    this.log(`${LOG_CONFIG.PREFIXES.SYNC} ${message}`, context);
+    this.log(`${LOG_CONFIG.PREFIXES.SYNC} ${message}`, context || this.context);
   }
 
   /**
-   * Log de erro com contexto
+   * Log de requisição HTTP
    */
-  errorWithContext(message: string, error: Error, context?: string): void {
-    this.error(`${LOG_CONFIG.PREFIXES.ERROR} ${message}`, error.stack, context);
+  request(message: string, context?: string): void {
+    if (shouldLogDebug()) {
+      this.debug(`[REQUEST] ${message}`, context || this.context);
+    }
+  }
+
+  /**
+   * Log de resposta HTTP
+   */
+  response(message: string, context?: string): void {
+    if (shouldLogDebug()) {
+      this.debug(`[RES-HTTP] ${message}`, context || this.context);
+    }
+  }
+
+  /**
+   * Log de erro com contexto completo
+   */
+  errorWithContext(message: string, error: Error | unknown, context?: string): void {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    const fullContext = context || this.context;
+
+    this.error(
+      `${LOG_CONFIG.PREFIXES.ERROR} ${message}: ${errorMessage}`,
+      errorStack,
+      fullContext
+    );
+  }
+
+  /**
+   * Log de erro HTTP (status 4xx)
+   */
+  httpError(status: number, message: string, path: string, context?: string): void {
+    this.warn(
+      `[HTTP ${status}] ${message} - Path: ${path}`,
+      context || this.context
+    );
+  }
+
+  /**
+   * Log de erro crítico de servidor (status 5xx)
+   */
+  serverError(message: string, error: Error | unknown, path: string, context?: string): void {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    const fullContext = context || this.context;
+
+    this.error(
+      `[SERVER ERROR] ${message}: ${errorMessage} - Path: ${path}`,
+      errorStack,
+      fullContext
+    );
   }
 
   /**
@@ -163,6 +252,125 @@ export function formatLogMessage(
   const timestamp = new Date().toISOString();
   const contextStr = context ? `[${context}]` : '';
   return `${timestamp} ${level.toUpperCase()} ${contextStr} ${message}`;
+}
+
+/**
+ * Log de erro estruturado com contexto completo
+ */
+export function logErrorStructured(
+  logger: StandardLogger,
+  message: string,
+  error: Error | HttpException,
+  context?: LogContext
+): void {
+  const structuredError = createStructuredError(message, error, context);
+
+  logger.error(
+    `${LOG_CONFIG.PREFIXES.ERROR} ${message}`,
+    JSON.stringify(structuredError, null, 2),
+    context?.module
+  );
+}
+
+/**
+ * Log de operação com contexto estruturado
+ */
+export function logOperationWithContext(
+  logger: StandardLogger,
+  message: string,
+  context: LogContext,
+  data?: any
+): void {
+  const sanitizedData = data ? sanitizeData(data) : undefined;
+  const logMessage = `${LOG_CONFIG.PREFIXES.OPERATION} ${message}`;
+
+  if (sanitizedData) {
+    logger.log(`${logMessage} - Context: ${JSON.stringify(context)} - Data: ${JSON.stringify(sanitizedData)}`);
+  } else {
+    logger.log(`${logMessage} - Context: ${JSON.stringify(context)}`);
+  }
+}
+
+/**
+ * Log de validação com dados sanitizados
+ */
+export function logValidationWithContext(
+  logger: StandardLogger,
+  message: string,
+  context: LogContext,
+  validationData?: any
+): void {
+  const sanitizedData = validationData ? sanitizeData(validationData) : undefined;
+  const logMessage = `${LOG_CONFIG.PREFIXES.VALIDATION} ${message}`;
+
+  if (sanitizedData) {
+    logger.debug(`${logMessage} - Context: ${JSON.stringify(context)} - Validation: ${JSON.stringify(sanitizedData)}`);
+  } else {
+    logger.debug(`${logMessage} - Context: ${JSON.stringify(context)}`);
+  }
+}
+
+/**
+ * Log de banco de dados com query sanitizada
+ */
+export function logDatabaseWithContext(
+  logger: StandardLogger,
+  message: string,
+  context: LogContext,
+  queryData?: any
+): void {
+  const sanitizedData = queryData ? sanitizeData(queryData) : undefined;
+  const logMessage = `${LOG_CONFIG.PREFIXES.DATABASE} ${message}`;
+
+  if (sanitizedData) {
+    logger.debug(`${logMessage} - Context: ${JSON.stringify(context)} - Query: ${JSON.stringify(sanitizedData)}`);
+  } else {
+    logger.debug(`${logMessage} - Context: ${JSON.stringify(context)}`);
+  }
+}
+
+/**
+ * Log de autenticação com dados sensíveis sanitizados
+ */
+export function logAuthWithContext(
+  logger: StandardLogger,
+  message: string,
+  context: LogContext,
+  authData?: any
+): void {
+  const sanitizedData = authData ? sanitizeData(authData) : undefined;
+  const logMessage = `${LOG_CONFIG.PREFIXES.AUTH} ${message}`;
+
+  if (sanitizedData) {
+    logger.debug(`${logMessage} - Context: ${JSON.stringify(context)} - Auth: ${JSON.stringify(sanitizedData)}`);
+  } else {
+    logger.debug(`${logMessage} - Context: ${JSON.stringify(context)}`);
+  }
+}
+
+/**
+ * Cria erro estruturado para logging
+ */
+function createStructuredError(
+  message: string,
+  error: Error | HttpException,
+  context?: LogContext
+): StructuredError {
+  const isHttpException = error instanceof HttpException;
+
+  return {
+    message,
+    code: isHttpException ? error.name : error.constructor.name,
+    statusCode: isHttpException ? error.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR,
+    context,
+    stack: error.stack,
+    timestamp: new Date().toISOString(),
+    metadata: {
+      errorName: error.name,
+      errorMessage: error.message,
+      ...(isHttpException && { response: error.getResponse() })
+    }
+  };
 }
 
 /**

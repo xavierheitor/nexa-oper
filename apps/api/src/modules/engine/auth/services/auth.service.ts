@@ -220,7 +220,7 @@ export class AuthService {
         },
       };
     } catch (err) {
-      console.error('Erro ao renovar token:', err);
+      this.logger.error('Erro ao renovar token:', err);
       throw new ForbiddenException('Refresh token inválido ou expirado');
     }
   }

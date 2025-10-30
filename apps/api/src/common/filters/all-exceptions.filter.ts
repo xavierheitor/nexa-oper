@@ -54,6 +54,7 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
@@ -69,6 +70,7 @@ import { Request, Response } from 'express';
  */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
+  private readonly logger = new Logger(AllExceptionsFilter.name);
   /**
    * Método principal que processa todas as exceções interceptadas.
    *
@@ -118,8 +120,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       exception instanceof HttpException
         ? exception.getResponse() // Para HttpException, usa a resposta definida
         : {
-            message: 'Internal server error', // Para outros erros, mensagem genérica
-            error: exception, // Inclui detalhes do erro original para debugging
+            message: 'Internal server error', // Para outros erros, mensagem genérica em produção
+            ...(process.env.NODE_ENV !== 'production' && {
+              error: exception instanceof Error ? exception.message : String(exception),
+            }), // Detalhes apenas em desenvolvimento
           };
 
     // Cria payload estruturado para logging com informações relevantes
@@ -131,24 +135,41 @@ export class AllExceptionsFilter implements ExceptionFilter {
       message: errorResponse,
     };
 
-    // Registra log com severidade baseada no status HTTP
+    // Registra log com severidade baseada no status HTTP usando Logger
     if (status >= 500) {
       // Erros de servidor (5xx) são registrados como errors críticos
-      console.error('🔥 Server Error:', logPayload);
+      const errorMessage = exception instanceof Error ? exception.message : 'Internal Server Error';
+      const errorStack = exception instanceof Error ? exception.stack : undefined;
+      this.logger.error(
+        `🔥 Server Error [${status}]: ${errorMessage} - ${request.method} ${request.url}`,
+        errorStack,
+        'AllExceptionsFilter'
+      );
     } else if (status >= 400) {
       // Erros de cliente (4xx) são registrados como warnings
-      console.warn('⚠️ Client Error:', logPayload);
+      const errorMessage =
+        exception instanceof HttpException
+          ? JSON.stringify(exception.getResponse())
+          : 'Client Error';
+      this.logger.warn(
+        `⚠️ Client Error [${status}]: ${errorMessage} - ${request.method} ${request.url}`,
+        'AllExceptionsFilter'
+      );
     }
 
+    // Prepara mensagem de erro para o cliente (sanitizada)
+    const clientMessage =
+      errorResponse instanceof Object
+        ? errorResponse // Se errorResponse é objeto, usa diretamente
+        : { message: errorResponse }; // Se é string, encapsula em objeto
+
     // Envia resposta HTTP padronizada ao cliente
+    // Em produção, não expõe stack traces ou detalhes internos
     response.status(status).json({
       statusCode: status, // Código de status HTTP
       timestamp: new Date().toISOString(), // Timestamp da ocorrência do erro
       path: request.url, // URL onde o erro ocorreu
-      message:
-        errorResponse instanceof Object
-          ? errorResponse // Se errorResponse é objeto, usa diretamente
-          : { message: errorResponse }, // Se é string, encapsula em objeto
+      message: clientMessage,
     });
   }
 }

@@ -69,6 +69,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from '@common/filters/all-exceptions.filter';
+import { StandardLogger } from '@common/utils/logger';
 
 const execAsync = promisify(exec);
 
@@ -211,16 +212,16 @@ async function killPortProcesses(port: number): Promise<void> {
       .filter(pid => pid.length > 0);
 
     if (pids.length > 0) {
-      console.log(
+      logger.log(
         `🔄 Encontrados ${pids.length} processo(s) usando a porta ${port}`
       );
 
       for (const pid of pids) {
         try {
           await execAsync(`kill -9 ${pid}`);
-          console.log(`✅ Processo ${pid} finalizado`);
+          logger.log(`✅ Processo ${pid} finalizado`);
         } catch (error) {
-          console.log(`⚠️  Erro ao finalizar processo ${pid}:`, error.message);
+          logger.warn(`⚠️  Erro ao finalizar processo ${pid}:`, error.message);
         }
       }
 
@@ -228,7 +229,7 @@ async function killPortProcesses(port: number): Promise<void> {
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
   } catch {
-    console.log(`ℹ️  Nenhum processo encontrado na porta ${port}`);
+    logger.log(`ℹ️  Nenhum processo encontrado na porta ${port}`);
   }
 }
 
@@ -237,20 +238,20 @@ async function killPortProcesses(port: number): Promise<void> {
  * @param port - Porta a ser limpa
  */
 async function cleanupPort(port: number): Promise<void> {
-  console.log(`🔍 Verificando porta ${port}...`);
+  logger.log(`🔍 Verificando porta ${port}...`);
 
   if (await isPortInUse(port)) {
-    console.log(`⚠️  Porta ${port} está em uso. Liberando...`);
+    logger.warn(`⚠️  Porta ${port} está em uso. Liberando...`);
     await killPortProcesses(port);
 
     // Verificar novamente
     if (await isPortInUse(port)) {
       throw new Error(`Falha ao liberar porta ${port}`);
     } else {
-      console.log(`✅ Porta ${port} liberada com sucesso`);
+      logger.log(`✅ Porta ${port} liberada com sucesso`);
     }
   } else {
-    console.log(`✅ Porta ${port} está livre`);
+    logger.log(`✅ Porta ${port} está livre`);
   }
 }
 
@@ -274,7 +275,7 @@ async function cleanupPort(port: number): Promise<void> {
  * ```
  */
 async function bootstrap(): Promise<void> {
-  const logger = new Logger('Bootstrap');
+  const logger = new StandardLogger('Bootstrap');
 
   try {
     logger.log('🚀 Iniciando aplicação Nexa Oper API...');
@@ -442,6 +443,6 @@ async function bootstrap(): Promise<void> {
 bootstrap().catch((error: unknown) => {
   const logger = new Logger('Bootstrap');
   logger.error('💥 Erro fatal durante inicialização:', error);
-  console.error('Stack trace completo:', error);
+  logger.error('Stack trace completo:', error);
   process.exit(1);
 });

@@ -104,6 +104,16 @@ import { MobileUploadModule } from './modules/mobile-upload/mobile-upload.module
     // Serviço principal da aplicação
     AppService,
 
+    // Interceptors globais para logging e tratamento de erros
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ErrorLoggingInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: OperationLoggingInterceptor,
+    },
+
     // TODO: Adicionar providers globais se necessário
     // GlobalConfigService,
     // CacheService,

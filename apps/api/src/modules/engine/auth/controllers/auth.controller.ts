@@ -24,6 +24,7 @@ import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { LoginDto } from '../dto/login.dto';
 import { RefreshDto } from '../dto/refresh.dto';
+import { LogOperation } from '@common/decorators/log-operation.decorator';
 
 /**
  * Controlador de Autenticação Mobile
@@ -93,6 +94,12 @@ export class AuthController {
    */
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @LogOperation({
+    operation: 'userLogin',
+    logInput: true,
+    logOutput: false, // Não logar tokens na saída
+    measureTime: true,
+  })
   login(@Body() loginDto: LoginDto) {
     return this.authService.validateLogin(loginDto.matricula, loginDto.senha);
   }
@@ -150,6 +157,12 @@ export class AuthController {
    */
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @LogOperation({
+    operation: 'tokenRefresh',
+    logInput: false, // Não logar refresh token
+    logOutput: false, // Não logar novos tokens
+    measureTime: true,
+  })
   refresh(@Body() refreshDto: RefreshDto) {
     return this.authService.refreshToken(refreshDto.refreshToken);
   }

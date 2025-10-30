@@ -36,7 +36,7 @@
  * @since 1.0.0
  */
 
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import { sanitizeHeaders, sanitizeData } from '../utils/logger';
 
@@ -49,6 +49,7 @@ import { sanitizeHeaders, sanitizeData } from '../utils/logger';
  */
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
+  private readonly logger = new Logger(LoggerMiddleware.name);
   /**
    * Método principal do middleware que intercepta requisições HTTP.
    *
@@ -96,7 +97,7 @@ export class LoggerMiddleware implements NestMiddleware {
 
     // Registra informações detalhadas da requisição recebida
     // Sanitiza headers e body para evitar exposição de informações sensíveis
-    console.log('📥 Request:', {
+    this.logger.log('📥 Request:', {
       method,
       url: originalUrl,
       headers: sanitizeHeaders(headers),
@@ -117,7 +118,7 @@ export class LoggerMiddleware implements NestMiddleware {
       // Registra informações detalhadas da resposta
       // Sanitiza dados da resposta para evitar exposição de informações sensíveis
       const responseData = this.tryParseJson(data);
-      console.log('📤 Response:', {
+      this.logger.log('📤 Response:', {
         url: originalUrl,
         status: res.statusCode,
         time: `${elapsed}ms`,
