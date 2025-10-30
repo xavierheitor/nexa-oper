@@ -2,13 +2,14 @@
 
 ## 🎯 Como Funciona
 
-Quando um turno é aberto via **POST** `/api/turnos/aberturas`, o sistema executa uma **reconciliação automática assíncrona** que compara a escala planejada com os turnos realmente abertos.
+Quando um turno é aberto via **POST** `/api/turnos/aberturas`, o sistema executa uma **reconciliação
+automática assíncrona** que compara a escala planejada com os turnos realmente abertos.
 
 ---
 
 ## 📊 Fluxo de Reconciliação
 
-```
+```bash
 ┌─────────────────────────────────────────────────────────┐
 │ 1. POST /api/turnos/aberturas                           │
 │    - Equipe abre turno com eletricistas                 │
@@ -72,7 +73,7 @@ this.turnoReconciliacaoService
   .then(() => {
     console.log('✅ Reconciliação concluída');
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('❌ Erro na reconciliação:', error);
   });
 ```
@@ -101,7 +102,7 @@ const abertosPorEletricista = new Map();
 // 4. Para cada eletricista escalado:
 for (const slot of slots) {
   const equipesReais = abertosPorEletricista.get(slot.eletricistaId);
-  
+
   // CASO 1: Não abriu turno = FALTA
   if (!equipesReais || equipesReais.size === 0) {
     await prisma.falta.create({
@@ -113,7 +114,7 @@ for (const slot of slots) {
     });
     continue;
   }
-  
+
   // CASO 2: Abriu em equipe diferente = DIVERGÊNCIA
   if (!equipesReais.has(equipePrevistaId)) {
     const equipeRealId = [...equipesReais][0];
@@ -134,6 +135,7 @@ for (const slot of slots) {
 ## 📋 Tabelas Atualizadas
 
 ### Falta
+
 Registra quando um eletricista escalado não abriu o turno.
 
 ```sql
@@ -149,6 +151,7 @@ INSERT INTO Falta (
 ```
 
 ### DivergenciaEscala
+
 Registra quando eletricista abriu turno em equipe diferente da escala.
 
 ```sql
@@ -167,7 +170,8 @@ INSERT INTO DivergenciaEscala (
 ## 🧪 Cenários de Teste
 
 ### Cenário 1: Falta Automática
-```
+
+```bash
 Escala Prevista:
 - Eletricista 1 (Equipe A)
 - Eletricista 2 (Equipe A)
@@ -181,7 +185,8 @@ Resultado:
 ```
 
 ### Cenário 2: Divergência de Equipe
-```
+
+```bash
 Escala Prevista:
 - Eletricista 1 (Equipe A)
 
@@ -195,7 +200,8 @@ Resultado:
 ```
 
 ### Cenário 3: Turno Fora de Escala
-```
+
+```bash
 Escala Prevista:
 - Ninguém
 
@@ -223,4 +229,3 @@ Resultado:
 2. **Dashboard de reconciliacão**
 3. **Notificações automáticas de faltas**
 4. **Job agendado para reconciliar dias anteriores**
-

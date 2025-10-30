@@ -1,0 +1,46 @@
+// Storage Service - Banco separado para gerenciamento de fotos
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Tabela de fotos - mantém IDs de referência para rastreabilidade
+model Photo {
+  id Int @id @default(autoincrement())
+
+  // IDs de referência (para API associar a checklists)
+  turnoId              Int
+  tipo                 String    @db.VarChar(100)
+  checklistUuid        String?   @db.VarChar(36)
+  checklistPerguntaId  Int?
+  sequenciaAssinatura  Int?
+  servicoId            Int?
+
+  // Metadados do arquivo
+  fileName    String @db.VarChar(255)
+  mimeType    String @db.VarChar(100)
+  fileSize    Int
+  checksum    String @db.VarChar(128) @unique
+  storagePath String @db.VarChar(1024)
+  url         String @db.VarChar(1024)
+
+  // Auditoria
+  capturedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  createdBy  String   @db.VarChar(255)
+  updatedAt  DateTime? @updatedAt
+  updatedBy  String?  @db.VarChar(255)
+  deletedAt  DateTime?
+  deletedBy  String?  @db.VarChar(255)
+
+  @@index([turnoId], map: "idx_photo_turno")
+  @@index([checklistUuid], map: "idx_photo_checklist_uuid")
+  @@index([tipo], map: "idx_photo_tipo")
+  @@index([createdAt], map: "idx_photo_created_at")
+  @@map("photos")
+}
+

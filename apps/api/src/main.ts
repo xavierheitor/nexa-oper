@@ -267,14 +267,30 @@ async function bootstrap(): Promise<void> {
       void gracefulShutdown('SIGHUP');
     });
 
-    // Inicializar servidor
-    await app.listen(port);
+    // Inicializar servidor (0.0.0.0 para aceitar conexões de toda a rede)
+    const host = process.env.HOST || '0.0.0.0';
+    await app.listen(port, host);
 
     // Logging final de sucesso
     logger.log(`🎉 API Nexa Oper iniciada com sucesso!`);
-    logger.log(`🌐 Servidor rodando na porta: ${port}`);
+    logger.log(`🌐 Servidor rodando em ${host}:${port}`);
     logger.log(`📱 Ambiente: ${process.env.NODE_ENV ?? 'development'}`);
-    logger.log(`🔗 URL base: http://localhost:${port}/api`);
+    logger.log(`🔗 URL local: http://localhost:${port}/api`);
+
+    // Mostrar IP local para acesso da rede
+    if (host === '0.0.0.0' && process.env.NODE_ENV !== 'production') {
+      try {
+        const { execSync } = require('child_process');
+        const networkIP = execSync("ifconfig | grep 'inet ' | grep -v 127.0.0.1 | awk '{print $2}' | head -1")
+          .toString()
+          .trim();
+        if (networkIP) {
+          logger.log(`📱 Acesse da sua rede local: http://${networkIP}:${port}/api`);
+        }
+      } catch (error) {
+        // Ignorar erro ao buscar IP
+      }
+    }
 
     if (process.env.NODE_ENV !== 'production') {
       logger.log(`📚 Documentação: http://localhost:${port}/api/docs`);

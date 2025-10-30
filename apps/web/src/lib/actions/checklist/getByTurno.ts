@@ -155,10 +155,11 @@ export const getChecklistsByTurno = async (rawData: unknown) =>
               );
 
               // ✅ Converter para formato compatível com frontend
+              const storageUrl = process.env.STORAGE_SERVICE_URL || 'http://localhost:3002';
               const fotosFormatadas = fotosDaResposta.map(foto => ({
                 id: foto.id,
                 caminhoArquivo: foto.storagePath,
-                urlPublica: foto.url,
+                urlPublica: foto.url.startsWith('http') ? foto.url : `${storageUrl}${foto.url}`,
                 tamanhoBytes: Number(foto.fileSize), // ✅ Converter BigInt para Number
                 mimeType: foto.mimeType,
                 sincronizadoEm: foto.capturedAt.toISOString(),
@@ -310,10 +311,11 @@ export const getChecklistByUuid = async (rawData: unknown) =>
           );
 
           // ✅ Converter para formato compatível com frontend
+          const storageUrl = process.env.STORAGE_SERVICE_URL || 'http://localhost:3002';
           const fotosFormatadas = fotosDaResposta.map(foto => ({
             id: foto.id,
             caminhoArquivo: foto.storagePath,
-            urlPublica: foto.url,
+            urlPublica: foto.url.startsWith('http') ? foto.url : `${storageUrl}${foto.url}`,
             tamanhoBytes: Number(foto.fileSize), // ✅ Converter BigInt para Number
             mimeType: foto.mimeType,
             sincronizadoEm: foto.capturedAt.toISOString(),
