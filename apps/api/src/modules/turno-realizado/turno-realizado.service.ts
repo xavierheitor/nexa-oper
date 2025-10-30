@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { TurnoReconciliacaoService } from './turno-reconciliacao.service';
 
 export interface AbrirTurnoPayload {
   equipeId: number;
@@ -17,7 +18,10 @@ export interface AbrirTurnoPayload {
 
 @Injectable()
 export class TurnoRealizadoService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly turnoReconciliacaoService: TurnoReconciliacaoService,
+  ) {}
 
   async abrirTurno(payload: AbrirTurnoPayload) {
     const prisma = this.db.getPrisma();
@@ -50,11 +54,22 @@ export class TurnoRealizadoService {
         });
       }
 
-      // Placeholder: agendar job assíncrono de reconciliação (a ser implementado)
-      // ex.: this.jobs.enqueueReconciliacao({ data: dataRef, equipeId: payload.equipeId })
-
       return turno;
     });
+
+    // Executar reconciliação assíncrona (fora da transação para não bloquear)
+    this.turnoReconciliacaoService
+      .reconciliarDiaEquipe({
+        dataReferencia: payload.dataReferencia,
+        equipePrevistaId: payload.equipeId,
+        executadoPor: payload.executadoPor,
+      })
+      .then(() => {
+        console.log(`✅ Reconciliação concluída para equipe ${payload.equipeId} em ${payload.dataReferencia}`);
+      })
+      .catch((error) => {
+        console.error('❌ Erro na reconciliação:', error);
+      });
   }
 
   async fecharTurno(turnoId: number, executadoPor: string) {

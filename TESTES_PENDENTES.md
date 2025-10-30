@@ -135,6 +135,22 @@ Content-Type: application/json
 
 ---
 
+## ✅ Funcionalidades Automáticas
+
+### Reconciliação Automática de Turnos
+Ao abrir um turno via **POST** `/api/turnos/aberturas`, o sistema:
+1. Cria o turno e registra os eletricistas que abriram
+2. Executa reconciliação automática assíncrona que:
+   - Compara escala prevista vs turnos realmente abertos
+   - Cria registros de **Falta** quando alguém escalado não abriu turno
+   - Cria registros de **DivergenciaEscala** quando eletricista abriu em equipe diferente da escala
+
+**Tabelas atualizadas automaticamente:**
+- `Falta`: quando eletricista escalado não abriu turno
+- `DivergenciaEscala`: quando eletricista abriu em equipe diferente da escala
+
+---
+
 ## ⚠️ Validações Pendentes
 - [ ] DTOs com class-validator não foram implementados
 - [ ] Validação de ids e referências no banco
