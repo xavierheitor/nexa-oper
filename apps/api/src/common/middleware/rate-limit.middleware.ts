@@ -13,11 +13,25 @@ interface Counter {
 }
 
 /**
- * Middleware simples de rate limiting em memória.
+ * Middleware de Rate Limiting (em memória)
  *
- * - Limita por IP e por chave adicional (ex.: matrícula no login)
- * - Janela deslizante simples baseada em TTL
- * - Sem dependências externas
+ * RESPONSABILIDADES
+ * - Limitar requisições por IP e por usuário (quando aplicável, ex.: matrícula no login)
+ * - Utilizar janela deslizante simples via TTL
+ * - Operar sem dependências externas (in-memory, adequado para instância única)
+ *
+ * CONFIGURAÇÕES (ENV)
+ * - RATE_LIMIT_WINDOW_MS: Janela de tempo em ms (default: 60000)
+ * - RATE_LIMIT_MAX_PER_IP: Máximo por IP por janela (default: 20)
+ * - RATE_LIMIT_MAX_PER_USER: Máximo por usuário por janela (default: 5)
+ *
+ * LIMITAÇÕES
+ * - Armazenamento em memória: não compartilha estado entre múltiplas instâncias
+ * - Para ambientes com múltiplas réplicas, considere um store distribuído (ex.: Redis)
+ *
+ * EXEMPLO DE USO
+ * - Aplicado no `AppModule` para rota de login:
+ *   consumer.apply(RateLimitMiddleware).forRoutes({ path: 'auth/login', method: RequestMethod.POST })
  */
 @Injectable()
 export class RateLimitMiddleware implements NestMiddleware {
