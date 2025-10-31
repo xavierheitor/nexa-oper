@@ -6,18 +6,20 @@ import { join } from 'path';
 
 /**
  * Diretório base (absoluto) onde as fotos enviadas pelo mobile serão armazenadas.
+ * Configurável via variável de ambiente UPLOAD_ROOT
  */
-export const MOBILE_PHOTO_UPLOAD_ROOT = join(
-  process.cwd(),
-  'uploads',
-  'mobile',
-  'photos'
-);
+export const MOBILE_PHOTO_UPLOAD_ROOT = process.env.UPLOAD_ROOT
+  ? join(process.env.UPLOAD_ROOT, 'mobile', 'photos')
+  : join(process.cwd(), 'uploads', 'mobile', 'photos');
 
 /**
- * Caminho base (relativo) utilizado para montar a URL pública das fotos.
+ * URL base pública para acesso às fotos.
+ * Se UPLOAD_BASE_URL estiver configurada, será usada como base (ex: https://storage.nexaoper.com.br).
+ * Caso contrário, usa path relativo para servir via API (ex: /uploads/mobile/photos).
  */
-export const MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX = '/uploads/mobile/photos';
+export const MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX = process.env.UPLOAD_BASE_URL
+  ? process.env.UPLOAD_BASE_URL
+  : '/uploads/mobile/photos';
 
 /**
  * Tamanho máximo aceito para arquivos de foto (15MB).

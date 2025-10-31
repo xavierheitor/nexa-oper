@@ -25,6 +25,10 @@ export const envValidationSchema = Joi.object({
   RATE_LIMIT_WINDOW_MS: Joi.number().min(1000).default(60_000),
   RATE_LIMIT_MAX_PER_IP: Joi.number().min(1).default(20),
   RATE_LIMIT_MAX_PER_USER: Joi.number().min(1).default(5),
+
+  // Uploads
+  UPLOAD_ROOT: Joi.string().optional().description('Caminho absoluto para pasta de uploads (padrão: ./uploads)'),
+  UPLOAD_BASE_URL: Joi.string().uri().optional().description('URL base pública para acesso aos uploads (ex: https://storage.seudominio.com)'),
 });
 
 

@@ -101,7 +101,8 @@ export class MobilePhotoUploadService {
     await this.ensureDirectory(dirname(absolutePath));
     await writeFile(absolutePath, file.buffer);
 
-    const url = this.buildPublicUrl(relativePath.urlPath);
+    // Montar path relativo para o banco (sem URL base, apenas /mobile/photos/...)
+    const relativeUrlPath = `/mobile/photos/${relativePath.urlPath}`;
 
     const audit = createAuditData(getDefaultUserContext());
 
@@ -118,7 +119,7 @@ export class MobilePhotoUploadService {
         fileSize: file.size,
         checksum,
         storagePath: absolutePath,
-        url,
+        url: relativeUrlPath,
         capturedAt: new Date(),
         ...audit,
       },
@@ -167,9 +168,12 @@ export class MobilePhotoUploadService {
       `Foto armazenada com sucesso: turno ${payload.turnoId} - ${relativePath.fileName}`
     );
 
+    // Montar URL completa para retorno ao mobile (com UPLOAD_BASE_URL se configurada)
+    const fullUrl = this.buildPublicUrl(relativePath.urlPath);
+
     return {
       status: 'stored',
-      url,
+      url: fullUrl,
       checksum,
     };
   }
@@ -257,7 +261,10 @@ export class MobilePhotoUploadService {
    */
   private buildPublicUrl(relativePath: string): string {
     const normalized = relativePath.split(sep).join('/');
-    return `${MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX}/${normalized}`;
+    const baseUrl = MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX.endsWith('/')
+      ? MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX.slice(0, -1)
+      : MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX;
+    return `${baseUrl}/${normalized}`;
   }
 
   /**
