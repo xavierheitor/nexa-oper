@@ -40,8 +40,6 @@ const MIME_EXTENSION_MAP: Record<string, string> = {
 @Injectable()
 export class MobilePhotoUploadService {
   private readonly logger = new Logger(MobilePhotoUploadService.name);
-  private readonly storageUrl = process.env.STORAGE_SERVICE_URL || 'http://localhost:3002';
-  private readonly storageKey = process.env.STORAGE_SERVICE_KEY || '';
 
   constructor(private readonly db: DatabaseService) {}
 
@@ -77,115 +75,102 @@ export class MobilePhotoUploadService {
 
     this.validateFile(file);
 
-    // Enviar para Storage Service
-    this.logger.log(`📤 [UPLOAD] Enviando para Storage Service: ${this.storageUrl}`);
-
-    const formData = new globalThis.FormData();
-    formData.append('file', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
-    formData.append('turnoId', payload.turnoId.toString());
-    formData.append('tipo', payload.tipo);
-    if (payload.checklistUuid) formData.append('checklistUuid', payload.checklistUuid);
-    if (payload.checklistPerguntaId) formData.append('checklistPerguntaId', payload.checklistPerguntaId.toString());
-    if (payload.sequenciaAssinatura) formData.append('sequenciaAssinatura', payload.sequenciaAssinatura.toString());
-    if (payload.servicoId) formData.append('servicoId', payload.servicoId.toString());
-
-    const storageResponse = await fetch(`${this.storageUrl}/upload`, {
-      method: 'POST',
-      headers: {
-        'X-Storage-Key': this.storageKey,
-      },
-      body: formData as any,
-    });
-
-    if (!storageResponse.ok) {
-      const errorText = await storageResponse.text();
-      this.logger.error(`❌ [UPLOAD] Storage service error: ${storageResponse.status} - ${errorText}`);
-      throw new BadRequestException(`Storage service error: ${storageResponse.statusText}`);
-    }
-
-    const storageResult: PhotoUploadResponseDto = await storageResponse.json();
-    this.logger.log(`✅ [UPLOAD] Storage response: ${JSON.stringify(storageResult)}`);
-
-    // Salvar referência no banco local (opcional, para rastreabilidade)
     const checksum = this.computeChecksum(file.buffer);
-    const audit = createAuditData(getDefaultUserContext());
 
-    try {
-      const mobilePhoto = await this.db.getPrisma().mobilePhoto.create({
-        data: {
-          turnoId: payload.turnoId,
-          tipo: this.normalizePhotoType(payload.tipo),
-          checklistUuid: payload.checklistUuid ?? null,
-          checklistPerguntaId: payload.checklistPerguntaId ?? null,
-          sequenciaAssinatura: payload.sequenciaAssinatura ?? null,
-          servicoId: payload.servicoId ?? null,
-          fileName: file.originalname,
-          mimeType: file.mimetype,
-          fileSize: file.size,
-          checksum,
-          storagePath: storageResult.url,
-          url: `${this.storageUrl}${storageResult.url}`,
-          capturedAt: new Date(),
-          ...audit,
-        },
-      });
+    // Verificar duplicidade antes de escrever no disco
+    const existing = await this.db
+      .getPrisma()
+      .mobilePhoto.findUnique({ where: { checksum } });
 
-      this.logger.log(
-        `✅ [UPLOAD] Referência salva no banco local - ID: ${mobilePhoto.id}`
+    if (existing) {
+      this.logger.debug(
+        `Foto duplicada detectada para checksum ${checksum}, retornando URL existente`
       );
 
-      // Processar foto de pendência se aplicável
-      const shouldProcessPendencia =
-        (payload.tipo === 'pendencia' || payload.tipo === 'checklistReprova') &&
-        payload.checklistPerguntaId;
-
-      if (shouldProcessPendencia) {
-        this.logger.log(`🔄 [UPLOAD] Iniciando processamento de pendência...`);
-
-        if (payload.checklistUuid && payload.checklistUuid.trim() !== '') {
-          await this.processarFotoPendenciaComUuid(
-            mobilePhoto.id,
-            payload.turnoId,
-            payload.checklistUuid,
-            payload.checklistPerguntaId!
-          );
-        } else {
-          await this.processarFotoPendenciaSemUuid(
-            mobilePhoto.id,
-            payload.turnoId,
-            payload.checklistPerguntaId!
-          );
-        }
-      }
-    } catch (error) {
-      // Se já existe (duplicado), buscar e usar
-      const existing = await this.db.getPrisma().mobilePhoto.findUnique({
-        where: { checksum }
-      });
-
-      if (existing && (payload.tipo === 'pendencia' || payload.tipo === 'checklistReprova') && payload.checklistPerguntaId) {
-        if (payload.checklistUuid && payload.checklistUuid.trim() !== '') {
-          await this.processarFotoPendenciaComUuid(
-            existing.id,
-            payload.turnoId,
-            payload.checklistUuid,
-            payload.checklistPerguntaId!
-          );
-        } else {
-          await this.processarFotoPendenciaSemUuid(
-            existing.id,
-            payload.turnoId,
-            payload.checklistPerguntaId!
-          );
-        }
-      }
+      return {
+        status: 'duplicate',
+        url: existing.url,
+        checksum: existing.checksum,
+      };
     }
 
-    // Retornar resultado do Storage
+    const extension = this.resolveExtension(file);
+    const relativePath = this.buildRelativePath(payload.turnoId, extension);
+    const absolutePath = join(MOBILE_PHOTO_UPLOAD_ROOT, ...relativePath.parts);
+
+    await this.ensureDirectory(dirname(absolutePath));
+    await writeFile(absolutePath, file.buffer);
+
+    const url = this.buildPublicUrl(relativePath.urlPath);
+
+    const audit = createAuditData(getDefaultUserContext());
+
+    const mobilePhoto = await this.db.getPrisma().mobilePhoto.create({
+      data: {
+        turnoId: payload.turnoId,
+        tipo: this.normalizePhotoType(payload.tipo),
+        checklistUuid: payload.checklistUuid ?? null,
+        checklistPerguntaId: payload.checklistPerguntaId ?? null,
+        sequenciaAssinatura: payload.sequenciaAssinatura ?? null,
+        servicoId: payload.servicoId ?? null,
+        fileName: relativePath.fileName,
+        mimeType: file.mimetype,
+        fileSize: file.size,
+        checksum,
+        storagePath: absolutePath,
+        url,
+        capturedAt: new Date(),
+        ...audit,
+      },
+    });
+
+    this.logger.log(
+      `✅ [UPLOAD] Foto mobile salva - ID: ${mobilePhoto.id}, tipo: ${mobilePhoto.tipo}`
+    );
+
+    // Processar foto de pendência se aplicável
+    const shouldProcessPendencia =
+      (payload.tipo === 'pendencia' || payload.tipo === 'checklistReprova') &&
+      payload.checklistPerguntaId;
+
+    this.logger.log(
+      `🔍 [UPLOAD] Deve processar pendência? ${shouldProcessPendencia}`
+    );
+    this.logger.log(
+      `🔍 [UPLOAD] Condições: tipo=${payload.tipo}, checklistUuid=${payload.checklistUuid}, checklistPerguntaId=${payload.checklistPerguntaId}`
+    );
+
+    if (shouldProcessPendencia) {
+      this.logger.log(`🔄 [UPLOAD] Iniciando processamento de pendência...`);
+
+      if (payload.checklistUuid && payload.checklistUuid.trim() !== '') {
+        // Usar UUID se disponível
+        await this.processarFotoPendenciaComUuid(
+          mobilePhoto.id,
+          payload.turnoId,
+          payload.checklistUuid,
+          payload.checklistPerguntaId!
+        );
+      } else {
+        // Fallback: usar apenas perguntaId quando UUID não estiver disponível
+        await this.processarFotoPendenciaSemUuid(
+          mobilePhoto.id,
+          payload.turnoId,
+          payload.checklistPerguntaId!
+        );
+      }
+    } else {
+      this.logger.log(`⏭️ [UPLOAD] Pulando processamento de pendência`);
+    }
+
+    this.logger.log(
+      `Foto armazenada com sucesso: turno ${payload.turnoId} - ${relativePath.fileName}`
+    );
+
     return {
-      status: storageResult.status,
-      url: `${this.storageUrl}${storageResult.url}`,
-      checksum: storageResult.checksum,
+      status: 'stored',
+      url,
+      checksum,
     };
   }
 
