@@ -78,7 +78,7 @@ export default function AprOpcaoRespostaPage() {
   // Hook para gerenciamento de dados com paginação automática
   const opcoesResposta = useEntityData<AprOpcaoResposta>({
     key: 'apr-opcoes-resposta',
-    fetcher: unwrapFetcher(listAprOpcoesResposta),
+    fetcherAction: unwrapFetcher(listAprOpcoesResposta),
     paginationEnabled: true,
     initialParams: {
       page: 1,

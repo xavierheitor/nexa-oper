@@ -5,9 +5,12 @@
  * escalas de trabalho dos eletricistas. Ele orquestra validações, chama o
  * repositório especializado e implementa funcionalidades adicionais como
  * geração de agenda preditiva e atribuição de eletricistas.
+ *
+ * NOTA: Este serviço está desativado e mantido apenas para referência.
+ * O módulo atual de escalas usa EscalaEquipePeriodoService.
  */
 
-import { Contrato, Escala } from '@nexa-oper/db';
+import { Contrato, EscalaEquipePeriodo } from '@nexa-oper/db';
 import { AbstractCrudService } from '../abstracts/AbstractCrudService';
 import {
   EscalaAgendaParams,
@@ -16,9 +19,83 @@ import {
   EscalaFilter,
   EscalaUpdate,
 } from '../schemas/escalaSchema';
-import type { PaginatedResult } from '../types/common';
-import { EscalaRepository, EscalaWithRelations } from '../repositories/EscalaRepository';
 
+import { PaginatedResult } from '../types/common';
+
+// Tipos stub para manter compatibilidade
+type Escala = EscalaEquipePeriodo;
+
+// Classe stub para EscalaRepository
+class EscalaRepository {
+  async create(_data: any): Promise<EscalaWithRelations> {
+    throw new Error('EscalaRepository não implementado - serviço desativado');
+  }
+  async update(_id: number, _data: any): Promise<EscalaWithRelations> {
+    throw new Error('EscalaRepository não implementado - serviço desativado');
+  }
+  async delete(_id: number, _userId: string): Promise<EscalaWithRelations> {
+    throw new Error('EscalaRepository não implementado - serviço desativado');
+  }
+  async findById(_id: number): Promise<EscalaWithRelations | null> {
+    throw new Error('EscalaRepository não implementado - serviço desativado');
+  }
+  async list(
+    _params: any
+  ): Promise<{ items: EscalaWithRelations[]; total: number }> {
+    throw new Error('EscalaRepository não implementado - serviço desativado');
+  }
+  async listWithFilters(
+    _params: any
+  ): Promise<{ items: EscalaWithRelations[]; total: number }> {
+    throw new Error('EscalaRepository não implementado - serviço desativado');
+  }
+  async replaceHorarios(
+    _id: number,
+    _horarios: any,
+    _userId: string
+  ): Promise<void> {
+    throw new Error('EscalaRepository não implementado - serviço desativado');
+  }
+  async replaceAllocations(
+    _id: number,
+    _allocations: any,
+    _userId: string
+  ): Promise<void> {
+    throw new Error('EscalaRepository não implementado - serviço desativado');
+  }
+}
+
+interface EscalaWithRelations extends EscalaEquipePeriodo {
+  nome?: string;
+  diasCiclo?: number;
+  inicioCiclo?: Date;
+  tipoVeiculo?: string | null;
+  horarios?: Array<{
+    id: number;
+    indiceCiclo: number;
+    diaSemana: number | null;
+    horaInicio: string | null;
+    horaFim: string | null;
+    eletricistasNecessarios: number;
+    folga: boolean;
+    etiqueta: string | null;
+    rotacaoOffset: number;
+    alocacoes?: Array<{
+      id: number;
+      horarioId: number;
+      eletricistaId: number;
+      ordemRotacao: number;
+      vigenciaInicio: Date | null;
+      vigenciaFim: Date | null;
+      ativo: boolean;
+      eletricista: {
+        id: number;
+        nome: string;
+        matricula: string;
+      };
+    }>;
+  }>;
+}
 /**
  * Tipagem usada na agenda gerada pelo serviço.
  */
@@ -52,8 +129,12 @@ export interface EscalaAgendaDia {
 }
 
 export interface EscalaAgenda {
-  escala: Pick<Escala, 'id' | 'nome' | 'diasCiclo' | 'inicioCiclo'> & {
-    tipoVeiculo: Escala['tipoVeiculo'];
+  escala: {
+    id: number;
+    nome?: string;
+    diasCiclo?: number;
+    inicioCiclo?: Date;
+    tipoVeiculo?: string | null;
   };
   dataInicio: Date;
   dataFim: Date;
@@ -66,7 +147,12 @@ export interface EscalaAgenda {
 export class EscalaService extends AbstractCrudService<
   EscalaCreate,
   EscalaUpdate,
-  EscalaFilter,
+  EscalaFilter & {
+    page: number;
+    pageSize: number;
+    orderBy: string;
+    orderDir: 'asc' | 'desc';
+  },
   EscalaWithRelations
 > {
   private readonly escalaRepo: EscalaRepository;
@@ -171,7 +257,7 @@ export class EscalaService extends AbstractCrudService<
   async list(
     params: EscalaFilter
   ): Promise<PaginatedResult<EscalaWithRelations>> {
-    const finalParams: EscalaFilter = {
+    const finalParams: EscalaFilter & { page: number; pageSize: number } = {
       page: params.page ?? 1,
       pageSize: params.pageSize ?? 10,
       orderBy: params.orderBy ?? 'id',
@@ -222,7 +308,7 @@ export class EscalaService extends AbstractCrudService<
       return refreshed;
     }
 
-    const normalized = data.alocacoes.map(item => ({
+    const normalized = data.alocacoes.map((item: any) => ({
       horarioId: item.horarioId,
       eletricistaId: item.eletricistaId,
       ordemRotacao: item.ordemRotacao ?? 0,
@@ -259,15 +345,13 @@ export class EscalaService extends AbstractCrudService<
       current <= range.dataFim;
       current = new Date(current.getTime() + 24 * 60 * 60 * 1000)
     ) {
-      const indiceCiclo = this.getCycleIndex(
-        escala.inicioCiclo,
-        current,
-        escala.diasCiclo
-      );
+      const inicioCiclo = escala.inicioCiclo ?? escala.periodoInicio;
+      const diasCiclo = escala.diasCiclo ?? 7;
+      const indiceCiclo = this.getCycleIndex(inicioCiclo, current, diasCiclo);
 
-      const slots = escala.horarios
-        .filter(horario => horario.indiceCiclo === indiceCiclo)
-        .map(horario => this.buildAgendaSlot(escala, horario, current));
+      const slots = (escala.horarios || [])
+        .filter((horario: any) => horario.indiceCiclo === indiceCiclo)
+        .map((horario: any) => this.buildAgendaSlot(escala, horario, current));
 
       dias.push({
         data: this.normalizeDate(current),
@@ -334,12 +418,11 @@ export class EscalaService extends AbstractCrudService<
       ? this.normalizeDate(new Date(params.dataInicio))
       : this.normalizeDate(new Date());
 
+    const diasCiclo = escala.diasCiclo ?? 7; // Default de 7 dias se não definido
     const dataFim = params.dataFim
       ? this.normalizeDate(new Date(params.dataFim))
       : this.normalizeDate(
-          new Date(
-            dataInicio.getTime() + (escala.diasCiclo - 1) * 24 * 60 * 60 * 1000
-          )
+          new Date(dataInicio.getTime() + (diasCiclo - 1) * 24 * 60 * 60 * 1000)
         );
 
     if (this.differenceInDays(dataInicio, dataFim) < 0) {
@@ -354,10 +437,10 @@ export class EscalaService extends AbstractCrudService<
    */
   private buildAgendaSlot(
     escala: EscalaWithRelations,
-    horario: EscalaWithRelations['horarios'][number],
+    horario: EscalaWithRelations['horarios'] extends (infer T)[] ? T : any,
     current: Date
   ): EscalaAgendaSlot {
-    const vigentes = horario.alocacoes.filter(alocacao => {
+    const vigentes = (horario.alocacoes || []).filter((alocacao: any) => {
       if (!alocacao.ativo) {
         return false;
       }
@@ -395,9 +478,10 @@ export class EscalaService extends AbstractCrudService<
       horario.eletricistasNecessarios > 0
     ) {
       for (let i = 0; i < horario.eletricistasNecessarios; i += 1) {
+        const inicioCiclo = escala.inicioCiclo ?? escala.periodoInicio;
         const offset =
           (horario.rotacaoOffset +
-            this.differenceInDays(escala.inicioCiclo, current) +
+            this.differenceInDays(inicioCiclo, current) +
             i) %
           sorted.length;
         const index = offset < 0 ? offset + sorted.length : offset;
@@ -431,7 +515,9 @@ export class EscalaService extends AbstractCrudService<
    * Lista básica de escalas para selects.
    */
   async listBasic(): Promise<
-    Array<Pick<Escala, 'id' | 'nome'> & { contrato: Contrato }>
+    Array<
+      Pick<EscalaEquipePeriodo, 'id'> & { nome?: string; contrato: Contrato }
+    >
   > {
     const result = await this.escalaRepo.listWithFilters({
       page: 1,
@@ -443,10 +529,10 @@ export class EscalaService extends AbstractCrudService<
       ativo: true,
     });
 
-    return result.items.map(item => ({
+    return result.items.map((item: any) => ({
       id: item.id,
-      nome: item.nome,
-      contrato: item.contrato,
+      nome: item.nome || '',
+      contrato: item.contrato || ({} as Contrato),
     }));
   }
 }

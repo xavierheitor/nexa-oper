@@ -65,7 +65,7 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
   // Carregar equipes (TODAS, sem paginação) - usa unwrapFetcher
   const { data: equipes, isLoading: equipesLoading } = useEntityData({
     key: 'equipes-wizard',
-    fetcher: unwrapFetcher((params) =>
+    fetcherAction: unwrapFetcher((params) =>
       listEquipes({
         ...params,
         page: 1,
@@ -80,7 +80,7 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
   // Carregar tipos de escala (TODOS) - usa unwrapFetcher
   const { data: tiposEscala, isLoading: tiposLoading } = useEntityData({
     key: 'tipos-escala-wizard',
-    fetcher: unwrapFetcher((params) =>
+    fetcherAction: unwrapFetcher((params) =>
       listTiposEscala({
         ...params,
         page: 1,
@@ -96,7 +96,7 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
   // Carregar eletricistas da equipe selecionada (TODOS) - usa unwrapFetcher
   const { data: eletricistas, isLoading: eletricistasLoading, mutate: reloadEletricistas } = useEntityData({
     key: `eletricistas-equipe-${equipeIdSelecionada}`,
-    fetcher: unwrapFetcher((params) => {
+    fetcherAction: unwrapFetcher((params) => {
       if (!equipeIdSelecionada) return Promise.resolve({ success: true, data: [] });
       return listEletricistas({
         ...params,

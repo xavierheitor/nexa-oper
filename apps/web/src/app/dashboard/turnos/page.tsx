@@ -112,7 +112,9 @@ export default function TurnosPage() {
         });
 
         if (resultAbertos.success && resultAbertos.data) {
-          const turnos = resultAbertos.data.data || [];
+          // O repositório já formata os dados com campos adicionais (veiculoPlaca, equipeNome, etc.)
+          // mas o tipo TypeScript não reflete isso, então fazemos um cast explícito
+          const turnos = (resultAbertos.data.data || []) as unknown as TurnoData[];
           setTurnosAbertos(turnos);
 
           // Calcular estatísticas

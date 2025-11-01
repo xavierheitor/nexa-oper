@@ -13,8 +13,8 @@ import { z } from 'zod';
 export const turnoFilterSchema = z.object({
   page: z.number().int().positive().default(1),
   pageSize: z.number().int().positive().max(2000).default(10),
-  orderBy: z.string().optional(),
-  orderDir: z.enum(['asc', 'desc']).optional(),
+  orderBy: z.string().default('dataInicio'),
+  orderDir: z.enum(['asc', 'desc']).default('desc'),
   search: z.string().optional(),
   veiculoId: z.number().int().positive().optional(),
   equipeId: z.number().int().positive().optional(),
@@ -22,6 +22,7 @@ export const turnoFilterSchema = z.object({
   status: z.enum(['ABERTO', 'FECHADO', 'CANCELADO']).optional(),
   dataInicio: z.coerce.date().optional(),
   dataFim: z.coerce.date().optional(),
+  include: z.any().optional(),
 });
 
 /**

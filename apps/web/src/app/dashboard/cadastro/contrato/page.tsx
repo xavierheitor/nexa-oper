@@ -31,7 +31,7 @@ export default function ContratoPage() {
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
   const contratos = useEntityData<Contrato>({
     key: 'contratos', // Chave única para o cache SWR
-    fetcher: unwrapFetcher(listContratos), // Função que busca os dados (Server Action)
+    fetcherAction: unwrapFetcher(listContratos), // Função que busca os dados (Server Action)
     paginationEnabled: true, // Habilita paginação
     initialParams: {
       page: 1, // Página inicial

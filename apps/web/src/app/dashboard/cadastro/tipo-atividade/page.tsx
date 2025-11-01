@@ -17,7 +17,7 @@ export default function TipoAtividadePage() {
 
   const tipos = useEntityData<any>({
     key: 'tipos-atividade',
-    fetcher: unwrapFetcher(listTiposAtividade),
+    fetcherAction: unwrapFetcher(listTiposAtividade),
     paginationEnabled: true,
     initialParams: { page: 1, pageSize: 10, orderBy: 'id', orderDir: 'desc' },
   });

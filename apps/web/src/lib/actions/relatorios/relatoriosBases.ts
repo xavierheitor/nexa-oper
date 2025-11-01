@@ -276,9 +276,7 @@ export const getEquipesPorBase = async (rawData?: unknown) =>
             },
             include: {
               equipe: {
-                where: {
-                  deletedAt: null,
-                },
+                // Note: where não é permitido dentro de include, mas podemos filtrar depois
               },
             },
           },
@@ -451,7 +449,7 @@ export const getDetalhesBase = async (baseId: number, rawData?: unknown) => {
         },
       };
     },
-    { ...rawData, baseId },
+    { ...(typeof rawData === 'object' && rawData !== null ? rawData : {}), baseId },
     { entityName: 'Relatorio', actionType: 'read' }
   );
 };

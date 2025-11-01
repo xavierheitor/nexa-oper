@@ -90,7 +90,7 @@ export default function AprPage() {
   // Hook para gerenciamento de dados com paginação automática
   const aprs = useEntityData<Apr>({
     key: 'aprs',
-    fetcher: unwrapFetcher(listAprs),
+    fetcherAction: unwrapFetcher(listAprs),
     paginationEnabled: true,
     initialParams: {
       page: 1,
@@ -107,7 +107,7 @@ export default function AprPage() {
   // Hook para gerenciamento de vínculos APR-TipoAtividade
   const taVinculos = useEntityData<any>({
     key: 'apr-ta-vinculos',
-    fetcher: unwrapFetcher(listAprTipoAtividadeVinculos),
+    fetcherAction: unwrapFetcher(listAprTipoAtividadeVinculos),
     paginationEnabled: true,
     initialParams: {
       page: 1,

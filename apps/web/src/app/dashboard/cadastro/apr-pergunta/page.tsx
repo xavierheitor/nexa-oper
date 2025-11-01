@@ -76,7 +76,7 @@ export default function AprPerguntaPage() {
   // Hook para gerenciamento de dados com paginação automática
   const perguntas = useEntityData<AprPergunta>({
     key: 'apr-perguntas',
-    fetcher: unwrapFetcher(listAprPerguntas),
+    fetcherAction: unwrapFetcher(listAprPerguntas),
     paginationEnabled: true,
     initialParams: {
       page: 1,

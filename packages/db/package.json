@@ -10,6 +10,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
+    "build": "prisma generate",
     "generate": "prisma generate",
     "db:generate": "prisma generate",
     "migrate:dev": "prisma migrate dev",

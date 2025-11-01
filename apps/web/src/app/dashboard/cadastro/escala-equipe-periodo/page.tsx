@@ -88,7 +88,7 @@ export default function EscalaEquipePeriodoPage() {
 
   const escalas = useEntityData({
     key: 'escalasEquipePeriodo',
-    fetcher: unwrapFetcher(listEscalasEquipePeriodo) as any,
+    fetcherAction: unwrapFetcher(listEscalasEquipePeriodo) as any,
     paginationEnabled: true,
     initialParams: {
       page: 1,

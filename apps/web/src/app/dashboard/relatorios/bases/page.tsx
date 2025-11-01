@@ -19,14 +19,14 @@ export default function RelatoriosBasesPage() {
 
   const { data: contratos, isLoading: loadingContratos } = useEntityData({
     key: 'relatorios-bases-contratos',
-    fetcher: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratos),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
   const { data: bases, isLoading: loadingBases } = useEntityData({
     key: 'relatorios-bases-bases',
-    fetcher: unwrapFetcher(listBases),
+    fetcherAction: unwrapFetcher(listBases),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });

@@ -54,7 +54,7 @@ export class HorarioAberturaCatalogoService extends AbstractCrudService<
       duracaoHoras: data.duracaoHoras,
       duracaoIntervaloHoras: data.duracaoIntervaloHoras,
       ativo: data.ativo,
-      observacoes: data.observacoes,
+      observacoes: data.observacoes ?? undefined,
     };
 
     return this.horarioRepo.create(createData, userId);
@@ -77,7 +77,7 @@ export class HorarioAberturaCatalogoService extends AbstractCrudService<
       duracaoHoras: data.duracaoHoras,
       duracaoIntervaloHoras: data.duracaoIntervaloHoras,
       ativo: data.ativo,
-      observacoes: data.observacoes,
+      observacoes: data.observacoes ?? undefined,
     };
 
     return this.horarioRepo.update(updateInput, userId);

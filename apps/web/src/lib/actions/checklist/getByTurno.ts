@@ -161,7 +161,7 @@ export const getChecklistsByTurno = async (rawData: unknown) =>
                 urlPublica: foto.url,
                 tamanhoBytes: Number(foto.fileSize), // ✅ Converter BigInt para Number
                 mimeType: foto.mimeType,
-                sincronizadoEm: foto.capturedAt.toISOString(),
+                sincronizadoEm: foto.capturedAt?.toISOString() || foto.createdAt.toISOString(),
                 createdAt: foto.createdAt.toISOString(),
               }));
 
@@ -316,7 +316,7 @@ export const getChecklistByUuid = async (rawData: unknown) =>
             urlPublica: foto.url,
             tamanhoBytes: Number(foto.fileSize), // ✅ Converter BigInt para Number
             mimeType: foto.mimeType,
-            sincronizadoEm: foto.capturedAt.toISOString(),
+            sincronizadoEm: foto.capturedAt?.toISOString() || foto.createdAt.toISOString(),
             createdAt: foto.createdAt.toISOString(),
           }));
 

@@ -52,7 +52,7 @@
  *   mutate
  * } = useEntityData({
  *   key: 'contratos',
- *   fetcher: (params) => listContratos(params),
+ *   fetcherAction: (params) => listContratos(params),
  *   initialParams: { pageSize: 20, orderBy: 'nome' },
  *   paginationEnabled: true
  * });
@@ -76,7 +76,7 @@
  *   mutate
  * } = useEntityData({
  *   key: 'contratos-all',
- *   fetcher: () => listAllContratos(),
+ *   fetcherAction: () => listAllContratos(),
  *   paginationEnabled: false
  * });
  *
@@ -99,7 +99,7 @@
  *   isLoading
  * } = useEntityData({
  *   key: 'contratos-filtered',
- *   fetcher: listContratos,
+ *   fetcherAction: listContratos,
  *   initialParams: {
  *     pageSize: 50,
  *     orderBy: 'dataInicio',
@@ -185,7 +185,9 @@ type UseEntityDataSimple<T> = {
  */
 export function useEntityData<T>(options: {
   key: string;
-  fetcher: (params?: PaginatedParams) => Promise<PaginatedResult<T> | T[]>;
+  fetcherAction: (
+    params?: PaginatedParams
+  ) => Promise<PaginatedResult<T> | T[]>;
   initialParams?: Partial<PaginatedParams>;
   paginationEnabled: true;
 }): UseEntityDataPaginated<T>;
@@ -198,7 +200,9 @@ export function useEntityData<T>(options: {
  */
 export function useEntityData<T>(options: {
   key: string;
-  fetcher: (params?: PaginatedParams) => Promise<PaginatedResult<T> | T[]>;
+  fetcherAction: (
+    params?: PaginatedParams
+  ) => Promise<PaginatedResult<T> | T[]>;
   initialParams?: Partial<PaginatedParams>;
   paginationEnabled?: false;
 }): UseEntityDataSimple<T>;
@@ -212,21 +216,24 @@ export function useEntityData<T>(options: {
  * @template T - Tipo da entidade gerenciada
  * @param options - Configurações do hook
  * @param options.key - Chave única para cache SWR
- * @param options.fetcher - Função que busca os dados
+ * @param options.fetcherAction - Função que busca os dados (Server Action)
  * @param options.initialParams - Parâmetros iniciais de paginação
  * @param options.paginationEnabled - Se deve usar modo paginado
  * @returns Interface apropriada baseada no modo selecionado
  */
 export function useEntityData<T>(options: {
   key: string;
-  fetcher: (params?: PaginatedParams) => Promise<PaginatedResult<T> | T[]>;
+  fetcherAction: (
+    params?: PaginatedParams
+  ) => Promise<PaginatedResult<T> | T[]>;
   initialParams?: Partial<PaginatedParams>;
   paginationEnabled?: boolean;
 }): UseEntityDataPaginated<T> | UseEntityDataSimple<T> {
   // Extrai configurações com valores padrão
+  // Alias para compatibilidade: fetcherAction (segue convenção Next.js) -> fetcher (uso interno)
   const {
     key,
-    fetcher,
+    fetcherAction: fetcher,
     initialParams = {},
     paginationEnabled = false,
   } = options;

@@ -27,7 +27,7 @@ export default function UserPage() {
   // Dados da tabela
   const users = useEntityData<User>({
     key: 'usuarios',
-    fetcher: unwrapFetcher(listUsers),
+    fetcherAction: unwrapFetcher(listUsers),
     paginationEnabled: true,
     initialParams: {
       page: 1,

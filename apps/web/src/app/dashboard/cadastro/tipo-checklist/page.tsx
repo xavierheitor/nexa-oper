@@ -17,7 +17,7 @@ export default function TipoChecklistPage() {
 
   const tipos = useEntityData<any>({
     key: 'tipos-checklist',
-    fetcher: unwrapFetcher(listTiposChecklist),
+    fetcherAction: unwrapFetcher(listTiposChecklist),
     paginationEnabled: true,
     initialParams: { page: 1, pageSize: 10, orderBy: 'id', orderDir: 'desc' },
   });

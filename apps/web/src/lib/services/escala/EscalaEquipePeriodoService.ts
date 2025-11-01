@@ -93,7 +93,7 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       periodoInicio: data.periodoInicio,
       periodoFim: data.periodoFim,
       tipoEscalaId: data.tipoEscalaId,
-      observacoes: data.observacoes,
+      observacoes: data.observacoes ?? undefined,
     };
 
     return this.escalaRepo.create(createData, userId);
@@ -118,7 +118,7 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       tipoEscalaId: data.tipoEscalaId,
       periodoInicio: data.periodoInicio,
       periodoFim: data.periodoFim,
-      observacoes: data.observacoes,
+      observacoes: data.observacoes ?? undefined,
       status: data.status,
     };
 
@@ -221,7 +221,7 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
     let dataInicio: Date;
     if (input.mode === 'fromDate' && input.fromDate) {
       dataInicio = input.fromDate;
-    } else if (periodo.status === 'PUBLICADA') {
+    } else if ((periodo.status as string) === 'PUBLICADA') {
       // ✅ PROTEÇÃO: Se publicada, não altera dias passados
       // Apenas gera/atualiza slots a partir de hoje
       const hoje = new Date();
@@ -731,16 +731,18 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
     }
 
     // Calcular estatísticas
-    const eletricistasUnicos = new Set(escala.Slots.map(s => s.eletricistaId));
-    const diasComTrabalho = escala.Slots.filter(
+    // O repositório retorna Slots mas o tipo TypeScript não reflete isso, então fazemos cast
+    const escalaComSlots = escala as typeof escala & { Slots: Array<{ eletricistaId: number; estado: string }> };
+    const eletricistasUnicos = new Set(escalaComSlots.Slots.map(s => s.eletricistaId));
+    const diasComTrabalho = escalaComSlots.Slots.filter(
       s => s.estado === 'TRABALHO'
     ).length;
-    const diasComFolga = escala.Slots.filter(s => s.estado === 'FOLGA').length;
+    const diasComFolga = escalaComSlots.Slots.filter(s => s.estado === 'FOLGA').length;
 
     return {
-      ...escala,
+      ...escalaComSlots,
       estatisticas: {
-        totalSlots: escala.Slots.length,
+        totalSlots: escalaComSlots.Slots.length,
         eletricistasUnicos: eletricistasUnicos.size,
         diasComTrabalho,
         diasComFolga,

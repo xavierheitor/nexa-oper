@@ -32,7 +32,7 @@ export default function BasePage() {
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
   const bases = useEntityData<Base>({
     key: 'bases', // Chave única para o cache SWR
-    fetcher: unwrapFetcher(listBases), // Função que busca os dados (Server Action)
+    fetcherAction: unwrapFetcher(listBases), // Função que busca os dados (Server Action)
     paginationEnabled: true, // Habilita paginação
     initialParams: {
       page: 1, // Página inicial

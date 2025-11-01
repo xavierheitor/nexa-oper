@@ -49,7 +49,7 @@ export default function VeiculoPage() {
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
   const veiculos = useEntityData<VeiculoWithBase>({
     key: 'veiculos', // Chave única para o cache SWR
-    fetcher: unwrapPaginatedFetcher(listVeiculos), // Função que busca os dados (Server Action)
+    fetcherAction: unwrapPaginatedFetcher(listVeiculos), // Função que busca os dados (Server Action)
     paginationEnabled: true, // Habilita paginação
     initialParams: {
       page: 1, // Página inicial
@@ -73,7 +73,7 @@ export default function VeiculoPage() {
   // Carregar dados para o formulário em lote
   const { data: contratos } = useEntityData({
     key: 'contratos-lote',
-    fetcher: async () => {
+    fetcherAction: async () => {
       const result = await listContratos({
         page: 1,
         pageSize: 100,
@@ -87,7 +87,7 @@ export default function VeiculoPage() {
 
   const { data: bases } = useEntityData({
     key: 'bases-lote',
-    fetcher: async () => {
+    fetcherAction: async () => {
       const result = await listBases({
         page: 1,
         pageSize: 100,
@@ -101,7 +101,7 @@ export default function VeiculoPage() {
 
   const { data: tiposVeiculo } = useEntityData({
     key: 'tipos-veiculo-lote',
-    fetcher: async () => {
+    fetcherAction: async () => {
       const result = await listTiposVeiculo({
         page: 1,
         pageSize: 100,

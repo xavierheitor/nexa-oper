@@ -52,7 +52,7 @@ export default function EletricistaPage() {
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
   const eletricistas = useEntityData<EletricistaWithBase>({
     key: 'eletricistas', // Chave única para o cache SWR
-    fetcher: unwrapPaginatedFetcher(listEletricistas), // Função que busca os dados (Server Action)
+    fetcherAction: unwrapPaginatedFetcher(listEletricistas), // Função que busca os dados (Server Action)
     paginationEnabled: true, // Habilita paginação
     initialParams: {
       page: 1, // Página inicial
@@ -69,21 +69,21 @@ export default function EletricistaPage() {
   // Hooks para dados necessários no formulário de lote
   const contratos = useEntityData<Contrato>({
     key: 'contratos-lote',
-    fetcher: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratos),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
   const cargos = useEntityData<Cargo>({
     key: 'cargos-lote',
-    fetcher: unwrapFetcher(listCargos),
+    fetcherAction: unwrapFetcher(listCargos),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
   const bases = useEntityData<Base>({
     key: 'bases-lote',
-    fetcher: unwrapFetcher(listBases),
+    fetcherAction: unwrapFetcher(listBases),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });

@@ -30,7 +30,7 @@ export default function SupervisorPage() {
 
   const supervisores = useEntityData<Supervisor>({
     key: 'supervisores',
-    fetcher: unwrapFetcher(listSupervisores),
+    fetcherAction: unwrapFetcher(listSupervisores),
     paginationEnabled: true,
     initialParams: {
       page: 1,
@@ -45,7 +45,7 @@ export default function SupervisorPage() {
 
   const vinculos = useEntityData<EquipeSupervisor>({
     key: 'equipes-supervisores',
-    fetcher: unwrapFetcher(listEquipesSupervisores),
+    fetcherAction: unwrapFetcher(listEquipesSupervisores),
     paginationEnabled: true,
     initialParams: {
       page: 1,

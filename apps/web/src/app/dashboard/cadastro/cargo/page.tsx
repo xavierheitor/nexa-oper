@@ -27,7 +27,7 @@ export default function CargoPage() {
 
   const cargos = useEntityData<Cargo>({
     key: 'cargos',
-    fetcher: unwrapFetcher(listCargos),
+    fetcherAction: unwrapFetcher(listCargos),
     paginationEnabled: true,
     initialParams: {
       page: 1,

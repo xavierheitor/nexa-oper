@@ -29,7 +29,7 @@ export class ChecklistOpcaoRespostaService extends AbstractCrudService<
 
   async create(data: Create, userId: string): Promise<ChecklistOpcaoResposta> {
     return this.repoConcrete.create(
-      { nome: data.nome, geraPendencia: data.geraPendencia ?? false },
+      { nome: data.nome, geraPendencia: data.geraPendencia ?? false } as any,
       userId
     );
   }

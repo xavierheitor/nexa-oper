@@ -39,7 +39,7 @@ export default function EscalaEquipePeriodoForm({
   // Carregar equipes - usa unwrapFetcher para extrair corretamente o array
   const { data: equipes, isLoading: equipesLoading } = useEntityData({
     key: 'equipes-form',
-    fetcher: unwrapFetcher((params) =>
+    fetcherAction: unwrapFetcher((params) =>
       listEquipes({
         ...params,
         page: 1,
@@ -54,7 +54,7 @@ export default function EscalaEquipePeriodoForm({
   // Carregar tipos de escala - usa unwrapFetcher para extrair corretamente o array
   const { data: tiposEscala, isLoading: tiposLoading } = useEntityData({
     key: 'tipos-escala-form',
-    fetcher: unwrapFetcher((params) =>
+    fetcherAction: unwrapFetcher((params) =>
       listTiposEscala({
         ...params,
         page: 1,

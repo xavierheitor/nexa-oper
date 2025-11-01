@@ -28,10 +28,10 @@ export const getTurnoStats = async () =>
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
       // Buscar turnos abertos
+      // Nota: Os cookies são enviados automaticamente em server-side fetch
       const response = await fetch(`${baseUrl}/api/turnos?status=ABERTO&limit=1000`, {
         headers: {
           'Content-Type': 'application/json',
-          Cookie: session.accessToken ? `access_token=${session.accessToken}` : '',
         },
       });
 
@@ -49,10 +49,10 @@ export const getTurnoStats = async () =>
 
       for (const turno of turnos.data || []) {
         // Buscar base do veículo
+        // Nota: Os cookies são enviados automaticamente em server-side fetch
         const veiculoResponse = await fetch(`${baseUrl}/api/veiculos/${turno.veiculoId}`, {
           headers: {
             'Content-Type': 'application/json',
-            Cookie: session.accessToken ? `access_token=${session.accessToken}` : '',
           },
         });
 

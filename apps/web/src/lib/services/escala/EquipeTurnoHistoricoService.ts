@@ -70,7 +70,7 @@ export class EquipeTurnoHistoricoService extends AbstractCrudService<
       duracaoHoras: data.duracaoHoras,
       duracaoIntervaloHoras: data.duracaoIntervaloHoras,
       motivo: data.motivo,
-      observacoes: data.observacoes,
+      observacoes: data.observacoes ?? undefined,
     };
 
     return this.turnoRepo.create(createData, userId);
@@ -110,7 +110,7 @@ export class EquipeTurnoHistoricoService extends AbstractCrudService<
       duracaoHoras: data.duracaoHoras,
       duracaoIntervaloHoras: data.duracaoIntervaloHoras,
       motivo: data.motivo,
-      observacoes: data.observacoes,
+      observacoes: data.observacoes ?? undefined,
     };
 
     return this.turnoRepo.update(updateInput, userId);

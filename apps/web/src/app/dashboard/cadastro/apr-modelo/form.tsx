@@ -1,4 +1,4 @@
-/**
+  /**
  * Componente de Formulário para APR (Análise Preliminar de Risco)
  *
  * Este componente implementa o formulário para criação e edição
@@ -202,7 +202,7 @@ export default function AprForm({ onSubmit, initialValues, loading = false }: Pr
       }
     };
     load();
-  }, []);
+  }, [message]);
 
   /**
    * Effect para gerenciar valores iniciais

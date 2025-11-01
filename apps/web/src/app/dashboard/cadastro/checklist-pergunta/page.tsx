@@ -19,7 +19,7 @@ export default function ChecklistPerguntaPage() {
 
   const perguntas = useEntityData<ChecklistPergunta>({
     key: 'checklist-perguntas',
-    fetcher: unwrapFetcher(listChecklistPerguntas),
+    fetcherAction: unwrapFetcher(listChecklistPerguntas),
     paginationEnabled: true,
     initialParams: {
       page: 1,

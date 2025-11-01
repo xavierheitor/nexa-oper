@@ -129,11 +129,15 @@ export const getEquipesPorHorario = async (rawData?: unknown) =>
 
       equipes.forEach((equipe) => {
         if (equipe.EquipeTurnoHistorico.length > 0) {
-          const horario = equipe.EquipeTurnoHistorico[0].horarioAberturaCatalogo.nome;
-          if (!porHorario[horario]) {
-            porHorario[horario] = 0;
+          const horario = equipe.EquipeTurnoHistorico[0].horarioAberturaCatalogo?.nome;
+          if (horario) {
+            if (!porHorario[horario]) {
+              porHorario[horario] = 0;
+            }
+            porHorario[horario]++;
+          } else {
+            porHorario['Sem Horário']++;
           }
-          porHorario[horario]++;
         } else {
           porHorario['Sem Horário']++;
         }

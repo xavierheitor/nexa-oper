@@ -27,7 +27,7 @@ export class TipoAtividadeService extends AbstractCrudService<
   }
 
   async create(data: Create, userId: string): Promise<TipoAtividade> {
-    return this.repoConcrete.create({ nome: data.nome }, userId);
+    return this.repoConcrete.create({ nome: data.nome, createdBy: userId }, userId);
   }
 
   async update(data: Update, userId: string): Promise<TipoAtividade> {

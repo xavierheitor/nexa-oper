@@ -58,7 +58,7 @@ export default function EquipeHorarioPage() {
 
   const associacoes = useEntityData({
     key: 'equipeTurnoHistorico',
-    fetcher: async (params: any) => {
+    fetcherAction: async (params: any) => {
       const data = await unwrapFetcher(listEquipeTurnoHistorico)(params);
       // Converter Decimal para number para evitar erro de serialização
       return data.map((item: any) => ({

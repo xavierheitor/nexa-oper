@@ -67,9 +67,6 @@ export class AprTipoAtividadeVinculoService extends AbstractCrudService<
   AprTipoAtividadeVinculoFilter,
   AprTipoAtividadeRelacao
 > {
-  /** Referência concreta ao repository para operações específicas */
-  private repo: AprTipoAtividadeRelacaoRepository;
-
   /**
    * Construtor do service
    *
@@ -78,8 +75,15 @@ export class AprTipoAtividadeVinculoService extends AbstractCrudService<
    */
   constructor() {
     const repo = new AprTipoAtividadeRelacaoRepository();
-    super(repo);
-    this.repo = repo;
+    // Cast necessário pois os métodos create/update são sobrescritos nesta classe
+    super(repo as any);
+  }
+
+  /**
+   * Acessa o repository com tipo específico para operações customizadas
+   */
+  private get customRepo(): AprTipoAtividadeRelacaoRepository {
+    return this.repo as unknown as AprTipoAtividadeRelacaoRepository;
   }
 
   /**
@@ -141,7 +145,33 @@ export class AprTipoAtividadeVinculoService extends AbstractCrudService<
       throw new Error('APR não encontrado');
     }
 
-    return this.repo.setActiveMapping(data.tipoAtividadeId, data.aprId, userId);
+    return this.customRepo.setActiveMapping(data.tipoAtividadeId, data.aprId, userId);
+  }
+
+  /**
+   * Implementa método create requerido pelo AbstractCrudService
+   * Delega para setMapping que é o método específico desta entidade
+   */
+  async create(data: SetAprTipoAtividade, userId: string): Promise<AprTipoAtividadeRelacao> {
+    return this.setMapping(data, userId);
+  }
+
+  /**
+   * Implementa método update requerido pelo AbstractCrudService
+   * Update não é usado neste contexto - delega para setMapping
+   */
+  async update(data: any, userId: string): Promise<AprTipoAtividadeRelacao> {
+    // Como update não é usado, tratamos como create/setMapping
+    if (data.tipoAtividadeId && data.aprId) {
+      return this.setMapping(
+        {
+          tipoAtividadeId: data.tipoAtividadeId,
+          aprId: data.aprId,
+        },
+        userId
+      );
+    }
+    throw new Error('Update não suportado para AprTipoAtividadeVinculo');
   }
 
   /**
@@ -180,7 +210,7 @@ export class AprTipoAtividadeVinculoService extends AbstractCrudService<
     params: AprTipoAtividadeVinculoFilter
   ): Promise<PaginatedResult<AprTipoAtividadeRelacao>> {
     // Busca dados via repository com includes padrão
-    const { items, total } = await this.repo.list({
+    const { items, total } = await this.customRepo.list({
       ...params,
       include: params.include || {
         apr: true,

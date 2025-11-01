@@ -28,7 +28,7 @@ export class ChecklistPerguntaService extends AbstractCrudService<
   }
 
   async create(data: Create, userId: string): Promise<ChecklistPergunta> {
-    return this.repoConcrete.create({ nome: data.nome }, userId);
+    return this.repoConcrete.create({ nome: data.nome } as any, userId);
   }
 
   async update(data: Update, userId: string): Promise<ChecklistPergunta> {

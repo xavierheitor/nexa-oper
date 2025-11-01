@@ -48,7 +48,7 @@ export default function HorarioCatalogoPage() {
 
   const horarios = useEntityData({
     key: 'horarioAberturaCatalogo',
-    fetcher: unwrapFetcher(listHorarioAberturaCatalogo) as any,
+    fetcherAction: unwrapFetcher(listHorarioAberturaCatalogo) as any,
     paginationEnabled: true,
     initialParams: {
       page: 1,

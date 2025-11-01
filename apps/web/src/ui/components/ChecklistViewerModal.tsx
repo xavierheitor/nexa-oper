@@ -214,7 +214,7 @@ export default function ChecklistViewerModal({
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
                           {resposta.ChecklistRespostaFoto.map((foto) => {
                             const imageSrc = foto.urlPublica || foto.caminhoArquivo;
-                            const hasValidSrc = imageSrc && imageSrc.trim() !== '';
+                            const hasValidSrc = Boolean(imageSrc && imageSrc.trim() !== '');
 
                             return (
                               <Card

@@ -95,7 +95,12 @@ export default function VeiculoLoteForm({ contratos, bases, tiposVeiculo, onSucc
 
   const handleInputChange = (value: string | number, index: number, field: keyof LinhaVeiculo) => {
     const newData = [...dataSource];
-    newData[index][field] = value as any;
+    // Type-safe assignment: verificar o tipo do campo e fazer cast apropriado
+    if (field === 'ano') {
+      (newData[index] as LinhaVeiculo).ano = value as number;
+    } else if (field === 'placa' || field === 'modelo' || field === 'key') {
+      (newData[index] as LinhaVeiculo)[field] = value as string;
+    }
     setDataSource(newData);
   };
 

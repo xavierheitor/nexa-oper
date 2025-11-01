@@ -24,14 +24,14 @@ export default function RelatoriosEletricistasPage() {
 
   const { data: contratos, isLoading: loadingContratos } = useEntityData({
     key: 'relatorios-eletricistas-contratos',
-    fetcher: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratos),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
   const { data: bases, isLoading: loadingBases } = useEntityData({
     key: 'relatorios-eletricistas-bases',
-    fetcher: unwrapFetcher(listBases),
+    fetcherAction: unwrapFetcher(listBases),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
@@ -48,7 +48,12 @@ export default function RelatoriosEletricistasPage() {
         periodoFim: dates[1].endOf('day').toDate(),
       }));
     } else {
-      setFiltros((prev) => ({ ...prev, periodoInicio: undefined, periodoFim: undefined }));
+      // Resetar para valores padrão quando não houver datas selecionadas
+      setFiltros((prev) => ({
+        ...prev,
+        periodoInicio: dayjs().subtract(1, 'month').startOf('day').toDate(),
+        periodoFim: dayjs().endOf('day').toDate(),
+      }));
     }
   };
 

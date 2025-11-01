@@ -10,7 +10,10 @@ export interface VinculoTEFormData {
   checklistId: number;
 }
 
-export default function VinculoTipoEquipeForm({ onSubmit, loading = false }: { onSubmit: (v: VinculoTEFormData) => void; loading?: boolean }) {
+export default function VinculoTipoEquipeForm({
+  onSubmitAction: onSubmit,
+  loading = false
+}: { onSubmitAction: (v: VinculoTEFormData) => void; loading?: boolean }) {
   const [form] = Form.useForm<VinculoTEFormData>();
   const [tipos, setTipos] = useState<any[]>([]);
   const [checklists, setChecklists] = useState<any[]>([]);

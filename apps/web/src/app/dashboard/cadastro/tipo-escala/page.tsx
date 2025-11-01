@@ -49,7 +49,7 @@ export default function TipoEscalaPage() {
 
   const tipos = useEntityData({
     key: 'tiposEscala',
-    fetcher: unwrapFetcher(listTiposEscala) as any,
+    fetcherAction: unwrapFetcher(listTiposEscala) as any,
     paginationEnabled: true,
     initialParams: {
       page: 1,

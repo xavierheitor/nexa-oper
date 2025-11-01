@@ -47,7 +47,7 @@ export default function SupervisorForm({
       }
     };
     loadSelectData();
-  }, []);
+  }, [message]);
 
   useEffect(() => {
     if (initialValues) {

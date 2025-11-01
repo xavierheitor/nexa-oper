@@ -34,7 +34,7 @@ export default function MobileUserPage() {
   // Hook para busca de dados com paginação
   const mobileUsers = useEntityData<MobileUser>({
     key: 'mobileUsers',
-    fetcher: unwrapFetcher(listMobileUsers),
+    fetcherAction: unwrapFetcher(listMobileUsers),
     paginationEnabled: true,
     initialParams: {
       page: 1,

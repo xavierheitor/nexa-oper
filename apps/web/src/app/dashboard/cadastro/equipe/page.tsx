@@ -39,7 +39,7 @@ export default function EquipePage() {
 
   const equipes = useEntityData<EquipeWithBase>({
     key: 'equipes',
-    fetcher: unwrapPaginatedFetcher(listEquipes),
+    fetcherAction: unwrapPaginatedFetcher(listEquipes),
     paginationEnabled: true,
     initialParams: {
       page: 1,
@@ -56,7 +56,7 @@ export default function EquipePage() {
   // Carregar bases para transferência e filtro
   const bases = useEntityData<Base>({
     key: 'bases-equipe',
-    fetcher: unwrapFetcher(listBases),
+    fetcherAction: unwrapFetcher(listBases),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
@@ -64,7 +64,7 @@ export default function EquipePage() {
   // Carregar dados para o formulário em lote
   const { data: contratos } = useEntityData({
     key: 'contratos-lote-equipe',
-    fetcher: async () => {
+    fetcherAction: async () => {
       const result = await listContratos({
         page: 1,
         pageSize: 100,
@@ -78,7 +78,7 @@ export default function EquipePage() {
 
   const { data: tiposEquipe } = useEntityData({
     key: 'tipos-equipe-lote',
-    fetcher: async () => {
+    fetcherAction: async () => {
       const result = await listTiposEquipe({
         page: 1,
         pageSize: 100,

@@ -12,7 +12,7 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { Checklist } from '@nexa-oper/db';
-import { Button, Card, Modal, Table, Form, Select, Spin, App } from 'antd';
+import { Button, Card, Modal, Table, Form, Select, Spin, App, message } from 'antd';
 import { useEffect, useState } from 'react';
 import ChecklistForm, { ChecklistFormData } from './form';
 import { listChecklistTipoVeiculoVinculos } from '@/lib/actions/checklistVinculo/tipoVeiculo/list';
@@ -32,7 +32,7 @@ export default function ChecklistPage() {
 
   const checklists = useEntityData<Checklist>({
     key: 'checklists',
-    fetcher: unwrapFetcher(listChecklists),
+    fetcherAction: unwrapFetcher(listChecklists),
     paginationEnabled: true,
     initialParams: {
       page: 1,
@@ -49,14 +49,14 @@ export default function ChecklistPage() {
 
   const tvVinculos = useEntityData<any>({
     key: 'checklist-tv-vinculos',
-    fetcher: unwrapFetcher(listChecklistTipoVeiculoVinculos),
+    fetcherAction: unwrapFetcher(listChecklistTipoVeiculoVinculos),
     paginationEnabled: true,
     initialParams: { page: 1, pageSize: 10, orderBy: 'id', orderDir: 'desc', include: { tipoVeiculo: true, checklist: true } },
   });
 
   const teVinculos = useEntityData<any>({
     key: 'checklist-te-vinculos',
-    fetcher: unwrapFetcher(listChecklistTipoEquipeVinculos),
+    fetcherAction: unwrapFetcher(listChecklistTipoEquipeVinculos),
     paginationEnabled: true,
     initialParams: { page: 1, pageSize: 10, orderBy: 'id', orderDir: 'desc', include: { tipoEquipe: true, checklist: true } },
   });

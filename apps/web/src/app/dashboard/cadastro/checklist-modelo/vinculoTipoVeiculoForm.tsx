@@ -10,7 +10,10 @@ export interface VinculoTVFormData {
   checklistId: number;
 }
 
-export default function VinculoTipoVeiculoForm({ onSubmit, loading = false }: { onSubmit: (v: VinculoTVFormData) => void; loading?: boolean }) {
+export default function VinculoTipoVeiculoForm({
+  onSubmitAction: onSubmit,
+  loading = false
+}: { onSubmitAction: (v: VinculoTVFormData) => void; loading?: boolean }) {
   const [form] = Form.useForm<VinculoTVFormData>();
   const [tipos, setTipos] = useState<any[]>([]);
   const [checklists, setChecklists] = useState<any[]>([]);

@@ -19,7 +19,7 @@ export default function ChecklistOpcaoRespostaPage() {
 
   const opcoes = useEntityData<ChecklistOpcaoResposta>({
     key: 'checklist-opcoes-resposta',
-    fetcher: unwrapFetcher(listChecklistOpcoesResposta),
+    fetcherAction: unwrapFetcher(listChecklistOpcoesResposta),
     paginationEnabled: true,
     initialParams: {
       page: 1,

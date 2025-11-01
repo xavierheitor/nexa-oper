@@ -84,10 +84,13 @@ export function unwrapPaginatedFetcher<T>(
 
       // Se for array simples (fallback), cria resultado paginado
       if (Array.isArray(data)) {
+        const arrayData = data as T[];
         return {
-          data: data as T[],
-          total: data.length,
+          data: arrayData,
+          total: arrayData.length,
           totalPages: 1,
+          page: 1,
+          pageSize: arrayData.length || 10,
         };
       }
 
@@ -96,6 +99,8 @@ export function unwrapPaginatedFetcher<T>(
         data: [],
         total: 0,
         totalPages: 0,
+        page: 1,
+        pageSize: 10,
       };
     } catch (error) {
       throw error instanceof Error

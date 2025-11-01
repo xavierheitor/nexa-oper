@@ -45,7 +45,7 @@ export default function EquipeTurnoHistoricoForm({
   // Carregar equipes
   const { data: equipes, isLoading: equipesLoading } = useEntityData({
     key: 'equipes-turno',
-    fetcher: async () => {
+    fetcherAction: async () => {
       const result = await listEquipes({
         page: 1,
         pageSize: 100,
@@ -60,7 +60,7 @@ export default function EquipeTurnoHistoricoForm({
   // Carregar horários do catálogo
   const { data: horarios, isLoading: horariosLoading } = useEntityData({
     key: 'horarios-catalogo',
-    fetcher: async () => {
+    fetcherAction: async () => {
       const result = await listHorarioAberturaCatalogo({
         page: 1,
         pageSize: 100,

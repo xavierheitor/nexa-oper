@@ -42,6 +42,12 @@ interface DadosEscala {
   periodoFim: Date;
   status: string;
   Slots: Slot[];
+  estatisticas?: {
+    totalSlots: number;
+    eletricistasUnicos: number;
+    diasComTrabalho: number;
+    diasComFolga: number;
+  };
 }
 
 export default function VisualizarEscala({ escalaId, open, onClose }: VisualizarEscalaProps) {
@@ -55,11 +61,14 @@ export default function VisualizarEscala({ escalaId, open, onClose }: Visualizar
       const result = await visualizarEscala(escalaId);
 
       if (result.success && result.data) {
+        // Fazer cast explícito para o tipo esperado, já que o handleServerAction
+        // não preserva completamente os tipos do Prisma
+        const dadosCompleto = result.data as unknown as DadosEscala;
         console.log('Dados carregados:', {
-          slots: result.data.Slots?.length || 0,
-          eletricistas: result.data.estatisticas?.eletricistasUnicos || 0,
+          slots: dadosCompleto.Slots?.length || 0,
+          eletricistas: dadosCompleto.estatisticas?.eletricistasUnicos || 0,
         });
-        setDados(result.data);
+        setDados(dadosCompleto);
       } else {
         console.error('Erro na resposta:', result.error);
         message.error(result.error || 'Erro ao carregar escala');

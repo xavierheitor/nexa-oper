@@ -31,7 +31,7 @@ export default function TipoEquipePage() {
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
   const tiposEquipe = useEntityData<TipoEquipe>({
     key: 'tipos-equipe', // Chave única para o cache SWR
-    fetcher: unwrapFetcher(listTiposEquipe), // Função que busca os dados (Server Action)
+    fetcherAction: unwrapFetcher(listTiposEquipe), // Função que busca os dados (Server Action)
     paginationEnabled: true, // Habilita paginação
     initialParams: {
       page: 1, // Página inicial

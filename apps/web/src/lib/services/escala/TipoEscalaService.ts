@@ -18,6 +18,7 @@ import {
   tipoEscalaFilterSchema,
   tipoEscalaUpdateSchema,
   salvarPosicoesCicloSchema,
+  salvarMascarasSemanasSchema,
 } from '../../schemas/escalaSchemas';
 import { PaginatedResult } from '../../types/common';
 import { prisma } from '../../db/db.service';
@@ -26,6 +27,7 @@ type TipoEscalaCreate = z.infer<typeof tipoEscalaCreateSchema>;
 type TipoEscalaUpdate = z.infer<typeof tipoEscalaUpdateSchema>;
 type TipoEscalaFilter = z.infer<typeof tipoEscalaFilterSchema>;
 type SalvarPosicoesCiclo = z.infer<typeof salvarPosicoesCicloSchema>;
+type SalvarMascarasSemanas = z.infer<typeof salvarMascarasSemanasSchema>;
 
 export class TipoEscalaService extends AbstractCrudService<
   TipoEscalaCreate,
@@ -37,7 +39,8 @@ export class TipoEscalaService extends AbstractCrudService<
 
   constructor() {
     const repo = new TipoEscalaRepository();
-    super(repo);
+    // Cast necessário pois há diferenças sutis nos tipos
+    super(repo as any);
     this.tipoRepo = repo;
   }
 
@@ -45,11 +48,11 @@ export class TipoEscalaService extends AbstractCrudService<
     const createData: TipoEscalaCreateInput = {
       nome: data.nome,
       modoRepeticao: data.modoRepeticao,
-      cicloDias: data.cicloDias,
-      periodicidadeSemanas: data.periodicidadeSemanas,
-      eletricistasPorTurma: data.eletricistasPorTurma,
+      cicloDias: data.cicloDias ?? undefined,
+      periodicidadeSemanas: data.periodicidadeSemanas ?? undefined,
+      eletricistasPorTurma: data.eletricistasPorTurma ?? undefined,
       ativo: data.ativo,
-      observacoes: data.observacoes,
+      observacoes: data.observacoes ?? undefined,
     };
 
     return this.tipoRepo.create(createData, userId);
@@ -70,6 +73,7 @@ export class TipoEscalaService extends AbstractCrudService<
     return {
       data: items,
       total,
+      totalPages: Math.ceil(total / params.pageSize),
       page: params.page,
       pageSize: params.pageSize,
     };
