@@ -1,0 +1,46 @@
+module.exports = {
+  apps: [
+    {
+      name: 'nexa-api',
+      script: './apps/api/dist/main.js',
+      cwd: '/var/www/nexa-oper',
+      instances: 2, // Número de instâncias (processos)
+      exec_mode: 'cluster',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3001,
+      },
+      error_file: '/var/www/nexa-oper/logs/api-error.log',
+      out_file: '/var/www/nexa-oper/logs/api-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+      autorestart: true,
+      max_memory_restart: '1G',
+      min_uptime: '10s',
+      max_restarts: 10,
+      restart_delay: 4000,
+    },
+    {
+      name: 'nexa-web',
+      script: './apps/web/node_modules/.bin/next',
+      args: 'start -p 3000',
+      cwd: '/var/www/nexa-oper/apps/web',
+      instances: 2,
+      exec_mode: 'cluster',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3000,
+      },
+      error_file: '/var/www/nexa-oper/logs/web-error.log',
+      out_file: '/var/www/nexa-oper/logs/web-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+      autorestart: true,
+      max_memory_restart: '1G',
+      min_uptime: '10s',
+      max_restarts: 10,
+      restart_delay: 4000,
+    },
+  ],
+};
+
