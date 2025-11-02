@@ -275,7 +275,7 @@ async function bootstrap(): Promise<void> {
     });
 
     // Inicializar servidor
-    await app.listen(port);
+    await app.listen(port, '0.0.0.0');
 
     // Logging final de sucesso
     logger.log(`🎉 API Nexa Oper iniciada com sucesso!`);
