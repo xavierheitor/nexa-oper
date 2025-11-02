@@ -19,6 +19,11 @@ module.exports = {
       min_uptime: '10s',
       max_restarts: 10,
       restart_delay: 4000,
+      // Configurações de graceful shutdown
+      kill_timeout: 30000, // 30 segundos para graceful shutdown
+      listen_timeout: 10000, // 10 segundos para aguardar aplicação iniciar
+      shutdown_with_message: true, // Espera por completion de requisições antes de matar
+      wait_ready: false, // A API não implementa ready event ainda
     },
     {
       name: 'nexa-web',
@@ -40,6 +45,11 @@ module.exports = {
       min_uptime: '10s',
       max_restarts: 10,
       restart_delay: 4000,
+      // Configurações de graceful shutdown
+      kill_timeout: 30000, // 30 segundos para graceful shutdown
+      listen_timeout: 10000, // 10 segundos para aguardar aplicação iniciar
+      shutdown_with_message: true, // Espera por completion de requisições antes de matar
+      wait_ready: false, // Next.js não implementa ready event
     },
   ],
 };

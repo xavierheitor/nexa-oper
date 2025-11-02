@@ -20,6 +20,11 @@ export async function killPortProcesses(port: number): Promise<void> {
 
   for (const pid of pids) {
     try {
+      // Tentar SIGTERM primeiro (graceful shutdown)
+      await execAsync(`kill -15 ${pid}`);
+      // Aguardar 2 segundos para o processo finalizar
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Se ainda estiver rodando, forçar com SIGKILL
       await execAsync(`kill -9 ${pid}`);
     } catch {
       // ignore

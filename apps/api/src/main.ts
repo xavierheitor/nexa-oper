@@ -242,12 +242,19 @@ async function bootstrap(): Promise<void> {
     app.enableShutdownHooks();
     logger.log('✅ Prefixo global "api" configurado');
 
-    // Configurar graceful shutdown
+    // Configurar graceful shutdown com timeout
     const gracefulShutdown = async (signal: string) => {
       logger.log(`🔄 Recebido sinal ${signal}. Iniciando graceful shutdown...`);
 
       try {
+        // Timeout de 30 segundos para graceful shutdown
+        const shutdownTimeout = setTimeout(() => {
+          logger.error('❌ Timeout no graceful shutdown. Forçando saída...');
+          process.exit(1);
+        }, 30000);
+
         await app.close();
+        clearTimeout(shutdownTimeout);
         logger.log('✅ Aplicação finalizada com sucesso');
         process.exit(0);
       } catch (error) {
