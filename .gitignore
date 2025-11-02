@@ -9,7 +9,7 @@ build/
 out/
 
 # Generated Prisma files
-packages/db/generated/
+packages/db/prisma/generated/
 
 # Environment variables
 .env

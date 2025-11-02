@@ -5,8 +5,9 @@ node_modules/
 dist/
 build/
 
-# Generated Prisma files (optional - you might want to version these)
-# generated/
+# Generated Prisma files (auto-generated, do not commit)
+generated/
+prisma/generated/
 
 # Environment variables
 .env
