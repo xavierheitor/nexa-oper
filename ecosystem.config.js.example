@@ -9,6 +9,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3001,
+        LOG_PATH: '/var/www/nexa-oper/logs', // Centraliza logs da aplicação no mesmo diretório do PM2
       },
       error_file: '/var/www/nexa-oper/logs/api-error.log',
       out_file: '/var/www/nexa-oper/logs/api-out.log',
@@ -35,6 +36,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
+        LOG_PATH: '/var/www/nexa-oper/logs', // Centraliza logs da aplicação no mesmo diretório do PM2
       },
       error_file: '/var/www/nexa-oper/logs/web-error.log',
       out_file: '/var/www/nexa-oper/logs/web-out.log',
