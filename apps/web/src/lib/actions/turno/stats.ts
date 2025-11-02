@@ -25,7 +25,15 @@ export const getTurnoStats = async () =>
     turnoStatsSchema,
     async (data, session) => {
       // Fazer requisição à API
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      // Em produção, NEXT_PUBLIC_API_URL deve estar configurada
+      // Em desenvolvimento, usa localhost apenas se a variável não estiver definida
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL ||
+        (process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : '');
+
+      if (!baseUrl) {
+        throw new Error('NEXT_PUBLIC_API_URL não está configurada');
+      }
 
       // Buscar turnos abertos
       // Nota: Os cookies são enviados automaticamente em server-side fetch
