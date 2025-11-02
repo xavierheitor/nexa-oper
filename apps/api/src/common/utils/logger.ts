@@ -10,9 +10,74 @@
  * - Sanitização automática de dados sensíveis
  * - Diferentes níveis por ambiente
  * - Rastreamento de requisições
+ * - Persistência em arquivos (app.log e error.log) em produção e desenvolvimento
  */
 
 import { Logger, HttpException, HttpStatus } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
+
+/**
+ * Configuração de caminhos de log
+ * Usa variável de ambiente LOG_PATH ou padrão ./logs
+ */
+const logPathFromEnv = process.env.LOG_PATH || './logs';
+const LOG_DIR = path.resolve(logPathFromEnv);
+const LOG_FILE = path.join(LOG_DIR, 'app.log');
+const ERROR_LOG_FILE = path.join(LOG_DIR, 'error.log');
+
+/**
+ * Inicialização automática dos arquivos de log
+ * Garante que o diretório e arquivos existem antes de usar
+ */
+if (!fs.existsSync(LOG_DIR)) {
+  fs.mkdirSync(LOG_DIR, { recursive: true });
+}
+if (!fs.existsSync(LOG_FILE)) {
+  fs.writeFileSync(LOG_FILE, '', 'utf8');
+}
+if (!fs.existsSync(ERROR_LOG_FILE)) {
+  fs.writeFileSync(ERROR_LOG_FILE, '', 'utf8');
+}
+
+/**
+ * Função para escrever logs em arquivos
+ *
+ * Escreve o log formatado no arquivo apropriado baseado no nível
+ * Garante que info e error sejam sempre escritos em produção
+ *
+ * LOGS ESCRITOS:
+ * - info, log, warn: app.log apenas
+ * - error: app.log e error.log (duplicado para facilitar análise)
+ * - debug, verbose: apenas em desenvolvimento (se shouldLogDebug retornar true)
+ *
+ * @param line - Linha formatada para escrita
+ * @param level - Nível do log para determinar arquivo de destino
+ */
+function writeLogToFile(line: string, level: string): void {
+  try {
+    const levelLower = level.toLowerCase();
+
+    // Escreve sempre no arquivo principal (app.log) para info, log, warn e error
+    if (['info', 'log', 'warn', 'error'].includes(levelLower)) {
+      fs.appendFileSync(LOG_FILE, line + '\n', 'utf8');
+    }
+
+    // Se for erro, escreve também no arquivo específico de erros
+    if (levelLower === 'error') {
+      fs.appendFileSync(ERROR_LOG_FILE, line + '\n', 'utf8');
+    }
+
+    // Debug e verbose apenas em desenvolvimento
+    if (['debug', 'verbose'].includes(levelLower) && process.env.NODE_ENV !== 'production') {
+      fs.appendFileSync(LOG_FILE, line + '\n', 'utf8');
+    }
+  } catch (err) {
+    // Em caso de erro ao escrever, não quebra a aplicação
+    // Apenas loga no console como fallback
+    console.error('Erro ao escrever log em arquivo:', err);
+  }
+}
 
 /**
  * Níveis de log padronizados
@@ -76,8 +141,79 @@ export interface StructuredError {
 
 /**
  * Logger padronizado com formatação consistente e tratamento de erros
+ *
+ * ESTENDE a funcionalidade do Logger do NestJS para também escrever
+ * logs em arquivos, garantindo persistência mesmo em produção.
  */
 export class StandardLogger extends Logger {
+  /**
+   * Sobrescreve o método log para também escrever em arquivo
+   */
+  log(message: any, context?: string): void {
+    super.log(message, context || this.context);
+    const timestamp = new Date().toISOString();
+    const ctx = context || this.context || 'Application';
+    const logLine = `[${timestamp}] [LOG] [${ctx}] ${message}`;
+    writeLogToFile(logLine, 'log');
+  }
+
+  /**
+   * Sobrescreve o método error para também escrever em arquivo
+   */
+  error(message: any, stack?: string, context?: string): void {
+    super.error(message, stack, context || this.context);
+    const timestamp = new Date().toISOString();
+    const ctx = context || this.context || 'Application';
+    const stackTrace = stack ? `\n${stack}` : '';
+    const logLine = `[${timestamp}] [ERROR] [${ctx}] ${message}${stackTrace}`;
+    writeLogToFile(logLine, 'error');
+  }
+
+  /**
+   * Sobrescreve o método warn para também escrever em arquivo
+   */
+  warn(message: any, context?: string): void {
+    super.warn(message, context || this.context);
+    const timestamp = new Date().toISOString();
+    const ctx = context || this.context || 'Application';
+    const logLine = `[${timestamp}] [WARN] [${ctx}] ${message}`;
+    writeLogToFile(logLine, 'warn');
+  }
+
+  /**
+   * Sobrescreve o método debug para também escrever em arquivo (se não for produção)
+   */
+  debug(message: any, context?: string): void {
+    super.debug(message, context || this.context);
+    if (shouldLogDebug()) {
+      const timestamp = new Date().toISOString();
+      const ctx = context || this.context || 'Application';
+      const logLine = `[${timestamp}] [DEBUG] [${ctx}] ${message}`;
+      writeLogToFile(logLine, 'debug');
+    }
+  }
+
+  /**
+   * Sobrescreve o método verbose para também escrever em arquivo (se não for produção)
+   */
+  verbose(message: any, context?: string): void {
+    super.verbose(message, context || this.context);
+    if (shouldLogDebug()) {
+      const timestamp = new Date().toISOString();
+      const ctx = context || this.context || 'Application';
+      const logLine = `[${timestamp}] [VERBOSE] [${ctx}] ${message}`;
+      writeLogToFile(logLine, 'verbose');
+    }
+  }
+
+  /**
+   * Método info para compatibilidade (equivalente a log)
+   * Escreve em arquivo via método log sobrescrito
+   */
+  info(message: any, context?: string): void {
+    this.log(message, context || this.context);
+  }
+
   /**
    * Log de operação (CRUD, sync, etc.)
    */
