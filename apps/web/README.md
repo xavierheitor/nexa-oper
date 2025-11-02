@@ -78,7 +78,7 @@ import { PrismaClient } from '@nexa-oper/db';
 
 export async function GET() {
   const prisma = new PrismaClient();
-  
+
   try {
     const tests = await prisma.test.findMany();
     return Response.json({ data: tests });
@@ -95,6 +95,14 @@ Criar arquivo `.env.local` na pasta da aplicação:
 ```env
 DATABASE_URL="mysql://usuario:senha@localhost:3306/banco"
 NEXT_PUBLIC_API_URL="http://localhost:3001"
+
+# URL base para fotos mobile (opcional)
+# Se configurada, as URLs das fotos virão com esse prefixo
+# Exemplos:
+# NEXT_PUBLIC_PHOTOS_BASE_URL="https://storage.nexaoper.com.br"
+# NEXT_PUBLIC_PHOTOS_BASE_URL="http://localhost:3001"
+# Se não configurada, usa paths relativos
+NEXT_PUBLIC_PHOTOS_BASE_URL=
 ```
 
 ## 🚀 Desenvolvimento

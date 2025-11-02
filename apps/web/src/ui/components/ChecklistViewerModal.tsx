@@ -10,6 +10,7 @@
 import React, { useState } from 'react';
 import { Modal, Card, Typography, List, Tag, Space, Image, Empty, Collapse, Divider, Alert } from 'antd';
 import { EyeOutlined, UserOutlined, CalendarOutlined, ClockCircleOutlined, CameraOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { buildPhotoUrl, isValidPhotoPath } from '@/lib/utils/photos';
 
 const { Title, Text } = Typography;
 
@@ -213,8 +214,9 @@ export default function ChecklistViewerModal({
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
                           {resposta.ChecklistRespostaFoto.map((foto) => {
-                            const imageSrc = foto.urlPublica || foto.caminhoArquivo;
-                            const hasValidSrc = Boolean(imageSrc && imageSrc.trim() !== '');
+                            // Montar URL completa usando utilitário helper
+                            const imageSrc = buildPhotoUrl(foto.urlPublica, foto.caminhoArquivo);
+                            const hasValidSrc = isValidPhotoPath(imageSrc);
 
                             return (
                               <Card
