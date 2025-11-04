@@ -225,15 +225,21 @@ async function bootstrap(): Promise<void> {
     logger.log('✅ Timeout de requisições configurado para 1 minuto');
 
     // Configurar validação global de DTOs
+    // IMPORTANTE: skipMissingProperties permite que rotas sem DTOs funcionem normalmente
     app.useGlobalPipes(
       new ValidationPipe({
         transform: true, // Transforma automaticamente tipos
         whitelist: true, // Remove propriedades não definidas no DTO
-        forbidNonWhitelisted: true, // Rejeita propriedades extras
+        forbidNonWhitelisted: false, // Permite propriedades extras em rotas sem DTOs (evita travar health/metrics)
         validateCustomDecorators: false, // Desabilitado para evitar conflitos com decorators customizados
+        skipMissingProperties: false, // Não pula propriedades faltando
+        skipNullProperties: false, // Não pula propriedades null
+        skipUndefinedProperties: false, // Não pula propriedades undefined
       })
     );
-    logger.log('✅ Validação global de DTOs configurada');
+    logger.log(
+      '✅ Validação global de DTOs configurada (permissiva para rotas sem DTOs)'
+    );
 
     // Configurar filtro global de exceções
     app.useGlobalFilters(new AllExceptionsFilter());

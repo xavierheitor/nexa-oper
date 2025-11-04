@@ -128,10 +128,18 @@ export class LoggerMiddleware implements NestMiddleware {
       });
 
       // Chama o método send() original para enviar a resposta
+      // IMPORTANTE: Métricas não devem bloquear a resposta
+      // Se houver erro, apenas loga e continua (não trava a request)
       try {
-        const route = originalUrl.split('?')[0] || originalUrl;
-        this.metricsService?.observeRequest(method, route, res.statusCode, elapsed / 1000);
-      } catch {}
+        if (this.metricsService) {
+          const route = originalUrl.split('?')[0] || originalUrl;
+          this.metricsService.observeRequest(method, route, res.statusCode, elapsed / 1000);
+        }
+      } catch (error) {
+        // Log silencioso - não deve travar a request
+        // Métricas são opcionais e não devem afetar a funcionalidade
+        this.logger.debug(`Erro ao registrar métricas (não bloqueante): ${error}`);
+      }
       return originalSend(data);
     };
 

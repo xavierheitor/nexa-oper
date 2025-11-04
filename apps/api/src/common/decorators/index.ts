@@ -3,3 +3,4 @@
  */
 
 export * from './sync-endpoint.decorator';
+export * from './public.decorator';
