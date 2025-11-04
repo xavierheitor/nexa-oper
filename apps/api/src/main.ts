@@ -167,23 +167,39 @@ async function bootstrap(): Promise<void> {
     const corsOrigins = getCorsOrigins();
 
     // Configuração otimizada de CORS com segurança
-    app.enableCors({
-      origin: corsOrigins,
-      credentials: true, // Permite envio de cookies e credenciais
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: [
-        'Content-Type',
-        'Authorization',
-        'Accept',
-        'X-Requested-With',
-        'Origin',
-        'X-CSRF-Token',
-      ],
-      exposedHeaders: ['Authorization'], // Headers que o cliente pode ler
-      maxAge: 86400, // Cache de preflight por 24 horas (reduz requisições OPTIONS)
-      preflightContinue: false, // Não continuar se preflight falhar
-      optionsSuccessStatus: 204, // Status 204 para OPTIONS bem-sucedidos
-    });
+    const allowed = (process.env.CORS_ORIGINS ?? '')
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+  app.enableCors({
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, success: boolean) => void
+    ) => {
+      // Sem header Origin (ex.: curl, prom, healthchecks) => sempre libera
+      if (!origin) return callback(null, true);
+
+      // Origem explicitamente liberada
+      if (allowed.includes(origin)) return callback(null, true);
+
+      // Também aceita variações http(s)://host:porta sem barra final
+      try {
+        const o = new URL(origin);
+        const base = `${o.protocol}//${o.host}`;
+        if (allowed.includes(base)) return callback(null, true);
+      } catch (_) {
+        /* ignora parse falho e cai no deny */
+      }
+
+      // Bloqueia (mas não trave a request! devolve erro)
+      return callback(new Error('CORS: Origin not allowed'), false);
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true,
+    maxAge: 86400,
+  });
 
     // Log informativo sobre configuração CORS
     if (typeof corsOrigins === 'function') {
