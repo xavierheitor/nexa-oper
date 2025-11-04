@@ -312,9 +312,19 @@ export default function TurnosPage() {
     );
   }
 
+  // Formatar data de referência (hoje) para exibição no título
+  const hoje = new Date();
+  const dataFormatada = hoje.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+
   return (
     <div style={{ padding: '24px' }}>
-      <Title level={2}>Turnos Abertos</Title>
+      <Title level={2}>
+        Turnos Abertos - Hoje ({dataFormatada})
+      </Title>
 
       {/* Estatísticas */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
