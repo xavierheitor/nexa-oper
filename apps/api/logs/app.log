@@ -32,3 +32,21 @@
 [2025-11-04T02:05:35.876Z] [LOG] [Bootstrap] 🔗 URL base: http://localhost:3001/api
 [2025-11-04T02:05:35.876Z] [LOG] [Bootstrap] 📚 Documentação: http://localhost:3001/api/docs
 [2025-11-04T02:05:55.039Z] [WARN] [AllExceptionsFilter] [404] GET /favicon.ico - "Cannot GET /favicon.ico"
+[2025-11-04T02:08:26.830Z] [LOG] [Bootstrap] 🔄 Recebido sinal SIGINT. Iniciando graceful shutdown...
+[2025-11-04T02:08:26.846Z] [LOG] [Bootstrap] 🔄 Recebido sinal SIGINT. Iniciando graceful shutdown...
+[2025-11-04T02:08:26.862Z] [LOG] [Bootstrap] ✅ Aplicação finalizada com sucesso
+[2025-11-04T02:08:47.458Z] [LOG] [Bootstrap] 🚀 Iniciando aplicação Nexa Oper API...
+[2025-11-04T02:08:47.496Z] [LOG] [Bootstrap] ✅ Porta 3001 livre
+[2025-11-04T02:08:47.543Z] [LOG] [Bootstrap] ✅ Parsing JSON/URL configurado: limite de 2MB
+[2025-11-04T02:08:47.543Z] [LOG] [Bootstrap] ✅ CORS configurado para 2 origem(ens): http://localhost:3000, http://127.0.0.1:3000
+[2025-11-04T02:08:47.543Z] [LOG] [Bootstrap]    Headers permitidos otimizados, preflight cacheado por 24h
+[2025-11-04T02:08:47.543Z] [LOG] [Bootstrap] ✅ Timeout de requisições configurado para 1 minuto
+[2025-11-04T02:08:47.543Z] [LOG] [Bootstrap] ✅ Validação global de DTOs configurada (permissiva para rotas sem DTOs)
+[2025-11-04T02:08:47.543Z] [LOG] [Bootstrap] ✅ Filtro global de exceções configurado
+[2025-11-04T02:08:47.570Z] [LOG] [Bootstrap] ✅ Documentação Swagger disponível em /api/docs
+[2025-11-04T02:08:47.570Z] [LOG] [Bootstrap] ✅ Prefixo global "api" configurado
+[2025-11-04T02:08:47.653Z] [LOG] [Bootstrap] 🎉 API Nexa Oper iniciada com sucesso!
+[2025-11-04T02:08:47.653Z] [LOG] [Bootstrap] 🌐 Servidor rodando na porta: 3001
+[2025-11-04T02:08:47.654Z] [LOG] [Bootstrap] 📱 Ambiente: development
+[2025-11-04T02:08:47.654Z] [LOG] [Bootstrap] 🔗 URL base: http://localhost:3001/api
+[2025-11-04T02:08:47.654Z] [LOG] [Bootstrap] 📚 Documentação: http://localhost:3001/api/docs

@@ -1,58 +1,81 @@
+/** PM2 ecosystem for Nexa Oper (API + Web) */
 module.exports = {
   apps: [
+    // ===================== API =====================
     {
       name: 'nexa-api',
-      script: './apps/api/dist/main.js',
       cwd: '/var/www/nexa-oper',
-      instances: 2, // Número de instâncias (processos)
+      script: './apps/api/dist/main.js',
       exec_mode: 'cluster',
+      instances: 2,                 // pode virar 'max' depois
+      // Interpreter & Node flags
+      interpreter: 'node',
+      node_args: [
+        '--unhandled-rejections=strict',
+        '--trace-warnings',
+      ],
+      // Health & lifecycle
+      listen_timeout: 10000,        // tempo p/ app subir
+      kill_timeout: 30000,          // graceful shutdown
+      wait_ready: false,            // usamos sinais, não ready msg
+      shutdown_with_message: false, // desligamos via SIGINT/SIGTERM
+      // Restart policy
+      autorestart: true,
+      min_uptime: '10s',
+      max_restarts: 10,
+      restart_delay: 4000,
+      exp_backoff_restart_delay: 2000,
+      max_memory_restart: '1G',
+      // Env
       env: {
         NODE_ENV: 'production',
         PORT: 3001,
-        LOG_PATH: '/var/www/nexa-oper/logs', // Centraliza logs da aplicação no mesmo diretório do PM2
+        LOG_PATH: '/var/www/nexa-oper/logs',
+        TRUST_PROXY: 'true',        // habilita trust proxy no main
+        HAS_HTTPS: 'false',         // ajuste p/ 'true' se atrás de HTTPS real (HSTS)
+        // CORS_ORIGINS: 'https://app.seudominio.com,https://outro.com',
       },
-      error_file: '/var/www/nexa-oper/logs/api-error.log',
-      out_file: '/var/www/nexa-oper/logs/api-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      // Logs
       merge_logs: true,
+      time: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      out_file: '/var/www/nexa-oper/logs/api-out.log',
+      error_file: '/var/www/nexa-oper/logs/api-error.log',
+    },
+
+    // ===================== WEB (Next.js) =====================
+    {
+      name: 'nexa-web',
+      cwd: '/var/www/nexa-oper/apps/web',
+      // Dica: manter o start do Next explícito pra evitar confusão com workspaces
+      script: './node_modules/.bin/next',
+      args: 'start -p 3000',
+      exec_mode: 'cluster',
+      instances: 2,
+      interpreter: 'node',
+      node_args: ['--trace-warnings'],
+      listen_timeout: 15000,
+      kill_timeout: 30000,
+      wait_ready: false,
+      shutdown_with_message: false,
       autorestart: true,
-      max_memory_restart: '1G',
       min_uptime: '10s',
       max_restarts: 10,
       restart_delay: 4000,
-      // Configurações de graceful shutdown
-      kill_timeout: 30000, // 30 segundos para graceful shutdown
-      listen_timeout: 10000, // 10 segundos para aguardar aplicação iniciar
-      shutdown_with_message: true, // Espera por completion de requisições antes de matar
-      wait_ready: false, // A API não implementa ready event ainda
-    },
-    {
-      name: 'nexa-web',
-      script: './apps/web/node_modules/.bin/next',
-      args: 'start -p 3000',
-      cwd: '/var/www/nexa-oper/apps/web',
-      instances: 2,
-      exec_mode: 'cluster',
+      exp_backoff_restart_delay: 2000,
+      max_memory_restart: '1G',
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
-        LOG_PATH: '/var/www/nexa-oper/logs', // Centraliza logs da aplicação no mesmo diretório do PM2
+        LOG_PATH: '/var/www/nexa-oper/logs',
+        // Se o Next estiver atrás de proxy/HTTPS:
+        // TRUST_PROXY: 'true',
       },
-      error_file: '/var/www/nexa-oper/logs/web-error.log',
-      out_file: '/var/www/nexa-oper/logs/web-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       merge_logs: true,
-      autorestart: true,
-      max_memory_restart: '1G',
-      min_uptime: '10s',
-      max_restarts: 10,
-      restart_delay: 4000,
-      // Configurações de graceful shutdown
-      kill_timeout: 30000, // 30 segundos para graceful shutdown
-      listen_timeout: 10000, // 10 segundos para aguardar aplicação iniciar
-      shutdown_with_message: true, // Espera por completion de requisições antes de matar
-      wait_ready: false, // Next.js não implementa ready event
+      time: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      out_file: '/var/www/nexa-oper/logs/web-out.log',
+      error_file: '/var/www/nexa-oper/logs/web-error.log',
     },
   ],
 };
-
