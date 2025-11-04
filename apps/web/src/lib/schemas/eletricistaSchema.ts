@@ -101,6 +101,22 @@ export const eletricistaLoteSchema = z.object({
   contratoId: z.number().int().positive('Contrato é obrigatório'),
   cargoId: z.number().int().positive('Cargo é obrigatório'),
   baseId: z.number().int().positive('Base é obrigatória'),
+  // Status inicial para todos os eletricistas do lote (opcional, padrão ATIVO)
+  status: z
+    .enum([
+      'ATIVO',
+      'FERIAS',
+      'LICENCA_MEDICA',
+      'LICENCA_MATERNIDADE',
+      'LICENCA_PATERNIDADE',
+      'SUSPENSAO',
+      'TREINAMENTO',
+      'AFastADO',
+      'DESLIGADO',
+      'APOSENTADO',
+    ])
+    .optional()
+    .default('ATIVO'),
   eletricistas: z
     .array(eletricistaLoteItemSchema)
     .min(1, 'Adicione pelo menos um eletricista'),

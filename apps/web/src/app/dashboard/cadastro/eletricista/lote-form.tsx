@@ -10,6 +10,7 @@ import { DeleteOutlined, PlusOutlined, FileExcelOutlined } from '@ant-design/ico
 import type { Cargo, Contrato } from '@nexa-oper/db';
 import dayjs, { Dayjs } from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { StatusEletricistaLabels } from '../../../../lib/schemas/eletricistaStatusSchema';
 
 dayjs.extend(customParseFormat);
 
@@ -25,6 +26,7 @@ interface EletricistaLoteFormData {
   contratoId: number;
   cargoId: number;
   baseId: number;
+  status?: string; // Status inicial para todos os eletricistas do lote
   eletricistas: EletricistaLoteItem[];
 }
 
@@ -107,6 +109,7 @@ export default function EletricistaLoteForm({
       contratoId: values.contratoId,
       cargoId: values.cargoId,
       baseId: values.baseId,
+      status: values.status || 'ATIVO', // Status padrão se não informado
       eletricistas,
     });
   };
@@ -208,7 +211,7 @@ export default function EletricistaLoteForm({
     <Form form={form} layout="vertical" onFinish={handleSubmit}>
       <Alert
         message="Cadastro em Lote de Eletricistas"
-        description="Selecione o contrato, cargo e base. Cole os dados do Excel com as colunas: Nome, Matrícula, Telefone, Estado (UF), Data Admissão (dd/mm/yyyy)."
+        description="Selecione o contrato, cargo, base e status inicial. Cole os dados do Excel com as colunas: Nome, Matrícula, Telefone, Estado (UF), Data Admissão (dd/mm/yyyy). Todos os eletricistas serão cadastrados com o mesmo status inicial."
         type="info"
         showIcon
         style={{ marginBottom: 16 }}
@@ -266,6 +269,21 @@ export default function EletricistaLoteForm({
             </Select.Option>
           ))}
         </Select>
+      </Form.Item>
+
+      <Form.Item
+        name="status"
+        label="Status Inicial"
+        tooltip="Status inicial aplicado a todos os eletricistas do lote. Padrão: Ativo (Trabalhando)"
+        initialValue="ATIVO"
+      >
+        <Select
+          placeholder="Selecione o status inicial"
+          options={Object.entries(StatusEletricistaLabels).map(([value, label]) => ({
+            value,
+            label,
+          }))}
+        />
       </Form.Item>
 
       <Card
