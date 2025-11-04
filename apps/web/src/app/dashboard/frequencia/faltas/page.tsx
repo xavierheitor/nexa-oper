@@ -1,10 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, Space, DatePicker, Select, Button, message } from 'antd';
 import { App } from 'antd';
 import { listFaltas } from '@/lib/actions/turno-realizado/listFaltas';
 import { FaltaListResponse, FaltaStatus, FaltaStatusLabels } from '@/lib/schemas/turnoRealizadoSchema';
+import { listTiposJustificativa } from '@/lib/actions/justificativa/listTipos';
+import { criarJustificativa } from '@/lib/actions/justificativa/criarJustificativa';
+import { uploadAnexoJustificativa } from '@/lib/actions/justificativa/uploadAnexo';
 import FaltaTable from '@/ui/components/FaltaTable';
 import JustificarFaltaModal from '@/ui/components/JustificarFaltaModal';
 import useSWR from 'swr';
@@ -31,6 +34,23 @@ export default function FaltasPage() {
 
   const [faltaSelecionada, setFaltaSelecionada] = useState<FaltaListResponse['data'][0] | null>(null);
   const [modalJustificarOpen, setModalJustificarOpen] = useState(false);
+  const [tiposJustificativa, setTiposJustificativa] = useState<Array<{ id: number; nome: string }>>([]);
+  const [loadingJustificar, setLoadingJustificar] = useState(false);
+
+  // Carregar tipos de justificativa
+  useEffect(() => {
+    const loadTipos = async () => {
+      try {
+        const result = await listTiposJustificativa();
+        if (result.success && result.data) {
+          setTiposJustificativa(result.data);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar tipos de justificativa:', error);
+      }
+    };
+    loadTipos();
+  }, []);
 
   // Fetcher para SWR
   const fetcher = async (): Promise<FaltaListResponse> => {
@@ -95,12 +115,54 @@ export default function FaltasPage() {
     faltaId: number;
     tipoJustificativaId: number;
     descricao?: string;
+    anexos?: File[];
   }) => {
-    // TODO: Implementar ação de justificar falta
-    messageApi.success('Justificativa criada com sucesso');
-    setModalJustificarOpen(false);
-    setFaltaSelecionada(null);
-    await mutate();
+    setLoadingJustificar(true);
+    try {
+      // 1. Criar justificativa primeiro
+      const resultJustificativa = await criarJustificativa({
+        faltaId: data.faltaId,
+        tipoId: data.tipoJustificativaId,
+        descricao: data.descricao,
+      });
+
+      if (!resultJustificativa.success || !resultJustificativa.data) {
+        throw new Error(resultJustificativa.error || 'Erro ao criar justificativa');
+      }
+
+      const justificativaId = resultJustificativa.data.id;
+
+      // 2. Fazer upload dos anexos se houver
+      if (data.anexos && data.anexos.length > 0) {
+        const uploadPromises = data.anexos.map((file) =>
+          uploadAnexoJustificativa({
+            justificativaId,
+            file,
+          })
+        );
+
+        const uploadResults = await Promise.allSettled(uploadPromises);
+
+        // Verificar se algum upload falhou
+        const failedUploads = uploadResults.filter((r) => r.status === 'rejected');
+        if (failedUploads.length > 0) {
+          console.error('Alguns anexos falharam no upload:', failedUploads);
+          messageApi.warning(
+            `Justificativa criada, mas ${failedUploads.length} anexo(s) falharam no upload.`
+          );
+        }
+      }
+
+      messageApi.success('Justificativa criada com sucesso!');
+      setModalJustificarOpen(false);
+      setFaltaSelecionada(null);
+      await mutate();
+    } catch (error: any) {
+      console.error('Erro ao justificar falta:', error);
+      messageApi.error(error.message || 'Erro ao criar justificativa');
+    } finally {
+      setLoadingJustificar(false);
+    }
   };
 
   return (
@@ -153,7 +215,8 @@ export default function FaltasPage() {
         }}
         onJustificar={handleJustificarSubmit}
         falta={faltaSelecionada}
-        loading={false}
+        loading={loadingJustificar}
+        tiposJustificativa={tiposJustificativa}
       />
     </div>
   );
