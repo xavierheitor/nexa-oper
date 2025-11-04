@@ -33,7 +33,7 @@ export default function FaltasPage() {
   const [modalJustificarOpen, setModalJustificarOpen] = useState(false);
 
   // Fetcher para SWR
-  const fetcher = async () => {
+  const fetcher = async (): Promise<FaltaListResponse> => {
     const result = await listFaltas({
       ...filtros,
       dataInicio: filtros.dataInicio,
@@ -42,6 +42,10 @@ export default function FaltasPage() {
 
     if (!result.success) {
       throw new Error(result.error || 'Erro ao buscar faltas');
+    }
+
+    if (!result.data) {
+      throw new Error('Dados não retornados');
     }
 
     return result.data;

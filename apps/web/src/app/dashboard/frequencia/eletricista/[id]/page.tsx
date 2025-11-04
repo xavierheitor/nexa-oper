@@ -31,7 +31,7 @@ export default function FrequenciaEletricistaPage() {
   });
 
   // Fetcher para SWR
-  const fetcher = async () => {
+  const fetcher = async (): Promise<ConsolidadoEletricistaResponse> => {
     const result = await getConsolidadoEletricista({
       eletricistaId,
       periodo: periodo.periodo,
@@ -41,6 +41,10 @@ export default function FrequenciaEletricistaPage() {
 
     if (!result.success) {
       throw new Error(result.error || 'Erro ao buscar dados');
+    }
+
+    if (!result.data) {
+      throw new Error('Dados não retornados');
     }
 
     return result.data;

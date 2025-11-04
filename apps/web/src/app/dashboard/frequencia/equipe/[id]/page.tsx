@@ -30,7 +30,7 @@ export default function FrequenciaEquipePage() {
   const [dataFim, setDataFim] = useState<Date>(fimMes);
 
   // Fetcher para SWR
-  const fetcher = async () => {
+  const fetcher = async (): Promise<ConsolidadoEquipeResponse> => {
     const result = await getConsolidadoEquipe({
       equipeId,
       dataInicio: dataInicio.toISOString(),
@@ -39,6 +39,10 @@ export default function FrequenciaEquipePage() {
 
     if (!result.success) {
       throw new Error(result.error || 'Erro ao buscar dados');
+    }
+
+    if (!result.data) {
+      throw new Error('Dados não retornados');
     }
 
     return result.data;

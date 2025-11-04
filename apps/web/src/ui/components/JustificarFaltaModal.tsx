@@ -65,22 +65,24 @@ export default function JustificarFaltaModal({
       open={open}
       onCancel={handleCancel}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
       width={600}
     >
-      {falta && (
-        <div style={{ marginBottom: 16 }}>
-          <p><strong>Data:</strong> {new Date(falta.dataReferencia).toLocaleDateString('pt-BR')}</p>
-          <p><strong>Eletricista:</strong> {falta.eletricista.nome} ({falta.eletricista.matricula})</p>
-          <p><strong>Equipe:</strong> {falta.equipe.nome}</p>
-        </div>
-      )}
+      {open && (
+        <>
+          {falta && (
+            <div style={{ marginBottom: 16 }}>
+              <p><strong>Data:</strong> {new Date(falta.dataReferencia).toLocaleDateString('pt-BR')}</p>
+              <p><strong>Eletricista:</strong> {falta.eletricista.nome} ({falta.eletricista.matricula})</p>
+              <p><strong>Equipe:</strong> {falta.equipe.nome}</p>
+            </div>
+          )}
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-      >
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
+          >
         <Form.Item
           name="tipoJustificativaId"
           label="Tipo de Justificativa"
@@ -116,6 +118,8 @@ export default function JustificarFaltaModal({
           </Space>
         </Form.Item>
       </Form>
+        </>
+      )}
     </Modal>
   );
 }

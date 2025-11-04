@@ -43,7 +43,7 @@ export default function HorasExtrasPage() {
   const [modalAprovacaoOpen, setModalAprovacaoOpen] = useState(false);
 
   // Fetcher para SWR
-  const fetcher = async () => {
+  const fetcher = async (): Promise<HoraExtraListResponse> => {
     const result = await listHorasExtras({
       ...filtros,
       dataInicio: filtros.dataInicio,
@@ -52,6 +52,10 @@ export default function HorasExtrasPage() {
 
     if (!result.success) {
       throw new Error(result.error || 'Erro ao buscar horas extras');
+    }
+
+    if (!result.data) {
+      throw new Error('Dados não retornados');
     }
 
     return result.data;

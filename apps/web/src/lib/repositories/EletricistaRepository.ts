@@ -77,7 +77,7 @@ export class EletricistaRepository extends AbstractCrudRepository<
       });
 
       // Cria o status inicial do eletricista
-      await tx.eletricistaStatus.create({
+      const statusCriado = await tx.eletricistaStatus.create({
         data: {
           eletricistaId: eletricista.id,
           status: statusInicial as StatusEletricista,
@@ -85,16 +85,20 @@ export class EletricistaRepository extends AbstractCrudRepository<
           motivo: 'Status inicial após criação',
           createdBy,
           createdAt: new Date(),
-          Historico: {
-            create: {
-              status: statusInicial as StatusEletricista,
-              dataInicio: new Date(),
-              motivo: 'Status inicial após criação',
-              registradoPor: createdBy,
-              createdBy,
-              createdAt: new Date(),
-            },
-          },
+        },
+      });
+
+      // Cria o registro histórico separadamente
+      await tx.eletricistaStatusHistorico.create({
+        data: {
+          eletricistaId: eletricista.id,
+          status: statusInicial as StatusEletricista,
+          statusAnterior: undefined,
+          dataInicio: new Date(),
+          motivo: 'Status inicial após criação',
+          registradoPor: createdBy,
+          createdBy,
+          createdAt: new Date(),
         },
       });
 

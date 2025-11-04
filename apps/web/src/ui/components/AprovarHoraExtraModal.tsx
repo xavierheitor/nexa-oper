@@ -53,23 +53,25 @@ export default function AprovarHoraExtraModal({
       open={open}
       onCancel={handleCancel}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
       width={600}
     >
-      {horaExtra && (
-        <div style={{ marginBottom: 16 }}>
-          <p><strong>Data:</strong> {new Date(horaExtra.dataReferencia).toLocaleDateString('pt-BR')}</p>
-          <p><strong>Tipo:</strong> {horaExtra.tipo}</p>
-          <p><strong>Horas:</strong> {horaExtra.horasRealizadas.toFixed(1)}h</p>
-        </div>
-      )}
+      {open && (
+        <>
+          {horaExtra && (
+            <div style={{ marginBottom: 16 }}>
+              <p><strong>Data:</strong> {new Date(horaExtra.dataReferencia).toLocaleDateString('pt-BR')}</p>
+              <p><strong>Tipo:</strong> {horaExtra.tipo}</p>
+              <p><strong>Horas:</strong> {horaExtra.horasRealizadas.toFixed(1)}h</p>
+            </div>
+          )}
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        initialValues={{ acao: 'aprovar' }}
-      >
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
+            initialValues={{ acao: 'aprovar' }}
+          >
         <Form.Item
           name="acao"
           label="Ação"
@@ -102,6 +104,8 @@ export default function AprovarHoraExtraModal({
           </Space>
         </Form.Item>
       </Form>
+        </>
+      )}
     </Modal>
   );
 }

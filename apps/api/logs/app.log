@@ -145,3 +145,18 @@
 [2025-11-04T17:23:23.304Z] [LOG] [Bootstrap] 📱 Ambiente: development
 [2025-11-04T17:23:23.304Z] [LOG] [Bootstrap] 🔗 Base URL: http://localhost:3001/api
 [2025-11-04T17:23:23.304Z] [LOG] [Bootstrap] 📚 Docs: http://localhost:3001/api/docs
+[2025-11-04T17:52:50.974Z] [LOG] [Bootstrap] 🔄 Recebido sinal SIGINT. Iniciando graceful shutdown...
+[2025-11-04T20:06:17.129Z] [LOG] [Bootstrap] 🚀 Iniciando aplicação Nexa Oper API...
+[2025-11-04T20:06:17.351Z] [LOG] [Bootstrap] ✅ Porta 3001 livre
+[2025-11-04T20:06:17.623Z] [LOG] [Bootstrap] ✅ Parsing JSON/URL configurado: limite de 2MB
+[2025-11-04T20:06:17.624Z] [WARN] [Bootstrap] ⚠️ CORS PERMISSIVO (todas as origens). Use CORS_ORIGINS em produção.
+[2025-11-04T20:06:17.625Z] [LOG] [Bootstrap] ✅ Timeout de requisições configurado para 1 minuto
+[2025-11-04T20:06:17.626Z] [LOG] [Bootstrap] ✅ Validação global de DTOs configurada
+[2025-11-04T20:06:17.627Z] [LOG] [Bootstrap] ✅ Filtro global de exceções configurado
+[2025-11-04T20:06:17.880Z] [LOG] [Bootstrap] ✅ Documentação Swagger disponível em /api/docs
+[2025-11-04T20:06:17.990Z] [LOG] [Bootstrap] ✅ Prefixo global "api" configurado
+[2025-11-04T20:06:27.266Z] [LOG] [Bootstrap] 🎉 API Nexa Oper iniciada com sucesso!
+[2025-11-04T20:06:27.267Z] [LOG] [Bootstrap] 🌐 Porta: 3001
+[2025-11-04T20:06:27.267Z] [LOG] [Bootstrap] 📱 Ambiente: development
+[2025-11-04T20:06:27.267Z] [LOG] [Bootstrap] 🔗 Base URL: http://localhost:3001/api
+[2025-11-04T20:06:27.267Z] [LOG] [Bootstrap] 📚 Docs: http://localhost:3001/api/docs
