@@ -130,6 +130,25 @@ async function bootstrap(): Promise<void> {
     // Expor contexto global para resoluções excepcionais (ex.: decorators)
     (global as any).NEST_APP = app;
 
+    const expressApp = app.getHttpAdapter().getInstance();
+
+    // rota crua, não passa por pipes/guards/filtros do Nest
+    expressApp.get('/__ping', (_req: Request, res: Response) =>
+      res.status(200).send('ok')
+    );
+
+    // logger simples por request pra ver se chega
+    expressApp.use((req: Request, res: Response, next: NextFunction) => {
+      const t0 = Date.now();
+      console.log(`[REQ] ${req.method} ${req.url}`);
+      res.on('finish', () => {
+        console.log(
+          `[RES] ${req.method} ${req.url} -> ${res.statusCode} (${Date.now() - t0}ms)`
+        );
+      });
+      next();
+    });
+
     // Segurança: headers seguros com Helmet
     app.use(
       helmet({
