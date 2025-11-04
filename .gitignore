@@ -7,9 +7,12 @@ dist/
 build/
 .next/
 out/
+**/dist/
+**/build/
 
 # Generated Prisma files
 packages/db/prisma/generated/
+**/generated/
 
 # Environment variables
 .env
@@ -18,7 +21,10 @@ packages/db/prisma/generated/
 .env.test.local
 .env.production.local
 
-# Logs
+# Logs (todos os arquivos .log e pastas logs/)
+**/logs/
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -85,4 +91,8 @@ Thumbs.db
 tmp/
 temp/
 
+# Uploads (arquivos de usuário, não devem ser versionados)
+uploads/
+**/uploads/
 apps/api/uploads
+apps/web/uploads
