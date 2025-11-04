@@ -12,6 +12,9 @@ import { listBases } from '@/lib/actions/base/list';
 // Tipos do Prisma
 import { Base, Cargo, Contrato, Eletricista } from '@nexa-oper/db';
 
+// Schemas e utils de status
+import { StatusEletricistaLabels, StatusEletricistaColors, StatusEletricista } from '@/lib/schemas/eletricistaStatusSchema';
+
 // Importações do hook e utilitários da aplicação
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
@@ -19,19 +22,24 @@ import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 import { App, Button, Card, Input, Modal, Space, Table, Tag } from 'antd';
-import { SwapOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { SwapOutlined, PlusOutlined, SearchOutlined, EditOutlined } from '@ant-design/icons';
 import { createEletricista } from '../../../../lib/actions/eletricista/create';
 import { deleteEletricista } from '../../../../lib/actions/eletricista/delete';
 import { transferEletricistaBase } from '../../../../lib/actions/eletricista/transferBase';
+import { registrarStatusEletricista } from '../../../../lib/actions/eletricista/registrarStatus';
 import { updateEletricista } from '../../../../lib/actions/eletricista/update';
 import { ActionResult } from '../../../../lib/types/common';
 import TransferBaseModal from '../../../../ui/components/TransferBaseModal';
+import AlterarStatusModal from '../../../../ui/components/AlterarStatusModal';
 import { getTextFilter } from '../../../../ui/components/tableFilters';
 import TableExternalFilters from '../../../../ui/components/TableExternalFilters';
 import EletricistaForm, { EletricistaFormData } from './form';
 import EletricistaLoteForm from './lote-form';
 
-type EletricistaWithBase = Eletricista & { baseAtual?: Base | null };
+type EletricistaWithBase = Eletricista & {
+  baseAtual?: Base | null;
+  Status?: { status: StatusEletricista } | null;
+};
 
 export default function EletricistaPage() {
   // Hook para controlar operações CRUD (modal, loading, execução de ações)
@@ -47,6 +55,10 @@ export default function EletricistaPage() {
   const [isLoteModalOpen, setIsLoteModalOpen] = useState(false);
   // Estado para controlar o loading do cadastro em lote
   const [isLoteLoading, setIsLoteLoading] = useState(false);
+  // Estado para controlar o modal de alteração de status
+  const [statusTarget, setStatusTarget] = useState<EletricistaWithBase | null>(null);
+  // Estado para controlar o loading da alteração de status
+  const [isStatusLoading, setIsStatusLoading] = useState(false);
 
 
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
@@ -62,6 +74,7 @@ export default function EletricistaPage() {
       include: {
         contrato: true, // Inclui dados do contrato
         cargo: true, // Inclui dados do cargo
+        Status: true, // Inclui status atual do eletricista
       },
     },
   });
@@ -181,6 +194,33 @@ export default function EletricistaPage() {
         },
         width: 120,
       },
+      // Coluna Status
+      {
+        title: 'Status',
+        key: 'status',
+        width: 150,
+        sorter: (a: EletricistaWithBase, b: EletricistaWithBase) => {
+          const statusA = a.Status?.status || 'ATIVO';
+          const statusB = b.Status?.status || 'ATIVO';
+          return statusA.localeCompare(statusB);
+        },
+        render: (_: unknown, record: EletricistaWithBase) => {
+          const status = record.Status?.status || 'ATIVO';
+          return (
+            <Tag color={StatusEletricistaColors[status]}>
+              {StatusEletricistaLabels[status]}
+            </Tag>
+          );
+        },
+        filters: Object.entries(StatusEletricistaLabels).map(([value, label]) => ({
+          text: label,
+          value,
+        })),
+        onFilter: (value, record: EletricistaWithBase) => {
+          const status = record.Status?.status || 'ATIVO';
+          return status === value;
+        },
+      },
     ],
     {
       onEdit: controller.open,
@@ -196,6 +236,16 @@ export default function EletricistaPage() {
 
       // Ações customizadas
       customActions: [
+        {
+          key: 'alterar-status',
+          label: '',
+          type: 'link',
+          icon: <EditOutlined />,
+          tooltip: 'Alterar status do eletricista',
+          onClick: (record) => {
+            setStatusTarget(record);
+          },
+        },
         {
           key: 'transfer-base',
           label: '',
@@ -265,6 +315,53 @@ export default function EletricistaPage() {
       return;
     }
     setTransferTarget(null);
+  };
+
+  const closeStatusModal = () => {
+    if (isStatusLoading) {
+      return;
+    }
+    setStatusTarget(null);
+  };
+
+  const handleAlterarStatus = async (data: {
+    status: StatusEletricista;
+    dataInicio: Date;
+    dataFim?: Date;
+    motivo?: string;
+    observacoes?: string;
+  }) => {
+    if (!statusTarget) {
+      return;
+    }
+
+    setIsStatusLoading(true);
+
+    try {
+      const result = await registrarStatusEletricista({
+        eletricistaId: statusTarget.id,
+        status: data.status,
+        dataInicio: data.dataInicio,
+        dataFim: data.dataFim,
+        motivo: data.motivo,
+        observacoes: data.observacoes,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Não foi possível alterar o status.');
+      }
+
+      message.success('Status do eletricista alterado com sucesso!');
+      setStatusTarget(null);
+      eletricistas.mutate();
+    } catch (error) {
+      const normalizedError =
+        error instanceof Error ? error : new Error('Erro ao alterar status do eletricista.');
+      message.error(normalizedError.message);
+      throw error;
+    } finally {
+      setIsStatusLoading(false);
+    }
   };
 
   const handleTransferBase = async ({ novaBaseId, motivo }: { novaBaseId: number; motivo?: string }) => {
@@ -368,6 +465,17 @@ export default function EletricistaPage() {
                 eletricistas.setParams(prev => ({ ...prev, cargoId, page: 1 })),
               loading: cargos.isLoading,
             },
+            {
+              label: 'Status',
+              placeholder: 'Filtrar por status',
+              options: Object.entries(StatusEletricistaLabels).map(([value, label]) => ({
+                label,
+                value,
+              })),
+              onChange: (status) =>
+                eletricistas.setParams(prev => ({ ...prev, status, page: 1 })),
+              loading: false,
+            },
           ]}
         />
 
@@ -433,6 +541,15 @@ export default function EletricistaPage() {
         onTransfer={handleTransferBase}
         title={transferTarget ? `Transferir ${transferTarget.nome}` : 'Transferir Base'}
         loading={isTransferLoading}
+      />
+
+      <AlterarStatusModal
+        open={!!statusTarget}
+        onClose={closeStatusModal}
+        onAlterarStatus={handleAlterarStatus}
+        eletricista={statusTarget || undefined}
+        statusAtual={statusTarget?.Status?.status}
+        loading={isStatusLoading}
       />
 
     </>

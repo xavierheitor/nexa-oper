@@ -19,7 +19,7 @@
  * const eletricista = await repository.findById(1);
  */
 
-import { Eletricista } from '@nexa-oper/db';
+import { Eletricista, StatusEletricista } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../abstracts/AbstractCrudRepository';
 import { prisma } from '../db/db.service';
 import { EletricistaCreate, EletricistaUpdate } from '../schemas/eletricistaSchema';
@@ -30,6 +30,7 @@ interface EletricistaFilter extends PaginationParams {
   cargoId?: number;
   baseId?: number;
   estado?: string;
+  status?: string; // Status do eletricista (StatusEletricista enum)
 }
 
 export class EletricistaRepository extends AbstractCrudRepository<
@@ -48,9 +49,10 @@ export class EletricistaRepository extends AbstractCrudRepository<
     userId?: string,
     baseIdInput?: number
   ): Promise<Eletricista> {
-    const { baseId: dataBaseId, ...eletricistaData } =
+    const { baseId: dataBaseId, status, ...eletricistaData } =
       data as EletricistaCreate & {
         baseId?: number;
+        status?: string;
       };
 
     const rawBaseId = baseIdInput ?? dataBaseId;
@@ -61,6 +63,7 @@ export class EletricistaRepository extends AbstractCrudRepository<
 
     const createdBy = (eletricistaData as any).createdBy || userId || '';
     const createdAt = (eletricistaData as any).createdAt || new Date();
+    const statusInicial = status || 'ATIVO';
 
     return prisma.$transaction(async tx => {
       const eletricista = await tx.eletricista.create({
@@ -70,6 +73,28 @@ export class EletricistaRepository extends AbstractCrudRepository<
           cargoId: data.cargoId,
           createdBy,
           createdAt,
+        },
+      });
+
+      // Cria o status inicial do eletricista
+      await tx.eletricistaStatus.create({
+        data: {
+          eletricistaId: eletricista.id,
+          status: statusInicial as StatusEletricista,
+          dataInicio: new Date(),
+          motivo: 'Status inicial após criação',
+          createdBy,
+          createdAt: new Date(),
+          Historico: {
+            create: {
+              status: statusInicial as StatusEletricista,
+              dataInicio: new Date(),
+              motivo: 'Status inicial após criação',
+              registradoPor: createdBy,
+              createdBy,
+              createdAt: new Date(),
+            },
+          },
         },
       });
 
@@ -299,6 +324,7 @@ export class EletricistaRepository extends AbstractCrudRepository<
       baseId,
       estado,
       contratoId,
+      status,
       include,
     } = params;
 
@@ -317,8 +343,12 @@ export class EletricistaRepository extends AbstractCrudRepository<
       }),
     };
 
+    // Coletar IDs de filtros especiais para fazer interseção
+    let idsFiltrados: number[] | null = null;
+
     // Filtro de base é especial (relacionamento com histórico)
     if (baseId) {
+      let idsBase: number[];
       // Se baseId = -1, filtra "sem lotação"
       if (baseId === -1) {
         const eletricistasComBase =
@@ -327,7 +357,13 @@ export class EletricistaRepository extends AbstractCrudRepository<
             select: { eletricistaId: true },
           });
         const idsComBase = eletricistasComBase.map(h => h.eletricistaId);
-        where.id = { notIn: idsComBase };
+        // Buscar todos os eletricistas e remover os que têm base
+        const todosEletricistas = await prisma.eletricista.findMany({
+          where: { deletedAt: null },
+          select: { id: true },
+        });
+        const todosIds = todosEletricistas.map(e => e.id);
+        idsBase = todosIds.filter(id => !idsComBase.includes(id));
       } else {
         // Filtrar por base específica
         const eletricistasNaBase =
@@ -339,9 +375,48 @@ export class EletricistaRepository extends AbstractCrudRepository<
             },
             select: { eletricistaId: true },
           });
-        const idsNaBase = eletricistasNaBase.map(h => h.eletricistaId);
-        where.id = { in: idsNaBase };
+        idsBase = eletricistasNaBase.map(h => h.eletricistaId);
       }
+      idsFiltrados = idsBase;
+    }
+
+    // Filtro de status é especial (relacionamento com EletricistaStatus)
+    if (status) {
+      // Buscar eletricistas com o status especificado
+      const eletricistasComStatus = await prisma.eletricistaStatus.findMany({
+        where: {
+          status: status as any,
+        },
+        select: { eletricistaId: true },
+      });
+      let idsStatus = eletricistasComStatus.map(s => s.eletricistaId);
+
+      if (status === 'ATIVO') {
+        // Para ATIVO, incluir também eletricistas sem registro de status
+        const todosEletricistas = await prisma.eletricista.findMany({
+          where: { deletedAt: null },
+          select: { id: true },
+        });
+        const todosIds = todosEletricistas.map(e => e.id);
+        const idsSemStatus = todosIds.filter(id => !idsStatus.includes(id));
+        idsStatus = [...idsStatus, ...idsSemStatus];
+      }
+
+      // Fazer interseção se já houver outros filtros
+      if (idsFiltrados !== null) {
+        idsFiltrados = idsFiltrados.filter(id => idsStatus.includes(id));
+      } else {
+        idsFiltrados = idsStatus;
+      }
+    }
+
+    // Aplicar filtros de IDs se houver
+    if (idsFiltrados !== null) {
+      if (idsFiltrados.length === 0) {
+        // Se não há IDs que atendem aos filtros, retornar vazio
+        return { items: [], total: 0 };
+      }
+      where.id = { in: idsFiltrados };
     }
 
     const [total, items] = await Promise.all([

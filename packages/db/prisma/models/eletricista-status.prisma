@@ -1,0 +1,104 @@
+/**
+ * Sistema de Status de Eletricistas
+ *
+ * Rastreia o status atual e histórico de eletricistas (funcionários),
+ * permitindo saber se estão trabalhando, afastados, de férias, etc.
+ */
+
+enum StatusEletricista {
+  ATIVO              // Trabalhando normalmente
+  FERIAS             // Em período de férias
+  LICENCA_MEDICA     // Licença médica
+  LICENCA_MATERNIDADE // Licença maternidade
+  LICENCA_PATERNIDADE // Licença paternidade
+  SUSPENSAO          // Suspensão disciplinar
+  TREINAMENTO        // Em treinamento/capacitação
+  AFastADO           // Afastado por outros motivos
+  DESLIGADO          // Desligado da empresa
+  APOSENTADO         // Aposentado
+}
+
+/**
+ * Status atual do eletricista (tabela otimizada para consulta rápida)
+ *
+ * Mantém apenas o status atual para performance.
+ * Histórico completo fica em EletricistaStatusHistorico.
+ */
+model EletricistaStatus {
+  id              Int               @id @default(autoincrement())
+  eletricistaId   Int               @unique
+  eletricista     Eletricista       @relation(fields: [eletricistaId], references: [id], onDelete: Cascade)
+
+  status          StatusEletricista @default(ATIVO)
+
+  // Período do status atual (se aplicável)
+  dataInicio      DateTime          @default(now())
+  dataFim          DateTime?        // null = status atual indefinido
+
+  // Motivo e detalhes
+  motivo          String?           @db.VarChar(500)
+  observacoes     String?           @db.VarChar(1000)
+
+  // Documentos/atestados relacionados (opcional)
+  documentoPath   String?           @db.VarChar(1000)
+
+  // Auditoria
+  createdAt       DateTime          @default(now())
+  createdBy       String            @db.VarChar(255)
+  updatedAt       DateTime?         @updatedAt
+  updatedBy       String?           @db.VarChar(255)
+
+  // Relacionamento com histórico
+  Historico       EletricistaStatusHistorico[]
+
+  @@index([status])
+  @@index([dataInicio])
+  @@index([eletricistaId, status])
+  @@index([eletricistaId])
+}
+
+/**
+ * Histórico completo de mudanças de status do eletricista
+ *
+ * Registra todas as mudanças de status ao longo do tempo,
+ * permitindo auditoria e relatórios históricos.
+ */
+model EletricistaStatusHistorico {
+  id              Int               @id @default(autoincrement())
+  eletricistaId   Int
+  eletricista     Eletricista       @relation(fields: [eletricistaId], references: [id], onDelete: Cascade)
+
+  status          StatusEletricista
+  statusAnterior  StatusEletricista? // Para rastrear transições
+
+  // Período do status
+  dataInicio      DateTime
+  dataFim          DateTime?         // null = ainda ativo neste status
+
+  // Motivo e detalhes
+  motivo          String?           @db.VarChar(500)
+  observacoes     String?           @db.VarChar(1000)
+
+  // Documentos relacionados
+  documentoPath   String?           @db.VarChar(1000)
+
+  // Quem registrou e quando
+  registradoPor   String            @db.VarChar(255)
+  registradoEm    DateTime          @default(now())
+
+  // Auditoria
+  createdAt       DateTime          @default(now())
+  createdBy       String            @db.VarChar(255)
+  updatedAt       DateTime?         @updatedAt
+  updatedBy       String?           @db.VarChar(255)
+
+  @@index([eletricistaId])
+  @@index([status])
+  @@index([dataInicio])
+  @@index([dataFim])
+  @@index([eletricistaId, dataInicio])
+  @@index([eletricistaId, status])
+  @@index([eletricistaId, dataInicio, dataFim])
+  EletricistaStatus EletricistaStatus[]
+}
+

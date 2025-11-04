@@ -32,6 +32,10 @@ model Eletricista {
   Falta Falta[]
 
   DivergenciaEscala DivergenciaEscala[]
+
+  // Status do eletricista
+  Status          EletricistaStatus?
+  StatusHistorico EletricistaStatusHistorico[]
 }
 
 
