@@ -1,8 +1,8 @@
 model User {
   id       Int    @id @default(autoincrement())
   nome     String @db.VarChar(255)
-  email    String @db.VarChar(255) @unique
-  username String @db.VarChar(255) @unique
+  email    String @unique @db.VarChar(255)
+  username String @unique @db.VarChar(255)
   password String @db.VarChar(255)
 
   createdAt DateTime  @default(now())
@@ -12,12 +12,12 @@ model User {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  Session Session[]
-  Account Account[]
+  Session  Session[]
+  Account  Account[]
+  RoleUser RoleUser[]
 
   @@index([username])
   @@index([email])
-  RoleUser RoleUser[]
 }
 
 model Account {
@@ -34,7 +34,7 @@ model Account {
   session_state     String?
 
   userId Int
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -47,7 +47,7 @@ model Session {
   expires      DateTime
 
   userId Int
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("sessoes")
@@ -62,15 +62,14 @@ model VerificationToken {
   @@map("tokens_verificacao")
 }
 
-
 model Role {
-  id Int @id @default(autoincrement())
+  id   Int    @id @default(autoincrement())
   nome String @db.VarChar(255)
 
-  createdAt DateTime @default(now())
-  createdBy String @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
   updatedAt DateTime? @updatedAt
-  updatedBy String? @db.VarChar(255)
+  updatedBy String?   @db.VarChar(255)
 
   RoleUser RoleUser[]
 }
@@ -79,8 +78,8 @@ model RoleUser {
   id Int @id @default(autoincrement())
 
   userId Int
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   roleId Int
-  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 }

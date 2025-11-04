@@ -9,7 +9,7 @@ model TipoVeiculo {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  Veiculo Veiculo[]
+  Veiculo                     Veiculo[]
   ChecklistTipoVeiculoRelacao ChecklistTipoVeiculoRelacao[]
 }
 
@@ -32,7 +32,7 @@ model Veiculo {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  VeiculoOdometro VeiculoOdometro[]
+  VeiculoOdometro      VeiculoOdometro[]
   VeiculoBaseHistorico VeiculoBaseHistorico[]
 
   Turno Turno[]

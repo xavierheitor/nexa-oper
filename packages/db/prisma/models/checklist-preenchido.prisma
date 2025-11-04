@@ -1,6 +1,5 @@
 /**
  * Modelos para checklists preenchidos e sistema de pendências
- *
  * Este arquivo define os modelos para armazenar checklists preenchidos
  * pelos eletricistas durante a abertura de turnos, incluindo respostas,
  * pendências automáticas e sincronização de fotos.
@@ -39,7 +38,7 @@ model ChecklistPreenchido {
   deletedBy String?   @db.VarChar(255)
 
   // Relacionamentos
-  ChecklistResposta ChecklistResposta[]
+  ChecklistResposta  ChecklistResposta[]
   ChecklistPendencia ChecklistPendencia[]
 
   @@map("ChecklistPreenchidos")
@@ -77,8 +76,8 @@ model ChecklistResposta {
   deletedBy String?   @db.VarChar(255)
 
   // Relacionamentos
-  ChecklistPendencia     ChecklistPendencia?
-  ChecklistRespostaFoto  ChecklistRespostaFoto[]
+  ChecklistPendencia    ChecklistPendencia?
+  ChecklistRespostaFoto ChecklistRespostaFoto[]
 
   @@map("ChecklistRespostas")
 }
@@ -90,7 +89,7 @@ model ChecklistPendencia {
   id Int @id @default(autoincrement())
 
   // Relacionamentos
-  checklistRespostaId Int @unique
+  checklistRespostaId Int               @unique
   checklistResposta   ChecklistResposta @relation(fields: [checklistRespostaId], references: [id], onDelete: Cascade)
 
   checklistPreenchidoId Int
@@ -103,11 +102,11 @@ model ChecklistPendencia {
   status StatusPendencia @default(AGUARDANDO_TRATAMENTO)
 
   // Observações
-  observacaoProblema    String?
-  observacaoTratamento  String?
+  observacaoProblema   String?
+  observacaoTratamento String?
 
   // Tratamento
-  tratadoPor String?  @db.VarChar(255)
+  tratadoPor String?   @db.VarChar(255)
   tratadoEm  DateTime?
 
   // Campos de auditoria

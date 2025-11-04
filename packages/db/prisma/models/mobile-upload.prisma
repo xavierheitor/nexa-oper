@@ -6,14 +6,14 @@ model MobilePhoto {
 
   checklistPreenchidoId Int?
   checklistUuid         String? @db.VarChar(36) // UUID do checklist preenchido
-  checklistPerguntaId    Int?    // ID remoto da pergunta (enviado como checklistPerguntaId pelo app)
+  checklistPerguntaId   Int? // ID remoto da pergunta (enviado como checklistPerguntaId pelo app)
   sequenciaAssinatura   Int?
   servicoId             Int?
 
   fileName    String @db.VarChar(255)
   mimeType    String @db.VarChar(100)
   fileSize    Int
-  checksum    String @db.VarChar(128) @unique
+  checksum    String @unique @db.VarChar(128)
   storagePath String @db.VarChar(1024)
   url         String @db.VarChar(1024)
 
@@ -37,9 +37,9 @@ model MobileLocation {
   veiculoRemoteId Int?
   equipeRemoteId  Int?
 
-  latitude Float
+  latitude  Float
   longitude Float
-  accuracy Float?
+  accuracy  Float?
 
   provider     String? @db.VarChar(100)
   batteryLevel Int?
@@ -47,7 +47,7 @@ model MobileLocation {
   tagDetail    String? @db.VarChar(255)
 
   capturedAt DateTime @default(now())
-  signature  String   @db.VarChar(128) @unique
+  signature  String   @unique @db.VarChar(128)
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)

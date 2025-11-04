@@ -28,11 +28,11 @@ model Checklist {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  ChecklistPerguntaRelacao ChecklistPerguntaRelacao[]
+  ChecklistPerguntaRelacao      ChecklistPerguntaRelacao[]
   ChecklistOpcaoRespostaRelacao ChecklistOpcaoRespostaRelacao[]
-  ChecklistTipoVeiculoRelacao ChecklistTipoVeiculoRelacao[]
-  ChecklistTipoEquipeRelacao ChecklistTipoEquipeRelacao[]
-  ChecklistPreenchidos ChecklistPreenchido[]
+  ChecklistTipoVeiculoRelacao   ChecklistTipoVeiculoRelacao[]
+  ChecklistTipoEquipeRelacao    ChecklistTipoEquipeRelacao[]
+  ChecklistPreenchidos          ChecklistPreenchido[]
 }
 
 model ChecklistPergunta {
@@ -47,7 +47,7 @@ model ChecklistPergunta {
   deletedBy String?   @db.VarChar(255)
 
   ChecklistPerguntaRelacao ChecklistPerguntaRelacao[]
-  ChecklistRespostas ChecklistResposta[]
+  ChecklistRespostas       ChecklistResposta[]
 }
 
 model ChecklistPerguntaRelacao {
@@ -74,7 +74,7 @@ model ChecklistOpcaoResposta {
   geraPendencia Boolean @default(false)
 
   checklistOpcaoRespostaRelacao ChecklistOpcaoRespostaRelacao[]
-  ChecklistRespostas ChecklistResposta[]
+  ChecklistRespostas            ChecklistResposta[]
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -101,7 +101,7 @@ model ChecklistOpcaoRespostaRelacao {
   deletedBy String?   @db.VarChar(255)
 }
 
-model ChecklistTipoVeiculoRelacao{
+model ChecklistTipoVeiculoRelacao {
   id Int @id @default(autoincrement())
 
   checklistId Int
@@ -121,7 +121,7 @@ model ChecklistTipoVeiculoRelacao{
   @@unique([tipoVeiculoId, deletedAt], map: "unique_active_checklist_tipo_veiculo")
 }
 
-model ChecklistTipoEquipeRelacao{
+model ChecklistTipoEquipeRelacao {
   id Int @id @default(autoincrement())
 
   checklistId Int

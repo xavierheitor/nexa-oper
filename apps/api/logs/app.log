@@ -83,3 +83,65 @@
 [2025-11-04T14:25:26.589Z] [LOG] [Bootstrap] 🔗 Base URL: http://localhost:3001/api
 [2025-11-04T14:25:26.589Z] [LOG] [Bootstrap] 📚 Docs: http://localhost:3001/api/docs
 [2025-11-04T14:34:49.372Z] [LOG] [Bootstrap] 🔄 Recebido sinal SIGINT. Iniciando graceful shutdown...
+[2025-11-04T17:22:54.437Z] [LOG] [Bootstrap] 🚀 Iniciando aplicação Nexa Oper API...
+[2025-11-04T17:22:54.476Z] [LOG] [Bootstrap] ✅ Porta 3001 livre
+[2025-11-04T17:22:55.213Z] [LOG] [Bootstrap] ✅ Parsing JSON/URL configurado: limite de 2MB
+[2025-11-04T17:22:55.213Z] [WARN] [Bootstrap] ⚠️ CORS PERMISSIVO (todas as origens). Use CORS_ORIGINS em produção.
+[2025-11-04T17:22:55.214Z] [LOG] [Bootstrap] ✅ Timeout de requisições configurado para 1 minuto
+[2025-11-04T17:22:55.214Z] [LOG] [Bootstrap] ✅ Validação global de DTOs configurada
+[2025-11-04T17:22:55.214Z] [LOG] [Bootstrap] ✅ Filtro global de exceções configurado
+[2025-11-04T17:22:55.249Z] [LOG] [Bootstrap] ✅ Documentação Swagger disponível em /api/docs
+[2025-11-04T17:22:55.249Z] [LOG] [Bootstrap] ✅ Prefixo global "api" configurado
+[2025-11-04T17:22:55.623Z] [LOG] [Bootstrap] 🎉 API Nexa Oper iniciada com sucesso!
+[2025-11-04T17:22:55.623Z] [LOG] [Bootstrap] 🌐 Porta: 3001
+[2025-11-04T17:22:55.623Z] [LOG] [Bootstrap] 📱 Ambiente: development
+[2025-11-04T17:22:55.624Z] [LOG] [Bootstrap] 🔗 Base URL: http://localhost:3001/api
+[2025-11-04T17:22:55.624Z] [LOG] [Bootstrap] 📚 Docs: http://localhost:3001/api/docs
+[2025-11-04T17:23:03.677Z] [LOG] [Bootstrap] 🔄 Recebido sinal SIGTERM. Iniciando graceful shutdown...
+[2025-11-04T17:23:03.690Z] [LOG] [Bootstrap] ✅ Aplicação finalizada com sucesso
+[2025-11-04T17:23:04.567Z] [LOG] [Bootstrap] 🚀 Iniciando aplicação Nexa Oper API...
+[2025-11-04T17:23:04.600Z] [LOG] [Bootstrap] ✅ Porta 3001 livre
+[2025-11-04T17:23:04.653Z] [LOG] [Bootstrap] ✅ Parsing JSON/URL configurado: limite de 2MB
+[2025-11-04T17:23:04.654Z] [WARN] [Bootstrap] ⚠️ CORS PERMISSIVO (todas as origens). Use CORS_ORIGINS em produção.
+[2025-11-04T17:23:04.654Z] [LOG] [Bootstrap] ✅ Timeout de requisições configurado para 1 minuto
+[2025-11-04T17:23:04.654Z] [LOG] [Bootstrap] ✅ Validação global de DTOs configurada
+[2025-11-04T17:23:04.654Z] [LOG] [Bootstrap] ✅ Filtro global de exceções configurado
+[2025-11-04T17:23:04.693Z] [LOG] [Bootstrap] ✅ Documentação Swagger disponível em /api/docs
+[2025-11-04T17:23:04.694Z] [LOG] [Bootstrap] ✅ Prefixo global "api" configurado
+[2025-11-04T17:23:04.907Z] [LOG] [Bootstrap] 🎉 API Nexa Oper iniciada com sucesso!
+[2025-11-04T17:23:04.908Z] [LOG] [Bootstrap] 🌐 Porta: 3001
+[2025-11-04T17:23:04.908Z] [LOG] [Bootstrap] 📱 Ambiente: development
+[2025-11-04T17:23:04.908Z] [LOG] [Bootstrap] 🔗 Base URL: http://localhost:3001/api
+[2025-11-04T17:23:04.908Z] [LOG] [Bootstrap] 📚 Docs: http://localhost:3001/api/docs
+[2025-11-04T17:23:17.677Z] [LOG] [Bootstrap] 🔄 Recebido sinal SIGTERM. Iniciando graceful shutdown...
+[2025-11-04T17:23:17.699Z] [LOG] [Bootstrap] ✅ Aplicação finalizada com sucesso
+[2025-11-04T17:23:18.585Z] [LOG] [Bootstrap] 🚀 Iniciando aplicação Nexa Oper API...
+[2025-11-04T17:23:18.612Z] [LOG] [Bootstrap] ✅ Porta 3001 livre
+[2025-11-04T17:23:18.637Z] [LOG] [Bootstrap] ✅ Parsing JSON/URL configurado: limite de 2MB
+[2025-11-04T17:23:18.638Z] [WARN] [Bootstrap] ⚠️ CORS PERMISSIVO (todas as origens). Use CORS_ORIGINS em produção.
+[2025-11-04T17:23:18.638Z] [LOG] [Bootstrap] ✅ Timeout de requisições configurado para 1 minuto
+[2025-11-04T17:23:18.638Z] [LOG] [Bootstrap] ✅ Validação global de DTOs configurada
+[2025-11-04T17:23:18.638Z] [LOG] [Bootstrap] ✅ Filtro global de exceções configurado
+[2025-11-04T17:23:18.668Z] [LOG] [Bootstrap] ✅ Documentação Swagger disponível em /api/docs
+[2025-11-04T17:23:18.669Z] [LOG] [Bootstrap] ✅ Prefixo global "api" configurado
+[2025-11-04T17:23:18.830Z] [LOG] [Bootstrap] 🎉 API Nexa Oper iniciada com sucesso!
+[2025-11-04T17:23:18.830Z] [LOG] [Bootstrap] 🌐 Porta: 3001
+[2025-11-04T17:23:18.831Z] [LOG] [Bootstrap] 📱 Ambiente: development
+[2025-11-04T17:23:18.831Z] [LOG] [Bootstrap] 🔗 Base URL: http://localhost:3001/api
+[2025-11-04T17:23:18.831Z] [LOG] [Bootstrap] 📚 Docs: http://localhost:3001/api/docs
+[2025-11-04T17:23:22.416Z] [LOG] [Bootstrap] 🔄 Recebido sinal SIGTERM. Iniciando graceful shutdown...
+[2025-11-04T17:23:22.429Z] [LOG] [Bootstrap] ✅ Aplicação finalizada com sucesso
+[2025-11-04T17:23:23.005Z] [LOG] [Bootstrap] 🚀 Iniciando aplicação Nexa Oper API...
+[2025-11-04T17:23:23.035Z] [LOG] [Bootstrap] ✅ Porta 3001 livre
+[2025-11-04T17:23:23.061Z] [LOG] [Bootstrap] ✅ Parsing JSON/URL configurado: limite de 2MB
+[2025-11-04T17:23:23.061Z] [WARN] [Bootstrap] ⚠️ CORS PERMISSIVO (todas as origens). Use CORS_ORIGINS em produção.
+[2025-11-04T17:23:23.061Z] [LOG] [Bootstrap] ✅ Timeout de requisições configurado para 1 minuto
+[2025-11-04T17:23:23.062Z] [LOG] [Bootstrap] ✅ Validação global de DTOs configurada
+[2025-11-04T17:23:23.062Z] [LOG] [Bootstrap] ✅ Filtro global de exceções configurado
+[2025-11-04T17:23:23.096Z] [LOG] [Bootstrap] ✅ Documentação Swagger disponível em /api/docs
+[2025-11-04T17:23:23.097Z] [LOG] [Bootstrap] ✅ Prefixo global "api" configurado
+[2025-11-04T17:23:23.304Z] [LOG] [Bootstrap] 🎉 API Nexa Oper iniciada com sucesso!
+[2025-11-04T17:23:23.304Z] [LOG] [Bootstrap] 🌐 Porta: 3001
+[2025-11-04T17:23:23.304Z] [LOG] [Bootstrap] 📱 Ambiente: development
+[2025-11-04T17:23:23.304Z] [LOG] [Bootstrap] 🔗 Base URL: http://localhost:3001/api
+[2025-11-04T17:23:23.304Z] [LOG] [Bootstrap] 📚 Docs: http://localhost:3001/api/docs
