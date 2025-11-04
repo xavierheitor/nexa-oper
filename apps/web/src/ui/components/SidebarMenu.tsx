@@ -51,6 +51,7 @@ import {
   ClockCircleOutlined,
   DashboardOutlined,
   FileProtectOutlined,
+  FileTextOutlined,
   FormOutlined,
   LogoutOutlined,
   TeamOutlined,
@@ -154,6 +155,12 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       // Submenus de Turnos
       '/dashboard/turnos': 'turnos-menu',
       '/dashboard/historico': 'turnos-menu',
+
+      // Submenus de Frequência
+      '/dashboard/frequencia/eletricista': 'frequencia-menu',
+      '/dashboard/frequencia/equipe': 'frequencia-menu',
+      '/dashboard/frequencia/faltas': 'frequencia-menu',
+      '/dashboard/frequencia/horas-extras': 'frequencia-menu',
 
       // Escalas
       '/dashboard/cadastro/escala': 'cadastro',
@@ -377,6 +384,21 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
         {
           key: '/dashboard/historico',
           label: <Link href='/dashboard/historico'>Histórico</Link>,
+        },
+      ],
+    },
+    {
+      key: 'frequencia-menu',
+      icon: <FileTextOutlined />,
+      label: 'Frequência',
+      children: [
+        {
+          key: '/dashboard/frequencia/faltas',
+          label: <Link href='/dashboard/frequencia/faltas'>Faltas</Link>,
+        },
+        {
+          key: '/dashboard/frequencia/horas-extras',
+          label: <Link href='/dashboard/frequencia/horas-extras'>Horas Extras</Link>,
         },
       ],
     },

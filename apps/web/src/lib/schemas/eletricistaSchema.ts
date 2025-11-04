@@ -37,6 +37,22 @@ export const eletricistaCreateSchema = z.object({
   cargoId: z.number().int('Cargo é obrigatório'),
   contratoId: z.number().int('Contrato é obrigatório'),
   baseId: z.number().int('Base é obrigatória').optional(),
+  // Status inicial do eletricista (opcional, padrão ATIVO)
+  status: z
+    .enum([
+      'ATIVO',
+      'FERIAS',
+      'LICENCA_MEDICA',
+      'LICENCA_MATERNIDADE',
+      'LICENCA_PATERNIDADE',
+      'SUSPENSAO',
+      'TREINAMENTO',
+      'AFastADO',
+      'DESLIGADO',
+      'APOSENTADO',
+    ])
+    .optional()
+    .default('ATIVO'),
 });
 
 export const eletricistaUpdateSchema = eletricistaCreateSchema.extend({
@@ -57,6 +73,19 @@ export const eletricistaFilterSchema = z.object({
   cargoId: z.number().int().optional(),
   baseId: z.number().int().optional(),
   estado: z.string().optional(),
+  // Filtro por status do eletricista
+  status: z.enum([
+    'ATIVO',
+    'FERIAS',
+    'LICENCA_MEDICA',
+    'LICENCA_MATERNIDADE',
+    'LICENCA_PATERNIDADE',
+    'SUSPENSAO',
+    'TREINAMENTO',
+    'AFastADO',
+    'DESLIGADO',
+    'APOSENTADO',
+  ]).optional(),
 });
 
 // Schema para cadastro em lote
@@ -72,6 +101,22 @@ export const eletricistaLoteSchema = z.object({
   contratoId: z.number().int().positive('Contrato é obrigatório'),
   cargoId: z.number().int().positive('Cargo é obrigatório'),
   baseId: z.number().int().positive('Base é obrigatória'),
+  // Status inicial para todos os eletricistas do lote (opcional, padrão ATIVO)
+  status: z
+    .enum([
+      'ATIVO',
+      'FERIAS',
+      'LICENCA_MEDICA',
+      'LICENCA_MATERNIDADE',
+      'LICENCA_PATERNIDADE',
+      'SUSPENSAO',
+      'TREINAMENTO',
+      'AFastADO',
+      'DESLIGADO',
+      'APOSENTADO',
+    ])
+    .optional()
+    .default('ATIVO'),
   eletricistas: z
     .array(eletricistaLoteItemSchema)
     .min(1, 'Adicione pelo menos um eletricista'),

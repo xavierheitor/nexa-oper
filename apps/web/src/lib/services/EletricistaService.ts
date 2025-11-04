@@ -42,7 +42,9 @@ export class EletricistaService extends AbstractCrudService<
    */
   constructor() {
     const repo = new EletricistaRepository();
-    super(repo);
+    // EletricistaRepository tem assinatura customizada de create que aceita status e baseId
+    // Por isso fazemos cast para compatibilidade com AbstractCrudService
+    super(repo as any);
     this.eletricistaRepo = repo;
   }
 

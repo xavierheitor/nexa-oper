@@ -90,19 +90,52 @@ export async function GET() {
 
 ## 📝 Variáveis de Ambiente
 
-Criar arquivo `.env.local` na pasta da aplicação:
+Criar arquivo `.env.local` na pasta `apps/web/`:
 
 ```env
-DATABASE_URL="mysql://usuario:senha@localhost:3306/banco"
+# NextAuth
+NEXTAUTH_SECRET="seu_nextauth_secret_muito_longo_e_seguro"
+NEXTAUTH_URL=http://localhost:3000
+
+# API
 NEXT_PUBLIC_API_URL="http://localhost:3001"
 
-# URL base para fotos mobile (opcional)
-# Se configurada, as URLs das fotos virão com esse prefixo
+# Banco de Dados
+DATABASE_URL="mysql://usuario:senha@localhost:3306/banco"
+
+# App
+NEXT_PUBLIC_APP_NAME="Nexa Oper"
+NEXT_PUBLIC_APP_VERSION="1.0.0"
+
+# ============================================
+# CONFIGURAÇÃO DE UPLOADS
+# ============================================
+
+# UPLOAD_ROOT: Caminho absoluto para pasta raiz de uploads
+# Deve ser o MESMO valor configurado na API para que ambos salvem na mesma estrutura
+# Se não configurado, usa: ./uploads (relativo ao diretório de execução)
 # Exemplos:
-# NEXT_PUBLIC_PHOTOS_BASE_URL="https://storage.nexaoper.com.br"
-# NEXT_PUBLIC_PHOTOS_BASE_URL="http://localhost:3001"
-# Se não configurada, usa paths relativos
-NEXT_PUBLIC_PHOTOS_BASE_URL=
+#   - Desenvolvimento: deixe vazio ou comente
+#   - Produção local: /var/www/nexa-oper/storage
+#   - Produção remota: /mnt/nas/storage-nexa
+# Estrutura criada automaticamente:
+#   {UPLOAD_ROOT}/mobile/photos/ (fotos do mobile - se usado pela API)
+#   {UPLOAD_ROOT}/justificativas/anexos/ (anexos de justificativas)
+UPLOAD_ROOT=
+
+# UPLOAD_BASE_URL: URL pública para acesso aos uploads
+# Deve ser o MESMO valor configurado na API para URLs consistentes
+# Se não configurado, usa paths relativos servidos pelo próprio Next.js
+# Exemplos:
+#   - Desenvolvimento: deixe vazio ou comente (usa /uploads/justificativas/anexos)
+#   - Produção com subdomínio: https://storage.nexaoper.com.br
+#   - Produção com CDN: https://cdn.nexaoper.com.br
+# IMPORTANTE: Não inclua /mobile/photos ou /justificativas/anexos na URL
+# O sistema adiciona automaticamente esses paths
+UPLOAD_BASE_URL=
+
+# Logs (opcional)
+# LOG_PATH=./logs
 ```
 
 ## 🚀 Desenvolvimento

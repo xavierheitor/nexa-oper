@@ -198,8 +198,8 @@ model SlotEscala {
 
   anotacoesDia String? @db.VarChar(1000)
 
-  origem          OrigemAtribuicao @default(GERACAO)
-  observacoes     String?          @db.VarChar(1000)
+  origem      OrigemAtribuicao @default(GERACAO)
+  observacoes String?          @db.VarChar(1000)
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -208,13 +208,14 @@ model SlotEscala {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  Coberturas  EventoCobertura[]
+  Coberturas EventoCobertura[]
+  Falta      Falta[]
+  HoraExtra  HoraExtra[]
 
   // Um slot por (período, dia, eletricista)
   @@unique([escalaEquipePeriodoId, data, eletricistaId])
   @@index([data])
   @@index([eletricistaId, data])
-  Falta Falta[]
 }
 
 /// =========================
@@ -232,7 +233,7 @@ model EventoCobertura {
 
   tipo          EventoCoberturaTipo
   resultado     EventoCoberturaResultado
-  justificativa String? @db.VarChar(1000)
+  justificativa String?                  @db.VarChar(1000)
 
   registradoEm DateTime @default(now())
 
@@ -272,16 +273,15 @@ model EquipeHorarioVigencia {
   @@index([equipeId, vigenciaInicio])
 }
 
-
 /// ===============================================
 /// Catálogo de Horários de Abertura (presets)
 /// ===============================================
 model HorarioAberturaCatalogo {
   id   Int    @id @default(autoincrement())
-  nome String @db.VarChar(255)           // Ex.: "06h • 8h + 1h int."
+  nome String @db.VarChar(255) // Ex.: "06h • 8h + 1h int."
 
   // Preset base (usado como modelo)
-  inicioTurnoHora       String  @db.VarChar(8)    // "HH:MM:SS"
+  inicioTurnoHora       String  @db.VarChar(8) // "HH:MM:SS"
   duracaoHoras          Decimal @db.Decimal(5, 2) // ex.: 8.00
   duracaoIntervaloHoras Decimal @db.Decimal(5, 2) // ex.: 1.00
 
@@ -318,16 +318,16 @@ model EquipeTurnoHistorico {
   horarioAberturaCatalogo   HorarioAberturaCatalogo? @relation(fields: [horarioAberturaCatalogoId], references: [id])
 
   // Vigência temporal (histórico do "a partir de")
-  dataInicio DateTime            // Quando esta configuração passa a valer
-  dataFim    DateTime?           // Quando deixa de valer (null = vigente)
+  dataInicio DateTime // Quando esta configuração passa a valer
+  dataFim    DateTime? // Quando deixa de valer (null = vigente)
 
   // SNAPSHOT dos valores (não dependem do catálogo depois de criado)
-  inicioTurnoHora       String  @db.VarChar(8)    // "HH:MM:SS"
+  inicioTurnoHora       String  @db.VarChar(8) // "HH:MM:SS"
   duracaoHoras          Decimal @db.Decimal(5, 2) // ex.: 8.00
   duracaoIntervaloHoras Decimal @db.Decimal(5, 2) // ex.: 1.00
 
   // Opcional: persistir fim previsto do turno (pode ser calculado na app)
-  fimTurnoHora String? @db.VarChar(8)             // "HH:MM:SS"
+  fimTurnoHora String? @db.VarChar(8) // "HH:MM:SS"
 
   // Observações / motivo da mudança (opcional)
   motivo      String? @db.VarChar(500)

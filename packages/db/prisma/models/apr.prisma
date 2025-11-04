@@ -9,8 +9,8 @@ model Apr {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  AprPerguntaRelacao       AprPerguntaRelacao[]
-  AprOpcaoRespostaRelacao  AprOpcaoRespostaRelacao[]
+  AprPerguntaRelacao      AprPerguntaRelacao[]
+  AprOpcaoRespostaRelacao AprOpcaoRespostaRelacao[]
   AprTipoAtividadeRelacao AprTipoAtividadeRelacao[]
 }
 
@@ -39,24 +39,24 @@ model AprPerguntaRelacao {
   aprId Int
   apr   Apr @relation(fields: [aprId], references: [id])
 
-  createdAt DateTime @default(now())
-  createdBy String @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
   updatedAt DateTime? @updatedAt
-  updatedBy String? @db.VarChar(255)
+  updatedBy String?   @db.VarChar(255)
   deletedAt DateTime?
-  deletedBy String? @db.VarChar(255)
+  deletedBy String?   @db.VarChar(255)
 }
 
 model AprOpcaoResposta {
-  id Int @id @default(autoincrement())
+  id   Int    @id @default(autoincrement())
   nome String @db.VarChar(255)
 
-  createdAt DateTime @default(now())
-  createdBy String @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
   updatedAt DateTime? @updatedAt
-  updatedBy String? @db.VarChar(255)
+  updatedBy String?   @db.VarChar(255)
   deletedAt DateTime?
-  deletedBy String? @db.VarChar(255)
+  deletedBy String?   @db.VarChar(255)
 
   AprOpcaoRespostaRelacao AprOpcaoRespostaRelacao[]
 }
@@ -70,16 +70,15 @@ model AprOpcaoRespostaRelacao {
   aprId Int
   apr   Apr @relation(fields: [aprId], references: [id])
 
-  createdAt DateTime @default(now())
-  createdBy String @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
   updatedAt DateTime? @updatedAt
-  updatedBy String? @db.VarChar(255)
+  updatedBy String?   @db.VarChar(255)
   deletedAt DateTime?
-  deletedBy String? @db.VarChar(255)
+  deletedBy String?   @db.VarChar(255)
 }
 
-
-model AprTipoAtividadeRelacao{
+model AprTipoAtividadeRelacao {
   id Int @id @default(autoincrement())
 
   aprId Int

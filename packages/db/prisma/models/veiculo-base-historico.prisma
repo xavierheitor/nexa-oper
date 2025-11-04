@@ -1,9 +1,7 @@
 /**
  * Modelo para Histórico de Bases de Veículos
- *
  * Este modelo rastreia todas as transferências de veículos entre bases,
  * mantendo um histórico completo de onde cada veículo esteve e quando.
- *
  * CASOS DE USO:
  * - Rastrear transferências de veículos entre bases
  * - Auditoria de movimentações
@@ -29,12 +27,12 @@ model VeiculoBaseHistorico {
   motivo String? @db.VarChar(500) // Motivo da transferência (opcional)
 
   // Auditoria
-  createdAt DateTime @default(now())
-  createdBy String @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
   updatedAt DateTime? @updatedAt
-  updatedBy String? @db.VarChar(255)
+  updatedBy String?   @db.VarChar(255)
   deletedAt DateTime?
-  deletedBy String? @db.VarChar(255)
+  deletedBy String?   @db.VarChar(255)
 
   // Índices para performance
   @@index([veiculoId])

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { listBases } from '../../../../lib/actions/base/list';
 import { listContratos } from '../../../../lib/actions/contrato/list';
 import { listCargos } from '../../../../lib/actions/cargo/list';
+import { StatusEletricistaLabels } from '../../../../lib/schemas/eletricistaStatusSchema';
 import dayjs from 'dayjs';
 
 // Importações do Ant Design e React
@@ -21,6 +22,7 @@ export interface EletricistaFormData {
   cargoId: number; // Cargo do eletricista
   contratoId: number; // Campo obrigatório
   baseId: number; // Campo obrigatório
+  status?: string; // Status inicial do eletricista (opcional, padrão ATIVO)
 }
 
 // Interface que define as props aceitas pelo componente
@@ -107,16 +109,14 @@ export default function EletricistaForm({
     }
   }, [initialValues, form]);
 
-  // Se está em loading, mostra apenas o spinner (evita interação durante submit)
-  if (loading) return <Spin spinning />;
-
   // Renderização do formulário
   return (
-    <Form
-      form={form} // Instância do formulário controlada pelo hook
-      layout="vertical" // Layout com labels acima dos campos
-      onFinish={onSubmit} // Função chamada quando o formulário é válido e submetido
-    >
+    <Spin spinning={loading}>
+      <Form
+        form={form} // Instância do formulário controlada pelo hook
+        layout="vertical" // Layout com labels acima dos campos
+        onFinish={onSubmit} // Função chamada quando o formulário é válido e submetido
+      >
       {/* Campo Nome do Eletricista */}
       <Form.Item
         name="nome" // Nome do campo (deve corresponder à interface EletricistaFormData)
@@ -218,11 +218,29 @@ export default function EletricistaForm({
       >
         <Select placeholder="Selecione a base" loading={loadingSelects} showSearch filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())} options={bases.map(base => ({ value: base.id, label: base.nome }))} />
       </Form.Item>
+
+      {/* Campo Status */}
+      <Form.Item
+        name="status"
+        label="Status Inicial"
+        tooltip="Status inicial do eletricista ao ser criado. Padrão: Ativo (Trabalhando)"
+        initialValue="ATIVO"
+      >
+        <Select
+          placeholder="Selecione o status inicial"
+          options={Object.entries(StatusEletricistaLabels).map(([value, label]) => ({
+            value,
+            label,
+          }))}
+        />
+      </Form.Item>
+
       {/* Botão de Submit */}
       <Form.Item>
         <Button type="primary" htmlType="submit" block loading={loading || loadingSelects} disabled={loadingSelects}>Salvar</Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 
 }

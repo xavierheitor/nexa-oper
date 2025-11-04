@@ -42,6 +42,7 @@ import {
   RequestMethod,
 } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -87,6 +88,9 @@ import { JustificativasModule } from './modules/justificativas/justificativas.mo
       isGlobal: true,
       validationSchema: envValidationSchema,
     }),
+
+    // Módulo de agendamento de jobs
+    ScheduleModule.forRoot(),
 
     // Módulo de banco de dados - deve ser importado primeiro
     DatabaseModule,

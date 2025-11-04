@@ -34,7 +34,6 @@ model Equipe {
 
   Turno Turno[]
 
-
   EscalaEquipePeriodo EscalaEquipePeriodo[]
 
   EquipeHorarioVigencia EquipeHorarioVigencia[]

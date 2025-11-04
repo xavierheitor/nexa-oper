@@ -7,11 +7,15 @@
 import { handleServerAction } from '../common/actionHandler';
 import { eletricistaLoteSchema } from '@/lib/schemas/eletricistaSchema';
 import { prisma } from '@/lib/db/db.service';
+import { StatusEletricista } from '@nexa-oper/db';
 
 export const createEletricistasLote = async (rawData: unknown) =>
   handleServerAction(
     eletricistaLoteSchema,
     async (data, session) => {
+      // Status inicial para todos os eletricistas (padrão: ATIVO)
+      const statusInicial = (data.status || 'ATIVO') as StatusEletricista;
+
       // Criar todos os eletricistas em uma transação otimizada
       const eletricistasCriados = await prisma.$transaction(
         async (tx) => {
@@ -56,7 +60,7 @@ export const createEletricistasLote = async (rawData: unknown) =>
           );
 
           // Criar históricos de base em lote
-          const historicosData = data.eletricistas.map((e) => {
+          const historicosBaseData = data.eletricistas.map((e) => {
             const eletricistaId = matriculaToId.get(e.matricula);
             if (!eletricistaId) {
               throw new Error(`Eletricista com matrícula ${e.matricula} não encontrado`);
@@ -73,7 +77,39 @@ export const createEletricistasLote = async (rawData: unknown) =>
           });
 
           await tx.eletricistaBaseHistorico.createMany({
-            data: historicosData,
+            data: historicosBaseData,
+          });
+
+          // Criar status iniciais em lote
+          const statusData = eletricistasCreated.map((e) => ({
+            eletricistaId: e.id,
+            status: statusInicial,
+            dataInicio: now,
+            dataFim: null,
+            motivo: 'Status inicial após criação em lote',
+            createdBy: userId,
+            createdAt: now,
+          }));
+
+          await tx.eletricistaStatus.createMany({
+            data: statusData,
+          });
+
+          // Criar histórico de status em lote
+          const historicosStatusData = eletricistasCreated.map((e) => ({
+            eletricistaId: e.id,
+            status: statusInicial,
+            statusAnterior: undefined, // Primeiro status não tem anterior
+            dataInicio: now,
+            dataFim: null,
+            motivo: 'Status inicial após criação em lote',
+            registradoPor: userId,
+            createdBy: userId,
+            createdAt: now,
+          }));
+
+          await tx.eletricistaStatusHistorico.createMany({
+            data: historicosStatusData,
           });
 
           return eletricistasCreated;
