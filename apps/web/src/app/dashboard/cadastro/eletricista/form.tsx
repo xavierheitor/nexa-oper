@@ -109,16 +109,14 @@ export default function EletricistaForm({
     }
   }, [initialValues, form]);
 
-  // Se está em loading, mostra apenas o spinner (evita interação durante submit)
-  if (loading) return <Spin spinning />;
-
   // Renderização do formulário
   return (
-    <Form
-      form={form} // Instância do formulário controlada pelo hook
-      layout="vertical" // Layout com labels acima dos campos
-      onFinish={onSubmit} // Função chamada quando o formulário é válido e submetido
-    >
+    <Spin spinning={loading}>
+      <Form
+        form={form} // Instância do formulário controlada pelo hook
+        layout="vertical" // Layout com labels acima dos campos
+        onFinish={onSubmit} // Função chamada quando o formulário é válido e submetido
+      >
       {/* Campo Nome do Eletricista */}
       <Form.Item
         name="nome" // Nome do campo (deve corresponder à interface EletricistaFormData)
@@ -242,6 +240,7 @@ export default function EletricistaForm({
         <Button type="primary" htmlType="submit" block loading={loading || loadingSelects} disabled={loadingSelects}>Salvar</Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 
 }
