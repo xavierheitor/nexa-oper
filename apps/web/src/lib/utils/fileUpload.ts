@@ -8,17 +8,24 @@ import { randomUUID } from 'crypto';
 import { extname } from 'path';
 
 /**
- * Diretório base para uploads de anexos de justificativas
+ * Diretório base (absoluto) para uploads de anexos de justificativas.
+ * Configurável via variável de ambiente UPLOAD_ROOT
+ *
+ * Se UPLOAD_ROOT estiver configurada, usa: {UPLOAD_ROOT}/justificativas/anexos
+ * Caso contrário, usa: {process.cwd()}/uploads/justificativas/anexos
  */
 const UPLOAD_ROOT = process.env.UPLOAD_ROOT
   ? join(process.env.UPLOAD_ROOT, 'justificativas', 'anexos')
   : join(process.cwd(), 'uploads', 'justificativas', 'anexos');
 
 /**
- * URL base pública para acessar os anexos
- * Por padrão, usa caminho relativo que será servido pelo Next.js
+ * URL base pública para acessar os anexos.
+ * Se UPLOAD_BASE_URL estiver configurada, será usada como base (ex: https://storage.nexaoper.com.br).
+ * Caso contrário, usa path relativo para servir via Next.js (ex: /uploads/justificativas/anexos).
  */
-const UPLOAD_PUBLIC_PREFIX = process.env.UPLOAD_BASE_URL || '/uploads/justificativas/anexos';
+const UPLOAD_PUBLIC_PREFIX = process.env.UPLOAD_BASE_URL
+  ? process.env.UPLOAD_BASE_URL
+  : '/uploads/justificativas/anexos';
 
 /**
  * Tipos MIME permitidos
@@ -106,9 +113,21 @@ export async function uploadFile(
   const buffer = Buffer.from(arrayBuffer);
   await writeFile(absolutePath, buffer);
 
-  // Montar path relativo para o banco
+  // Montar path relativo para o banco (sem UPLOAD_ROOT, apenas o caminho relativo)
   const dbPath = `/justificativas/anexos/${relativePath}`;
-  const publicUrl = `${UPLOAD_PUBLIC_PREFIX}/${relativePath}`;
+
+  // Montar URL pública
+  // Se UPLOAD_BASE_URL estiver configurada, concatena com o path
+  // Caso contrário, usa path relativo
+  let publicUrl: string;
+  if (process.env.UPLOAD_BASE_URL) {
+    const baseUrl = UPLOAD_PUBLIC_PREFIX.endsWith('/')
+      ? UPLOAD_PUBLIC_PREFIX.slice(0, -1)
+      : UPLOAD_PUBLIC_PREFIX;
+    publicUrl = `${baseUrl}/justificativas/anexos/${relativePath}`;
+  } else {
+    publicUrl = `${UPLOAD_PUBLIC_PREFIX}/${relativePath}`;
+  }
 
   return {
     filePath: dbPath,

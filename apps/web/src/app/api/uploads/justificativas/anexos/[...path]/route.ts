@@ -7,6 +7,13 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
+/**
+ * Diretório base (absoluto) para uploads de anexos de justificativas.
+ * Configurável via variável de ambiente UPLOAD_ROOT
+ *
+ * Se UPLOAD_ROOT estiver configurada, usa: {UPLOAD_ROOT}/justificativas/anexos
+ * Caso contrário, usa: {process.cwd()}/uploads/justificativas/anexos
+ */
 const UPLOAD_ROOT = process.env.UPLOAD_ROOT
   ? join(process.env.UPLOAD_ROOT, 'justificativas', 'anexos')
   : join(process.cwd(), 'uploads', 'justificativas', 'anexos');
