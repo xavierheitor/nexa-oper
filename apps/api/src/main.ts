@@ -103,7 +103,7 @@ const execAsync = promisify(exec);
  *
  * @example
  * ```typescript
- * // A função é chamada automaticamente na inicialização
+ * // A função é chamada automaticamente na inicializaçãoconrreções
  * // Não precisa ser chamada manualmente
  * ```
  */

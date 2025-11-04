@@ -91,60 +91,70 @@ export class LoggerMiddleware implements NestMiddleware {
    * ```
    */
   use(req: Request, res: Response, next: NextFunction): void {
-    // Extrai informações relevantes da requisição
-    const { method, originalUrl, headers, body } = req;
+    // IMPORTANTE: Este middleware deve ser rápido e não travar
+    // Se houver erro, apenas loga e continua
+    try {
+      // Extrai informações relevantes da requisição
+      const { method, originalUrl, headers, body } = req;
 
-    // Marca o timestamp de início para cálculo de tempo de resposta
-    const startTime = Date.now();
+      // Marca o timestamp de início para cálculo de tempo de resposta
+      const startTime = Date.now();
 
-    // Registra informações detalhadas da requisição recebida
-    // Sanitiza headers e body para evitar exposição de informações sensíveis
-    this.logger.log('📥 Request:', {
-      method,
-      url: originalUrl,
-      headers: sanitizeHeaders(headers),
-      body: sanitizeData(body),
-    });
-
-    // Intercepta o método send() da resposta para capturar dados de saída
-    const originalSend = res.send.bind(res);
-
-    /**
-     * Substitui temporariamente o método send() do Response
-     * para interceptar e logar dados antes do envio ao cliente
-     */
-    res.send = (data: any) => {
-      // Calcula tempo total de processamento da requisição
-      const elapsed = Date.now() - startTime;
-
-      // Registra informações detalhadas da resposta
-      // Sanitiza dados da resposta para evitar exposição de informações sensíveis
-      const responseData = this.tryParseJson(data);
-      this.logger.log('📤 Response:', {
+      // Registra informações detalhadas da requisição recebida
+      // Sanitiza headers e body para evitar exposição de informações sensíveis
+      this.logger.log('📥 Request:', {
+        method,
         url: originalUrl,
-        status: res.statusCode,
-        time: `${elapsed}ms`,
-        response: sanitizeData(responseData),
+        headers: sanitizeHeaders(headers),
+        body: sanitizeData(body),
       });
 
-      // Chama o método send() original para enviar a resposta
-      // IMPORTANTE: Métricas não devem bloquear a resposta
-      // Se houver erro, apenas loga e continua (não trava a request)
-      try {
-        if (this.metricsService) {
-          const route = originalUrl.split('?')[0] || originalUrl;
-          this.metricsService.observeRequest(method, route, res.statusCode, elapsed / 1000);
-        }
-      } catch (error) {
-        // Log silencioso - não deve travar a request
-        // Métricas são opcionais e não devem afetar a funcionalidade
-        this.logger.debug(`Erro ao registrar métricas (não bloqueante): ${error}`);
-      }
-      return originalSend(data);
-    };
+      // Intercepta o método send() da resposta para capturar dados de saída
+      const originalSend = res.send.bind(res);
 
-    // Continua para o próximo middleware/controller no pipeline
-    next();
+      /**
+       * Substitui temporariamente o método send() do Response
+       * para interceptar e logar dados antes do envio ao cliente
+       */
+      res.send = (data: any) => {
+        // Calcula tempo total de processamento da requisição
+        const elapsed = Date.now() - startTime;
+
+        // Registra informações detalhadas da resposta
+        // Sanitiza dados da resposta para evitar exposição de informações sensíveis
+        const responseData = this.tryParseJson(data);
+        this.logger.log('📤 Response:', {
+          url: originalUrl,
+          status: res.statusCode,
+          time: `${elapsed}ms`,
+          response: sanitizeData(responseData),
+        });
+
+        // Chama o método send() original para enviar a resposta
+        // IMPORTANTE: Métricas não devem bloquear a resposta
+        // Se houver erro, apenas loga e continua (não trava a request)
+        try {
+          if (this.metricsService) {
+            const route = originalUrl.split('?')[0] || originalUrl;
+            this.metricsService.observeRequest(method, route, res.statusCode, elapsed / 1000);
+          }
+        } catch (error) {
+          // Log silencioso - não deve travar a request
+          // Métricas são opcionais e não devem afetar a funcionalidade
+          this.logger.debug(`Erro ao registrar métricas (não bloqueante): ${error}`);
+        }
+        return originalSend(data);
+      };
+
+      // Continua para o próximo middleware/controller no pipeline
+      // IMPORTANTE: next() deve ser chamado mesmo se houver erro
+      next();
+    } catch (error) {
+      // Se houver erro no middleware, apenas loga e continua
+      // NÃO deve travar a requisição
+      this.logger.error(`Erro no LoggerMiddleware (não bloqueante): ${error}`);
+      next();
+    }
   }
 
   /**

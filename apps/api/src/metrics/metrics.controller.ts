@@ -12,10 +12,15 @@ export class MetricsController {
   async metrics(): Promise<string> {
     try {
       // getRegistry().metrics() pode ser lento em alguns casos
-      // Mas não deve travar - é uma operação síncrona que apenas serializa
-      return await this.metricsService.getRegistry().metrics();
+      // Adiciona timeout para não travar a requisição
+      const metricsPromise = Promise.resolve(this.metricsService.getRegistry().metrics());
+      const timeoutPromise = new Promise<string>((_, reject) => {
+        setTimeout(() => reject(new Error('Metrics collection timeout')), 2000);
+      });
+
+      return await Promise.race([metricsPromise, timeoutPromise]);
     } catch (error) {
-      // Se houver erro, retorna métricas vazias ao invés de travar
+      // Se houver erro ou timeout, retorna métricas vazias ao invés de travar
       return '# Erro ao coletar métricas\n';
     }
   }
