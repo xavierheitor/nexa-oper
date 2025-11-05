@@ -205,60 +205,41 @@ if (resultBases.data?.meta.total > MAX_STATS_ITEMS) {
 }
 ```
 
-### 3. **Repetição de Código (DRY)** 🟡
+### 3. **Repetição de Código (DRY)** ✅ **CORRIGIDO**
 
-#### Problema 1: Formatação de Fotos Duplicada
+#### ✅ Problema 1: Formatação de Fotos Duplicada - CORRIGIDO
 
-**Arquivos:**
+**Arquivos corrigidos:**
+- ✅ `checklist/getByTurno.ts` - função `getChecklistsByTurno`
+- ✅ `checklist/getByTurno.ts` - função `getChecklistByUuid`
 
-- `checklist/getByTurno.ts` - função `getChecklistsByTurno`
-- `checklist/getByTurno.ts` - função `getChecklistByUuid`
+**Solução implementada:**
+- ✅ Criado `apps/web/src/lib/utils/checklistPhotoFormatter.ts`
+- ✅ Funções `formatChecklistPhoto()` e `formatChecklistPhotos()` centralizadas
 
-**Solução:**
+#### ✅ Problema 2: Criação de Datas do Dia Repetida - CORRIGIDO
 
-```typescript
-// ✅ CRIAR: Utilitário compartilhado
-// apps/web/src/lib/utils/checklistPhotoFormatter.ts
+**Arquivos corrigidos:**
+- ✅ `getStatsByTipoEquipe.ts`
+- ✅ `getStatsByBase.ts`
+- ✅ `getStatsByHora.ts`
+- ✅ `getStatsByHoraETipoEquipe.ts`
 
-export function formatChecklistPhoto(foto: MobilePhoto) {
-  return {
-    id: foto.id,
-    caminhoArquivo: foto.storagePath,
-    urlPublica: foto.url,
-    tamanhoBytes: Number(foto.fileSize),
-    mimeType: foto.mimeType,
-    sincronizadoEm: foto.capturedAt?.toISOString() || foto.createdAt.toISOString(),
-    createdAt: foto.createdAt.toISOString(),
-  };
-}
+**Solução implementada:**
+- ✅ Criado `apps/web/src/lib/utils/dateHelpers.ts`
+- ✅ Função `getTodayDateRange()` centralizada
 
-export function formatChecklistPhotos(fotos: MobilePhoto[]) {
-  return fotos.map(formatChecklistPhoto);
-}
-```
+#### ✅ Problema 3: Limites Hardcoded - CORRIGIDO
 
-#### Problema 2: Criação de Datas do Dia Repetida
+**Arquivos corrigidos:**
+- ✅ `getStatsByTipoEquipe.ts` - `pageSize: 100` → constante
+- ✅ `getStatsByBase.ts` - `pageSize: 100` → constante
+- ✅ `getStatsByHoraETipoEquipe.ts` - `pageSize: 100` → constante
 
-**Arquivos:**
-
-- `getStatsByTipoEquipe.ts`
-- `getStatsByBase.ts`
-- `getStatsByHora.ts`
-- `getStatsByHoraETipoEquipe.ts`
-
-**Solução:**
-
-```typescript
-// ✅ CRIAR: Utilitário de datas
-// apps/web/src/lib/utils/dateHelpers.ts
-
-export function getTodayDateRange(): { inicio: Date; fim: Date } {
-  const hoje = new Date();
-  const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0);
-  const fim = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 23, 59, 59);
-  return { inicio, fim };
-}
-```
+**Solução implementada:**
+- ✅ Criado `apps/web/src/lib/constants/statsLimits.ts`
+- ✅ Constantes `DEFAULT_STATS_PAGE_SIZE` e `MAX_STATS_ITEMS`
+- ✅ Validação de limites com logging quando excedido
 
 ---
 

@@ -11,6 +11,8 @@ import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
 import { listTiposEquipe } from '../tipoEquipe/list';
 import { getTodayDateRange } from '@/lib/utils/dateHelpers';
+import { DEFAULT_STATS_PAGE_SIZE, MAX_STATS_ITEMS } from '@/lib/constants/statsLimits';
+import { logger } from '@/lib/utils/logger';
 import { z } from 'zod';
 
 const turnoStatsByHoraETipoEquipeSchema = z.object({});
@@ -27,7 +29,7 @@ export const getStatsByHoraETipoEquipe = async () =>
       // 1. Buscar tipos de equipe
       const resultTipos = await listTiposEquipe({
         page: 1,
-        pageSize: 100,
+        pageSize: DEFAULT_STATS_PAGE_SIZE,
         orderBy: 'id',
         orderDir: 'asc',
       });
@@ -37,6 +39,15 @@ export const getStatsByHoraETipoEquipe = async () =>
       }
 
       const tiposEquipe = resultTipos.data.data || [];
+
+      // Validação: Verifica se o limite foi atingido
+      if (resultTipos.data.meta.total > MAX_STATS_ITEMS) {
+        logger.warn('Limite de tipos de equipe atingido nas estatísticas', {
+          total: resultTipos.data.meta.total,
+          limite: MAX_STATS_ITEMS,
+          action: 'getStatsByHoraETipoEquipe',
+        });
+      }
 
       // 2. Buscar turnos do dia com relacionamentos
       const { inicio, fim } = getTodayDateRange();

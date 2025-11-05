@@ -11,6 +11,8 @@ import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
 import { listBases } from '../base/list';
 import { getTodayDateRange } from '@/lib/utils/dateHelpers';
+import { DEFAULT_STATS_PAGE_SIZE, MAX_STATS_ITEMS } from '@/lib/constants/statsLimits';
+import { logger } from '@/lib/utils/logger';
 import { z } from 'zod';
 
 const turnoStatsByBaseSchema = z.object({});
@@ -27,7 +29,7 @@ export const getStatsByBase = async () =>
       // 1. Buscar todas as bases
       const resultBases = await listBases({
         page: 1,
-        pageSize: 100,
+        pageSize: DEFAULT_STATS_PAGE_SIZE,
         orderBy: 'nome',
         orderDir: 'asc',
       });
@@ -37,6 +39,15 @@ export const getStatsByBase = async () =>
       }
 
       const bases = resultBases.data.data || [];
+
+      // Validação: Verifica se o limite foi atingido
+      if (resultBases.data.meta.total > MAX_STATS_ITEMS) {
+        logger.warn('Limite de bases atingido nas estatísticas', {
+          total: resultBases.data.meta.total,
+          limite: MAX_STATS_ITEMS,
+          action: 'getStatsByBase',
+        });
+      }
 
       // 2. Buscar turnos do dia com relacionamentos de equipe e base
       const { inicio, fim } = getTodayDateRange();
