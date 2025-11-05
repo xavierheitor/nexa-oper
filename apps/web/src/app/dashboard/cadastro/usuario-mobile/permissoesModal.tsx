@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Form, Select, Button, Spin, Card, Table, Space, App } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 
@@ -10,6 +10,7 @@ import { listMobileContratoPermissoes } from '@/lib/actions/mobileContratoPermis
 import { deleteMobileContratoPermissao } from '@/lib/actions/mobileContratoPermissao/deletePermissao';
 import { MobileUser, MobileContratoPermissao, Contrato } from '@nexa-oper/db';
 import type { CrudController } from '@/lib/hooks/useCrudController';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface PermissoesModalProps {
   mobileUserId: number;
@@ -26,30 +27,34 @@ export default function PermissoesModal({
 }: PermissoesModalProps) {
   const { message } = App.useApp();
   const [form] = Form.useForm();
-  const [contratos, setContratos] = useState<Contrato[]>([]);
-  const [permissoes, setPermissoes] = useState<Array<MobileContratoPermissao & { contrato?: Contrato }>>([]);
-  const [loading, setLoading] = useState(true);
 
-  const loadData = useCallback(async () => {
-    try {
-      setLoading(true);
+  // Carregar contratos e permissões
+  const { data: contratosData, loading: loadingContratos, refetch: refetchContratos } = useDataFetch(
+    async () => {
       const [contratosResult, permissoesResult] = await Promise.all([
         listContratos({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
         listMobileContratoPermissoes({ mobileUserId, page: 1, pageSize: 200 })
       ]);
 
-      setContratos(contratosResult.data?.data || []);
-      setPermissoes(permissoesResult.data?.data || []);
-    } catch (e) {
-      message.error('Erro ao carregar dados');
-    } finally {
-      setLoading(false);
+      if (contratosResult.success && contratosResult.data && permissoesResult.success && permissoesResult.data) {
+        return {
+          contratos: contratosResult.data.data || [],
+          permissoes: permissoesResult.data.data || [],
+        };
+      }
+      throw new Error('Erro ao carregar dados');
+    },
+    [mobileUserId],
+    {
+      onError: (error) => {
+        message.error('Erro ao carregar dados');
+      }
     }
-  }, [mobileUserId]);
+  );
 
-  useEffect(() => {
-    loadData();
-  }, [mobileUserId, loadData]);
+  const contratos = contratosData?.contratos || [];
+  const permissoes = contratosData?.permissoes || [];
+  const loading = loadingContratos;
 
   const handleSubmit = (values: { contratoId: number }) => {
     controllerExec(
@@ -60,7 +65,7 @@ export default function PermissoesModal({
       'Permissão adicionada com sucesso!'
     ).then(() => {
       form.resetFields();
-      loadData();
+      refetchContratos();
       onSaved();
     });
   };
@@ -70,7 +75,7 @@ export default function PermissoesModal({
       () => deleteMobileContratoPermissao({ id: permissaoId }),
       'Permissão removida com sucesso!'
     ).then(() => {
-      loadData();
+      refetchContratos();
       onSaved();
     });
   };

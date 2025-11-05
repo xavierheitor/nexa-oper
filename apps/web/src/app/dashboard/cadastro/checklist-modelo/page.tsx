@@ -14,7 +14,7 @@ import { getTextFilter } from '@/ui/components/tableFilters';
 import { Checklist, ChecklistTipoVeiculoRelacao, ChecklistTipoEquipeRelacao } from '@nexa-oper/db';
 import type { CrudController } from '@/lib/hooks/useCrudController';
 import { Button, Card, Modal, Table, Form, Select, Spin, App, message } from 'antd';
-import { useEffect, useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import ChecklistForm, { ChecklistFormData } from './form';
 import { listChecklistTipoVeiculoVinculos } from '@/lib/actions/checklistVinculo/tipoVeiculo/list';
 import { setChecklistTipoVeiculo } from '@/lib/actions/checklistVinculo/tipoVeiculo/set';
@@ -175,27 +175,33 @@ interface VinculoTVFormValues {
 
 function VinculoTVModal({ onSaved, controllerExec }: { onSaved: () => void; controllerExec: CrudController<unknown>['exec'] }) {
   const [form] = Form.useForm<VinculoTVFormValues>();
-  const [tipos, setTipos] = useState<Array<{ id: number; nome: string }>>([]);
-  const [checklists, setChecklists] = useState<Array<{ id: number; nome: string }>>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        const [tv, cl] = await Promise.all([
-          listTiposVeiculo({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
-          listChecklists({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
-        ]);
-        setTipos(tv.data?.data || []);
-        setChecklists(cl.data?.data || []);
-      } catch (e) {
-        message.error('Erro ao carregar dados');
-      } finally {
-        setLoading(false);
+  // Carregar tipos de veículo e checklists
+  const { data: dadosVinculo, loading } = useDataFetch(
+    async () => {
+      const [tv, cl] = await Promise.all([
+        listTiposVeiculo({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
+        listChecklists({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
+      ]);
+
+      if (tv.success && tv.data && cl.success && cl.data) {
+        return {
+          tipos: tv.data.data || [],
+          checklists: cl.data.data || [],
+        };
       }
-    })();
-  }, []);
+      throw new Error('Erro ao carregar dados');
+    },
+    [],
+    {
+      onError: () => {
+        message.error('Erro ao carregar dados');
+      }
+    }
+  );
+
+  const tipos = dadosVinculo?.tipos || [];
+  const checklists = dadosVinculo?.checklists || [];
 
   if (loading) return <Spin spinning />;
 
@@ -232,27 +238,33 @@ interface VinculoTEFormValues {
 
 function VinculoTEModal({ onSaved, controllerExec }: { onSaved: () => void; controllerExec: CrudController<unknown>['exec'] }) {
   const [form] = Form.useForm<VinculoTEFormValues>();
-  const [tipos, setTipos] = useState<Array<{ id: number; nome: string }>>([]);
-  const [checklists, setChecklists] = useState<Array<{ id: number; nome: string }>>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        const [te, cl] = await Promise.all([
-          listTiposEquipe({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
-          listChecklists({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
-        ]);
-        setTipos(te.data?.data || []);
-        setChecklists(cl.data?.data || []);
-      } catch (e) {
-        message.error('Erro ao carregar dados');
-      } finally {
-        setLoading(false);
+  // Carregar tipos de equipe e checklists
+  const { data: dadosVinculo, loading } = useDataFetch(
+    async () => {
+      const [te, cl] = await Promise.all([
+        listTiposEquipe({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
+        listChecklists({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
+      ]);
+
+      if (te.success && te.data && cl.success && cl.data) {
+        return {
+          tipos: te.data.data || [],
+          checklists: cl.data.data || [],
+        };
       }
-    })();
-  }, []);
+      throw new Error('Erro ao carregar dados');
+    },
+    [],
+    {
+      onError: () => {
+        message.error('Erro ao carregar dados');
+      }
+    }
+  );
+
+  const tipos = dadosVinculo?.tipos || [];
+  const checklists = dadosVinculo?.checklists || [];
 
   if (loading) return <Spin spinning />;
 

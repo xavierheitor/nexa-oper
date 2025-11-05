@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, Empty, Spin, Table, Tag } from 'antd';
-import { useEffect, useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface EquipeSemHorario {
   id: number;
@@ -16,29 +16,20 @@ interface EquipesSemHorarioProps {
 }
 
 export default function EquipesSemHorario({ filtros }: EquipesSemHorarioProps) {
-  const [dados, setDados] = useState<EquipeSemHorario[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: dados = [], loading } = useDataFetch<EquipeSemHorario[]>(
+    async () => {
+      const { getEquipesSemHorario } = await import(
+        '@/lib/actions/relatorios/relatoriosEquipes'
+      );
+      const result = await getEquipesSemHorario(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getEquipesSemHorario } = await import(
-          '@/lib/actions/relatorios/relatoriosEquipes'
-        );
-        const result = await getEquipesSemHorario(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
-
-    fetchDados();
-  }, [filtros]);
+      throw new Error('Erro ao carregar dados de equipes sem horário');
+    },
+    [filtros]
+  );
 
   const columns = [
     {

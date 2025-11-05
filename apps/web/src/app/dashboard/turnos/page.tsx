@@ -9,12 +9,10 @@
  * - Tabela com detalhes dos turnos abertos
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, Button, Tooltip } from 'antd';
 import { ClockCircleOutlined, CalendarOutlined, CheckOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
-import { useEntityData } from '@/lib/hooks/useEntityData';
 import { listTurnos } from '@/lib/actions/turno/list';
 import { Column } from '@ant-design/plots';
 import { getStatsByTipoEquipe } from '@/lib/actions/turno/getStatsByTipoEquipe';
@@ -23,6 +21,7 @@ import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
 import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 import type { ChecklistPreenchido } from '@/ui/components/ChecklistSelectorModal';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 const { Title } = Typography;
 
@@ -69,133 +68,104 @@ interface TurnoData {
 }
 
 export default function TurnosPage() {
-  const [turnosAbertos, setTurnosAbertos] = useState<TurnoData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingGrafico, setLoadingGrafico] = useState(true);
-  const [loadingGraficoHora, setLoadingGraficoHora] = useState(true);
-  const [loadingGraficoBase, setLoadingGraficoBase] = useState(true);
-  const [dadosGrafico, setDadosGrafico] = useState<DadosGraficoTipoEquipe[]>([]);
-  const [dadosGraficoHora, setDadosGraficoHora] = useState<DadosGraficoHora[]>([]);
-  const [dadosGraficoBase, setDadosGraficoBase] = useState<DadosGraficoBase[]>([]);
-  const [stats, setStats] = useState({
-    total: 0,
-    totalDiarios: 0,
-    porBase: {} as Record<string, number>,
-  });
-
   // Estados para os modais de checklist
   const [checklistSelectorVisible, setChecklistSelectorVisible] = useState(false);
   const [checklistViewerVisible, setChecklistViewerVisible] = useState(false);
   const [selectedTurno, setSelectedTurno] = useState<TurnoData | null>(null);
   const [selectedChecklist, setSelectedChecklist] = useState<ChecklistPreenchido | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Buscar turnos abertos
-        const resultAbertos = await listTurnos({
-          page: 1,
-          pageSize: 1000,
-          status: 'ABERTO',
-        });
+  // Fetch de turnos abertos e totais do dia
+  const { data: turnosAbertosResult, loading: loadingTurnos } = useDataFetch(
+    async () => {
+      const hoje = new Date();
+      const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0);
+      const fimHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 23, 59, 59);
 
-        // Buscar todos os turnos do dia (que começaram hoje entre 00:00:00 e 23:59:59)
-        const hoje = new Date();
-        const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0);
-        const fimHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 23, 59, 59);
+      const [resultAbertos, resultTodos] = await Promise.all([
+        listTurnos({ page: 1, pageSize: 1000, status: 'ABERTO' }),
+        listTurnos({ page: 1, pageSize: 1000, dataInicio: inicioHoje, dataFim: fimHoje }),
+      ]);
 
-        const resultTodos = await listTurnos({
-          page: 1,
-          pageSize: 1000,
-          dataInicio: inicioHoje,
-          dataFim: fimHoje,
-        });
-
-        if (resultAbertos.success && resultAbertos.data) {
-          // O repositório já formata os dados com campos adicionais (veiculoPlaca, equipeNome, etc.)
-          // mas o tipo TypeScript não reflete isso, então fazemos um cast explícito
-          const turnos = (resultAbertos.data.data || []) as unknown as TurnoData[];
-          setTurnosAbertos(turnos);
-
-          // Calcular estatísticas
-          const porBase: Record<string, number> = {};
-          turnos.forEach((turno: TurnoData) => {
-            const base = turno.equipeNome?.split('-')[0] || 'Não identificada';
-            porBase[base] = (porBase[base] || 0) + 1;
-          });
-
-          const totalDiarios = resultTodos.success && resultTodos.data ? (resultTodos.data.data?.length || 0) : 0;
-
-          setStats({
-            total: turnos.length,
-            totalDiarios,
-            porBase,
-          });
-        } else if (resultAbertos.redirectToLogin) {
-          window.location.href = '/login';
-          return;
-        }
-      } catch (error) {
-        console.error('Erro ao carregar turnos:', error);
-      } finally {
-        setLoading(false);
+      if (resultAbertos.redirectToLogin) {
+        window.location.href = '/login';
+        return { success: false as const, error: 'Redirecionando para login' };
       }
-    };
 
-    fetchData();
-
-    // Buscar dados do gráfico
-    const fetchGrafico = async () => {
-      setLoadingGrafico(true);
-      try {
-        const result = await getStatsByTipoEquipe();
-        if (result.success && result.data) {
-          setDadosGrafico(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados do gráfico:', error);
-      } finally {
-        setLoadingGrafico(false);
+      if (resultAbertos.success && resultAbertos.data && resultTodos.success && resultTodos.data) {
+        return {
+          success: true as const,
+          data: {
+            turnosAbertos: (resultAbertos.data.data || []) as unknown as TurnoData[],
+            totalDiarios: resultTodos.data.data?.length || 0,
+          },
+        };
       }
+
+      return { success: false as const, error: 'Erro ao carregar turnos' };
+    },
+    []
+  );
+
+  // Processar dados dos turnos e calcular estatísticas
+  const { turnosAbertos, stats } = useMemo(() => {
+    const turnos = turnosAbertosResult?.data?.turnosAbertos || [];
+    const totalDiarios = turnosAbertosResult?.data?.totalDiarios || 0;
+
+    // Calcular estatísticas por base
+    const porBase: Record<string, number> = {};
+    turnos.forEach((turno: TurnoData) => {
+      const base = turno.equipeNome?.split('-')[0] || 'Não identificada';
+      porBase[base] = (porBase[base] || 0) + 1;
+    });
+
+    return {
+      turnosAbertos: turnos,
+      stats: {
+        total: turnos.length,
+        totalDiarios,
+        porBase,
+      },
     };
+  }, [turnosAbertosResult]);
 
-    fetchGrafico();
-
-    // Buscar dados do gráfico por hora e tipo
-    const fetchGraficoHora = async () => {
-      setLoadingGraficoHora(true);
-      try {
-        const result = await getStatsByHoraETipoEquipe();
-        if (result.success && result.data) {
-          setDadosGraficoHora(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados do gráfico por hora:', error);
-      } finally {
-        setLoadingGraficoHora(false);
+  // Fetch de gráfico por tipo de equipe
+  const { data: dadosGrafico, loading: loadingGrafico } = useDataFetch<DadosGraficoTipoEquipe[]>(
+    async () => {
+      const result = await getStatsByTipoEquipe();
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
+      throw new Error(result.error || 'Erro ao carregar dados do gráfico');
+    },
+    []
+  );
 
-    fetchGraficoHora();
-
-    // Buscar dados do gráfico por base
-    const fetchGraficoBase = async () => {
-      setLoadingGraficoBase(true);
-      try {
-        const result = await getStatsByBase();
-        if (result.success && result.data) {
-          setDadosGraficoBase(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados do gráfico por base:', error);
-      } finally {
-        setLoadingGraficoBase(false);
+  // Fetch de gráfico por hora e tipo
+  const { data: dadosGraficoHora, loading: loadingGraficoHora } = useDataFetch<DadosGraficoHora[]>(
+    async () => {
+      const result = await getStatsByHoraETipoEquipe();
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
+      throw new Error(result.error || 'Erro ao carregar dados do gráfico por hora');
+    },
+    []
+  );
 
-    fetchGraficoBase();
-  }, []);
+  // Fetch de gráfico por base
+  const { data: dadosGraficoBase, loading: loadingGraficoBase } = useDataFetch<DadosGraficoBase[]>(
+    async () => {
+      const result = await getStatsByBase();
+      if (result.success && result.data) {
+        return result.data;
+      }
+      throw new Error(result.error || 'Erro ao carregar dados do gráfico por base');
+    },
+    []
+  );
+
+  // Loading geral (qualquer um dos fetches)
+  const loading = loadingTurnos || loadingGrafico || loadingGraficoHora || loadingGraficoBase;
 
   // Funções para lidar com os modais de checklist
   const handleViewChecklists = (turno: TurnoData) => {
@@ -305,7 +275,7 @@ export default function TurnosPage() {
     },
   ];
 
-  if (loading) {
+  if (loading && !turnosAbertos.length) {
     return (
       <div style={{ textAlign: 'center', padding: '40px' }}>
         <Spin size="large" />
@@ -359,7 +329,7 @@ export default function TurnosPage() {
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
                 <Spin size="large" />
               </div>
-            ) : dadosGrafico.length === 0 ? (
+            ) : !dadosGrafico || dadosGrafico.length === 0 ? (
               <Empty description="Nenhum dado disponível" />
             ) : (
               <Column
@@ -404,7 +374,7 @@ export default function TurnosPage() {
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
                 <Spin size="large" />
               </div>
-            ) : dadosGraficoHora.length === 0 ? (
+            ) : !dadosGraficoHora || dadosGraficoHora.length === 0 ? (
               <Empty description="Nenhum dado disponível" />
             ) : (
               <Column
@@ -455,7 +425,7 @@ export default function TurnosPage() {
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
                 <Spin size="large" />
               </div>
-            ) : dadosGraficoBase.length === 0 ? (
+            ) : !dadosGraficoBase || dadosGraficoBase.length === 0 ? (
               <Empty description="Nenhum dado disponível" />
             ) : (
               <Column

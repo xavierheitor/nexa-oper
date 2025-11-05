@@ -59,7 +59,8 @@ import { getTextFilter } from '@/ui/components/tableFilters';
 import { Apr, AprTipoAtividadeRelacao } from '@nexa-oper/db';
 import type { CrudController } from '@/lib/hooks/useCrudController';
 import { Button, Card, Form, Modal, Select, Spin, Table, Tag, App, message } from 'antd';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import AprForm, { AprFormData } from './form';
 
 /**
@@ -419,9 +420,6 @@ function VinculoTAModal({
 }) {
   // Estado local do formulário
   const [form] = Form.useForm();
-  const [tipos, setTipos] = useState<Array<{ id: number; nome: string }>>([]);
-  const [aprsData, setAprsData] = useState<Array<{ id: number; nome: string }>>([]);
-  const [loading, setLoading] = useState(true);
 
   /**
    * Carrega dados necessários para os dropdowns
@@ -429,38 +427,42 @@ function VinculoTAModal({
    * Executa chamadas paralelas para buscar APRs e Tipos de Atividade
    * disponíveis para vinculação. Trata erros e gerencia estado de loading.
    */
-  useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
+  const { data: dadosVinculo, loading } = useDataFetch(
+    async () => {
+      // Busca paralela de APRs e Tipos de Atividade
+      const [aprsResult, tiposResult] = await Promise.all([
+        listAprs({
+          page: 1,
+          pageSize: 200,
+          orderBy: 'nome',
+          orderDir: 'asc'
+        }),
+        listTiposAtividade({
+          page: 1,
+          pageSize: 200,
+          orderBy: 'nome',
+          orderDir: 'asc'
+        }),
+      ]);
 
-        // Busca paralela de APRs e Tipos de Atividade
-        const [aprsResult, tiposResult] = await Promise.all([
-          listAprs({
-            page: 1,
-            pageSize: 200,
-            orderBy: 'nome',
-            orderDir: 'asc'
-          }),
-          listTiposAtividade({
-            page: 1,
-            pageSize: 200,
-            orderBy: 'nome',
-            orderDir: 'asc'
-          }),
-        ]);
-
-        // Extrai dados dos resultados
-        setAprsData(aprsResult.data?.data || []);
-        setTipos(tiposResult.data?.data || []);
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        message.error('Erro ao carregar dados para vinculação');
-      } finally {
-        setLoading(false);
+      if (aprsResult.success && aprsResult.data && tiposResult.success && tiposResult.data) {
+        return {
+          aprs: aprsResult.data.data || [],
+          tipos: tiposResult.data.data || [],
+        };
       }
-    })();
-  }, []);
+      throw new Error('Erro ao carregar dados para vinculação');
+    },
+    [],
+    {
+      onError: () => {
+        message.error('Erro ao carregar dados para vinculação');
+      }
+    }
+  );
+
+  const tipos = dadosVinculo?.tipos || [];
+  const aprsData = dadosVinculo?.aprs || [];
 
   // Exibe loading enquanto carrega dados
   if (loading) {

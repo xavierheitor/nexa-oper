@@ -2,7 +2,8 @@
 
 import { Column } from '@ant-design/plots';
 import { Card, Empty, Select, Spin } from 'antd';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosComparacao {
   base: string;
@@ -18,32 +19,24 @@ interface ComparacaoEntreBasesProps {
 export default function ComparacaoEntreBases({
   filtros,
 }: ComparacaoEntreBasesProps) {
-  const [dados, setDados] = useState<DadosComparacao[]>([]);
-  const [loading, setLoading] = useState(true);
   const [metrica, setMetrica] = useState<'veiculos' | 'eletricistas' | 'equipes'>(
     'eletricistas'
   );
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getComparacaoEntreBases } = await import(
-          '@/lib/actions/relatorios/relatoriosBases'
-        );
-        const result = await getComparacaoEntreBases(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: dados = [], loading } = useDataFetch<DadosComparacao[]>(
+    async () => {
+      const { getComparacaoEntreBases } = await import(
+        '@/lib/actions/relatorios/relatoriosBases'
+      );
+      const result = await getComparacaoEntreBases(filtros);
 
-    fetchDados();
-  }, [filtros]);
+      if (result.success && result.data) {
+        return result.data;
+      }
+      throw new Error('Erro ao carregar dados de comparação entre bases');
+    },
+    [filtros]
+  );
 
   if (loading) {
     return (

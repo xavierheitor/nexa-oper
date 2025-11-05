@@ -2,7 +2,7 @@
 
 import { Column } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
-import { useEffect, useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosMarca {
   modelo: string;
@@ -14,29 +14,20 @@ interface VeiculosPorMarcaProps {
 }
 
 export default function VeiculosPorMarca({ filtros }: VeiculosPorMarcaProps) {
-  const [dados, setDados] = useState<DadosMarca[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: dados = [], loading } = useDataFetch<DadosMarca[]>(
+    async () => {
+      const { getVeiculosPorMarca } = await import(
+        '@/lib/actions/relatorios/relatoriosVeiculos'
+      );
+      const result = await getVeiculosPorMarca(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getVeiculosPorMarca } = await import(
-          '@/lib/actions/relatorios/relatoriosVeiculos'
-        );
-        const result = await getVeiculosPorMarca(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
-
-    fetchDados();
-  }, [filtros]);
+      throw new Error('Erro ao carregar dados de veículos por marca');
+    },
+    [filtros]
+  );
 
   if (loading) {
     return (

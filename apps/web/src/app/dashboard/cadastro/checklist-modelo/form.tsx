@@ -8,6 +8,7 @@ import { getChecklist } from '@/lib/actions/checklist/get';
 import { listChecklistOpcoesResposta } from '@/lib/actions/checklistOpcaoResposta/list';
 import { listChecklistPerguntas } from '@/lib/actions/checklistPergunta/list';
 import { listTiposChecklist } from '@/lib/actions/tipoChecklist/list';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 import type { ChecklistOpcaoResposta, ChecklistPergunta, TipoChecklist } from '@nexa-oper/db';
 
@@ -29,10 +30,36 @@ interface Props {
 export default function ChecklistForm({ onSubmit, initialValues, loading = false }: Props) {
   const { message } = App.useApp();
   const [form] = Form.useForm<ChecklistFormData>();
-  const [tipos, setTipos] = useState<TipoChecklist[]>([]);
-  const [perguntas, setPerguntas] = useState<ChecklistPergunta[]>([]);
-  const [opcoes, setOpcoes] = useState<ChecklistOpcaoResposta[]>([]);
-  const [loadingSources, setLoadingSources] = useState(true);
+
+  // Carregar dados para os Transfer components
+  const { data: dadosSources, loading: loadingSources } = useDataFetch(
+    async () => {
+      const [tiposRes, perguntasRes, opcoesRes] = await Promise.all([
+        listTiposChecklist({ page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' }),
+        listChecklistPerguntas({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
+        listChecklistOpcoesResposta({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
+      ]);
+
+      if (tiposRes.success && tiposRes.data && perguntasRes.success && perguntasRes.data && opcoesRes.success && opcoesRes.data) {
+        return {
+          tipos: tiposRes.data.data || [],
+          perguntas: perguntasRes.data.data || [],
+          opcoes: opcoesRes.data.data || [],
+        };
+      }
+      throw new Error('Erro ao carregar dados');
+    },
+    [],
+    {
+      onError: () => {
+        message.error('Erro ao carregar dados');
+      }
+    }
+  );
+
+  const tipos = dadosSources?.tipos || [];
+  const perguntas = dadosSources?.perguntas || [];
+  const opcoes = dadosSources?.opcoes || [];
 
   const [targetPerguntas, setTargetPerguntas] = useState<string[]>([]);
   const [targetOpcoes, setTargetOpcoes] = useState<string[]>([]);
@@ -46,27 +73,6 @@ export default function ChecklistForm({ onSubmit, initialValues, loading = false
     [opcoes]
   );
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setLoadingSources(true);
-        const [tiposRes, perguntasRes, opcoesRes] = await Promise.all([
-          listTiposChecklist({ page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' }),
-          listChecklistPerguntas({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
-          listChecklistOpcoesResposta({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
-        ]);
-        setTipos(tiposRes.data?.data || []);
-        setPerguntas(perguntasRes.data?.data || []);
-        setOpcoes(opcoesRes.data?.data || []);
-      } catch (e) {
-        console.error(e);
-        message.error('Erro ao carregar dados');
-      } finally {
-        setLoadingSources(false);
-      }
-    };
-    load();
-  }, []);
 
   useEffect(() => {
     const applyInitial = async () => {

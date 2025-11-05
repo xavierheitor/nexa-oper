@@ -2,7 +2,7 @@
 
 import { Pie } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
-import { useEffect, useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosEscaladas {
   status: string;
@@ -14,29 +14,20 @@ interface EquipesEscaladasProps {
 }
 
 export default function EquipesEscaladas({ filtros }: EquipesEscaladasProps) {
-  const [dados, setDados] = useState<DadosEscaladas[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: dados = [], loading } = useDataFetch<DadosEscaladas[]>(
+    async () => {
+      const { getEquipesEscaladas } = await import(
+        '@/lib/actions/relatorios/relatoriosEquipes'
+      );
+      const result = await getEquipesEscaladas(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getEquipesEscaladas } = await import(
-          '@/lib/actions/relatorios/relatoriosEquipes'
-        );
-        const result = await getEquipesEscaladas(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
-
-    fetchDados();
-  }, [filtros]);
+      throw new Error('Erro ao carregar dados de equipes escaladas');
+    },
+    [filtros]
+  );
 
   if (loading) {
     return (

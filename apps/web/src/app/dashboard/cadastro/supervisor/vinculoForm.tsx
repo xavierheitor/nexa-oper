@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { listEquipes } from '@/lib/actions/equipe/list';
 import { listSupervisores } from '@/lib/actions/supervisor/list';
 import { Equipe, Supervisor } from '@nexa-oper/db';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 export interface VinculoFormData {
   supervisorId: number;
@@ -23,26 +24,28 @@ interface VinculoFormProps {
 
 export default function VinculoForm({ onSubmit, initialValues, loading = false }: VinculoFormProps) {
   const [form] = Form.useForm<VinculoFormData>();
-  const [equipes, setEquipes] = useState<Equipe[]>([]);
-  const [supervisores, setSupervisores] = useState<Supervisor[]>([]);
-  const [loadingSelects, setLoadingSelects] = useState(true);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setLoadingSelects(true);
-        const [eqRes, supRes] = await Promise.all([
-          listEquipes({ page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' }),
-          listSupervisores({ page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' }),
-        ]);
-        setEquipes(eqRes.data?.data || []);
-        setSupervisores(supRes.data?.data || []);
-      } finally {
-        setLoadingSelects(false);
+  // Carregar equipes e supervisores
+  const { data: dadosVinculo, loading: loadingSelects } = useDataFetch(
+    async () => {
+      const [eqRes, supRes] = await Promise.all([
+        listEquipes({ page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' }),
+        listSupervisores({ page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' }),
+      ]);
+
+      if (eqRes.success && eqRes.data && supRes.success && supRes.data) {
+        return {
+          equipes: eqRes.data.data || [],
+          supervisores: supRes.data.data || [],
+        };
       }
-    };
-    load();
-  }, []);
+      throw new Error('Erro ao carregar dados');
+    },
+    []
+  );
+
+  const equipes = dadosVinculo?.equipes || [];
+  const supervisores = dadosVinculo?.supervisores || [];
 
   useEffect(() => {
     if (initialValues) {

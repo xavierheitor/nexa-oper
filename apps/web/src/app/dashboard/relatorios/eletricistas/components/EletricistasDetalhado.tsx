@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, Empty, Spin, Table, Tag } from 'antd';
-import { useEffect, useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface EletricistaDetalhado {
   id: number;
@@ -26,29 +26,20 @@ interface EletricistasDetalhadoProps {
 export default function EletricistasDetalhado({
   filtros,
 }: EletricistasDetalhadoProps) {
-  const [dados, setDados] = useState<EletricistaDetalhado[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: dados = [], loading } = useDataFetch<EletricistaDetalhado[]>(
+    async () => {
+      const { getEletricistasDetalhado } = await import(
+        '@/lib/actions/relatorios/relatoriosEletricistas'
+      );
+      const result = await getEletricistasDetalhado(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getEletricistasDetalhado } = await import(
-          '@/lib/actions/relatorios/relatoriosEletricistas'
-        );
-        const result = await getEletricistasDetalhado(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
-
-    fetchDados();
-  }, [filtros]);
+      throw new Error('Erro ao carregar dados de eletricistas detalhado');
+    },
+    [filtros]
+  );
 
   const columns = [
     {

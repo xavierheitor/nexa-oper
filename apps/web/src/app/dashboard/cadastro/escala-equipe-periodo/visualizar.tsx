@@ -9,10 +9,11 @@
 
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Modal, Table, Spin, Tag, Card, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { visualizarEscala } from '@/lib/actions/escala/escalaEquipePeriodo';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface VisualizarEscalaProps {
   escalaId: number;
@@ -51,41 +52,34 @@ interface DadosEscala {
 }
 
 export default function VisualizarEscala({ escalaId, open, onClose }: VisualizarEscalaProps) {
-  const [loading, setLoading] = useState(false);
-  const [dados, setDados] = useState<DadosEscala | null>(null);
-
-  const carregarDados = useCallback(async () => {
-    setLoading(true);
-    try {
-      // Buscar dados da escala com slots usando server action
+  // Carregar dados da escala quando o modal abrir
+  const { data: dados, loading } = useDataFetch<DadosEscala>(
+    async () => {
       const result = await visualizarEscala(escalaId);
-
       if (result.success && result.data) {
         // Fazer cast explícito para o tipo esperado, já que o handleServerAction
         // não preserva completamente os tipos do Prisma
         const dadosCompleto = result.data as unknown as DadosEscala;
+        return dadosCompleto;
+      }
+      throw new Error(result.error || 'Erro ao carregar escala');
+    },
+    [open, escalaId],
+    {
+      immediate: false, // Não carrega automaticamente
+      onError: (error) => {
+        message.error(typeof error === 'string' ? error : 'Erro ao carregar escala');
+      },
+      onSuccess: (data) => {
+        const dadosCompleto = data as DadosEscala;
         console.log('Dados carregados:', {
           slots: dadosCompleto.Slots?.length || 0,
           eletricistas: dadosCompleto.estatisticas?.eletricistasUnicos || 0,
         });
-        setDados(dadosCompleto);
-      } else {
-        console.error('Erro na resposta:', result.error);
-        message.error(result.error || 'Erro ao carregar escala');
       }
-    } catch (error) {
-      console.error('Erro ao carregar escala:', error);
-      message.error('Erro ao carregar escala');
-    } finally {
-      setLoading(false);
     }
-  }, [escalaId]);
+  );
 
-  useEffect(() => {
-    if (open && escalaId) {
-      carregarDados();
-    }
-  }, [open, escalaId, carregarDados]);
 
   if (loading) {
     return (

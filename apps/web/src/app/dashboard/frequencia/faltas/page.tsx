@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, Space, DatePicker, Select, Button, message } from 'antd';
 import { App } from 'antd';
 import { listFaltas } from '@/lib/actions/turno-realizado/listFaltas';
 import { FaltaListResponse, FaltaStatus, FaltaStatusLabels } from '@/lib/schemas/turnoRealizadoSchema';
 import { listTiposJustificativa } from '@/lib/actions/justificativa/listTipos';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { criarJustificativa } from '@/lib/actions/justificativa/criarJustificativa';
 import { uploadAnexoJustificativa } from '@/lib/actions/justificativa/uploadAnexo';
 import FaltaTable from '@/ui/components/FaltaTable';
@@ -34,23 +35,19 @@ export default function FaltasPage() {
 
   const [faltaSelecionada, setFaltaSelecionada] = useState<FaltaListResponse['data'][0] | null>(null);
   const [modalJustificarOpen, setModalJustificarOpen] = useState(false);
-  const [tiposJustificativa, setTiposJustificativa] = useState<Array<{ id: number; nome: string }>>([]);
   const [loadingJustificar, setLoadingJustificar] = useState(false);
 
   // Carregar tipos de justificativa
-  useEffect(() => {
-    const loadTipos = async () => {
-      try {
-        const result = await listTiposJustificativa();
-        if (result.success && result.data) {
-          setTiposJustificativa(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar tipos de justificativa:', error);
+  const { data: tiposJustificativa = [] } = useDataFetch<Array<{ id: number; nome: string }>>(
+    async () => {
+      const result = await listTiposJustificativa();
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
-    loadTipos();
-  }, []);
+      throw new Error(result.error || 'Erro ao carregar tipos de justificativa');
+    },
+    []
+  );
 
   // Fetcher para SWR
   const fetcher = async (): Promise<FaltaListResponse> => {

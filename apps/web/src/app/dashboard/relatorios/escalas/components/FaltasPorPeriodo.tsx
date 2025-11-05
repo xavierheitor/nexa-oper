@@ -2,7 +2,7 @@
 
 import { Line } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
-import { useEffect, useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosFaltas {
   data: string;
@@ -14,29 +14,20 @@ interface FaltasPorPeriodoProps {
 }
 
 export default function FaltasPorPeriodo({ filtros }: FaltasPorPeriodoProps) {
-  const [dados, setDados] = useState<DadosFaltas[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: dados = [], loading } = useDataFetch<DadosFaltas[]>(
+    async () => {
+      const { getFaltasPorPeriodo } = await import(
+        '@/lib/actions/relatorios/relatoriosEscalas'
+      );
+      const result = await getFaltasPorPeriodo(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getFaltasPorPeriodo } = await import(
-          '@/lib/actions/relatorios/relatoriosEscalas'
-        );
-        const result = await getFaltasPorPeriodo(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
-
-    fetchDados();
-  }, [filtros]);
+      throw new Error('Erro ao carregar dados de faltas por período');
+    },
+    [filtros]
+  );
 
   if (loading) {
     return (

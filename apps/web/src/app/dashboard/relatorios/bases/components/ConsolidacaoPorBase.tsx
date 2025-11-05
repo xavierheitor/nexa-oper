@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, Empty, Spin, Table, Tag } from 'antd';
-import { useEffect, useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosBase {
   id: number;
@@ -25,39 +25,20 @@ interface ConsolidacaoPorBaseProps {
 }
 
 export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProps) {
-  const [dados, setDados] = useState<DadosBase[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: dados = [], loading } = useDataFetch<DadosBase[]>(
+    async () => {
+      const { getConsolidacaoPorBase } = await import(
+        '@/lib/actions/relatorios/relatoriosBases'
+      );
+      const result = await getConsolidacaoPorBase(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        console.log('[ConsolidacaoPorBase] Buscando dados com filtros:', filtros);
-        const { getConsolidacaoPorBase } = await import(
-          '@/lib/actions/relatorios/relatoriosBases'
-        );
-        const result = await getConsolidacaoPorBase(filtros);
-        console.log('[ConsolidacaoPorBase] Resultado completo:', result);
-        console.log('[ConsolidacaoPorBase] result.success:', result.success);
-        console.log('[ConsolidacaoPorBase] result.data:', result.data);
-        console.log('[ConsolidacaoPorBase] Tipo de result.data:', typeof result.data);
-        console.log('[ConsolidacaoPorBase] Array.isArray(result.data):', Array.isArray(result.data));
-
-        if (result.success && result.data) {
-          console.log('[ConsolidacaoPorBase] ✅ Definindo dados, length:', result.data.length);
-          setDados(result.data);
-        } else {
-          console.error('[ConsolidacaoPorBase] ❌ Erro ou sem dados. success:', result.success, 'data:', result.data);
-        }
-      } catch (error) {
-        console.error('[ConsolidacaoPorBase] Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
-
-    fetchDados();
-  }, [filtros]);
+      throw new Error('Erro ao carregar dados de consolidação por base');
+    },
+    [filtros]
+  );
 
   const columns = [
     {
