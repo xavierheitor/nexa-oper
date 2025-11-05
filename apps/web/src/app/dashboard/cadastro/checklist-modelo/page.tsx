@@ -157,12 +157,12 @@ export default function ChecklistPage() {
 
       {/* Modal Vínculo TipoVeiculo */}
       <Modal title="Vincular Checklist a Tipo de Veículo" open={tvController.isOpen} onCancel={tvController.close} footer={null} destroyOnHidden width={600}>
-        <VinculoTVModal onSaved={() => tvVinculos.mutate()} controllerExec={tvController.exec} />
+        {tvController.isOpen && <VinculoTVModal onSaved={() => tvVinculos.mutate()} controllerExec={tvController.exec} />}
       </Modal>
 
       {/* Modal Vínculo TipoEquipe */}
       <Modal title="Vincular Checklist a Tipo de Equipe" open={teController.isOpen} onCancel={teController.close} footer={null} destroyOnHidden width={600}>
-        <VinculoTEModal onSaved={() => teVinculos.mutate()} controllerExec={teController.exec} />
+        {teController.isOpen && <VinculoTEModal onSaved={() => teVinculos.mutate()} controllerExec={teController.exec} />}
       </Modal>
     </>
   );

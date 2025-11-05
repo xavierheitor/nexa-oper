@@ -131,14 +131,58 @@ export async function handleServerAction<TInput, TOutput>(
     // 2. VALIDAÇÃO DE DADOS
     // ========================================
 
+    // Verifica se o schema é válido
+    if (!schema) {
+      logger.error('[SchemaError] Schema Zod é undefined', {
+        entityName: options?.entityName || 'UNKNOWN_ENTITY',
+        actionType: options?.actionType || 'unknown',
+        schemaType: typeof schema,
+      });
+
+      return {
+        success: false,
+        error: 'Erro de configuração: schema de validação não fornecido',
+      };
+    }
+
+    // Verifica se o schema tem o método safeParse
+    if (typeof schema.safeParse !== 'function') {
+      logger.error('[SchemaError] Schema Zod não tem método safeParse', {
+        entityName: options?.entityName || 'UNKNOWN_ENTITY',
+        actionType: options?.actionType || 'unknown',
+        schemaType: typeof schema,
+        schemaKeys: schema ? Object.keys(schema) : [],
+      });
+
+      return {
+        success: false,
+        error: 'Erro de configuração: schema de validação inválido',
+      };
+    }
+
     // Valida os dados de entrada usando o schema Zod
-    const parseResult = schema.safeParse(rawInput);
+    let parseResult;
+    try {
+      parseResult = schema.safeParse(rawInput);
+    } catch (parseError) {
+      logger.error('[SchemaError] Erro ao executar safeParse', {
+        entityName: options?.entityName || 'UNKNOWN_ENTITY',
+        actionType: options?.actionType || 'unknown',
+        parseError: parseError instanceof Error ? parseError.message : String(parseError),
+        parseErrorStack: parseError instanceof Error ? parseError.stack : undefined,
+        rawInput,
+      });
+
+      return {
+        success: false,
+        error: 'Erro ao validar dados de entrada',
+      };
+    }
 
     // Se a validação falhar, registra o erro e retorna
     if (!parseResult.success) {
       // Obtém o nome da entidade para logging contextualizado
-      const entityName =
-        options?.entityName || schema.description || 'UNKNOWN_ENTITY';
+      const entityName = options?.entityName || 'UNKNOWN_ENTITY';
 
       // Registra erro de validação com contexto completo
       logger.error(
@@ -164,8 +208,7 @@ export async function handleServerAction<TInput, TOutput>(
     const input = parseResult.data;
 
     // Obtém metadados da ação para auditoria e logging
-    const entityName =
-      options?.entityName || schema.description || 'UNKNOWN_ENTITY';
+    const entityName = options?.entityName || 'UNKNOWN_ENTITY';
     const actionType = options?.actionType || 'unknown';
 
     // ========================================
@@ -213,13 +256,27 @@ export async function handleServerAction<TInput, TOutput>(
     // 7. TRATAMENTO DE ERROS
     // ========================================
 
-    // Registra erro não tratado
-    logger.error(`[ServerActionError] ${err}`);
+    // Obtém informações detalhadas do erro
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    const errorStack = err instanceof Error ? err.stack : undefined;
+    const errorName = err instanceof Error ? err.name : typeof err;
+
+    // Registra erro não tratado com contexto completo
+    logger.error('[ServerActionError] Erro inesperado', {
+      error: errorMessage,
+      errorName,
+      errorStack,
+      entityName: options?.entityName || 'UNKNOWN_ENTITY',
+      actionType: options?.actionType || 'unknown',
+      input: rawInput,
+      schemaType: typeof schema,
+      schemaHasSafeParse: typeof schema?.safeParse === 'function',
+    });
 
     // Retorna erro genérico para o cliente
     return {
       success: false,
-      error: err instanceof Error ? err.message : 'Erro interno',
+      error: errorMessage || 'Erro interno',
     };
   }
 }

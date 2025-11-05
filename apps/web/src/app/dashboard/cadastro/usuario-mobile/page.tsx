@@ -236,7 +236,7 @@ export default function MobileUserPage() {
         width={800}
         maskClosable={false}
       >
-        {selectedUserForPermissoes && (
+        {permissoesModalOpen && selectedUserForPermissoes && (
           <PermissoesModal
             mobileUserId={selectedUserForPermissoes.id}
             mobileUserName={selectedUserForPermissoes.username}

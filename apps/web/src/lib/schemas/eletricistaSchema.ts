@@ -65,7 +65,7 @@ export const eletricistaFilterSchema = z.object({
   orderBy: z.string().default('id'),
   orderDir: z.enum(['asc', 'desc']).default('asc'),
   search: z.string().optional(),
-  include: z.record(z.unknown()).optional(),
+  include: z.any().optional(),
   contratoId: z.number().int('Contrato é obrigatório').optional(),
   equipeId: z.number().int().optional(),
   ativo: z.boolean().optional(),
@@ -115,7 +115,6 @@ export const eletricistaLoteSchema = z.object({
       'DESLIGADO',
       'APOSENTADO',
     ])
-    .optional()
     .default('ATIVO'),
   eletricistas: z
     .array(eletricistaLoteItemSchema)

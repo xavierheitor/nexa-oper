@@ -527,13 +527,15 @@ export default function EletricistaPage() {
         destroyOnHidden
         width={900}
       >
-        <EletricistaLoteForm
-          onSubmit={handleLoteSubmit}
-          loading={isLoteLoading}
-          contratos={contratos.data || []}
-          cargos={cargos.data || []}
-          bases={bases.data || []}
-        />
+        {isLoteModalOpen && (
+          <EletricistaLoteForm
+            onSubmit={handleLoteSubmit}
+            loading={isLoteLoading}
+            contratos={contratos.data || []}
+            cargos={cargos.data || []}
+            bases={bases.data || []}
+          />
+        )}
       </Modal>
 
       <TransferBaseModal

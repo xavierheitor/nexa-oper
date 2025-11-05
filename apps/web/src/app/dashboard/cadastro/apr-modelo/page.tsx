@@ -381,7 +381,7 @@ export default function AprPage() {
         destroyOnHidden
         width={500}
       >
-        <VinculoTAModal
+        {taController.isOpen && <VinculoTAModal
           onSaved={() => {
             taController.close();
             taVinculos.mutate();
