@@ -68,6 +68,7 @@ import { HealthModule } from './health/health.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { TurnoRealizadoModule } from './modules/turno-realizado/turno-realizado.module';
 import { JustificativasModule } from './modules/justificativas/justificativas.module';
+import { WebLogsModule } from './modules/web-logs/web-logs.module';
 
 /**
  * Módulo raiz da aplicação
@@ -115,6 +116,7 @@ import { JustificativasModule } from './modules/justificativas/justificativas.mo
     MetricsModule,
     TurnoRealizadoModule,
     JustificativasModule,
+    WebLogsModule,
 
     // TODO: Adicionar outros módulos conforme necessário
     // UserModule,

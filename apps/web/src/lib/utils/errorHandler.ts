@@ -145,6 +145,56 @@ class ErrorHandler {
   }
 
   /**
+   * Envia log de erro para a API (se configurado)
+   *
+   * @param message - Mensagem do erro
+   * @param options - Opções de tratamento
+   * @param metadata - Metadados adicionais
+   */
+  private static async sendLogToApi(
+    message: string,
+    options: ErrorHandlerOptions = {},
+    metadata: Record<string, any> = {}
+  ): Promise<void> {
+    // Só funciona no cliente (browser)
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    // Verifica se a URL da API está configurada
+    const apiLogUrl = process.env.NEXT_PUBLIC_API_LOG_URL;
+    if (!apiLogUrl) {
+      return;
+    }
+
+    try {
+      // Envia log para API de forma assíncrona (não bloqueia)
+      // Usa fetch nativo do browser (disponível globalmente)
+      fetch(`${apiLogUrl}/api/web-logs/error`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message,
+          context: options.context,
+          actionType: options.actionType,
+          metadata,
+        }),
+        // Não aguarda resposta - fire and forget
+        // keepalive garante que a requisição continue mesmo se a página for fechada
+        keepalive: true,
+      }).catch(() => {
+        // Ignora erros de rede silenciosamente
+        // Não queremos que falhas no envio de logs quebrem a aplicação
+      });
+    } catch {
+      // Ignora erros silenciosamente
+      // Falhas no envio de logs não devem afetar a aplicação
+    }
+  }
+
+  /**
    * Registra o erro no sistema de logging com contexto completo
    *
    * @param error - Erro a ser logado
@@ -171,10 +221,11 @@ class ErrorHandler {
 
     // Log estruturado usando logger client-safe
     const logger = getLogger();
-    logger.error(
-      `[ErrorHandler] ${options.context || 'Erro'}${options.actionType ? ` - ${options.actionType}` : ''}`,
-      logContext
-    );
+    const logMessage = `[ErrorHandler] ${options.context || 'Erro'}${options.actionType ? ` - ${options.actionType}` : ''}`;
+    logger.error(logMessage, logContext);
+
+    // Envia para API se configurado (fire and forget)
+    this.sendLogToApi(logMessage, options, logContext);
   }
 
   /**
