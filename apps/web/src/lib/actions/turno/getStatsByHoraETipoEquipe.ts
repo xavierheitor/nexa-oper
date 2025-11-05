@@ -10,6 +10,7 @@
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
 import { listTiposEquipe } from '../tipoEquipe/list';
+import { getTodayDateRange } from '@/lib/utils/dateHelpers';
 import { z } from 'zod';
 
 const turnoStatsByHoraETipoEquipeSchema = z.object({});
@@ -38,16 +39,14 @@ export const getStatsByHoraETipoEquipe = async () =>
       const tiposEquipe = resultTipos.data.data || [];
 
       // 2. Buscar turnos do dia com relacionamentos
-      const hoje = new Date();
-      const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0);
-      const fimHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 23, 59, 59);
+      const { inicio, fim } = getTodayDateRange();
 
       const turnos = await prisma.turno.findMany({
         where: {
           deletedAt: null,
           dataInicio: {
-            gte: inicioHoje,
-            lte: fimHoje,
+            gte: inicio,
+            lte: fim,
           },
         },
         include: {

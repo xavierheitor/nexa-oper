@@ -9,6 +9,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { getTodayDateRange } from '@/lib/utils/dateHelpers';
 import { z } from 'zod';
 
 const turnoStatsByHoraSchema = z.object({});
@@ -23,16 +24,14 @@ export const getStatsByHora = async () =>
     turnoStatsByHoraSchema,
     async () => {
       // Buscar turnos do dia
-      const hoje = new Date();
-      const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0);
-      const fimHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 23, 59, 59);
+      const { inicio, fim } = getTodayDateRange();
 
       const turnos = await prisma.turno.findMany({
         where: {
           deletedAt: null,
           dataInicio: {
-            gte: inicioHoje,
-            lte: fimHoje,
+            gte: inicio,
+            lte: fim,
           },
         },
         select: {
