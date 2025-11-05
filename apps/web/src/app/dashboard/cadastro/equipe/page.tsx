@@ -112,7 +112,7 @@ export default function EquipePage() {
         title: 'Base Atual',
         key: 'baseAtual',
         width: 160,
-        render: (_: any, record: EquipeWithBase) => {
+        render: (_: unknown, record: EquipeWithBase) => {
           if (!record.baseAtual) {
             return <Tag color="default">Sem lotação</Tag>;
           }
@@ -123,7 +123,7 @@ export default function EquipePage() {
         title: 'Contrato',
         dataIndex: ['contrato', 'nome'],
         key: 'contrato',
-        render: (nome: string, record: any) => {
+        render: (nome: string, record: EquipeWithBase & { contrato?: { nome: string; numero: string } }) => {
           const contrato = record?.contrato;
           return contrato ? `${contrato.nome} (${contrato.numero})` : '-';
         },
@@ -278,8 +278,8 @@ export default function EquipePage() {
             controller.editingItem
               ? {
                   nome: controller.editingItem.nome,
-                  tipoEquipeId: (controller.editingItem as any).tipoEquipeId,
-                  contratoId: (controller.editingItem as any).contratoId,
+                  tipoEquipeId: controller.editingItem.tipoEquipeId,
+                  contratoId: controller.editingItem.contratoId,
                 }
               : undefined
           }

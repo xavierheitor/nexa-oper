@@ -2,6 +2,8 @@
 
 import { Table, Button, Space } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import type { TablePaginationConfig } from 'antd/es/table';
+import type { TableFilters, TableSorter } from '@/lib/types/antd';
 import { HoraExtra } from '@/lib/schemas/turnoRealizadoSchema';
 import StatusTag from './StatusTag';
 import TipoHoraExtraTag from './TipoHoraExtraTag';
@@ -17,7 +19,7 @@ interface HoraExtraTableProps {
     total: number;
     totalPages: number;
   };
-  onTableChange?: (pagination: any) => void;
+  onTableChange?: (pagination: TablePaginationConfig, filters?: TableFilters, sorter?: TableSorter) => void;
   onAprovar?: (horaExtra: HoraExtra) => void;
   onRejeitar?: (horaExtra: HoraExtra) => void;
 }

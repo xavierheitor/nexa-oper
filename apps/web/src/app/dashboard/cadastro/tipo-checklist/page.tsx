@@ -10,22 +10,23 @@ import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { Button, Card, Modal, Table } from 'antd';
+import { TipoChecklist } from '@nexa-oper/db';
 import TipoChecklistForm from './form';
 
 export default function TipoChecklistPage() {
-  const controller = useCrudController<any>('tipos-checklist');
+  const controller = useCrudController<TipoChecklist>('tipos-checklist');
 
-  const tipos = useEntityData<any>({
+  const tipos = useEntityData<TipoChecklist>({
     key: 'tipos-checklist',
     fetcherAction: unwrapFetcher(listTiposChecklist),
     paginationEnabled: true,
     initialParams: { page: 1, pageSize: 10, orderBy: 'id', orderDir: 'desc' },
   });
 
-  const columns = useTableColumnsWithActions<any>(
+  const columns = useTableColumnsWithActions<TipoChecklist>(
     [
       { title: 'ID', dataIndex: 'id', key: 'id', sorter: true, width: 80 },
-      { title: 'Nome', dataIndex: 'nome', key: 'nome', sorter: true, ...getTextFilter<any>('nome', 'nome') },
+      { title: 'Nome', dataIndex: 'nome', key: 'nome', sorter: true, ...getTextFilter<TipoChecklist>('nome', 'nome') },
     ],
     {
       onEdit: controller.open,

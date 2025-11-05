@@ -16,7 +16,7 @@ const baseUrl =
  */
 export const listTiposJustificativa = async () =>
   handleServerAction(
-    z.any(),
+    z.object({}),
     async () => {
       if (!baseUrl) {
         throw new Error('NEXT_PUBLIC_API_URL não está configurada');

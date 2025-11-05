@@ -29,15 +29,16 @@
 import { QueryBuilder } from '../db/helpers/queryBuilder';
 import { ICrudRepository } from '../interfaces/ICrudRepository';
 import type { PaginationParams } from '../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../types/prisma';
 
 export abstract class AbstractCrudRepository<T, F extends PaginationParams>
   implements ICrudRepository<T, F>
 {
   // Métodos abstratos que devem ser implementados pelas classes filhas
-  abstract create(data: any): Promise<T>;
-  abstract update(id: any, data: any): Promise<T>;
-  abstract delete(id: any, userId: string): Promise<T>;
-  abstract findById(id: any): Promise<T | null>;
+  abstract create(data: unknown): Promise<T>;
+  abstract update(id: number | string, data: unknown): Promise<T>;
+  abstract delete(id: number | string, userId: string): Promise<T>;
+  abstract findById(id: number | string): Promise<T | null>;
 
   /**
    * Define quais campos podem ser utilizados para busca
@@ -59,11 +60,11 @@ export abstract class AbstractCrudRepository<T, F extends PaginationParams>
    * @returns Array de registros
    */
   protected abstract findMany(
-    where: any,
-    orderBy: any,
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<T[]>;
 
   /**
@@ -73,7 +74,7 @@ export abstract class AbstractCrudRepository<T, F extends PaginationParams>
    * @param where - Condições de filtro
    * @returns Número total de registros
    */
-  protected abstract count(where: any): Promise<number>;
+  protected abstract count(where: GenericPrismaWhereInput): Promise<number>;
 
   /**
    * Lista registros com paginação, ordenação e busca
@@ -90,7 +91,7 @@ export abstract class AbstractCrudRepository<T, F extends PaginationParams>
     );
 
     // Extrai include dos params se existir
-    const include = (params as any).include;
+    const include = (params as PaginationParams & { include?: GenericPrismaIncludeInput }).include;
 
     // Executa count e findMany em paralelo para melhor performance
     const [total, items] = await Promise.all([

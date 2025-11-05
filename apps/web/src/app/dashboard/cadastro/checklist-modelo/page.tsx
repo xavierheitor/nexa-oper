@@ -11,7 +11,8 @@ import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
-import { Checklist } from '@nexa-oper/db';
+import { Checklist, ChecklistTipoVeiculoRelacao, ChecklistTipoEquipeRelacao } from '@nexa-oper/db';
+import type { CrudController } from '@/lib/hooks/useCrudController';
 import { Button, Card, Modal, Table, Form, Select, Spin, App, message } from 'antd';
 import { useEffect, useState } from 'react';
 import ChecklistForm, { ChecklistFormData } from './form';
@@ -27,8 +28,8 @@ import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 export default function ChecklistPage() {
   const { message } = App.useApp();
   const controller = useCrudController<Checklist>('checklists');
-  const tvController = useCrudController<any>('checklist-tv-vinculos');
-  const teController = useCrudController<any>('checklist-te-vinculos');
+  const tvController = useCrudController<ChecklistTipoVeiculoRelacao>('checklist-tv-vinculos');
+  const teController = useCrudController<ChecklistTipoEquipeRelacao>('checklist-te-vinculos');
 
   const checklists = useEntityData<Checklist>({
     key: 'checklists',
@@ -47,14 +48,14 @@ export default function ChecklistPage() {
     },
   });
 
-  const tvVinculos = useEntityData<any>({
+  const tvVinculos = useEntityData<ChecklistTipoVeiculoRelacao>({
     key: 'checklist-tv-vinculos',
     fetcherAction: unwrapFetcher(listChecklistTipoVeiculoVinculos),
     paginationEnabled: true,
     initialParams: { page: 1, pageSize: 10, orderBy: 'id', orderDir: 'desc', include: { tipoVeiculo: true, checklist: true } },
   });
 
-  const teVinculos = useEntityData<any>({
+  const teVinculos = useEntityData<ChecklistTipoEquipeRelacao>({
     key: 'checklist-te-vinculos',
     fetcherAction: unwrapFetcher(listChecklistTipoEquipeVinculos),
     paginationEnabled: true,
@@ -66,23 +67,25 @@ export default function ChecklistPage() {
       { title: 'ID', dataIndex: 'id', key: 'id', sorter: true, width: 80 },
       { title: 'Nome', dataIndex: 'nome', key: 'nome', sorter: true, ...getTextFilter<Checklist>('nome', 'nome') },
       { title: 'Tipo', dataIndex: ['tipoChecklist', 'nome'], key: 'tipoChecklist' },
-      { title: 'Perguntas', key: 'perguntas', render: (_, r: any) => (r.ChecklistPerguntaRelacao || []).length, width: 120 },
-      { title: 'Opções', key: 'opcoes', render: (_, r: any) => (r.ChecklistOpcaoRespostaRelacao || []).length, width: 120 },
+      { title: 'Perguntas', key: 'perguntas', render: (_, r: Checklist & { ChecklistPerguntaRelacao?: unknown[] }) => (r.ChecklistPerguntaRelacao || []).length, width: 120 },
+      { title: 'Opções', key: 'opcoes', render: (_, r: Checklist & { ChecklistOpcaoRespostaRelacao?: unknown[] }) => (r.ChecklistOpcaoRespostaRelacao || []).length, width: 120 },
       { title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt', sorter: true, render: (d: Date) => new Date(d).toLocaleDateString('pt-BR'), width: 120 },
     ],
     {
       onEdit: async (item) => {
-        const res = await getChecklist({ id: (item as any).id });
-        controller.open(res.data as any);
+        const res = await getChecklist({ id: item.id });
+        if (res.data) {
+          controller.open(res.data);
+        }
       },
       onDelete: (item) =>
         controller
-          .exec(() => deleteChecklist({ id: (item as any).id }), 'Checklist excluído com sucesso!')
+          .exec(() => deleteChecklist({ id: item.id }), 'Checklist excluído com sucesso!')
           .finally(() => checklists.mutate()),
     }
   );
 
-  const tvColumns = useTableColumnsWithActions<any>(
+  const tvColumns = useTableColumnsWithActions<ChecklistTipoVeiculoRelacao>(
     [
       { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
       { title: 'Tipo de Veículo', dataIndex: ['tipoVeiculo', 'nome'], key: 'tipoVeiculo' },
@@ -94,7 +97,7 @@ export default function ChecklistPage() {
     }
   );
 
-  const teColumns = useTableColumnsWithActions<any>(
+  const teColumns = useTableColumnsWithActions<ChecklistTipoEquipeRelacao>(
     [
       { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
       { title: 'Tipo de Equipe', dataIndex: ['tipoEquipe', 'nome'], key: 'tipoEquipe' },
@@ -149,7 +152,7 @@ export default function ChecklistPage() {
         destroyOnHidden
         width={800}
       >
-        <ChecklistForm initialValues={controller.editingItem as any} onSubmit={handleSubmit} loading={controller.loading} />
+        <ChecklistForm initialValues={controller.editingItem ?? undefined} onSubmit={handleSubmit} loading={controller.loading} />
       </Modal>
 
       {/* Modal Vínculo TipoVeiculo */}
@@ -165,10 +168,15 @@ export default function ChecklistPage() {
   );
 }
 
-function VinculoTVModal({ onSaved, controllerExec }: { onSaved: () => void; controllerExec: any }) {
-  const [form] = Form.useForm();
-  const [tipos, setTipos] = useState<any[]>([]);
-  const [checklists, setChecklists] = useState<any[]>([]);
+interface VinculoTVFormValues {
+  tipoVeiculoId: number;
+  checklistId: number;
+}
+
+function VinculoTVModal({ onSaved, controllerExec }: { onSaved: () => void; controllerExec: CrudController<unknown>['exec'] }) {
+  const [form] = Form.useForm<VinculoTVFormValues>();
+  const [tipos, setTipos] = useState<Array<{ id: number; nome: string }>>([]);
+  const [checklists, setChecklists] = useState<Array<{ id: number; nome: string }>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -195,7 +203,7 @@ function VinculoTVModal({ onSaved, controllerExec }: { onSaved: () => void; cont
     <Form
       form={form}
       layout="vertical"
-      onFinish={(values: any) =>
+      onFinish={(values: VinculoTVFormValues) =>
         controllerExec(
           () => setChecklistTipoVeiculo(values),
           'Vínculo salvo com sucesso!'
@@ -217,10 +225,15 @@ function VinculoTVModal({ onSaved, controllerExec }: { onSaved: () => void; cont
   );
 }
 
-function VinculoTEModal({ onSaved, controllerExec }: { onSaved: () => void; controllerExec: any }) {
-  const [form] = Form.useForm();
-  const [tipos, setTipos] = useState<any[]>([]);
-  const [checklists, setChecklists] = useState<any[]>([]);
+interface VinculoTEFormValues {
+  tipoEquipeId: number;
+  checklistId: number;
+}
+
+function VinculoTEModal({ onSaved, controllerExec }: { onSaved: () => void; controllerExec: CrudController<unknown>['exec'] }) {
+  const [form] = Form.useForm<VinculoTEFormValues>();
+  const [tipos, setTipos] = useState<Array<{ id: number; nome: string }>>([]);
+  const [checklists, setChecklists] = useState<Array<{ id: number; nome: string }>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -247,7 +260,7 @@ function VinculoTEModal({ onSaved, controllerExec }: { onSaved: () => void; cont
     <Form
       form={form}
       layout="vertical"
-      onFinish={(values: any) =>
+      onFinish={(values: VinculoTEFormValues) =>
         controllerExec(
           () => setChecklistTipoEquipe(values),
           'Vínculo salvo com sucesso!'

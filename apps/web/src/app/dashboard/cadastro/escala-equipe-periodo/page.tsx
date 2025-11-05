@@ -88,7 +88,7 @@ export default function EscalaEquipePeriodoPage() {
 
   const escalas = useEntityData({
     key: 'escalasEquipePeriodo',
-    fetcherAction: unwrapFetcher(listEscalasEquipePeriodo) as any,
+    fetcherAction: unwrapFetcher(listEscalasEquipePeriodo),
     paginationEnabled: true,
     initialParams: {
       page: 1,
@@ -461,12 +461,12 @@ export default function EscalaEquipePeriodoPage() {
       </div>
 
       <Table
-        columns={columns as any}
+        columns={columns}
         dataSource={escalas.data as EscalaEquipePeriodo[]}
         loading={escalas.isLoading}
         rowKey="id"
         pagination={escalas.pagination}
-        onChange={escalas.handleTableChange as any}
+        onChange={escalas.handleTableChange}
       />
 
       {/* Modal Wizard (Novo Período Guiado) */}

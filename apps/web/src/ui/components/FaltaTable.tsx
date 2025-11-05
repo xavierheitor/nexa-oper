@@ -2,6 +2,8 @@
 
 import { Table, Button, Space } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import type { TablePaginationConfig } from 'antd/es/table';
+import type { TableFilters, TableSorter } from '@/lib/types/antd';
 import { Falta } from '@/lib/schemas/turnoRealizadoSchema';
 import StatusTag from './StatusTag';
 import dayjs from 'dayjs';
@@ -16,7 +18,7 @@ interface FaltaTableProps {
     total: number;
     totalPages: number;
   };
-  onTableChange?: (pagination: any) => void;
+  onTableChange?: (pagination: TablePaginationConfig, filters?: TableFilters, sorter?: TableSorter) => void;
   onJustificar?: (falta: Falta) => void;
   onVerDetalhes?: (falta: Falta) => void;
 }

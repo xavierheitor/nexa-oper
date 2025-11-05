@@ -56,7 +56,8 @@ import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
-import { Apr } from '@nexa-oper/db';
+import { Apr, AprTipoAtividadeRelacao } from '@nexa-oper/db';
+import type { CrudController } from '@/lib/hooks/useCrudController';
 import { Button, Card, Form, Modal, Select, Spin, Table, Tag, App, message } from 'antd';
 import { useEffect, useState } from 'react';
 import AprForm, { AprFormData } from './form';
@@ -85,7 +86,7 @@ export default function AprPage() {
   const controller = useCrudController<Apr>('aprs');
 
   // Controller para gerenciar vínculos APR-TipoAtividade
-  const taController = useCrudController<any>('apr-ta-vinculos');
+  const taController = useCrudController<AprTipoAtividadeRelacao>('apr-ta-vinculos');
 
   // Hook para gerenciamento de dados com paginação automática
   const aprs = useEntityData<Apr>({
@@ -105,7 +106,7 @@ export default function AprPage() {
   });
 
   // Hook para gerenciamento de vínculos APR-TipoAtividade
-  const taVinculos = useEntityData<any>({
+  const taVinculos = useEntityData<AprTipoAtividadeRelacao>({
     key: 'apr-ta-vinculos',
     fetcherAction: unwrapFetcher(listAprTipoAtividadeVinculos),
     paginationEnabled: true,
@@ -148,7 +149,7 @@ export default function AprPage() {
         key: 'perguntas',
         width: 100,
         align: 'center' as const,
-        render: (_, record: any) => {
+        render: (_, record: Apr & { AprPerguntaRelacao?: unknown[] }) => {
           const count = record.AprPerguntaRelacao?.length || 0;
           return (
             <Tag color={count > 0 ? 'blue' : 'default'}>
@@ -156,7 +157,7 @@ export default function AprPage() {
             </Tag>
           );
         },
-        sorter: (a: any, b: any) => {
+        sorter: (a: Apr & { AprPerguntaRelacao?: unknown[] }, b: Apr & { AprPerguntaRelacao?: unknown[] }) => {
           const countA = a.AprPerguntaRelacao?.length || 0;
           const countB = b.AprPerguntaRelacao?.length || 0;
           return countA - countB;
@@ -169,7 +170,7 @@ export default function AprPage() {
         key: 'opcoes',
         width: 140,
         align: 'center' as const,
-        render: (_, record: any) => {
+        render: (_, record: Apr & { AprOpcaoRespostaRelacao?: unknown[] }) => {
           const count = record.AprOpcaoRespostaRelacao?.length || 0;
           return (
             <Tag color={count > 0 ? 'green' : 'default'}>
@@ -177,7 +178,7 @@ export default function AprPage() {
             </Tag>
           );
         },
-        sorter: (a: any, b: any) => {
+        sorter: (a: Apr & { AprOpcaoRespostaRelacao?: unknown[] }, b: Apr & { AprOpcaoRespostaRelacao?: unknown[] }) => {
           const countA = a.AprOpcaoRespostaRelacao?.length || 0;
           const countB = b.AprOpcaoRespostaRelacao?.length || 0;
           return countA - countB;
@@ -215,7 +216,7 @@ export default function AprPage() {
   );
 
   // Configuração das colunas da tabela de vínculos APR-TipoAtividade
-  const taColumns = useTableColumnsWithActions<any>(
+  const taColumns = useTableColumnsWithActions<AprTipoAtividadeRelacao>(
     [
       // Coluna ID
       {
@@ -414,12 +415,12 @@ function VinculoTAModal({
   controllerExec
 }: {
   onSaved: () => void;
-  controllerExec: any
+  controllerExec: CrudController<unknown>['exec']
 }) {
   // Estado local do formulário
   const [form] = Form.useForm();
-  const [tipos, setTipos] = useState<any[]>([]);
-  const [aprsData, setAprsData] = useState<any[]>([]);
+  const [tipos, setTipos] = useState<Array<{ id: number; nome: string }>>([]);
+  const [aprsData, setAprsData] = useState<Array<{ id: number; nome: string }>>([]);
   const [loading, setLoading] = useState(true);
 
   /**
@@ -470,7 +471,7 @@ function VinculoTAModal({
     <Form
       form={form}
       layout="vertical"
-      onFinish={(values: any) =>
+      onFinish={(values: { aprId: number; tipoAtividadeId: number }) =>
         controllerExec(
           () => setAprTipoAtividade(values),
           'Vínculo salvo com sucesso!'

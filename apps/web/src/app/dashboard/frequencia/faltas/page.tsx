@@ -157,9 +157,10 @@ export default function FaltasPage() {
       setModalJustificarOpen(false);
       setFaltaSelecionada(null);
       await mutate();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao justificar falta:', error);
-      messageApi.error(error.message || 'Erro ao criar justificativa');
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao criar justificativa';
+      messageApi.error(errorMessage);
     } finally {
       setLoadingJustificar(false);
     }

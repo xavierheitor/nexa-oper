@@ -51,7 +51,7 @@ export default function VinculoForm({ onSubmit, initialValues, loading = false }
         equipeId: initialValues.equipeId,
         inicio: initialValues.inicio ? dayjs(initialValues.inicio) : undefined,
         fim: initialValues.fim ? dayjs(initialValues.fim) : undefined,
-      } as any);
+      });
     } else {
       form.resetFields();
     }
@@ -84,7 +84,7 @@ export default function VinculoForm({ onSubmit, initialValues, loading = false }
         />
       </Form.Item>
 
-      <Form.Item name="equipeId" label="Equipe" rules={[{ required: true, message: 'Equipe é obrigatória' }]}> 
+      <Form.Item name="equipeId" label="Equipe" rules={[{ required: true, message: 'Equipe é obrigatória' }]}>
         <Select
           placeholder="Selecione a equipe"
           loading={loadingSelects}
@@ -94,11 +94,11 @@ export default function VinculoForm({ onSubmit, initialValues, loading = false }
         />
       </Form.Item>
 
-      <Form.Item name="inicio" label="Início" rules={[{ required: true, message: 'Data de início é obrigatória' }]}> 
+      <Form.Item name="inicio" label="Início" rules={[{ required: true, message: 'Data de início é obrigatória' }]}>
         <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
       </Form.Item>
 
-      <Form.Item name="fim" label="Fim"> 
+      <Form.Item name="fim" label="Fim">
         <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
       </Form.Item>
 

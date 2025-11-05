@@ -63,7 +63,7 @@ export default function CargoPage() {
         title: 'Eletricistas',
         key: 'eletricistas',
         width: 120,
-        render: (_: unknown, record: any) => (
+        render: (_: unknown, record: Cargo & { _count?: { Eletricista?: number } }) => (
           <Tag color="blue">
             {record._count?.Eletricista || 0}
           </Tag>

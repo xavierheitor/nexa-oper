@@ -72,18 +72,20 @@ export default function ChecklistForm({ onSubmit, initialValues, loading = false
     const applyInitial = async () => {
       if (initialValues) {
         form.setFieldsValue({
-          nome: initialValues.nome as any,
-          tipoChecklistId: initialValues.tipoChecklistId as any,
-          perguntaIds: (initialValues.perguntaIds || []) as any,
-          opcaoRespostaIds: (initialValues.opcaoRespostaIds || []) as any,
+          nome: initialValues.nome,
+          tipoChecklistId: initialValues.tipoChecklistId,
+          perguntaIds: initialValues.perguntaIds || [],
+          opcaoRespostaIds: initialValues.opcaoRespostaIds || [],
         });
 
-        if ((initialValues as any).id) {
-          const res = await getChecklist({ id: (initialValues as any).id });
-          const data = res.data as any;
-          if (data) {
-            setTargetPerguntas((data.ChecklistPerguntaRelacao || []).map((r: any) => String(r.checklistPerguntaId)));
-            setTargetOpcoes((data.ChecklistOpcaoRespostaRelacao || []).map((r: any) => String(r.checklistOpcaoRespostaId)));
+        if (initialValues.id) {
+          const res = await getChecklist({ id: initialValues.id });
+          const data = res.data;
+          if (data && 'ChecklistPerguntaRelacao' in data && 'ChecklistOpcaoRespostaRelacao' in data) {
+            const checklistPerguntaRelacao = (data as { ChecklistPerguntaRelacao?: Array<{ checklistPerguntaId: number }> }).ChecklistPerguntaRelacao || [];
+            const checklistOpcaoRespostaRelacao = (data as { ChecklistOpcaoRespostaRelacao?: Array<{ checklistOpcaoRespostaId: number }> }).ChecklistOpcaoRespostaRelacao || [];
+            setTargetPerguntas(checklistPerguntaRelacao.map((r) => String(r.checklistPerguntaId)));
+            setTargetOpcoes(checklistOpcaoRespostaRelacao.map((r) => String(r.checklistOpcaoRespostaId)));
           }
         } else {
           setTargetPerguntas((initialValues.perguntaIds || []).map(String));

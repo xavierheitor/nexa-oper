@@ -19,11 +19,22 @@
  * const eletricista = await repository.findById(1);
  */
 
-import { Eletricista, StatusEletricista } from '@nexa-oper/db';
+import { Eletricista, StatusEletricista, Prisma } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../abstracts/AbstractCrudRepository';
 import { prisma } from '../db/db.service';
 import { EletricistaCreate, EletricistaUpdate } from '../schemas/eletricistaSchema';
 import { PaginationParams } from '../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../types/prisma';
+
+/**
+ * Tipo auxiliar para dados com campos de auditoria
+ */
+interface WithAuditFields {
+  createdBy?: string;
+  createdAt?: Date;
+  updatedBy?: string;
+  updatedAt?: Date;
+}
 
 interface EletricistaFilter extends PaginationParams {
   contratoId?: number;
@@ -61,8 +72,8 @@ export class EletricistaRepository extends AbstractCrudRepository<
         ? undefined
         : Number(rawBaseId);
 
-    const createdBy = (eletricistaData as any).createdBy || userId || '';
-    const createdAt = (eletricistaData as any).createdAt || new Date();
+    const createdBy = (eletricistaData as WithAuditFields).createdBy || userId || '';
+    const createdAt = (eletricistaData as WithAuditFields).createdAt || new Date();
     const statusInicial = status || 'ATIVO';
 
     return prisma.$transaction(async tx => {
@@ -147,8 +158,8 @@ export class EletricistaRepository extends AbstractCrudRepository<
         ? undefined
         : Number(rawBaseId);
 
-    const updatedBy = (eletricistaData as any).updatedBy || userId || '';
-    const updatedAt = (eletricistaData as any).updatedAt || new Date();
+    const updatedBy = (eletricistaData as WithAuditFields).updatedBy || userId || '';
+    const updatedAt = (eletricistaData as WithAuditFields).updatedAt || new Date();
 
     return prisma.$transaction(async tx => {
       const eletricista = await tx.eletricista.update({
@@ -251,11 +262,11 @@ export class EletricistaRepository extends AbstractCrudRepository<
    * @returns Array de eletricistas
    */
   protected async findMany(
-    where: any,
-    orderBy: any,
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<Eletricista[]> {
     const eletricistas = await prisma.eletricista.findMany({
       where,
@@ -305,7 +316,7 @@ export class EletricistaRepository extends AbstractCrudRepository<
    * @param where - Condições de filtro
    * @returns Número total de eletricistas
    */
-  protected count(where: any): Promise<number> {
+  protected count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.eletricista.count({ where });
   }
 
@@ -335,7 +346,7 @@ export class EletricistaRepository extends AbstractCrudRepository<
     const skip = (page - 1) * pageSize;
 
     // Construir where com filtros server-side
-    const where: any = {
+    const where: Prisma.EletricistaWhereInput = {
       deletedAt: null,
       ...(contratoId && { contratoId }),
       ...(cargoId && { cargoId }),
@@ -389,7 +400,7 @@ export class EletricistaRepository extends AbstractCrudRepository<
       // Buscar eletricistas com o status especificado
       const eletricistasComStatus = await prisma.eletricistaStatus.findMany({
         where: {
-          status: status as any,
+          status: status as StatusEletricista,
         },
         select: { eletricistaId: true },
       });

@@ -8,12 +8,14 @@ import { listContratos } from '@/lib/actions/contrato/list';
 import { setMobileContratoPermissao } from '@/lib/actions/mobileContratoPermissao/setPermissao';
 import { listMobileContratoPermissoes } from '@/lib/actions/mobileContratoPermissao/listPermissoes';
 import { deleteMobileContratoPermissao } from '@/lib/actions/mobileContratoPermissao/deletePermissao';
+import { MobileUser, MobileContratoPermissao, Contrato } from '@nexa-oper/db';
+import type { CrudController } from '@/lib/hooks/useCrudController';
 
 interface PermissoesModalProps {
   mobileUserId: number;
   mobileUserName: string;
   onSaved: () => void;
-  controllerExec: any;
+  controllerExec: CrudController<unknown>['exec'];
 }
 
 export default function PermissoesModal({
@@ -24,8 +26,8 @@ export default function PermissoesModal({
 }: PermissoesModalProps) {
   const { message } = App.useApp();
   const [form] = Form.useForm();
-  const [contratos, setContratos] = useState<any[]>([]);
-  const [permissoes, setPermissoes] = useState<any[]>([]);
+  const [contratos, setContratos] = useState<Contrato[]>([]);
+  const [permissoes, setPermissoes] = useState<Array<MobileContratoPermissao & { contrato?: Contrato }>>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
@@ -49,7 +51,7 @@ export default function PermissoesModal({
     loadData();
   }, [mobileUserId, loadData]);
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = (values: { contratoId: number }) => {
     controllerExec(
       () => setMobileContratoPermissao({
         mobileUserId,
@@ -87,7 +89,7 @@ export default function PermissoesModal({
     {
       title: 'Ações',
       key: 'actions',
-      render: (_: any, record: any) => (
+      render: (_: unknown, record: MobileContratoPermissao) => (
         <Button
           type="link"
           danger

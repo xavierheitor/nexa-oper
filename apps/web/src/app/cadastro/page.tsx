@@ -10,7 +10,14 @@ const { Title } = Typography;
 export default function CadastroPage() {
   const [loading, setLoading] = useState(false);
 
-  const onFinish = async (values: any) => {
+  interface CadastroFormValues {
+    username: string;
+    email: string;
+    password: string;
+    name: string;
+  }
+
+  const onFinish = async (values: CadastroFormValues) => {
     setLoading(true);
     const formData = new FormData();
     formData.append('username', values.username);

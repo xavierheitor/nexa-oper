@@ -215,19 +215,21 @@ export default function AprForm({ onSubmit, initialValues, loading = false }: Pr
       if (initialValues) {
         // Preenche campos básicos do formulário
         form.setFieldsValue({
-          nome: initialValues.nome as any,
-          perguntaIds: (initialValues.perguntaIds || []) as any,
-          opcaoRespostaIds: (initialValues.opcaoRespostaIds || []) as any,
+          nome: initialValues.nome,
+          perguntaIds: initialValues.perguntaIds || [],
+          opcaoRespostaIds: initialValues.opcaoRespostaIds || [],
         });
 
         // Se tem ID, é edição - carrega relacionamentos atuais
-        if ((initialValues as any).id) {
-          const res = await getApr({ id: (initialValues as any).id });
-          const data = res.data as any;
-          if (data) {
+        if (initialValues.id) {
+          const res = await getApr({ id: initialValues.id });
+          const data = res.data;
+          if (data && 'AprPerguntaRelacao' in data && 'AprOpcaoRespostaRelacao' in data) {
             // Extrai IDs dos relacionamentos para os Transfer components
-            setTargetPerguntas((data.AprPerguntaRelacao || []).map((r: any) => String(r.aprPerguntaId)));
-            setTargetOpcoes((data.AprOpcaoRespostaRelacao || []).map((r: any) => String(r.aprOpcaoRespostaId)));
+            const aprPerguntaRelacao = (data as { AprPerguntaRelacao?: Array<{ aprPerguntaId: number }> }).AprPerguntaRelacao || [];
+            const aprOpcaoRespostaRelacao = (data as { AprOpcaoRespostaRelacao?: Array<{ aprOpcaoRespostaId: number }> }).AprOpcaoRespostaRelacao || [];
+            setTargetPerguntas(aprPerguntaRelacao.map((r) => String(r.aprPerguntaId)));
+            setTargetOpcoes(aprOpcaoRespostaRelacao.map((r) => String(r.aprOpcaoRespostaId)));
           }
         } else {
           // Modo criação com valores iniciais fornecidos

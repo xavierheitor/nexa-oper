@@ -34,7 +34,7 @@ import AlterarStatusModal from '../../../../ui/components/AlterarStatusModal';
 import { getTextFilter } from '../../../../ui/components/tableFilters';
 import TableExternalFilters from '../../../../ui/components/TableExternalFilters';
 import EletricistaForm, { EletricistaFormData } from './form';
-import EletricistaLoteForm from './lote-form';
+import EletricistaLoteForm, { type EletricistaLoteFormData } from './lote-form';
 
 type EletricistaWithBase = Eletricista & {
   baseAtual?: Base | null;
@@ -169,7 +169,7 @@ export default function EletricistaPage() {
       {
         title: 'Cargo',
         key: 'cargo',
-        render: (_: unknown, record: any) => record.cargo?.nome || '-',
+        render: (_: unknown, record: EletricistaWithBase) => record.cargo?.nome || '-',
         width: 150,
       },
       // Coluna Estado
@@ -185,7 +185,7 @@ export default function EletricistaPage() {
         title: 'Base Atual',
         dataIndex: 'baseAtual',
         key: 'baseAtual',
-        render: (baseAtual: any) => {
+        render: (baseAtual: Base | null | undefined) => {
           return baseAtual ? (
             <Tag color="green">{baseAtual.nome}</Tag>
           ) : (
@@ -269,7 +269,7 @@ export default function EletricistaPage() {
         contratoId: Number(values.contratoId),
         baseId: Number(values.baseId),
         // Converter Dayjs para Date ou string ISO
-        admissao: values.admissao ? new Date(values.admissao as any) : undefined,
+        admissao: values.admissao ? (values.admissao instanceof Date ? values.admissao : new Date(values.admissao)) : undefined,
       };
 
       // Verifica se estamos editando (tem item selecionado) ou criando
@@ -291,7 +291,7 @@ export default function EletricistaPage() {
     });
   };
 
-  const handleLoteSubmit = async (values: any) => {
+  const handleLoteSubmit = async (values: EletricistaLoteFormData) => {
     setIsLoteLoading(true);
     try {
       const result = await createEletricistasLote(values);
@@ -303,8 +303,9 @@ export default function EletricistaPage() {
       } else {
         message.error(result.error || 'Erro ao cadastrar eletricistas em lote');
       }
-    } catch (error: any) {
-      message.error(error.message || 'Erro ao cadastrar eletricistas em lote');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao cadastrar eletricistas em lote';
+      message.error(errorMessage);
     } finally {
       setIsLoteLoading(false);
     }

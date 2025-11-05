@@ -22,6 +22,7 @@ import { getStatsByHoraETipoEquipe } from '@/lib/actions/turno/getStatsByHoraETi
 import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
 import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
+import type { ChecklistPreenchido } from '@/ui/components/ChecklistSelectorModal';
 
 const { Title } = Typography;
 
@@ -86,7 +87,7 @@ export default function TurnosPage() {
   const [checklistSelectorVisible, setChecklistSelectorVisible] = useState(false);
   const [checklistViewerVisible, setChecklistViewerVisible] = useState(false);
   const [selectedTurno, setSelectedTurno] = useState<TurnoData | null>(null);
-  const [selectedChecklist, setSelectedChecklist] = useState<any>(null);
+  const [selectedChecklist, setSelectedChecklist] = useState<ChecklistPreenchido | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -119,7 +120,7 @@ export default function TurnosPage() {
 
           // Calcular estatísticas
           const porBase: Record<string, number> = {};
-          turnos.forEach((turno: any) => {
+          turnos.forEach((turno: TurnoData) => {
             const base = turno.equipeNome?.split('-')[0] || 'Não identificada';
             porBase[base] = (porBase[base] || 0) + 1;
           });
@@ -202,7 +203,7 @@ export default function TurnosPage() {
     setChecklistSelectorVisible(true);
   };
 
-  const handleSelectChecklist = (checklist: any) => {
+  const handleSelectChecklist = (checklist: ChecklistPreenchido) => {
     setSelectedChecklist(checklist);
     setChecklistViewerVisible(true);
   };
