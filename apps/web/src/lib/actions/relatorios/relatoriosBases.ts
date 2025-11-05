@@ -17,8 +17,6 @@ export const getConsolidacaoPorBase = async (rawData?: unknown) =>
   handleServerAction(
     relatorioBaseFiltroSchema,
     async (filtros) => {
-      console.log('[getConsolidacaoPorBase] Iniciando com filtros:', filtros);
-
       const where: any = {
         deletedAt: null,
       };
@@ -31,16 +29,12 @@ export const getConsolidacaoPorBase = async (rawData?: unknown) =>
         where.id = filtros.baseId;
       }
 
-      console.log('[getConsolidacaoPorBase] Where clause:', where);
-
       const bases = await prisma.base.findMany({
         where,
         include: {
           contrato: true,
         },
       });
-
-      console.log('[getConsolidacaoPorBase] Bases encontradas:', bases.length);
 
       const dataReferencia = filtros.dataReferencia
         ? new Date(filtros.dataReferencia)
@@ -166,7 +160,6 @@ export const getConsolidacaoPorBase = async (rawData?: unknown) =>
         })
       );
 
-      console.log('[getConsolidacaoPorBase] Resultado final:', resultado);
       return resultado.sort((a, b) => b.eletricistas.total - a.eletricistas.total);
     },
     rawData,
@@ -180,8 +173,6 @@ export const getComparacaoEntreBases = async (rawData?: unknown) =>
   handleServerAction(
     relatorioBaseFiltroSchema,
     async (filtros) => {
-      console.log('[getComparacaoEntreBases] Iniciando com filtros:', filtros);
-
       const where: any = {
         deletedAt: null,
       };
@@ -200,8 +191,6 @@ export const getComparacaoEntreBases = async (rawData?: unknown) =>
           contrato: true,
         },
       });
-
-      console.log('[getComparacaoEntreBases] Bases encontradas:', bases.length);
 
       const resultado = await Promise.all(
         bases.map(async (base) => {
@@ -244,7 +233,6 @@ export const getComparacaoEntreBases = async (rawData?: unknown) =>
         })
       );
 
-      console.log('[getComparacaoEntreBases] Resultado:', resultado);
       return resultado;
     },
     rawData,

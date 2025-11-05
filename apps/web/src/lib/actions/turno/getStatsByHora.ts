@@ -22,17 +22,10 @@ export const getStatsByHora = async () =>
   handleServerAction(
     turnoStatsByHoraSchema,
     async () => {
-      console.log('🔍 [getStatsByHora] Iniciando busca de dados...');
-
       // Buscar turnos do dia
       const hoje = new Date();
       const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0);
       const fimHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 23, 59, 59);
-
-      console.log('📅 [getStatsByHora] Buscando turnos de:', {
-        inicio: inicioHoje.toISOString(),
-        fim: fimHoje.toISOString(),
-      });
 
       const turnos = await prisma.turno.findMany({
         where: {
@@ -47,8 +40,6 @@ export const getStatsByHora = async () =>
           dataInicio: true,
         },
       });
-
-      console.log('✅ [getStatsByHora] Turnos encontrados:', turnos.length);
 
       // Inicializar contagem para todas as 24 horas (0-23)
       const contagem: Record<number, number> = {};
@@ -79,18 +70,13 @@ export const getStatsByHora = async () =>
         }
 
         contagem[horaFinal]++;
-        console.log(`🕐 [getStatsByHora] Turno ${turno.id}: ${dataInicio.toLocaleTimeString('pt-BR')} → Hora ${horaFinal}:00`);
       });
-
-      console.log('🔢 [getStatsByHora] Contagem por hora:', contagem);
 
       // Converter para array formatado
       const dados = Object.entries(contagem).map(([hora, quantidade]) => ({
         hora: hora.toString(),
         quantidade,
       }));
-
-      console.log('📊 [getStatsByHora] Dados finais:', dados);
 
       return dados;
     },

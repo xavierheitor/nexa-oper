@@ -23,8 +23,6 @@ export const getStatsByHoraETipoEquipe = async () =>
   handleServerAction(
     turnoStatsByHoraETipoEquipeSchema,
     async () => {
-      console.log('🔍 [getStatsByHoraETipoEquipe] Iniciando busca de dados...');
-
       // 1. Buscar tipos de equipe
       const resultTipos = await listTiposEquipe({
         page: 1,
@@ -38,7 +36,6 @@ export const getStatsByHoraETipoEquipe = async () =>
       }
 
       const tiposEquipe = resultTipos.data.data || [];
-      console.log('📋 [getStatsByHoraETipoEquipe] Tipos encontrados:', tiposEquipe.length);
 
       // 2. Buscar turnos do dia com relacionamentos
       const hoje = new Date();
@@ -61,8 +58,6 @@ export const getStatsByHoraETipoEquipe = async () =>
           },
         },
       });
-
-      console.log('✅ [getStatsByHoraETipoEquipe] Turnos encontrados:', turnos.length);
 
       // 3. Inicializar estrutura de contagem: hora -> tipo -> quantidade
       const contagem: Record<number, Record<string, number>> = {};
@@ -104,8 +99,6 @@ export const getStatsByHoraETipoEquipe = async () =>
           });
         });
       }
-
-      console.log('📊 [getStatsByHoraETipoEquipe] Dados finais:', dados.length, 'registros');
 
       return dados;
     },

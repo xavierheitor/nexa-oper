@@ -29,11 +29,6 @@ export const getChecklistsByTurno = async (rawData: unknown) =>
   handleServerAction(
     getChecklistsByTurnoSchema,
     async data => {
-      console.log(
-        '🔍 [getChecklistsByTurno] Buscando checklists do turno:',
-        data.turnoId
-      );
-
       const checklistsPreenchidos = await prisma.checklistPreenchido.findMany({
         where: {
           turnoId: data.turnoId,
@@ -98,18 +93,9 @@ export const getChecklistsByTurno = async (rawData: unknown) =>
         },
       });
 
-      console.log(
-        '✅ [getChecklistsByTurno] Checklists encontrados:',
-        checklistsPreenchidos.length
-      );
-
       // ✅ LÓGICA SIMPLIFICADA: Buscar fotos diretamente por turnoId + checklistUuid + perguntaId
       const checklistsComFotos = await Promise.all(
         checklistsPreenchidos.map(async checklist => {
-          console.log(
-            `🔍 [DEBUG] Processando checklist ${checklist.id} (UUID: ${checklist.uuid})`
-          );
-
           // Buscar fotos para cada resposta específica
           const respostasComFotos = await Promise.all(
             checklist.ChecklistResposta.map(async resposta => {
@@ -138,21 +124,6 @@ export const getChecklistsByTurno = async (rawData: unknown) =>
                   createdAt: 'asc',
                 },
               });
-
-              console.log(
-                `📋 [DEBUG] Resposta ${resposta.id} (perguntaId: ${resposta.perguntaId}):`,
-                {
-                  aguardandoFoto: resposta.aguardandoFoto,
-                  fotosSincronizadas: resposta.fotosSincronizadas,
-                  fotosEncontradas: fotosDaResposta.length,
-                  fotos: fotosDaResposta.map(f => ({
-                    id: f.id,
-                    tipo: f.tipo,
-                    url: f.url,
-                    storagePath: f.storagePath,
-                  })),
-                }
-              );
 
               // ✅ Converter para formato compatível com frontend
               const fotosFormatadas = fotosDaResposta.map(foto => ({
@@ -195,11 +166,6 @@ export const getChecklistByUuid = async (rawData: unknown) =>
   handleServerAction(
     getChecklistByUuidSchema,
     async data => {
-      console.log(
-        '🔍 [getChecklistByUuid] Buscando checklist por UUID:',
-        data.uuid
-      );
-
       const checklistPreenchido = await prisma.checklistPreenchido.findUnique({
         where: {
           uuid: data.uuid,
@@ -262,9 +228,6 @@ export const getChecklistByUuid = async (rawData: unknown) =>
       });
 
       if (!checklistPreenchido) {
-        console.log(
-          `❌ [getChecklistByUuid] Checklist não encontrado para UUID: ${data.uuid}`
-        );
         return null;
       }
 
@@ -297,18 +260,6 @@ export const getChecklistByUuid = async (rawData: unknown) =>
             },
           });
 
-          console.log(
-            `📋 [getChecklistByUuid] Resposta ${resposta.id} (perguntaId: ${resposta.perguntaId}):`,
-            {
-              fotosEncontradas: fotosDaResposta.length,
-              fotos: fotosDaResposta.map(f => ({
-                id: f.id,
-                tipo: f.tipo,
-                url: f.url,
-              })),
-            }
-          );
-
           // ✅ Converter para formato compatível com frontend
           const fotosFormatadas = fotosDaResposta.map(foto => ({
             id: foto.id,
@@ -331,16 +282,6 @@ export const getChecklistByUuid = async (rawData: unknown) =>
         ...checklistPreenchido,
         ChecklistResposta: respostasComFotos,
       };
-
-      console.log('✅ [getChecklistByUuid] Checklist encontrado:', {
-        id: checklistComFotos.id,
-        uuid: checklistComFotos.uuid,
-        turnoId: checklistComFotos.turnoId,
-        totalRespostas: checklistComFotos.ChecklistResposta.length,
-        respostasComFoto: checklistComFotos.ChecklistResposta.filter(
-          r => r.ChecklistRespostaFoto.length > 0
-        ).length,
-      });
 
       return checklistComFotos;
     },

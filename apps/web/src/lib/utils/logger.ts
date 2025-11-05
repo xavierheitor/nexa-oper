@@ -187,13 +187,15 @@ export async function withLogging<T>(
 
     return result;
   } catch (error) {
-    // Log de erro com contexto de falha
-    logger.error(`[${actionLabel.toUpperCase()}] ${entity} FAILED`, {
-      userId: session.user.id, // ID do usuário para auditoria
-      actionType, // Tipo original da ação
-      input, // Dados de entrada que causaram erro
-      success: false, // Flag de falha
-      error: error instanceof Error ? error.message : String(error), // Mensagem de erro
+    // Log de erro usando errorHandler padronizado
+    const { errorHandler } = await import('./errorHandler');
+    errorHandler.log(error, `${actionLabel.toUpperCase()}-${entity}`, {
+      metadata: {
+        userId: session.user.id, // ID do usuário para auditoria
+        actionType, // Tipo original da ação
+        input, // Dados de entrada que causaram erro
+        success: false, // Flag de falha
+      },
     });
 
     // Re-lança o erro para não quebrar o fluxo da aplicação

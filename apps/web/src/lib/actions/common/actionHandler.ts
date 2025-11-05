@@ -256,27 +256,20 @@ export async function handleServerAction<TInput, TOutput>(
     // 7. TRATAMENTO DE ERROS
     // ========================================
 
-    // Obtém informações detalhadas do erro
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    const errorStack = err instanceof Error ? err.stack : undefined;
-    const errorName = err instanceof Error ? err.name : typeof err;
+    // Usa errorHandler centralizado para padronização
+    const { errorHandler } = await import('../../utils/errorHandler');
 
-    // Registra erro não tratado com contexto completo
-    logger.error('[ServerActionError] Erro inesperado', {
-      error: errorMessage,
-      errorName,
-      errorStack,
-      entityName: options?.entityName || 'UNKNOWN_ENTITY',
-      actionType: options?.actionType || 'unknown',
-      input: rawInput,
-      schemaType: typeof schema,
-      schemaHasSafeParse: typeof schema?.safeParse === 'function',
-    });
-
-    // Retorna erro genérico para o cliente
-    return {
-      success: false,
-      error: errorMessage || 'Erro interno',
-    };
+    return errorHandler.handle(
+      err,
+      options?.entityName || 'UNKNOWN_ENTITY',
+      options?.actionType || 'unknown',
+      {
+        metadata: {
+          input: rawInput,
+          schemaType: typeof schema,
+          schemaHasSafeParse: typeof schema?.safeParse === 'function',
+        },
+      }
+    );
   }
 }

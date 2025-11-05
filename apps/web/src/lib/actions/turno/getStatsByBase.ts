@@ -23,8 +23,6 @@ export const getStatsByBase = async () =>
   handleServerAction(
     turnoStatsByBaseSchema,
     async () => {
-      console.log('🔍 [getStatsByBase] Iniciando busca de dados...');
-
       // 1. Buscar todas as bases
       const resultBases = await listBases({
         page: 1,
@@ -38,7 +36,6 @@ export const getStatsByBase = async () =>
       }
 
       const bases = resultBases.data.data || [];
-      console.log('✅ [getStatsByBase] Bases encontradas:', bases.length);
 
       // 2. Buscar turnos do dia com relacionamentos de equipe e base
       const hoje = new Date();
@@ -71,8 +68,6 @@ export const getStatsByBase = async () =>
         },
       });
 
-      console.log('✅ [getStatsByBase] Turnos encontrados:', turnos.length);
-
       // 3. Inicializar contagem para todas as bases com 0
       const contagem: Record<string, number> = {};
       bases.forEach((base: any) => {
@@ -87,15 +82,11 @@ export const getStatsByBase = async () =>
         }
       });
 
-      console.log('🔢 [getStatsByBase] Contagem por base:', contagem);
-
       // 5. Converter para array formatado
       const dados = bases.map((base: any) => ({
         base: base.nome,
         quantidade: contagem[base.nome] || 0,
       }));
-
-      console.log('📊 [getStatsByBase] Dados finais:', dados);
 
       return dados;
     },
