@@ -7,7 +7,7 @@
  * incluindo estatísticas e gráficos relacionados ao dia selecionado.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, DatePicker, Button, Tooltip } from 'antd';
 import { ClockCircleOutlined, CalendarOutlined, SearchOutlined, CheckOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
@@ -19,6 +19,7 @@ import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
+import { useLoadingStates } from '@/lib/hooks/useLoadingStates';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -68,10 +69,12 @@ interface TurnoData {
 
 export default function HistoricoPage() {
   const [turnosHistorico, setTurnosHistorico] = useState<TurnoData[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [loadingGrafico, setLoadingGrafico] = useState(false);
-  const [loadingGraficoHora, setLoadingGraficoHora] = useState(false);
-  const [loadingGraficoBase, setLoadingGraficoBase] = useState(false);
+  const { loading, setLoading } = useLoadingStates({
+    main: false,
+    grafico: false,
+    graficoHora: false,
+    graficoBase: false,
+  });
   const [dadosGrafico, setDadosGrafico] = useState<DadosGraficoTipoEquipe[]>([]);
   const [dadosGraficoHora, setDadosGraficoHora] = useState<DadosGraficoHora[]>([]);
   const [dadosGraficoBase, setDadosGraficoBase] = useState<DadosGraficoBase[]>([]);
@@ -89,8 +92,8 @@ export default function HistoricoPage() {
   const [selectedTurno, setSelectedTurno] = useState<TurnoData | null>(null);
   const [selectedChecklist, setSelectedChecklist] = useState<any>(null);
 
-  const buscarHistorico = async (data: dayjs.Dayjs) => {
-    setLoading(true);
+  const buscarHistorico = useCallback(async (data: dayjs.Dayjs) => {
+    setLoading('main', true);
     try {
       // Definir período do dia selecionado (00:00:00 até 23:59:59)
       const inicioDia = data.startOf('day').toDate();
@@ -155,14 +158,14 @@ export default function HistoricoPage() {
     } catch (error) {
       console.error('Erro ao carregar histórico de turnos:', error);
     } finally {
-      setLoading(false);
+      setLoading('main', false);
     }
-  };
+  }, [setLoading]);
 
-  const buscarGraficos = async (data: dayjs.Dayjs) => {
-    setLoadingGrafico(true);
-    setLoadingGraficoHora(true);
-    setLoadingGraficoBase(true);
+  const buscarGraficos = useCallback(async (data: dayjs.Dayjs) => {
+    setLoading('grafico', true);
+    setLoading('graficoHora', true);
+    setLoading('graficoBase', true);
 
     try {
       // Calcular dados dos gráficos baseados nos turnos da data selecionada
@@ -278,22 +281,22 @@ export default function HistoricoPage() {
         setDadosGraficoBase(dadosBase);
       }
 
-      setLoadingGrafico(false);
-      setLoadingGraficoHora(false);
-      setLoadingGraficoBase(false);
+      setLoading('grafico', false);
+      setLoading('graficoHora', false);
+      setLoading('graficoBase', false);
     } catch (error) {
       console.error('Erro ao carregar dados dos gráficos:', error);
-      setLoadingGrafico(false);
-      setLoadingGraficoHora(false);
-      setLoadingGraficoBase(false);
+      setLoading('grafico', false);
+      setLoading('graficoHora', false);
+      setLoading('graficoBase', false);
     }
-  };
+  }, [setLoading]);
 
   useEffect(() => {
     // Carregar dados iniciais (hoje)
     buscarHistorico(dataSelecionada);
     buscarGraficos(dataSelecionada);
-  }, [dataSelecionada]);
+  }, [dataSelecionada, buscarHistorico, buscarGraficos]);
 
   const handleDataChange = (date: dayjs.Dayjs | null) => {
     if (date) {
@@ -443,7 +446,7 @@ export default function HistoricoPage() {
               type="primary"
               icon={<SearchOutlined />}
               onClick={() => buscarHistorico(dataSelecionada)}
-              loading={loading}
+              loading={loading.main}
             >
               Buscar
             </Button>
@@ -471,7 +474,7 @@ export default function HistoricoPage() {
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} md={7}>
           <Card title="Turnos por Tipo de Equipe">
-            {loadingGrafico ? (
+            {loading.grafico ? (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
                 <Spin size="large" />
               </div>
@@ -516,7 +519,7 @@ export default function HistoricoPage() {
         </Col>
         <Col xs={24} md={17}>
           <Card title="Turnos Diários por Hora">
-            {loadingGraficoHora ? (
+            {loading.graficoHora ? (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
                 <Spin size="large" />
               </div>
@@ -567,7 +570,7 @@ export default function HistoricoPage() {
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24}>
           <Card title="Turnos Diários por Base">
-            {loadingGraficoBase ? (
+            {loading.graficoBase ? (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
                 <Spin size="large" />
               </div>

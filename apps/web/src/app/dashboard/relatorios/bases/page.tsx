@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button, Card, Col, Row, Select, Space, Typography } from 'antd';
 import ConsolidacaoPorBase from './components/ConsolidacaoPorBase';
 import ComparacaoEntreBases from './components/ComparacaoEntreBases';
@@ -42,6 +42,9 @@ export default function RelatoriosBasesPage() {
     });
   };
 
+  // Memoiza o objeto filtros para evitar recriações desnecessárias
+  const filtrosMemoizados = useMemo(() => filtros, [filtros.contratoId, filtros.baseId]);
+
   return (
     <div style={{ padding: '24px' }}>
       <Title level={2}>Relatórios - Bases</Title>
@@ -72,12 +75,12 @@ export default function RelatoriosBasesPage() {
 
       <Row gutter={[16, 16]}>
         <Col xs={24}>
-          <ConsolidacaoPorBase filtros={filtros} />
+          <ConsolidacaoPorBase filtros={filtrosMemoizados} />
         </Col>
       </Row>
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24}>
-          <ComparacaoEntreBases filtros={filtros} />
+          <ComparacaoEntreBases filtros={filtrosMemoizados} />
         </Col>
       </Row>
     </div>

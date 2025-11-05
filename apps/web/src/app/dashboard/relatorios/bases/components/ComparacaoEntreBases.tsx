@@ -2,7 +2,7 @@
 
 import { Column } from '@ant-design/plots';
 import { Card, Empty, Select, Spin } from 'antd';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosComparacao {
@@ -23,8 +23,9 @@ export default function ComparacaoEntreBases({
     'eletricistas'
   );
 
-  const { data: dados = [], loading } = useDataFetch<DadosComparacao[]>(
-    async () => {
+  // Memoiza a função fetcher para evitar recriações desnecessárias
+  const fetcher = useMemo(
+    () => async () => {
       const { getComparacaoEntreBases } = await import(
         '@/lib/actions/relatorios/relatoriosBases'
       );
@@ -37,6 +38,8 @@ export default function ComparacaoEntreBases({
     },
     [filtros]
   );
+
+  const { data: dados = [], loading } = useDataFetch<DadosComparacao[]>(fetcher, [fetcher]);
 
   if (loading) {
     return (

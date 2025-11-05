@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, Empty, Spin, Table, Tag } from 'antd';
+import { useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosBase {
@@ -25,8 +26,9 @@ interface ConsolidacaoPorBaseProps {
 }
 
 export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProps) {
-  const { data: dados = [], loading } = useDataFetch<DadosBase[]>(
-    async () => {
+  // Memoiza a função fetcher para evitar recriações desnecessárias
+  const fetcher = useMemo(
+    () => async () => {
       const { getConsolidacaoPorBase } = await import(
         '@/lib/actions/relatorios/relatoriosBases'
       );
@@ -39,6 +41,8 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
     },
     [filtros]
   );
+
+  const { data: dados = [], loading } = useDataFetch<DadosBase[]>(fetcher, [fetcher]);
 
   const columns = [
     {
