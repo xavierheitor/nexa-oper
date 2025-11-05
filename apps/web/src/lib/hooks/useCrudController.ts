@@ -127,6 +127,7 @@ import { App } from 'antd';
 import { useState } from 'react';
 import { mutate } from 'swr';
 import type { ActionResult } from '../types/common';
+import { errorHandler } from '../utils/errorHandler';
 
 /**
  * Interface de retorno do hook useCrudController
@@ -183,7 +184,7 @@ export function useCrudController<T>(
 ): CrudController<T> {
   // Hook do Ant Design para mensagens
   const { message } = App.useApp();
-  
+
   // Estados do controller
   const [isOpen, setIsOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<T | null>(null);
@@ -277,17 +278,24 @@ export function useCrudController<T>(
       }
     } catch (error) {
       // Trata erros não capturados (network, etc.)
-      const errorMessage =
-        error instanceof Error ? error.message : 'Erro inesperado';
+      // Log do erro usando o handler centralizado
+      errorHandler.log(error, 'useCrudController', {
+        metadata: {
+          actionType: 'exec',
+          successMessage,
+        },
+      });
+
+      const errorMessage = errorHandler.getMessage(error, {
+        context: 'useCrudController',
+        userMessage: 'Erro inesperado. Tente novamente.',
+      });
 
       if (onError) {
         onError(errorMessage);
       } else {
-        message.error('Erro inesperado. Tente novamente.');
+        message.error(errorMessage);
       }
-
-      // Log do erro para debugging
-      console.error('[useCrudController] Erro não tratado:', error);
     } finally {
       // Sempre desativa loading, mesmo em caso de erro
       setLoading(false);

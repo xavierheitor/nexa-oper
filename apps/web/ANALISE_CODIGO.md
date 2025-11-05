@@ -280,35 +280,49 @@ const stats = useMemo(
 
 ---
 
-### 6. **Tratamento de Erros Inconsistente** 🟡 **MÉDIA PRIORIDADE**
+### 6. **Tratamento de Erros Inconsistente** ✅ **CORRIGIDO**
 
 **Problema:** Alguns lugares usam `console.error`, outros retornam `ActionResult`, alguns não
 tratam.
 
-**Recomendação:** Padronizar tratamento de erros:
+**✅ Solução Implementada:** Criado utilitário centralizado `errorHandler` em `lib/utils/errorHandler.ts`
+
+**Uso Padronizado:**
 
 ```typescript
-// ✅ GOOD - Error Boundary + tratamento centralizado
-class ErrorHandler {
-  static handle(error: unknown, context: string) {
-    logger.error(`Erro em ${context}`, {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
+// ✅ Em Server Actions - Retorna ActionResult
+import { errorHandler } from '@/lib/utils/errorHandler';
 
-    // Em produção, não expor detalhes
-    return {
-      success: false,
-      error:
-        process.env.NODE_ENV === 'development'
-          ? error instanceof Error
-            ? error.message
-            : 'Erro desconhecido'
-          : 'Ocorreu um erro. Tente novamente.',
-    };
-  }
+try {
+  const result = await service.create(data);
+  return { success: true, data: result };
+} catch (error) {
+  return errorHandler.handle(error, 'Eletricista', 'create');
 }
+
+// ✅ Em Componentes/Hooks - Apenas loga
+import { errorHandler } from '@/lib/utils/errorHandler';
+
+try {
+  await fetchData();
+} catch (error) {
+  errorHandler.log(error, 'MeuComponente');
+  message.error('Erro ao carregar dados');
+}
+
+// ✅ Para obter apenas mensagem formatada
+const message = errorHandler.getMessage(error, {
+  context: 'Operação',
+  userMessage: 'Mensagem customizada',
+});
 ```
+
+**Benefícios:**
+- ✅ Logging estruturado centralizado
+- ✅ Mensagens seguras para produção/desenvolvimento
+- ✅ Normalização automática de erros (Error, string, unknown)
+- ✅ Integração com sistema de logging existente
+- ✅ `useCrudController` já atualizado para usar o novo handler
 
 ---
 
