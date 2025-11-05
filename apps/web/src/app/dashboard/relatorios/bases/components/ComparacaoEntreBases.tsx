@@ -44,25 +44,8 @@ export default function ComparacaoEntreBases({
   // Garante que dados nunca seja null
   const dados: DadosComparacao[] = dadosRaw ?? [];
 
-  if (loading) {
-    return (
-      <Card title="Comparação entre Bases">
-        <div style={{ textAlign: 'center', padding: '40px 0' }}>
-          <Spin size="large" />
-        </div>
-      </Card>
-    );
-  }
-
-  if (dados.length === 0) {
-    return (
-      <Card title="Comparação entre Bases">
-        <Empty description="Nenhum dado disponível" />
-      </Card>
-    );
-  }
-
   // Memoiza os dados do gráfico para evitar recálculos desnecessários
+  // IMPORTANTE: Todos os hooks devem ser chamados antes de qualquer retorno condicional
   const dadosGrafico = useMemo(
     () =>
       (dados || []).map((d) => ({
@@ -113,6 +96,25 @@ export default function ComparacaoEntreBases({
     ],
     []
   );
+
+  // Retornos condicionais após todos os hooks
+  if (loading) {
+    return (
+      <Card title="Comparação entre Bases">
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Spin size="large" />
+        </div>
+      </Card>
+    );
+  }
+
+  if (dados.length === 0) {
+    return (
+      <Card title="Comparação entre Bases">
+        <Empty description="Nenhum dado disponível" />
+      </Card>
+    );
+  }
 
   return (
     <Card

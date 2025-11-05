@@ -146,6 +146,20 @@ export function useDataFetch<T>(
   // Ref para evitar race conditions em fetches rápidos
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // Ref para manter a referência do fetcher mais recente sem causar re-renders
+  const fetcherRef = useRef(fetcher);
+  const transformRef = useRef(transform);
+  const onSuccessRef = useRef(onSuccess);
+  const onErrorRef = useRef(onError);
+
+  // Atualiza as refs quando as funções mudarem
+  useEffect(() => {
+    fetcherRef.current = fetcher;
+    transformRef.current = transform;
+    onSuccessRef.current = onSuccess;
+    onErrorRef.current = onError;
+  }, [fetcher, transform, onSuccess, onError]);
+
   /**
    * Função interna para executar o fetch
    */
@@ -162,7 +176,7 @@ export function useDataFetch<T>(
     setError(null);
 
     try {
-      const result = await fetcher();
+      const result = await fetcherRef.current();
 
       // Se o fetch foi cancelado, não atualiza o estado
       if (abortController.signal.aborted) {
@@ -175,36 +189,41 @@ export function useDataFetch<T>(
 
         if (actionResult.success && actionResult.data !== undefined) {
           // Aplica transformação se fornecida
-          const finalData = transform
-            ? transform<T>(actionResult.data)
+          const transformFn = transformRef.current;
+          const finalData = transformFn
+            ? transformFn<T>(actionResult.data)
             : actionResult.data;
 
           setData(finalData);
 
           // Chama callback de sucesso
-          if (onSuccess) {
-            onSuccess(finalData);
+          const onSuccessFn = onSuccessRef.current;
+          if (onSuccessFn) {
+            onSuccessFn(finalData);
           }
         } else {
           const errorMessage = actionResult.error || 'Erro desconhecido ao buscar dados';
           setError(errorMessage);
 
           // Chama callback de erro
-          if (onError) {
-            onError(errorMessage);
+          const onErrorFn = onErrorRef.current;
+          if (onErrorFn) {
+            onErrorFn(errorMessage);
           }
         }
       } else {
         // Dados diretos (não ActionResult)
-        const finalData = transform
-          ? transform<T>(result as T)
+        const transformFn = transformRef.current;
+        const finalData = transformFn
+          ? transformFn<T>(result as T)
           : (result as T);
 
         setData(finalData);
 
         // Chama callback de sucesso
-        if (onSuccess) {
-          onSuccess(finalData);
+        const onSuccessFn = onSuccessRef.current;
+        if (onSuccessFn) {
+          onSuccessFn(finalData);
         }
       }
     } catch (err) {
@@ -220,8 +239,9 @@ export function useDataFetch<T>(
       setError(errorMessage);
 
       // Chama callback de erro
-      if (onError) {
-        onError(errorMessage);
+      const onErrorFn = onErrorRef.current;
+      if (onErrorFn) {
+        onErrorFn(errorMessage);
       }
     } finally {
       // Só atualiza loading se não foi cancelado
@@ -229,7 +249,7 @@ export function useDataFetch<T>(
         setLoading(false);
       }
     }
-  }, [fetcher, transform, onSuccess, onError]);
+  }, []); // Sem dependências - usa refs para acessar valores atuais
 
   /**
    * Função para refazer o fetch manualmente
@@ -266,6 +286,7 @@ export function useDataFetch<T>(
         abortControllerRef.current.abort();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [immediate, executeFetch, ...deps]);
 
   return {
