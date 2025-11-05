@@ -39,7 +39,10 @@ export default function ComparacaoEntreBases({
     [filtros]
   );
 
-  const { data: dados = [], loading } = useDataFetch<DadosComparacao[]>(fetcher, [fetcher]);
+  const { data: dadosRaw, loading } = useDataFetch<DadosComparacao[]>(fetcher, [fetcher]);
+
+  // Garante que dados nunca seja null
+  const dados: DadosComparacao[] = dadosRaw ?? [];
 
   if (loading) {
     return (
@@ -59,13 +62,19 @@ export default function ComparacaoEntreBases({
     );
   }
 
-  // Preparar dados para o gráfico com base na métrica selecionada
-  const dadosGrafico = dados.map((d) => ({
-    base: d.base,
-    quantidade: d[metrica],
-  }));
+  // Memoiza os dados do gráfico para evitar recálculos desnecessários
+  const dadosGrafico = useMemo(
+    () =>
+      (dados || []).map((d) => ({
+        base: d.base,
+        quantidade: d[metrica],
+      })),
+    [dados, metrica]
+  );
 
-  const config = {
+  // Memoiza a configuração do gráfico
+  const config = useMemo(
+    () => ({
     data: dadosGrafico,
     xField: 'base',
     yField: 'quantidade',
@@ -91,7 +100,19 @@ export default function ComparacaoEntreBases({
         autoHide: false,
       },
     },
-  };
+    }),
+    [dadosGrafico, metrica]
+  );
+
+  // Memoiza as opções do Select
+  const metricOptions = useMemo(
+    () => [
+      { value: 'veiculos' as const, label: 'Veículos' },
+      { value: 'eletricistas' as const, label: 'Eletricistas' },
+      { value: 'equipes' as const, label: 'Equipes' },
+    ],
+    []
+  );
 
   return (
     <Card
@@ -101,11 +122,7 @@ export default function ComparacaoEntreBases({
           value={metrica}
           onChange={setMetrica}
           style={{ width: 150 }}
-          options={[
-            { value: 'veiculos', label: 'Veículos' },
-            { value: 'eletricistas', label: 'Eletricistas' },
-            { value: 'equipes', label: 'Equipes' },
-          ]}
+          options={metricOptions}
         />
       }
     >

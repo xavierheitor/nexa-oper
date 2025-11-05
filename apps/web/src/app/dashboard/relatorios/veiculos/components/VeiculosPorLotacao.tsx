@@ -39,7 +39,7 @@ export default function VeiculosPorLotacao({ filtros }: VeiculosPorLotacaoProps)
     );
   }
 
-  if (dados.length === 0) {
+  if (!dados?.length) {
     return (
       <Card title="Veículos por Lotação">
         <Empty description="Nenhum dado disponível" />
@@ -47,8 +47,11 @@ export default function VeiculosPorLotacao({ filtros }: VeiculosPorLotacaoProps)
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     xField: 'base',
     yField: 'quantidade',
     label: {

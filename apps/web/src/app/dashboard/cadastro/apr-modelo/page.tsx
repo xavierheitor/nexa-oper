@@ -381,13 +381,15 @@ export default function AprPage() {
         destroyOnHidden
         width={500}
       >
-        {taController.isOpen && <VinculoTAModal
-          onSaved={() => {
-            taController.close();
-            taVinculos.mutate();
-          }}
-          controllerExec={taController.exec}
-        />
+        {taController.isOpen && (
+          <VinculoTAModal
+            onSaved={() => {
+              taController.close();
+              taVinculos.mutate();
+            }}
+            controllerExec={taController.exec}
+          />
+        )}
       </Modal>
     </>
   );

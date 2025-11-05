@@ -45,6 +45,17 @@ export default function RelatoriosBasesPage() {
   // Memoiza o objeto filtros para evitar recriações desnecessárias
   const filtrosMemoizados = useMemo(() => filtros, [filtros.contratoId, filtros.baseId]);
 
+  // Memoiza as opções dos Selects para evitar recriações desnecessárias
+  const contratosOptions = useMemo(
+    () => contratos?.map((c: any) => ({ label: c.nome, value: c.id })) || [],
+    [contratos]
+  );
+
+  const basesOptions = useMemo(
+    () => bases?.map((b: any) => ({ label: b.nome, value: b.id })) || [],
+    [bases]
+  );
+
   return (
     <div style={{ padding: '24px' }}>
       <Title level={2}>Relatórios - Bases</Title>
@@ -58,7 +69,7 @@ export default function RelatoriosBasesPage() {
             loading={loadingContratos}
             value={filtros.contratoId}
             onChange={(value) => handleFilterChange('contratoId', value)}
-            options={contratos?.map((c: any) => ({ label: c.nome, value: c.id }))}
+            options={contratosOptions}
           />
           <Select
             placeholder='Filtrar por Base'
@@ -67,7 +78,7 @@ export default function RelatoriosBasesPage() {
             loading={loadingBases}
             value={filtros.baseId}
             onChange={(value) => handleFilterChange('baseId', value)}
-            options={bases?.map((b: any) => ({ label: b.nome, value: b.id }))}
+            options={basesOptions}
           />
           <Button onClick={handleClearFilters}>Limpar Filtros</Button>
         </Space>

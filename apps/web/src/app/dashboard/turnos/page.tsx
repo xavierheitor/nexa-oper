@@ -75,7 +75,10 @@ export default function TurnosPage() {
   const [selectedChecklist, setSelectedChecklist] = useState<ChecklistPreenchido | null>(null);
 
   // Fetch de turnos abertos e totais do dia
-  const { data: turnosAbertosResult, loading: loadingTurnos } = useDataFetch(
+  const { data: turnosAbertosResult, loading: loadingTurnos } = useDataFetch<{
+    turnosAbertos: TurnoData[];
+    totalDiarios: number;
+  }>(
     async () => {
       const hoje = new Date();
       const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0);
@@ -88,28 +91,25 @@ export default function TurnosPage() {
 
       if (resultAbertos.redirectToLogin) {
         window.location.href = '/login';
-        return { success: false as const, error: 'Redirecionando para login' };
+        throw new Error('Redirecionando para login');
       }
 
       if (resultAbertos.success && resultAbertos.data && resultTodos.success && resultTodos.data) {
         return {
-          success: true as const,
-          data: {
-            turnosAbertos: (resultAbertos.data.data || []) as unknown as TurnoData[],
-            totalDiarios: resultTodos.data.data?.length || 0,
-          },
+          turnosAbertos: (resultAbertos.data.data || []) as unknown as TurnoData[],
+          totalDiarios: resultTodos.data.data?.length || 0,
         };
       }
 
-      return { success: false as const, error: 'Erro ao carregar turnos' };
+      throw new Error('Erro ao carregar turnos');
     },
     []
   );
 
   // Processar dados dos turnos e calcular estatísticas
   const { turnosAbertos, stats } = useMemo(() => {
-    const turnos = turnosAbertosResult?.data?.turnosAbertos || [];
-    const totalDiarios = turnosAbertosResult?.data?.totalDiarios || 0;
+    const turnos = turnosAbertosResult?.turnosAbertos || [];
+    const totalDiarios = turnosAbertosResult?.totalDiarios || 0;
 
     // Calcular estatísticas por base
     const porBase: Record<string, number> = {};

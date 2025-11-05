@@ -41,7 +41,7 @@ export default function ComparacaoFolgaTrabalho({
     );
   }
 
-  if (dados.length === 0) {
+  if (!dados?.length) {
     return (
       <Card title="Comparação: Trabalho vs Folga vs Falta">
         <Empty description="Nenhum dado disponível" />
@@ -49,8 +49,11 @@ export default function ComparacaoFolgaTrabalho({
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     xField: 'tipo',
     yField: 'quantidade',
     label: {

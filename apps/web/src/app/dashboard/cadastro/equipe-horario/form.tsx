@@ -208,7 +208,7 @@ export default function EquipeTurnoHistoricoForm({
               </span>
             </Space>
             <div style={{ fontSize: '12px', color: '#666' }}>
-              {horarioSelecionado.duracaoHoras}h trabalho + {horarioSelecionado.duracaoIntervaloHoras}h intervalo
+              {Number(horarioSelecionado.duracaoHoras)}h trabalho + {Number(horarioSelecionado.duracaoIntervaloHoras)}h intervalo
             </div>
           </Space>
         </Card>

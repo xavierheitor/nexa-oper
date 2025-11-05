@@ -39,6 +39,7 @@ import EletricistaLoteForm, { type EletricistaLoteFormData } from './lote-form';
 type EletricistaWithBase = Eletricista & {
   baseAtual?: Base | null;
   Status?: { status: StatusEletricista } | null;
+  cargo?: Cargo | null;
 };
 
 export default function EletricistaPage() {

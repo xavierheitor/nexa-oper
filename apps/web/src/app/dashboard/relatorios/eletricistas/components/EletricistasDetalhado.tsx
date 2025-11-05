@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, Empty, Spin, Table, Tag } from 'antd';
+import { useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface EletricistaDetalhado {
@@ -26,8 +27,9 @@ interface EletricistasDetalhadoProps {
 export default function EletricistasDetalhado({
   filtros,
 }: EletricistasDetalhadoProps) {
-  const { data: dados = [], loading } = useDataFetch<EletricistaDetalhado[]>(
-    async () => {
+  // Memoiza a função fetcher para evitar recriações desnecessárias
+  const fetcher = useMemo(
+    () => async () => {
       const { getEletricistasDetalhado } = await import(
         '@/lib/actions/relatorios/relatoriosEletricistas'
       );
@@ -41,7 +43,17 @@ export default function EletricistasDetalhado({
     [filtros]
   );
 
-  const columns = [
+  const { data: dadosRaw, loading } = useDataFetch<EletricistaDetalhado[]>(
+    fetcher,
+    [fetcher]
+  );
+
+  // Garante que dados nunca seja null
+  const dados: EletricistaDetalhado[] = dadosRaw ?? [];
+
+  // Memoiza as colunas para evitar recriações desnecessárias
+  const columns = useMemo(
+    () => [
     {
       title: 'Matrícula',
       dataIndex: 'matricula',
@@ -108,7 +120,9 @@ export default function EletricistasDetalhado({
       render: (_: any, record: EletricistaDetalhado) =>
         record.estatisticas.totalDias,
     },
-  ];
+    ],
+    []
+  );
 
   if (loading) {
     return (

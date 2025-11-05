@@ -41,7 +41,7 @@ export default function DiasTrabalhadosPorEletricista({
     );
   }
 
-  if (dados.length === 0) {
+  if (!dados?.length) {
     return (
       <Card title="Top 20 - Dias Trabalhados por Eletricista">
         <Empty description="Nenhum dado disponível" />
@@ -49,8 +49,11 @@ export default function DiasTrabalhadosPorEletricista({
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     xField: 'eletricista',
     yField: 'diasTrabalhados',
     label: {

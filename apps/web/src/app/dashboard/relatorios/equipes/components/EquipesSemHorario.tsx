@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, Empty, Spin, Table, Tag } from 'antd';
+import { useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface EquipeSemHorario {
@@ -16,8 +17,9 @@ interface EquipesSemHorarioProps {
 }
 
 export default function EquipesSemHorario({ filtros }: EquipesSemHorarioProps) {
-  const { data: dados = [], loading } = useDataFetch<EquipeSemHorario[]>(
-    async () => {
+  // Memoiza a função fetcher para evitar recriações desnecessárias
+  const fetcher = useMemo(
+    () => async () => {
       const { getEquipesSemHorario } = await import(
         '@/lib/actions/relatorios/relatoriosEquipes'
       );
@@ -31,7 +33,17 @@ export default function EquipesSemHorario({ filtros }: EquipesSemHorarioProps) {
     [filtros]
   );
 
-  const columns = [
+  const { data: dadosRaw, loading } = useDataFetch<EquipeSemHorario[]>(
+    fetcher,
+    [fetcher]
+  );
+
+  // Garante que dados nunca seja null
+  const dados: EquipeSemHorario[] = dadosRaw ?? [];
+
+  // Memoiza as colunas para evitar recriações desnecessárias
+  const columns = useMemo(
+    () => [
     {
       title: 'Equipe',
       dataIndex: 'nome',
@@ -60,7 +72,9 @@ export default function EquipesSemHorario({ filtros }: EquipesSemHorarioProps) {
       dataIndex: 'contrato',
       key: 'contrato',
     },
-  ];
+    ],
+    []
+  );
 
   if (loading) {
     return (

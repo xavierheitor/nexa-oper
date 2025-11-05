@@ -42,9 +42,14 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
     [filtros]
   );
 
-  const { data: dados = [], loading } = useDataFetch<DadosBase[]>(fetcher, [fetcher]);
+  const { data: dadosRaw, loading } = useDataFetch<DadosBase[]>(fetcher, [fetcher]);
 
-  const columns = [
+  // Garante que dados nunca seja null
+  const dados: DadosBase[] = dadosRaw ?? [];
+
+  // Memoiza as colunas para evitar recriações desnecessárias
+  const columns = useMemo(
+    () => [
     {
       title: 'Base',
       dataIndex: 'nome',
@@ -135,7 +140,35 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
         </Tag>
       ),
     },
-  ];
+    ],
+    []
+  );
+
+  // Memoiza o cálculo de totais para evitar recálculos desnecessários
+  const totais = useMemo(
+    () =>
+      dados.reduce(
+        (acc, base) => ({
+          veiculos: acc.veiculos + base.veiculos,
+          eletricistasTotal: acc.eletricistasTotal + base.eletricistas.total,
+          eletricistasEscalados: acc.eletricistasEscalados + base.eletricistas.escalados,
+          eletricistasNaoEscalados: acc.eletricistasNaoEscalados + base.eletricistas.naoEscalados,
+          equipesTotal: acc.equipesTotal + base.equipes.total,
+          equipesEscaladas: acc.equipesEscaladas + base.equipes.escaladas,
+          equipesInativas: acc.equipesInativas + base.equipes.inativas,
+        }),
+        {
+          veiculos: 0,
+          eletricistasTotal: 0,
+          eletricistasEscalados: 0,
+          eletricistasNaoEscalados: 0,
+          equipesTotal: 0,
+          equipesEscaladas: 0,
+          equipesInativas: 0,
+        }
+      ),
+    [dados]
+  );
 
   if (loading) {
     return (
@@ -154,28 +187,6 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
       </Card>
     );
   }
-
-  // Calcular totais
-  const totais = dados.reduce(
-    (acc, base) => ({
-      veiculos: acc.veiculos + base.veiculos,
-      eletricistasTotal: acc.eletricistasTotal + base.eletricistas.total,
-      eletricistasEscalados: acc.eletricistasEscalados + base.eletricistas.escalados,
-      eletricistasNaoEscalados: acc.eletricistasNaoEscalados + base.eletricistas.naoEscalados,
-      equipesTotal: acc.equipesTotal + base.equipes.total,
-      equipesEscaladas: acc.equipesEscaladas + base.equipes.escaladas,
-      equipesInativas: acc.equipesInativas + base.equipes.inativas,
-    }),
-    {
-      veiculos: 0,
-      eletricistasTotal: 0,
-      eletricistasEscalados: 0,
-      eletricistasNaoEscalados: 0,
-      equipesTotal: 0,
-      equipesEscaladas: 0,
-      equipesInativas: 0,
-    }
-  );
 
   return (
     <Card

@@ -39,7 +39,7 @@ export default function FaltasPorPeriodo({ filtros }: FaltasPorPeriodoProps) {
     );
   }
 
-  if (dados.length === 0) {
+  if (!dados?.length) {
     return (
       <Card title="Evolução de Faltas por Período">
         <Empty description="Nenhum dado disponível" />
@@ -47,8 +47,11 @@ export default function FaltasPorPeriodo({ filtros }: FaltasPorPeriodoProps) {
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     xField: 'data',
     yField: 'quantidade',
     point: {

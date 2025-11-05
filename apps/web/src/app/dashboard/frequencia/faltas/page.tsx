@@ -214,7 +214,7 @@ export default function FaltasPage() {
         onJustificar={handleJustificarSubmit}
         falta={faltaSelecionada}
         loading={loadingJustificar}
-        tiposJustificativa={tiposJustificativa}
+        tiposJustificativa={tiposJustificativa || undefined}
       />
     </div>
   );

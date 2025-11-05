@@ -11,12 +11,23 @@ import React, { useState } from 'react';
 import { Modal, Card, Typography, List, Tag, Space, Image, Empty, Collapse, Divider, Alert } from 'antd';
 import { EyeOutlined, UserOutlined, CalendarOutlined, ClockCircleOutlined, CameraOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { buildPhotoUrl, isValidPhotoPath } from '@/lib/utils/photos';
+import type { ChecklistPreenchido as ChecklistPreenchidoBase } from './ChecklistSelectorModal';
 
 const { Title, Text } = Typography;
 
+interface ChecklistRespostaFoto {
+  id: number;
+  caminhoArquivo: string;
+  urlPublica?: string;
+  tamanhoBytes: bigint;
+  mimeType: string;
+  sincronizadoEm: string;
+  createdAt: string;
+}
+
 interface ChecklistResposta {
   id: number;
-  dataResposta: string;
+  dataResposta: string | Date;
   aguardandoFoto: boolean;
   fotosSincronizadas: number;
   pergunta: {
@@ -28,42 +39,19 @@ interface ChecklistResposta {
     nome: string;
     geraPendencia: boolean;
   };
-  ChecklistRespostaFoto: Array<{
-    id: number;
-    caminhoArquivo: string;
-    urlPublica?: string;
-    tamanhoBytes: bigint;
-    mimeType: string;
-    sincronizadoEm: string;
-    createdAt: string;
-  }>;
+  ChecklistRespostaFoto: ChecklistRespostaFoto[];
 }
 
-interface ChecklistPreenchido {
-  id: number;
-  dataPreenchimento: string;
-  latitude?: number;
-  longitude?: number;
-  checklist: {
-    id: number;
-    nome: string;
-    tipoChecklist: {
-      id: number;
-      nome: string;
-    };
-  };
-  eletricista: {
-    id: number;
-    nome: string;
-    matricula: string;
-  };
-  ChecklistResposta: ChecklistResposta[];
-}
+type ChecklistPreenchido = Omit<ChecklistPreenchidoBase, 'ChecklistResposta'> & {
+  ChecklistResposta: Array<ChecklistPreenchidoBase['ChecklistResposta'][0] & {
+    ChecklistRespostaFoto?: ChecklistRespostaFoto[];
+  }>;
+};
 
 interface ChecklistViewerModalProps {
   visible: boolean;
   onClose: () => void;
-  checklist: ChecklistPreenchido | null;
+  checklist: ChecklistPreenchido | ChecklistPreenchidoBase | null;
 }
 
 export default function ChecklistViewerModal({
@@ -108,7 +96,10 @@ export default function ChecklistViewerModal({
     setImagePreviewVisible(true);
   };
 
-  const { date, time } = formatDateTime(checklist.dataPreenchimento);
+  const dataPreenchimentoStr = checklist.dataPreenchimento instanceof Date
+    ? checklist.dataPreenchimento.toISOString()
+    : checklist.dataPreenchimento;
+  const { date, time } = formatDateTime(dataPreenchimentoStr);
 
   return (
     <>
@@ -158,8 +149,12 @@ export default function ChecklistViewerModal({
         ) : (
           <Collapse
             items={checklist.ChecklistResposta.map((resposta, index) => {
-              const status = getRespostaStatus(resposta);
-              const { date: respostaDate, time: respostaTime } = formatDateTime(resposta.dataResposta);
+              const respostaWithFoto = resposta as ChecklistResposta;
+              const status = getRespostaStatus(respostaWithFoto);
+              const dataRespostaStr = resposta.dataResposta instanceof Date
+                ? resposta.dataResposta.toISOString()
+                : resposta.dataResposta;
+              const { date: respostaDate, time: respostaTime } = formatDateTime(dataRespostaStr);
 
               return {
                 key: resposta.id,
@@ -177,10 +172,10 @@ export default function ChecklistViewerModal({
                 extra: (
                   <Space>
                     <Text type="secondary">{respostaDate} {respostaTime}</Text>
-                    {resposta.ChecklistRespostaFoto.length > 0 && (
+                    {respostaWithFoto.ChecklistRespostaFoto && respostaWithFoto.ChecklistRespostaFoto.length > 0 && (
                       <Space>
                         <CameraOutlined />
-                        <Text>{resposta.ChecklistRespostaFoto.length}</Text>
+                        <Text>{respostaWithFoto.ChecklistRespostaFoto.length}</Text>
                       </Space>
                     )}
                   </Space>
@@ -203,17 +198,17 @@ export default function ChecklistViewerModal({
                     </Card>
 
                     {/* Fotos */}
-                    {resposta.ChecklistRespostaFoto.length > 0 && (
+                    {respostaWithFoto.ChecklistRespostaFoto && respostaWithFoto.ChecklistRespostaFoto.length > 0 && (
                       <>
                         <Divider orientation="left">
                           <Space>
                             <CameraOutlined />
-                            <Text strong>Fotos ({resposta.ChecklistRespostaFoto.length})</Text>
+                            <Text strong>Fotos ({respostaWithFoto.ChecklistRespostaFoto.length})</Text>
                           </Space>
                         </Divider>
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
-                          {resposta.ChecklistRespostaFoto.map((foto) => {
+                          {respostaWithFoto.ChecklistRespostaFoto.map((foto: ChecklistRespostaFoto) => {
                             // Montar URL completa usando utilitário helper
                             const imageSrc = buildPhotoUrl(foto.urlPublica, foto.caminhoArquivo);
                             const hasValidSrc = isValidPhotoPath(imageSrc);
@@ -272,7 +267,7 @@ export default function ChecklistViewerModal({
                       </>
                     )}
 
-                    {resposta.ChecklistRespostaFoto.length === 0 && resposta.aguardandoFoto && (
+                    {(!respostaWithFoto.ChecklistRespostaFoto || respostaWithFoto.ChecklistRespostaFoto.length === 0) && resposta.aguardandoFoto && (
                       <Card size="small" style={{ backgroundColor: '#fff7e6' }}>
                         <Space>
                           <ExclamationCircleOutlined style={{ color: '#fa8c16' }} />

@@ -39,7 +39,7 @@ export default function EquipesEscaladas({ filtros }: EquipesEscaladasProps) {
     );
   }
 
-  if (dados.length === 0) {
+  if (!dados?.length) {
     return (
       <Card title="Equipes Escaladas vs Não Escaladas">
         <Empty description="Nenhum dado disponível" />
@@ -47,8 +47,11 @@ export default function EquipesEscaladas({ filtros }: EquipesEscaladasProps) {
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     angleField: 'quantidade',
     colorField: 'status',
     label: {

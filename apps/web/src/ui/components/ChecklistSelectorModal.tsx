@@ -15,7 +15,7 @@ import { getChecklistsByTurno } from '@/lib/actions/checklist/getByTurno';
 
 const { Title, Text } = Typography;
 
-interface ChecklistPreenchido {
+export interface ChecklistPreenchido {
   id: number;
   dataPreenchimento: Date | string;
   latitude?: number | null;

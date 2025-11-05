@@ -16,7 +16,7 @@ interface EletricistasPorTipoEquipeProps {
 export default function EletricistasPorTipoEquipe({
   filtros,
 }: EletricistasPorTipoEquipeProps) {
-  const { data: dados = [], loading } = useDataFetch<DadosTipo[]>(
+  const { data: dadosRaw, loading } = useDataFetch<DadosTipo[]>(
     async () => {
       const { getEletricistasPorTipoEquipe } = await import(
         '@/lib/actions/relatorios/relatoriosEletricistas'
@@ -30,6 +30,9 @@ export default function EletricistasPorTipoEquipe({
     },
     [filtros]
   );
+
+  // Garante que dados nunca seja null
+  const dados: DadosTipo[] = dadosRaw ?? [];
 
   if (loading) {
     return (
@@ -49,8 +52,11 @@ export default function EletricistasPorTipoEquipe({
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     angleField: 'quantidade',
     colorField: 'tipo',
     label: {

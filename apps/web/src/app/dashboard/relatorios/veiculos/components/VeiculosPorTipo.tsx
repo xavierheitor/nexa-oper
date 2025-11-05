@@ -39,7 +39,7 @@ export default function VeiculosPorTipo({ filtros }: VeiculosPorTipoProps) {
     );
   }
 
-  if (dados.length === 0) {
+  if (!dados?.length) {
     return (
       <Card title="Veículos por Tipo">
         <Empty description="Nenhum dado disponível" />
@@ -47,8 +47,11 @@ export default function VeiculosPorTipo({ filtros }: VeiculosPorTipoProps) {
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     angleField: 'quantidade',
     colorField: 'tipo',
     label: {

@@ -39,7 +39,7 @@ export default function VeiculosPorMarca({ filtros }: VeiculosPorMarcaProps) {
     );
   }
 
-  if (dados.length === 0) {
+  if (!dados?.length) {
     return (
       <Card title="Veículos por Modelo">
         <Empty description="Nenhum dado disponível" />
@@ -47,8 +47,11 @@ export default function VeiculosPorMarca({ filtros }: VeiculosPorMarcaProps) {
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     xField: 'modelo',
     yField: 'quantidade',
     label: {

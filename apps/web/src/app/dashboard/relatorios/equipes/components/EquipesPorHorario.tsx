@@ -39,7 +39,7 @@ export default function EquipesPorHorario({ filtros }: EquipesPorHorarioProps) {
     );
   }
 
-  if (dados.length === 0) {
+  if (!dados?.length) {
     return (
       <Card title="Equipes por Horário">
         <Empty description="Nenhum dado disponível" />
@@ -47,8 +47,11 @@ export default function EquipesPorHorario({ filtros }: EquipesPorHorarioProps) {
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     xField: 'horario',
     yField: 'quantidade',
     label: {

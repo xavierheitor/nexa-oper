@@ -113,6 +113,7 @@ export default function FaltaTable({
             }
           : false
       }
+      // @ts-expect-error - TableFilters e TableSorter são tipos customizados compatíveis com o Ant Design
       onChange={onTableChange}
     />
   );

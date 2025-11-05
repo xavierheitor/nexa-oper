@@ -16,7 +16,7 @@ interface EletricistasPorLotacaoProps {
 export default function EletricistasPorLotacao({
   filtros,
 }: EletricistasPorLotacaoProps) {
-  const { data: dados = [], loading } = useDataFetch<DadosLotacao[]>(
+  const { data: dadosRaw, loading } = useDataFetch<DadosLotacao[]>(
     async () => {
       const { getEletricistasPorLotacao } = await import(
         '@/lib/actions/relatorios/relatoriosEletricistas'
@@ -30,6 +30,9 @@ export default function EletricistasPorLotacao({
     },
     [filtros]
   );
+
+  // Garante que dados nunca seja null
+  const dados: DadosLotacao[] = dadosRaw ?? [];
 
   if (loading) {
     return (
@@ -49,8 +52,11 @@ export default function EletricistasPorLotacao({
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     xField: 'base',
     yField: 'quantidade',
     label: {
