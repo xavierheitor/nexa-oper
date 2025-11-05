@@ -100,11 +100,12 @@ export default function TransferBaseModal({
       destroyOnHidden
       width={500}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-      >
+      {open && (
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+        >
         {/* Campo Nova Base */}
         <Form.Item
           name="novaBaseId"
@@ -160,6 +161,7 @@ export default function TransferBaseModal({
           </div>
         </Form.Item>
       </Form>
+      )}
     </Modal>
   );
 }

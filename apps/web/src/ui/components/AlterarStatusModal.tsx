@@ -136,11 +136,12 @@ export default function AlterarStatusModal({
       destroyOnHidden
       width={600}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-      >
+      {open && (
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+        >
         {/* Status Atual (readonly) */}
         <Form.Item label="Status Atual">
           <Tag color={StatusEletricistaColors[currentStatus]}>
@@ -242,6 +243,7 @@ export default function AlterarStatusModal({
           </div>
         </Form.Item>
       </Form>
+      )}
     </Modal>
   );
 }

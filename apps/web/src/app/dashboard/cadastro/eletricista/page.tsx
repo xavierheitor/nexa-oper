@@ -149,13 +149,13 @@ export default function EletricistaPage() {
         ...getTextFilter<Eletricista>('matricula', 'matrícula do eletricista'), // Adiciona filtro de busca textual
       },
       // Coluna Telefone - com filtro de texto integrado
-      {
-        title: 'Telefone',
-        dataIndex: 'telefone',
-        key: 'telefone',
-        sorter: true, // Permite ordenação
-        ...getTextFilter<Eletricista>('telefone', 'telefone do eletricista'), // Adiciona filtro de busca textual
-      },
+      // {
+      //   title: 'Telefone',
+      //   dataIndex: 'telefone',
+      //   key: 'telefone',
+      //   sorter: true, // Permite ordenação
+      //   ...getTextFilter<Eletricista>('telefone', 'telefone do eletricista'), // Adiciona filtro de busca textual
+      // },
 
       {
         title: 'Admissão',
@@ -173,13 +173,13 @@ export default function EletricistaPage() {
         width: 150,
       },
       // Coluna Estado
-      {
-        title: 'Estado',
-        dataIndex: 'estado',
-        key: 'estado',
-        sorter: true,
-        width: 100,
-      },
+      // {
+      //   title: 'Estado',
+      //   dataIndex: 'estado',
+      //   key: 'estado',
+      //   sorter: true,
+      //   width: 100,
+      // },
       // Coluna Base Atual
       {
         title: 'Base Atual',
