@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AuthController } from './controllers/auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -10,17 +11,18 @@ import { MobileUsersModule } from '../mobile-users/mobile-users.module';
 import { DatabaseModule } from '@database/database.module';
 
 /**
- * Obtém o JWT_SECRET validado
+ * Obtém o JWT_SECRET validado do ConfigService
  *
  * Garante que JWT_SECRET está configurado e é seguro.
- * A validação completa é feita no bootstrap, mas esta função
- * fornece um erro claro se a variável não estiver disponível.
+ * A validação completa é feita no schema de validação do ConfigModule,
+ * mas esta função fornece uma validação adicional para garantir segurança.
  *
+ * @param configService - Instância do ConfigService do NestJS
  * @returns JWT_SECRET configurado
- * @throws {Error} Se JWT_SECRET não estiver configurado
+ * @throws {Error} Se JWT_SECRET não estiver configurado ou for inseguro
  */
-function getJwtSecret(): string {
-  const secret = process.env.JWT_SECRET;
+function getJwtSecret(configService: ConfigService): string {
+  const secret = configService.get<string>('JWT_SECRET');
   if (!secret || secret.trim() === '') {
     throw new Error(
       'JWT_SECRET não está configurado. Configure a variável de ambiente antes de iniciar a aplicação.'
@@ -39,9 +41,14 @@ function getJwtSecret(): string {
     DatabaseModule,
     MobileUsersModule,
     PassportModule,
-    JwtModule.register({
-      secret: getJwtSecret(),
-      // Tokens com expiração configurada no serviço (access: 7d, refresh: 30d)
+    JwtModule.registerAsync({
+      useFactory: (configService: ConfigService) => {
+        return {
+          secret: getJwtSecret(configService),
+          // Tokens com expiração configurada no serviço (access: 7d, refresh: 30d)
+        };
+      },
+      inject: [ConfigService],
     }),
   ],
   providers: [
