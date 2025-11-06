@@ -67,10 +67,6 @@ export class EletricistaService {
 
   constructor(private readonly db: DatabaseService) {}
 
-  private validatePaginationParams(page: number, limit: number): void {
-    validatePaginationParams(page, limit);
-  }
-
   private validateEletricistaId(id: number): void {
     validateId(id, 'ID do eletricista');
   }
@@ -138,14 +134,6 @@ export class EletricistaService {
     return whereClause;
   }
 
-  private buildPaginationMeta(
-    total: number,
-    page: number,
-    limit: number
-  ): PaginationMetaDto {
-    return buildPaginationMeta(total, page, limit);
-  }
-
   private async ensureContratoExists(contratoId: number): Promise<void> {
     const contrato = await this.db.getPrisma().contrato.findFirst({
       where: {
@@ -194,14 +182,14 @@ export class EletricistaService {
       }, Estado: ${estado ?? 'Todos'}, Contrato: ${contratoId ?? 'Todos'}`
     );
 
-    this.validatePaginationParams(page, limit);
+    validatePaginationParams(page, limit);
     this.validateEstado(estado);
     this.validateContratoId(contratoId);
 
     const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
 
     if (allowedContractIds && allowedContractIds.length === 0) {
-      const meta = this.buildPaginationMeta(0, page, limit);
+      const meta = buildPaginationMeta(0, page, limit);
       return {
         data: [],
         meta,
@@ -263,7 +251,7 @@ export class EletricistaService {
         this.db.getPrisma().eletricista.count({ where: whereClause }),
       ]);
 
-      const meta = this.buildPaginationMeta(total, page, limit);
+      const meta = buildPaginationMeta(total, page, limit);
 
       return {
         data: data as EletricistaResponseDto[],

@@ -74,6 +74,7 @@ import {
   buildPagination,
   buildPagedResponse,
   buildPaginationMeta,
+  validatePaginationParams,
 } from '@common/utils/pagination';
 import { buildWhereClause as buildWhereClauseHelper } from '@common/utils/where-clause';
 import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
@@ -81,7 +82,6 @@ import {
   AUDIT_CONFIG,
   ERROR_MESSAGES,
   CHECKLIST_ORDER_CONFIG_COMPAT,
-  PAGINATION_CONFIG,
   ORDER_CONFIG,
 } from '../constants/checklist.constants';
 
@@ -124,19 +124,6 @@ export class ChecklistService {
   private readonly logger = new Logger(ChecklistService.name);
 
   constructor(private readonly db: DatabaseService) {}
-
-  /**
-   * Valida parâmetros de paginação
-   * @private
-   */
-  private validatePaginationParams(page: number, limit: number): void {
-    if (page < 1) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_PAGE);
-    }
-    if (limit < 1 || limit > PAGINATION_CONFIG.MAX_LIMIT) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_LIMIT);
-    }
-  }
 
   /**
    * Valida ID de checklist
@@ -207,7 +194,7 @@ export class ChecklistService {
     );
 
     // Validar parâmetros
-    this.validatePaginationParams(page, limit);
+    validatePaginationParams(page, limit);
     this.validateTipoChecklistId(tipoChecklistId);
 
     try {

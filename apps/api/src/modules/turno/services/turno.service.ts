@@ -399,7 +399,7 @@ export class TurnoService {
       ]);
 
       // Construção dos metadados de paginação
-      const meta = buildPaginationMeta(page, limit, total);
+      const meta = buildPaginationMeta(total, page, limit);
 
       this.logger.log(
         `Listagem de turnos retornou ${data.length} registros de ${total} total`

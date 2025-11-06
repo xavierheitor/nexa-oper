@@ -105,13 +105,6 @@ export class EquipeService {
   constructor(private readonly db: DatabaseService) {}
 
   /**
-   * Valida parâmetros de paginação
-   */
-  private validatePaginationParams(page: number, limit: number): void {
-    validatePaginationParams(page, limit);
-  }
-
-  /**
    * Valida ID de equipe
    */
   private validateEquipeId(id: number): void {
@@ -196,17 +189,6 @@ export class EquipeService {
   }
 
   /**
-   * Constrói os metadados de paginação
-   */
-  private buildPaginationMeta(
-    total: number,
-    page: number,
-    limit: number
-  ): PaginationMetaDto {
-    return buildPaginationMeta(total, page, limit);
-  }
-
-  /**
    * Verifica duplicidade de nome
    */
   private async ensureUniqueNome(
@@ -275,14 +257,14 @@ export class EquipeService {
       }`
     );
 
-    this.validatePaginationParams(page, limit);
+    validatePaginationParams(page, limit);
     this.validateTipoEquipeId(tipoEquipeId);
     this.validateContratoId(contratoId);
 
     const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
 
     if (allowedContractIds && allowedContractIds.length === 0) {
-      const meta = this.buildPaginationMeta(0, page, limit);
+      const meta = buildPaginationMeta(0, page, limit);
       return {
         data: [],
         meta,
@@ -340,7 +322,7 @@ export class EquipeService {
         this.db.getPrisma().equipe.count({ where: whereClause }),
       ]);
 
-      const meta = this.buildPaginationMeta(total, page, limit);
+      const meta = buildPaginationMeta(total, page, limit);
 
       return {
         data: data as EquipeResponseDto[],

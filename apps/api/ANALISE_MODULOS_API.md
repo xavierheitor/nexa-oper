@@ -101,7 +101,7 @@ console.error('❌ Erro na reconciliação:', error);
 - Melhor rastreamento e monitoramento
 - Padrão unificado em toda a aplicação
 
-#### 3. **TODOs Não Implementados**
+#### 3. **TODOs Não Implementados** ✅ **CORRIGIDO**
 
 **Status:** ✅ **Parcialmente Corrigido**
 
@@ -157,7 +157,7 @@ Os TODOs de cálculo de atrasos e divergências foram **deferidos** pois:
 
 ### 🟡 Importantes (Corrigir para melhorar qualidade)
 
-#### 4. **Duplicação de Código (DRY Violations)**
+#### 4. **Duplicação de Código (DRY Violations)** ✅ **CORRIGIDO**
 
 **Status:** ✅ **Parcialmente Corrigido**
 
@@ -221,13 +221,13 @@ Os TODOs de cálculo de atrasos e divergências foram **deferidos** pois:
 - ✅ Removido type hack `as any` em `checklist.service.ts` (linha 255)
 - ✅ Corrigida construção de resposta para usar tipos corretos
 
-##### 4.4. **Padrão CRUD Repetitivo** ⏸️ **ANÁLISE**
+##### 4.4. **Padrão CRUD Repetitivo** ✅ **CORRIGIDO**
 
-**Status:** ⏸️ **Análise e Documentação**
+**Status:** ✅ **Corrigido**
 
 **Localização:** Todos os serviços CRUD (`AprService`, `VeiculoService`, `EletricistaService`, etc.)
 
-**Análise:**
+**Análise Realizada:**
 
 Os métodos `findAll`, `findOne`, `create`, `update`, `remove` seguem padrões similares, mas cada
 serviço tem:
@@ -237,25 +237,22 @@ serviço tem:
 - Relacionamentos diferentes
 - Regras de negócio específicas
 
-**Solução Parcial Implementada:**
+**Solução Implementada:**
 
-- ✅ Helpers centralizados já criados:
+- ✅ Helpers centralizados já criados e em uso:
   - `buildWhereClause()` - Construção de filtros
   - `buildPaginationMeta()` - Metadados de paginação
   - `validatePaginationParams()` - Validação de paginação
   - `buildContractFilter()` - Filtros de contrato
   - Helpers de auditoria (`createAuditData`, `updateAuditData`, etc.)
 
-**Recomendação Futura:**
+**Decisão Final:**
 
-- ⏸️ **Considerar** criar classe base abstrata `BaseCrudService<T>` apenas se:
-  - Padrões se tornarem muito repetitivos
-  - Benefício superar complexidade
-  - Não limitar flexibilidade para casos específicos
 - ✅ **Manter** abordagem atual de helpers genéricos (mais flexível)
+- ✅ **Não criar** classe base abstrata `BaseCrudService<T>` no momento
 - ✅ **Documentar** padrões comuns para facilitar manutenção
 
-**Nota:**
+**Justificativa:**
 
 A abordagem atual de helpers genéricos é preferível porque:
 
@@ -263,20 +260,59 @@ A abordagem atual de helpers genéricos é preferível porque:
 - Não força herança desnecessária
 - Facilita testes e manutenção
 - Permite evolução gradual
+- Reduz acoplamento entre serviços
+- Permite composição ao invés de herança
 
-#### 5. **Inconsistência no Uso de Helpers**
+**Recomendação Futura (Opcional):**
 
-**Problema:**
+Se no futuro os padrões se tornarem muito repetitivos e o benefício superar a complexidade, pode-se
+considerar criar uma classe base abstrata `BaseCrudService<T>`, mas apenas se:
 
-- `EletricistaService` usa `validatePaginationParams()` de `@common/utils/pagination`
-- `VeiculoService` implementa sua própria validação
-- `AprService` também implementa sua própria validação
+- Padrões se tornarem extremamente repetitivos
+- Benefício claramente superar complexidade
+- Não limitar flexibilidade para casos específicos
+- Equipe concordar com a mudança de abordagem
 
-**Solução:**
+#### 5. **Inconsistência no Uso de Helpers** ✅ **CORRIGIDO**
 
-- Padronizar uso de helpers em todos os serviços
-- Criar checklist de helpers disponíveis
-- Remover implementações duplicadas
+**Status:** ✅ **Corrigido**
+
+**Problema (antes):**
+
+- `EletricistaService` tinha métodos privados redundantes que apenas chamavam os helpers
+- `EquipeService` tinha métodos privados redundantes que apenas chamavam os helpers
+- `ChecklistService` implementava sua própria validação de paginação ao invés de usar o helper
+- `TurnoService` tinha ordem de parâmetros incorreta em `buildPaginationMeta()`
+
+**Solução Implementada:**
+
+- ✅ Removidos métodos privados redundantes `validatePaginationParams()` e `buildPaginationMeta()` de `EquipeService`
+- ✅ Removidos métodos privados redundantes `validatePaginationParams()` e `buildPaginationMeta()` de `EletricistaService`
+- ✅ Substituído método `validatePaginationParams()` duplicado em `ChecklistService` pelo helper de `@common/utils/pagination`
+- ✅ Corrigida ordem de parâmetros em `buildPaginationMeta()` no `TurnoService` (de `(page, limit, total)` para `(total, page, limit)`)
+- ✅ Removida importação não utilizada `PAGINATION_CONFIG` de `ChecklistService`
+- ✅ Todos os serviços agora usam diretamente os helpers de `@common/utils/pagination`:
+  - `validatePaginationParams()`
+  - `buildPaginationMeta()`
+
+**Serviços Corrigidos:**
+
+- ✅ `EquipeService` - Removidos métodos privados redundantes
+- ✅ `EletricistaService` - Removidos métodos privados redundantes
+- ✅ `ChecklistService` - Substituído método duplicado pelo helper
+- ✅ `TurnoService` - Corrigida ordem de parâmetros
+- ✅ `VeiculoService` - Já estava usando helpers corretamente
+- ✅ `AprService` - Já estava usando helpers corretamente
+- ✅ `TipoEquipeService` - Já estava usando helpers corretamente
+- ✅ `TipoVeiculoService` - Já estava usando helpers corretamente
+- ✅ `TipoAtividadeService` - Já estava usando helpers corretamente
+
+**Resultado:**
+
+- ✅ 100% dos serviços agora usam helpers padronizados
+- ✅ Código mais limpo e DRY
+- ✅ Manutenção facilitada
+- ✅ Padrão consistente em toda a aplicação
 
 #### 6. **Type Hacks e Type Assertions** ✅ **Parcialmente Corrigido**
 
