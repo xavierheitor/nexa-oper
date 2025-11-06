@@ -236,10 +236,12 @@ export class TurnoMobileController {
         latitude: checklist.latitude,
         longitude: checklist.longitude,
         respostas:
-          checklist.respostas?.map(resposta => ({
-            ...resposta,
-            dataResposta: parseMobileDate(resposta.dataResposta).toISOString(),
-          })) || [],
+          checklist.respostas && checklist.respostas.length > 0
+            ? checklist.respostas.map(resposta => ({
+                ...resposta,
+                dataResposta: parseMobileDate(resposta.dataResposta).toISOString(),
+              }))
+            : [],
       })) || [];
 
     return {

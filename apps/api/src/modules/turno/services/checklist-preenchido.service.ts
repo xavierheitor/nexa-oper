@@ -51,6 +51,13 @@ export class ChecklistPreenchidoService {
       respostas: any[];
     }>;
   }> {
+    // ✅ Validar que array não está vazio antes de usar
+    if (!checklists || checklists.length === 0) {
+      throw new BadRequestException(
+        'Pelo menos um checklist é obrigatório para salvar'
+      );
+    }
+
     this.logger.log(
       `Salvando ${checklists.length} checklists para turno ${turnoId}`
     );
@@ -64,15 +71,21 @@ export class ChecklistPreenchidoService {
     }> = [];
 
     try {
-      for (const checklistData of checklists) {
-        // Validar se o checklist existe
-        await this.validarChecklistCompleto(
-          checklistData.checklistId,
-          checklistData.respostas,
-          prisma
-        );
+      // ✅ Paralelizar validações de checklists (não dependem um do outro)
+      // Validar todos os checklists em paralelo antes de salvar
+      await Promise.all(
+        checklists.map(checklistData =>
+          this.validarChecklistCompleto(
+            checklistData.checklistId,
+            checklistData.respostas,
+            prisma
+          )
+        )
+      );
 
-        // Salvar checklist preenchido
+      // Salvar checklists sequencialmente (dentro da transação, precisa ser sequencial)
+      // mas as validações já foram feitas em paralelo
+      for (const checklistData of checklists) {
         const checklistPreenchido = await this.salvarChecklistPreenchido(
           turnoId,
           checklistData,
@@ -131,6 +144,14 @@ export class ChecklistPreenchidoService {
       perguntaId: number;
     }>;
   }> {
+    // ✅ Validar que array não está vazio antes de processar
+    if (!checklistsPreenchidos || checklistsPreenchidos.length === 0) {
+      return {
+        pendenciasGeradas: 0,
+        respostasAguardandoFoto: [],
+      };
+    }
+
     this.logger.log(
       `Processando ${checklistsPreenchidos.length} checklists de forma assíncrona`
     );
@@ -142,23 +163,39 @@ export class ChecklistPreenchidoService {
     }> = [];
 
     try {
-      for (const checklistPreenchido of checklistsPreenchidos) {
-        // Processar pendências automáticas (fora da transação)
-        const pendencias = await this.processarPendenciasAutomaticas(
-          checklistPreenchido.id,
-          checklistPreenchido.respostas
-        );
+      // ✅ Paralelizar processamento de pendências e fotos quando possível
+      const resultados = await Promise.all(
+        checklistsPreenchidos.map(async checklistPreenchido => {
+          // Processar pendências automáticas (fora da transação)
+          const pendencias = await this.processarPendenciasAutomaticas(
+            checklistPreenchido.id,
+            checklistPreenchido.respostas
+          );
 
-        pendenciasGeradas += pendencias.length;
+          // Marcar respostas que aguardam foto (fora da transação)
+          const respostasComFoto = await this.marcarRespostasAguardandoFoto(
+            checklistPreenchido.id,
+            checklistPreenchido.respostas
+          );
 
-        // Marcar respostas que aguardam foto (fora da transação)
-        const respostasComFoto = await this.marcarRespostasAguardandoFoto(
-          checklistPreenchido.id,
-          checklistPreenchido.respostas
-        );
+          return {
+            pendencias,
+            respostasComFoto,
+          };
+        })
+      );
 
-        respostasAguardandoFoto.push(...respostasComFoto);
-      }
+      // Agregar resultados
+      let pendenciasGeradas = 0;
+      const respostasAguardandoFoto: Array<{
+        checklistRespostaId: number;
+        perguntaId: number;
+      }> = [];
+
+      resultados.forEach(resultado => {
+        pendenciasGeradas += resultado.pendencias.length;
+        respostasAguardandoFoto.push(...resultado.respostasComFoto);
+      });
 
       this.logger.log(
         `Processamento assíncrono concluído - Pendências: ${pendenciasGeradas}, Aguardando foto: ${respostasAguardandoFoto.length}`
@@ -195,6 +232,13 @@ export class ChecklistPreenchidoService {
   ): Promise<any> {
     const prisma = transaction || this.db.getPrisma();
     const createdBy = userId || 'system';
+
+    // ✅ Validar que array de respostas não está vazio antes de salvar
+    if (!checklistData.respostas || checklistData.respostas.length === 0) {
+      throw new BadRequestException(
+        'Lista de respostas não pode estar vazia'
+      );
+    }
 
     // Criar checklist preenchido
     const checklistPreenchido = await prisma.checklistPreenchido.create({
@@ -244,6 +288,13 @@ export class ChecklistPreenchidoService {
   ): Promise<void> {
     const prisma = transaction || this.db.getPrisma();
 
+    // ✅ Validar que array de respostas não está vazio
+    if (!respostas || respostas.length === 0) {
+      throw new BadRequestException(
+        'Lista de respostas não pode estar vazia'
+      );
+    }
+
     // Buscar perguntas obrigatórias do checklist
     const perguntasObrigatorias =
       await prisma.checklistPerguntaRelacao.findMany({
@@ -285,6 +336,11 @@ export class ChecklistPreenchidoService {
   ): Promise<any[]> {
     const prisma = this.db.getPrisma();
     const pendencias: any[] = [];
+
+    // ✅ Validar que array de respostas não está vazio
+    if (!respostas || respostas.length === 0) {
+      return pendencias; // Retorna vazio se não houver respostas
+    }
 
     // Buscar informações do checklist preenchido
     const checklistPreenchido = await prisma.checklistPreenchido.findUnique({
@@ -352,6 +408,11 @@ export class ChecklistPreenchidoService {
       checklistRespostaId: number;
       perguntaId: number;
     }> = [];
+
+    // ✅ Validar que array de respostas não está vazio
+    if (!respostas || respostas.length === 0) {
+      return respostasAguardandoFoto; // Retorna vazio se não houver respostas
+    }
 
     for (const respostaData of respostas) {
       const opcaoResposta = await prisma.checklistOpcaoResposta.findUnique({

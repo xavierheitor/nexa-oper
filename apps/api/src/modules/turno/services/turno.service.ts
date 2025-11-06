@@ -163,21 +163,45 @@ export class TurnoService {
             throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO_EQUIPE);
           }
 
-          // Verifica se já existe turno aberto para algum eletricista
-          for (const eletricistaDto of abrirDto.eletricistas) {
-            const turnoEletricista = await transaction.turno.findFirst({
-              where: {
-                TurnoEletricistas: {
-                  some: {
-                    eletricistaId: eletricistaDto.eletricistaId,
-                    deletedAt: null,
-                  },
+          // ✅ Paralelizar validação de conflitos de eletricistas
+          // Buscar todos os turnos abertos que têm algum dos eletricistas em paralelo
+          const eletricistaIds = abrirDto.eletricistas.map(
+            e => e.eletricistaId
+          );
+          const turnosComEletricistas = await transaction.turno.findMany({
+            where: {
+              TurnoEletricistas: {
+                some: {
+                  eletricistaId: { in: eletricistaIds },
+                  deletedAt: null,
                 },
-                dataFim: null,
-                deletedAt: null,
               },
+              dataFim: null,
+              deletedAt: null,
+            },
+            include: {
+              TurnoEletricistas: {
+                where: {
+                  eletricistaId: { in: eletricistaIds },
+                  deletedAt: null,
+                },
+                select: {
+                  eletricistaId: true,
+                },
+              },
+            },
+          });
+
+          // Verificar se algum eletricista já está em turno aberto
+          if (turnosComEletricistas.length > 0) {
+            const eletricistasEmConflito = new Set<number>();
+            turnosComEletricistas.forEach(turno => {
+              turno.TurnoEletricistas.forEach(te => {
+                eletricistasEmConflito.add(te.eletricistaId);
+              });
             });
-            if (turnoEletricista) {
+
+            if (eletricistasEmConflito.size > 0) {
               throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO_ELETRICISTA);
             }
           }
@@ -658,28 +682,42 @@ export class TurnoService {
   private async validateEntidadesExistem(
     abrirDto: AbrirTurnoDto
   ): Promise<void> {
-    // Validação do veículo
-    const veiculo = await this.db.getPrisma().veiculo.findFirst({
-      where: { id: abrirDto.veiculoId, deletedAt: null },
-    });
+    // ✅ Validar que arrays não estão vazios antes de usar
+    if (!abrirDto.eletricistas || abrirDto.eletricistas.length === 0) {
+      throw new BadRequestException(
+        'Pelo menos um eletricista é obrigatório para abrir um turno'
+      );
+    }
+
+    // ✅ Paralelizar validações de existência para melhor performance
+    const [veiculo, equipe, ...eletricistas] = await Promise.all([
+      // Validação do veículo
+      this.db.getPrisma().veiculo.findFirst({
+        where: { id: abrirDto.veiculoId, deletedAt: null },
+      }),
+      // Validação da equipe
+      this.db.getPrisma().equipe.findFirst({
+        where: { id: abrirDto.equipeId, deletedAt: null },
+      }),
+      // Validação dos eletricistas (paralelizada)
+      ...abrirDto.eletricistas.map(eletricistaDto =>
+        this.db.getPrisma().eletricista.findFirst({
+          where: { id: eletricistaDto.eletricistaId, deletedAt: null },
+        })
+      ),
+    ]);
+
     if (!veiculo) {
       throw new NotFoundException(TURNO_ERRORS.VEICULO_NOT_FOUND);
     }
 
-    // Validação da equipe
-    const equipe = await this.db.getPrisma().equipe.findFirst({
-      where: { id: abrirDto.equipeId, deletedAt: null },
-    });
     if (!equipe) {
       throw new NotFoundException(TURNO_ERRORS.EQUIPE_NOT_FOUND);
     }
 
-    // Validação dos eletricistas
-    for (const eletricistaDto of abrirDto.eletricistas) {
-      const eletricista = await this.db.getPrisma().eletricista.findFirst({
-        where: { id: eletricistaDto.eletricistaId, deletedAt: null },
-      });
-      if (!eletricista) {
+    // Verificar se todos os eletricistas existem
+    for (let i = 0; i < abrirDto.eletricistas.length; i++) {
+      if (!eletricistas[i]) {
         throw new NotFoundException(TURNO_ERRORS.ELETRICISTA_NOT_FOUND);
       }
     }

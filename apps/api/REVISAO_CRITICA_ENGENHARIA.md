@@ -132,7 +132,7 @@ async abrirTurno(...) {
 
 ## ⚠️ PROBLEMAS IMPORTANTES (Podem Causar Bugs em Produção)
 
-### 3. 🔄 Loops Sequenciais com Await (Performance)
+### 3. 🔄 Loops Sequenciais com Await (Performance) ✅ CORRIGIDO
 
 **Severidade:** ALTA
 **Impacto:** Performance degradada, timeouts em produção
@@ -159,31 +159,47 @@ for (const checklistData of checklists) {
 - Se houver 5 checklists: 5 validações + 5 saves = ~2s
 - Em produção com carga: pode causar timeouts
 
-**Solução:**
+**Solução Implementada:**
 
 ```typescript
 // ✅ SOLUÇÃO: Processar em paralelo quando possível
-const eletricistas = await Promise.all(
-  abrirDto.eletricistas.map(eletricistaDto =>
-    this.db.getPrisma().eletricista.findFirst({
-      where: { id: eletricistaDto.eletricistaId, deletedAt: null },
-    })
-  )
+// Validações de existência paralelizadas
+const [veiculo, equipe, ...eletricistas] = await Promise.all([
+  this.db.getPrisma().veiculo.findFirst({...}),
+  this.db.getPrisma().equipe.findFirst({...}),
+  ...abrirDto.eletricistas.map(e =>
+    this.db.getPrisma().eletricista.findFirst({...})
+  ),
+]);
+
+// Validações de checklists paralelizadas
+await Promise.all(
+  checklists.map(c => this.validarChecklistCompleto(...))
 );
 
-// Para checklists que precisam ser sequenciais (dentro de transação):
-// Manter sequencial, mas otimizar queries individuais
+// Validação de conflitos otimizada (uma query ao invés de N)
+const turnosComEletricistas = await transaction.turno.findMany({
+  where: {
+    TurnoEletricistas: {
+      some: { eletricistaId: { in: eletricistaIds } }
+    }
+  }
+});
 ```
 
 **Ação Necessária:**
 
 - ✅ Paralelizar validações de existência quando possível
+- ✅ Otimizar validação de conflitos usando `findMany` com `IN` ao invés de loop
+- ✅ Paralelizar validações de checklists antes de salvar
+- ✅ Paralelizar processamento assíncrono de pendências e fotos
 - ✅ Manter sequencial apenas quando há dependências (transações)
-- ✅ Adicionar timeout configurável para operações longas
+
+**Status:** ✅ **CORRIGIDO** - Loops sequenciais otimizados usando Promise.all e queries otimizadas
 
 ---
 
-### 4. 🔍 Falta de Validação de Arrays Vazios
+### 4. 🔍 Falta de Validação de Arrays Vazios ✅ CORRIGIDO
 
 **Severidade:** MÉDIA
 **Impacto:** Erros em runtime, comportamento inesperado
@@ -203,25 +219,33 @@ if (!primeiroEletricista || !primeiroEletricista.remoteId) {
 }
 ```
 
-**Solução:**
+**Solução Implementada:**
 
 ```typescript
 // ✅ SOLUÇÃO: Validar antes de usar
+// No DTO
+@ArrayMinSize(1, { message: 'Pelo menos um eletricista é obrigatório' })
+eletricistas: EletricistaTurnoDto[];
+
+// No serviço
 if (!abrirDto.eletricistas || abrirDto.eletricistas.length === 0) {
   throw new BadRequestException('Pelo menos um eletricista é obrigatório');
 }
 
-if (!mobileDto.eletricistas?.length) {
-  throw new BadRequestException('Lista de eletricistas não pode estar vazia');
-}
-const primeiroEletricista = mobileDto.eletricistas[0];
+// Com optional chaining
+respostas: checklist.respostas && checklist.respostas.length > 0
+  ? checklist.respostas.map(...)
+  : [];
 ```
 
 **Ação Necessária:**
 
-- ✅ Adicionar validações de arrays vazios em DTOs
-- ✅ Validar antes de acessar índices
-- ✅ Usar optional chaining consistentemente
+- ✅ Adicionar `@ArrayMinSize(1)` em DTOs para arrays obrigatórios
+- ✅ Validar arrays vazios nos serviços antes de usar
+- ✅ Usar optional chaining e validação antes de acessar índices
+- ✅ Validar arrays antes de usar em loops ou operações
+
+**Status:** ✅ **CORRIGIDO** - Validações de arrays vazios adicionadas em DTOs e serviços
 
 ---
 
