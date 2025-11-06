@@ -56,7 +56,7 @@ import {
 } from '@common/utils/pagination';
 import { handleCrudError } from '@common/utils/error-handler';
 import { handlePrismaUniqueError } from '@common/utils/error-handler';
-import { validateId, validateOptionalId } from '@common/utils/validation';
+import { validateId, validateOptionalId, ensureContratoExists, ensureTipoVeiculoExists } from '@common/utils/validation';
 import {
   buildSearchWhereClause,
   buildContractFilter,
@@ -143,37 +143,6 @@ export class VeiculoService {
     return whereClause;
   }
 
-  /**
-   * Valida existência de tipo de veículo
-   */
-  private async ensureTipoVeiculoExists(tipoVeiculoId: number): Promise<void> {
-    const tipoVeiculo = await this.db.getPrisma().tipoVeiculo.findFirst({
-      where: {
-        id: tipoVeiculoId,
-        deletedAt: null,
-      },
-    });
-
-    if (!tipoVeiculo) {
-      throw new NotFoundException(ERROR_MESSAGES.TIPO_VEICULO_NOT_FOUND);
-    }
-  }
-
-  /**
-   * Valida existência de contrato
-   */
-  private async ensureContratoExists(contratoId: number): Promise<void> {
-    const contrato = await this.db.getPrisma().contrato.findFirst({
-      where: {
-        id: contratoId,
-        deletedAt: null,
-      },
-    });
-
-    if (!contrato) {
-      throw new NotFoundException(ERROR_MESSAGES.CONTRATO_NOT_FOUND);
-    }
-  }
 
   /**
    * Lista veículos com paginação e filtros, respeitando permissões
@@ -455,8 +424,8 @@ export class VeiculoService {
     );
 
     try {
-      await this.ensureTipoVeiculoExists(tipoVeiculoId);
-      await this.ensureContratoExists(contratoId);
+      await ensureTipoVeiculoExists(this.db.getPrisma(), tipoVeiculoId);
+      await ensureContratoExists(this.db.getPrisma(), contratoId);
 
       const veiculo = await this.db.getPrisma().veiculo.create({
         data: {
@@ -552,11 +521,11 @@ export class VeiculoService {
         allowedContractIds,
         ERROR_MESSAGES.FORBIDDEN_CONTRACT
       );
-        await this.ensureContratoExists(contratoId);
+        await ensureContratoExists(this.db.getPrisma(), contratoId);
       }
 
       if (tipoVeiculoId) {
-        await this.ensureTipoVeiculoExists(tipoVeiculoId);
+        await ensureTipoVeiculoExists(this.db.getPrisma(), tipoVeiculoId);
       }
 
       const veiculo = await this.db.getPrisma().veiculo.update({

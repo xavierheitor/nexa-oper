@@ -53,7 +53,7 @@ import {
   validatePaginationParams,
   normalizePaginationParams,
 } from '@common/utils/pagination';
-import { handleCrudError } from '@common/utils/error-handler';
+import { handleCrudError, handlePrismaUniqueError } from '@common/utils/error-handler';
 import { validateId, validateOptionalId } from '@common/utils/validation';
 import {
   getDefaultUserContext,
@@ -264,9 +264,6 @@ export class TipoAtividadeService {
       // Por enquanto, tipos de atividade não têm restrição de contrato
       // ensureContractPermission(contratoId, allowedContractIds, 'Tipo de atividade');
 
-      // Validação de duplicidade de nome
-      await this.validateUniqueNome(createDto.nome);
-
       // Contexto do usuário (placeholder)
       const userContext = getDefaultUserContext();
 
@@ -294,6 +291,7 @@ export class TipoAtividadeService {
       this.logger.log(`Tipo de atividade criado com sucesso: ${tipoAtividade.nome}`);
       return tipoAtividade as TipoAtividadeResponseDto;
     } catch (error) {
+      handlePrismaUniqueError(error, this.logger, 'tipo de atividade');
       handleCrudError(error, this.logger, 'create', 'tipo de atividade');
     }
   }
@@ -325,11 +323,6 @@ export class TipoAtividadeService {
       // Verificação de existência
       await this.findOne(id, allowedContracts);
 
-      // Validação de duplicidade de nome (se fornecido)
-      if (updateDto.nome) {
-        await this.validateUniqueNome(updateDto.nome, id);
-      }
-
       // Contexto do usuário (placeholder)
       const userContext = getDefaultUserContext();
 
@@ -358,6 +351,7 @@ export class TipoAtividadeService {
       this.logger.log(`Tipo de atividade atualizado com sucesso: ${tipoAtividade.nome}`);
       return tipoAtividade as TipoAtividadeResponseDto;
     } catch (error) {
+      handlePrismaUniqueError(error, this.logger, 'tipo de atividade');
       handleCrudError(error, this.logger, 'update', 'tipo de atividade');
     }
   }
@@ -474,31 +468,5 @@ export class TipoAtividadeService {
     return where;
   }
 
-  /**
-   * Valida se o nome do tipo de atividade é único
-   *
-   * @param nome - Nome a ser validado
-   * @param excludeId - ID a ser excluído da validação (para atualizações)
-   */
-  private async validateUniqueNome(nome: string, excludeId?: number): Promise<void> {
-    const where: any = {
-      nome: {
-        equals: nome,
-        mode: 'insensitive',
-      },
-      deletedAt: null,
-    };
-
-    if (excludeId) {
-      where.id = { not: excludeId };
-    }
-
-    const existing = await this.db.getPrisma().tipoAtividade.findFirst({
-      where,
-    });
-
-    if (existing) {
-      throw new ConflictException(ATIVIDADE_ERRORS.NOME_DUPLICATE);
-    }
   }
 }

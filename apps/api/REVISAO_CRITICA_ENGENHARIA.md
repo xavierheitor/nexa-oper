@@ -332,7 +332,7 @@ async salvarChecklistPreenchido(
 
 ## 📊 PROBLEMAS DE MANUTENIBILIDADE
 
-### 7. 🔄 Código Duplicado em Validações
+### 7. 🔄 Código Duplicado em Validações ✅ CORRIGIDO
 
 **Severidade:** BAIXA
 **Impacto:** Dificulta manutenção, inconsistências futuras
@@ -351,32 +351,38 @@ private async ensureContratoExists(contratoId: number): Promise<void> {
 }
 ```
 
-**Solução:**
+**Solução Implementada:**
 
 ```typescript
-// ✅ SOLUÇÃO: Helper centralizado
-// @common/utils/validation.ts
-export async function ensureEntityExists<T>(
-  prisma: PrismaClient,
-  model: string,
-  id: number,
-  errorMessage: string
-): Promise<T> {
-  const entity = await prisma[model].findFirst({
-    where: { id, deletedAt: null },
-  });
-  if (!entity) {
-    throw new NotFoundException(errorMessage);
-  }
-  return entity;
+// ✅ SOLUÇÃO: Helpers centralizados em @common/utils/validation.ts
+export async function ensureContratoExists(
+  prisma: PrismaClient | PrismaTransactionClient,
+  contratoId: number
+): Promise<void> {
+  await ensureEntityExists(
+    prisma,
+    'contrato',
+    contratoId,
+    ERROR_MESSAGES.CONTRATO_NOT_FOUND
+  );
 }
+
+export async function ensureTipoVeiculoExists(...) { ... }
+export async function ensureTipoEquipeExists(...) { ... }
 ```
 
 **Ação Necessária:**
 
-- ✅ Criar helpers genéricos para validações comuns
-- ✅ Refatorar serviços para usar helpers
-- ⚠️ **NOTA:** Manter validações específicas quando há lógica de negócio
+- ✅ Criar helpers genéricos para validações comuns em `@common/utils/validation.ts`
+- ✅ Criar helpers específicos: `ensureContratoExists`, `ensureTipoVeiculoExists`, `ensureTipoEquipeExists`
+- ✅ Remover métodos privados duplicados dos serviços
+- ✅ Refatorar serviços para usar helpers centralizados
+- ✅ Aplicar em `EletricistaService`, `VeiculoService`, `EquipeService`
+- ✅ Remover `validateUniqueNome` de `TipoAtividadeService` (usando constraint única no banco)
+- ✅ Refatorar `TurnoService.validateEntidadesExistem` para usar helpers `ensureEntityExists`
+- ✅ Adicionar constraint única `@@unique([nome])` em `TipoAtividade` no schema Prisma
+
+**Status:** ✅ **CORRIGIDO** - Código duplicado removido e substituído por helpers centralizados
 
 ---
 

@@ -57,7 +57,7 @@ import {
   buildContractFilter,
   buildBaseWhereClause,
 } from '@common/utils/where-clause';
-import { validateId, validateOptionalId } from '@common/utils/validation';
+import { validateId, validateOptionalId, ensureContratoExists, ensureTipoEquipeExists } from '@common/utils/validation';
 import {
   getDefaultUserContext,
   createAuditData,
@@ -140,37 +140,6 @@ export class EquipeService {
     return whereClause;
   }
 
-  /**
-   * Valida existência de tipo de equipe
-   */
-  private async ensureTipoEquipeExists(tipoEquipeId: number): Promise<void> {
-    const tipoEquipe = await this.db.getPrisma().tipoEquipe.findFirst({
-      where: {
-        id: tipoEquipeId,
-        deletedAt: null,
-      },
-    });
-
-    if (!tipoEquipe) {
-      throw new NotFoundException(ERROR_MESSAGES.TIPO_EQUIPE_NOT_FOUND);
-    }
-  }
-
-  /**
-   * Valida existência de contrato
-   */
-  private async ensureContratoExists(contratoId: number): Promise<void> {
-    const contrato = await this.db.getPrisma().contrato.findFirst({
-      where: {
-        id: contratoId,
-        deletedAt: null,
-      },
-    });
-
-    if (!contrato) {
-      throw new NotFoundException(ERROR_MESSAGES.CONTRATO_NOT_FOUND);
-    }
-  }
 
   /**
    * Lista equipes com paginação e filtros, respeitando permissões
@@ -442,8 +411,8 @@ export class EquipeService {
     );
 
     try {
-      await this.ensureTipoEquipeExists(tipoEquipeId);
-      await this.ensureContratoExists(contratoId);
+      await ensureTipoEquipeExists(this.db.getPrisma(), tipoEquipeId);
+      await ensureContratoExists(this.db.getPrisma(), contratoId);
 
       const equipe = await this.db.getPrisma().equipe.create({
         data: {
@@ -535,11 +504,11 @@ export class EquipeService {
         allowedContractIds,
         ERROR_MESSAGES.FORBIDDEN_CONTRACT
       );
-        await this.ensureContratoExists(contratoId);
+        await ensureContratoExists(this.db.getPrisma(), contratoId);
       }
 
       if (tipoEquipeId) {
-        await this.ensureTipoEquipeExists(tipoEquipeId);
+        await ensureTipoEquipeExists(this.db.getPrisma(), tipoEquipeId);
       }
 
       const equipe = await this.db.getPrisma().equipe.update({

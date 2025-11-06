@@ -20,6 +20,7 @@ import {
   validateId,
   validateOptionalId,
   validateEstadoFormat,
+  ensureContratoExists,
 } from '@common/utils/validation';
 import {
   buildSearchWhereClause,
@@ -100,19 +101,6 @@ export class EletricistaService {
     }
 
     return whereClause;
-  }
-
-  private async ensureContratoExists(contratoId: number): Promise<void> {
-    const contrato = await this.db.getPrisma().contrato.findFirst({
-      where: {
-        id: contratoId,
-        deletedAt: null,
-      },
-    });
-
-    if (!contrato) {
-      throw new NotFoundException(ERROR_MESSAGES.CONTRATO_NOT_FOUND);
-    }
   }
 
   /**
@@ -324,7 +312,7 @@ export class EletricistaService {
     );
 
     try {
-      await this.ensureContratoExists(contratoId);
+      await ensureContratoExists(this.db.getPrisma(), contratoId);
 
       const eletricista = await this.db.getPrisma().eletricista.create({
         data: {
@@ -426,7 +414,7 @@ export class EletricistaService {
         allowedContractIds,
         ERROR_MESSAGES.FORBIDDEN_CONTRACT
       );
-        await this.ensureContratoExists(contratoId);
+        await ensureContratoExists(this.db.getPrisma(), contratoId);
       }
 
       const eletricista = await this.db.getPrisma().eletricista.update({

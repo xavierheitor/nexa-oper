@@ -48,7 +48,10 @@ import {
   validatePaginationParams,
   normalizePaginationParams,
 } from '@common/utils/pagination';
-import { validateId } from '@common/utils/validation';
+import {
+  validateId,
+  ensureEntityExists,
+} from '@common/utils/validation';
 import { handleCrudError } from '@common/utils/error-handler';
 import {
   getDefaultUserContext,
@@ -689,38 +692,34 @@ export class TurnoService {
       );
     }
 
-    // ✅ Paralelizar validações de existência para melhor performance
-    const [veiculo, equipe, ...eletricistas] = await Promise.all([
+    const prisma = this.db.getPrisma();
+
+    // ✅ Paralelizar validações de existência usando helpers centralizados
+    await Promise.all([
       // Validação do veículo
-      this.db.getPrisma().veiculo.findFirst({
-        where: { id: abrirDto.veiculoId, deletedAt: null },
-      }),
+      ensureEntityExists(
+        prisma,
+        'veiculo',
+        abrirDto.veiculoId,
+        TURNO_ERRORS.VEICULO_NOT_FOUND
+      ),
       // Validação da equipe
-      this.db.getPrisma().equipe.findFirst({
-        where: { id: abrirDto.equipeId, deletedAt: null },
-      }),
+      ensureEntityExists(
+        prisma,
+        'equipe',
+        abrirDto.equipeId,
+        TURNO_ERRORS.EQUIPE_NOT_FOUND
+      ),
       // Validação dos eletricistas (paralelizada)
       ...abrirDto.eletricistas.map(eletricistaDto =>
-        this.db.getPrisma().eletricista.findFirst({
-          where: { id: eletricistaDto.eletricistaId, deletedAt: null },
-        })
+        ensureEntityExists(
+          prisma,
+          'eletricista',
+          eletricistaDto.eletricistaId,
+          TURNO_ERRORS.ELETRICISTA_NOT_FOUND
+        )
       ),
     ]);
-
-    if (!veiculo) {
-      throw new NotFoundException(TURNO_ERRORS.VEICULO_NOT_FOUND);
-    }
-
-    if (!equipe) {
-      throw new NotFoundException(TURNO_ERRORS.EQUIPE_NOT_FOUND);
-    }
-
-    // Verificar se todos os eletricistas existem
-    for (let i = 0; i < abrirDto.eletricistas.length; i++) {
-      if (!eletricistas[i]) {
-        throw new NotFoundException(TURNO_ERRORS.ELETRICISTA_NOT_FOUND);
-      }
-    }
   }
 
   /**
