@@ -33,6 +33,8 @@ import {
   deleteAuditData,
 } from '@common/utils/audit';
 import { handleCrudError } from '@common/utils/error-handler';
+import { handlePrismaUniqueError } from '@common/utils/error-handler';
+import { ERROR_MESSAGES } from '@common/constants/errors';
 import {
   ORDER_CONFIG,
   PAGINATION_CONFIG,
@@ -110,29 +112,6 @@ export class EletricistaService {
 
     if (!contrato) {
       throw new NotFoundException(ERROR_MESSAGES.CONTRATO_NOT_FOUND);
-    }
-  }
-
-  private async ensureUniqueMatricula(
-    matricula: string,
-    ignoreId?: number
-  ): Promise<void> {
-    const existing = await this.db.getPrisma().eletricista.findFirst({
-      where: {
-        deletedAt: null,
-        matricula: {
-          equals: matricula,
-        },
-        ...(ignoreId && {
-          id: {
-            not: ignoreId,
-          },
-        }),
-      },
-    });
-
-    if (existing) {
-      throw new ConflictException(ERROR_MESSAGES.MATRICULA_DUPLICATE);
     }
   }
 
@@ -346,7 +325,6 @@ export class EletricistaService {
 
     try {
       await this.ensureContratoExists(contratoId);
-      await this.ensureUniqueMatricula(matricula.trim());
 
       const eletricista = await this.db.getPrisma().eletricista.create({
         data: {
@@ -393,6 +371,9 @@ export class EletricistaService {
       this.logger.log(`Eletricista criado com sucesso - ID: ${eletricista.id}`);
       return eletricista as EletricistaResponseDto;
     } catch (error) {
+      // Tratar erro de constraint única do Prisma primeiro
+      handlePrismaUniqueError(error, this.logger, 'eletricista');
+      // Se não for erro de constraint única, tratar como erro CRUD genérico
       handleCrudError(error, this.logger, 'create', 'eletricista');
     }
   }
@@ -448,14 +429,6 @@ export class EletricistaService {
         await this.ensureContratoExists(contratoId);
       }
 
-      if (
-        matricula &&
-        matricula.trim().toLowerCase() !==
-          existingEletricista.matricula.toLowerCase()
-      ) {
-        await this.ensureUniqueMatricula(matricula.trim(), id);
-      }
-
       const eletricista = await this.db.getPrisma().eletricista.update({
         where: { id },
         data: {
@@ -508,6 +481,9 @@ export class EletricistaService {
       this.logger.log(`Eletricista ${id} atualizado com sucesso`);
       return eletricista as EletricistaResponseDto;
     } catch (error) {
+      // Tratar erro de constraint única do Prisma primeiro
+      handlePrismaUniqueError(error, this.logger, 'eletricista');
+      // Se não for erro de constraint única, tratar como erro CRUD genérico
       handleCrudError(error, this.logger, 'update', 'eletricista');
     }
   }

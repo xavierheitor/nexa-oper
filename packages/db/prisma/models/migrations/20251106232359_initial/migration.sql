@@ -509,6 +509,57 @@ CREATE TABLE `EletricistaBaseHistorico` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `EletricistaStatus` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `eletricistaId` INTEGER NOT NULL,
+    `status` ENUM('ATIVO', 'FERIAS', 'LICENCA_MEDICA', 'LICENCA_MATERNIDADE', 'LICENCA_PATERNIDADE', 'SUSPENSAO', 'TREINAMENTO', 'AFastADO', 'DESLIGADO', 'APOSENTADO') NOT NULL DEFAULT 'ATIVO',
+    `dataInicio` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `dataFim` DATETIME(3) NULL,
+    `motivo` VARCHAR(500) NULL,
+    `observacoes` VARCHAR(1000) NULL,
+    `documentoPath` VARCHAR(1000) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `createdBy` VARCHAR(255) NOT NULL,
+    `updatedAt` DATETIME(3) NULL,
+    `updatedBy` VARCHAR(255) NULL,
+
+    UNIQUE INDEX `EletricistaStatus_eletricistaId_key`(`eletricistaId`),
+    INDEX `EletricistaStatus_status_idx`(`status`),
+    INDEX `EletricistaStatus_dataInicio_idx`(`dataInicio`),
+    INDEX `EletricistaStatus_eletricistaId_status_idx`(`eletricistaId`, `status`),
+    INDEX `EletricistaStatus_eletricistaId_idx`(`eletricistaId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `EletricistaStatusHistorico` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `eletricistaId` INTEGER NOT NULL,
+    `status` ENUM('ATIVO', 'FERIAS', 'LICENCA_MEDICA', 'LICENCA_MATERNIDADE', 'LICENCA_PATERNIDADE', 'SUSPENSAO', 'TREINAMENTO', 'AFastADO', 'DESLIGADO', 'APOSENTADO') NOT NULL,
+    `statusAnterior` ENUM('ATIVO', 'FERIAS', 'LICENCA_MEDICA', 'LICENCA_MATERNIDADE', 'LICENCA_PATERNIDADE', 'SUSPENSAO', 'TREINAMENTO', 'AFastADO', 'DESLIGADO', 'APOSENTADO') NULL,
+    `dataInicio` DATETIME(3) NOT NULL,
+    `dataFim` DATETIME(3) NULL,
+    `motivo` VARCHAR(500) NULL,
+    `observacoes` VARCHAR(1000) NULL,
+    `documentoPath` VARCHAR(1000) NULL,
+    `registradoPor` VARCHAR(255) NOT NULL,
+    `registradoEm` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `createdBy` VARCHAR(255) NOT NULL,
+    `updatedAt` DATETIME(3) NULL,
+    `updatedBy` VARCHAR(255) NULL,
+
+    INDEX `EletricistaStatusHistorico_eletricistaId_idx`(`eletricistaId`),
+    INDEX `EletricistaStatusHistorico_status_idx`(`status`),
+    INDEX `EletricistaStatusHistorico_dataInicio_idx`(`dataInicio`),
+    INDEX `EletricistaStatusHistorico_dataFim_idx`(`dataFim`),
+    INDEX `EletricistaStatusHistorico_eletricistaId_dataInicio_idx`(`eletricistaId`, `dataInicio`),
+    INDEX `EletricistaStatusHistorico_eletricistaId_status_idx`(`eletricistaId`, `status`),
+    INDEX `EletricistaStatusHistorico_eletricistaId_dataInicio_dataFim_idx`(`eletricistaId`, `dataInicio`, `dataFim`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Eletricista` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `nome` VARCHAR(255) NOT NULL,
@@ -525,6 +576,8 @@ CREATE TABLE `Eletricista` (
     `deletedBy` VARCHAR(255) NULL,
     `contratoId` INTEGER NOT NULL,
 
+    INDEX `Eletricista_matricula_idx`(`matricula`),
+    UNIQUE INDEX `Eletricista_matricula_key`(`matricula`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -593,6 +646,8 @@ CREATE TABLE `Equipe` (
     `deletedAt` DATETIME(3) NULL,
     `deletedBy` VARCHAR(255) NULL,
 
+    INDEX `Equipe_nome_idx`(`nome`),
+    UNIQUE INDEX `Equipe_nome_key`(`nome`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -931,6 +986,31 @@ CREATE TABLE `FaltaJustificativa` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `HoraExtra` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `dataReferencia` DATETIME(3) NOT NULL,
+    `eletricistaId` INTEGER NOT NULL,
+    `turnoRealizadoEletricistaId` INTEGER NULL,
+    `escalaSlotId` INTEGER NULL,
+    `tipo` VARCHAR(32) NOT NULL,
+    `horasPrevistas` DECIMAL(5, 2) NULL,
+    `horasRealizadas` DECIMAL(5, 2) NOT NULL,
+    `diferencaHoras` DECIMAL(5, 2) NOT NULL,
+    `observacoes` VARCHAR(1000) NULL,
+    `status` VARCHAR(16) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `createdBy` VARCHAR(255) NOT NULL,
+    `updatedAt` DATETIME(3) NULL,
+    `updatedBy` VARCHAR(255) NULL,
+
+    INDEX `HoraExtra_eletricistaId_dataReferencia_idx`(`eletricistaId`, `dataReferencia`),
+    INDEX `HoraExtra_dataReferencia_idx`(`dataReferencia`),
+    INDEX `HoraExtra_status_idx`(`status`),
+    INDEX `HoraExtra_tipo_idx`(`tipo`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `MobilePhoto` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `turnoId` INTEGER NOT NULL,
@@ -1098,6 +1178,8 @@ CREATE TABLE `Veiculo` (
     `deletedAt` DATETIME(3) NULL,
     `deletedBy` VARCHAR(255) NULL,
 
+    INDEX `Veiculo_placa_idx`(`placa`),
+    UNIQUE INDEX `Veiculo_placa_key`(`placa`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -1115,6 +1197,15 @@ CREATE TABLE `VeiculoOdometro` (
     `deletedBy` VARCHAR(255) NULL,
 
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `_EletricistaStatusToEletricistaStatusHistorico` (
+    `A` INTEGER NOT NULL,
+    `B` INTEGER NOT NULL,
+
+    UNIQUE INDEX `_EletricistaStatusToEletricistaStatusHistorico_AB_unique`(`A`, `B`),
+    INDEX `_EletricistaStatusToEletricistaStatusHistorico_B_index`(`B`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
@@ -1232,6 +1323,12 @@ ALTER TABLE `EletricistaBaseHistorico` ADD CONSTRAINT `EletricistaBaseHistorico_
 ALTER TABLE `EletricistaBaseHistorico` ADD CONSTRAINT `EletricistaBaseHistorico_baseId_fkey` FOREIGN KEY (`baseId`) REFERENCES `Base`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `EletricistaStatus` ADD CONSTRAINT `EletricistaStatus_eletricistaId_fkey` FOREIGN KEY (`eletricistaId`) REFERENCES `Eletricista`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `EletricistaStatusHistorico` ADD CONSTRAINT `EletricistaStatusHistorico_eletricistaId_fkey` FOREIGN KEY (`eletricistaId`) REFERENCES `Eletricista`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `Eletricista` ADD CONSTRAINT `Eletricista_cargoId_fkey` FOREIGN KEY (`cargoId`) REFERENCES `Cargo`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -1328,6 +1425,15 @@ ALTER TABLE `FaltaJustificativa` ADD CONSTRAINT `FaltaJustificativa_faltaId_fkey
 ALTER TABLE `FaltaJustificativa` ADD CONSTRAINT `FaltaJustificativa_justificativaId_fkey` FOREIGN KEY (`justificativaId`) REFERENCES `Justificativa`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `HoraExtra` ADD CONSTRAINT `HoraExtra_eletricistaId_fkey` FOREIGN KEY (`eletricistaId`) REFERENCES `Eletricista`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `HoraExtra` ADD CONSTRAINT `HoraExtra_turnoRealizadoEletricistaId_fkey` FOREIGN KEY (`turnoRealizadoEletricistaId`) REFERENCES `TurnoRealizadoEletricista`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `HoraExtra` ADD CONSTRAINT `HoraExtra_escalaSlotId_fkey` FOREIGN KEY (`escalaSlotId`) REFERENCES `SlotEscala`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `Supervisor` ADD CONSTRAINT `Supervisor_contratoId_fkey` FOREIGN KEY (`contratoId`) REFERENCES `Contrato`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -1356,3 +1462,9 @@ ALTER TABLE `Veiculo` ADD CONSTRAINT `Veiculo_contratoId_fkey` FOREIGN KEY (`con
 
 -- AddForeignKey
 ALTER TABLE `VeiculoOdometro` ADD CONSTRAINT `VeiculoOdometro_veiculoId_fkey` FOREIGN KEY (`veiculoId`) REFERENCES `Veiculo`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_EletricistaStatusToEletricistaStatusHistorico` ADD CONSTRAINT `_EletricistaStatusToEletricistaStatusHistorico_A_fkey` FOREIGN KEY (`A`) REFERENCES `EletricistaStatus`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_EletricistaStatusToEletricistaStatusHistorico` ADD CONSTRAINT `_EletricistaStatusToEletricistaStatusHistorico_B_fkey` FOREIGN KEY (`B`) REFERENCES `EletricistaStatusHistorico`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

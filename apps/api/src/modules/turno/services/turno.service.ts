@@ -120,11 +120,8 @@ export class TurnoService {
       // Por enquanto, turnos não têm restrição de contrato direta
       // mas mantemos a estrutura para futuras implementações
 
-      // Validações de existência
+      // Validações de existência (podem ficar fora da transação)
       await this.validateEntidadesExistem(abrirDto);
-
-      // Validações de conflito
-      await this.validateNaoHaConflitos(abrirDto);
 
       // Validações de negócio
       this.validateDadosAbertura(abrirDto);
@@ -141,6 +138,50 @@ export class TurnoService {
       const resultado = await this.db
         .getPrisma()
         .$transaction(async transaction => {
+          // ✅ VALIDAÇÕES DE CONFLITO DENTRO DA TRANSAÇÃO (evita race conditions)
+          // Verifica se já existe turno aberto para o veículo
+          const turnoVeiculo = await transaction.turno.findFirst({
+            where: {
+              veiculoId: abrirDto.veiculoId,
+              dataFim: null,
+              deletedAt: null,
+            },
+          });
+          if (turnoVeiculo) {
+            throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO);
+          }
+
+          // Verifica se já existe turno aberto para a equipe
+          const turnoEquipe = await transaction.turno.findFirst({
+            where: {
+              equipeId: abrirDto.equipeId,
+              dataFim: null,
+              deletedAt: null,
+            },
+          });
+          if (turnoEquipe) {
+            throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO_EQUIPE);
+          }
+
+          // Verifica se já existe turno aberto para algum eletricista
+          for (const eletricistaDto of abrirDto.eletricistas) {
+            const turnoEletricista = await transaction.turno.findFirst({
+              where: {
+                TurnoEletricistas: {
+                  some: {
+                    eletricistaId: eletricistaDto.eletricistaId,
+                    deletedAt: null,
+                  },
+                },
+                dataFim: null,
+                deletedAt: null,
+              },
+            });
+            if (turnoEletricista) {
+              throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO_ELETRICISTA);
+            }
+          }
+
           // Criação do turno
           const turno = await transaction.turno.create({
             data: {
@@ -640,54 +681,6 @@ export class TurnoService {
       });
       if (!eletricista) {
         throw new NotFoundException(TURNO_ERRORS.ELETRICISTA_NOT_FOUND);
-      }
-    }
-  }
-
-  /**
-   * Valida se não há conflitos de turno aberto
-   */
-  private async validateNaoHaConflitos(abrirDto: AbrirTurnoDto): Promise<void> {
-    // Verifica se já existe turno aberto para o veículo
-    const turnoVeiculo = await this.db.getPrisma().turno.findFirst({
-      where: {
-        veiculoId: abrirDto.veiculoId,
-        dataFim: null,
-        deletedAt: null,
-      },
-    });
-    if (turnoVeiculo) {
-      throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO);
-    }
-
-    // Verifica se já existe turno aberto para a equipe
-    const turnoEquipe = await this.db.getPrisma().turno.findFirst({
-      where: {
-        equipeId: abrirDto.equipeId,
-        dataFim: null,
-        deletedAt: null,
-      },
-    });
-    if (turnoEquipe) {
-      throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO_EQUIPE);
-    }
-
-    // Verifica se já existe turno aberto para algum eletricista
-    for (const eletricistaDto of abrirDto.eletricistas) {
-      const turnoEletricista = await this.db.getPrisma().turno.findFirst({
-        where: {
-          TurnoEletricistas: {
-            some: {
-              eletricistaId: eletricistaDto.eletricistaId,
-              deletedAt: null,
-            },
-          },
-          dataFim: null,
-          deletedAt: null,
-        },
-      });
-      if (turnoEletricista) {
-        throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO_ELETRICISTA);
       }
     }
   }

@@ -38,6 +38,9 @@ model Eletricista {
   // Status do eletricista
   Status          EletricistaStatus?
   StatusHistorico EletricistaStatusHistorico[]
+
+  @@unique([matricula])
+  @@index([matricula])
 }
 
 model Cargo {

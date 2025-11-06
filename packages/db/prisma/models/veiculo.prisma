@@ -36,6 +36,9 @@ model Veiculo {
   VeiculoBaseHistorico VeiculoBaseHistorico[]
 
   Turno Turno[]
+
+  @@unique([placa])
+  @@index([placa])
 }
 
 model VeiculoOdometro {

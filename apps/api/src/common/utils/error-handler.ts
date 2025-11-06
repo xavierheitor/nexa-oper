@@ -30,6 +30,71 @@ import {
 import { ERROR_MESSAGES } from '@common/constants/errors';
 
 /**
+ * Verifica se um erro do Prisma é um erro de constraint única (P2002)
+ * e retorna informações sobre qual campo causou o conflito
+ */
+export function isPrismaUniqueConstraintError(error: any): {
+  isUniqueError: boolean;
+  field?: string;
+  target?: string[];
+} {
+  if (error?.code === 'P2002' && error?.meta?.target) {
+    const target = Array.isArray(error.meta.target)
+      ? error.meta.target
+      : [error.meta.target];
+
+    // Mapear campos do Prisma para mensagens de erro
+    const fieldMap: Record<string, string> = {
+      matricula: 'matricula',
+      placa: 'placa',
+      nome: 'nome',
+    };
+
+    const field = target.find((t: string) => fieldMap[t]);
+    return {
+      isUniqueError: true,
+      field: field || target[0],
+      target,
+    };
+  }
+
+  return { isUniqueError: false };
+}
+
+/**
+ * Trata erros de constraint única do Prisma e lança ConflictException apropriada
+ *
+ * IMPORTANTE: Esta função lança uma exceção se for erro de constraint única.
+ * Se não for, ela não faz nada (não lança exceção), permitindo que o erro
+ * seja tratado pelo handleCrudError ou handleServiceError.
+ */
+export function handlePrismaUniqueError(
+  error: any,
+  logger: Logger,
+  entityName: string
+): void {
+  const uniqueError = isPrismaUniqueConstraintError(error);
+
+  if (uniqueError.isUniqueError && uniqueError.field) {
+    const fieldMessages: Record<string, string> = {
+      matricula: ERROR_MESSAGES.MATRICULA_DUPLICATE,
+      placa: ERROR_MESSAGES.PLACA_DUPLICATE,
+      nome: ERROR_MESSAGES.NOME_DUPLICATE,
+    };
+
+    const errorMessage =
+      fieldMessages[uniqueError.field] || ERROR_MESSAGES.NOME_DUPLICATE;
+
+    logger.warn(
+      `Tentativa de criar ${entityName} com ${uniqueError.field} duplicado`
+    );
+    throw new ConflictException(errorMessage);
+  }
+
+  // Se não for erro de constraint única, não faz nada (deixa o erro passar)
+}
+
+/**
  * Opções para tratamento de erro em serviços
  */
 export interface HandleServiceErrorOptions {
@@ -176,7 +241,7 @@ export function handleCrudError(
     },
     find: {
       log: `Erro ao buscar ${entityName}`,
-      client: ERROR_MESSAGES.NOT_FOUND,
+      client: ERROR_MESSAGES.ELETRICISTA_NOT_FOUND, // Mensagem genérica - será substituída pela específica quando aplicável
     },
     list: {
       log: `Erro ao listar ${entityName}`,

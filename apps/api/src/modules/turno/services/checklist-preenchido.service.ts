@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from '@database/database.service';
 import { parseMobileDate } from '@common/utils/date-timezone';
+import { handleServiceError } from '@common/utils/error-handler';
 import {
   SalvarChecklistPreenchidoDto,
   ChecklistPreenchidoResponseDto,
@@ -102,6 +103,8 @@ export class ChecklistPreenchidoService {
         'Erro ao salvar checklists do turno',
         { operation: 'salvarChecklistsDoTurno' }
       );
+      // Nunca chega aqui porque handleServiceError lança exceção, mas TypeScript precisa disso
+      throw error;
     }
   }
 

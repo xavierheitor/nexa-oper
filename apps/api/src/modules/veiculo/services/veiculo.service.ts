@@ -55,7 +55,13 @@ import {
   buildPaginationMeta,
 } from '@common/utils/pagination';
 import { handleCrudError } from '@common/utils/error-handler';
+import { handlePrismaUniqueError } from '@common/utils/error-handler';
 import { validateId, validateOptionalId } from '@common/utils/validation';
+import {
+  buildSearchWhereClause,
+  buildContractFilter,
+  buildBaseWhereClause,
+} from '@common/utils/where-clause';
 import {
   getDefaultUserContext,
   createAuditData,
@@ -135,30 +141,6 @@ export class VeiculoService {
     }
 
     return whereClause;
-  }
-
-  /**
-   * Constrói os metadados de paginação
-   */
-
-  /**
-   * Verifica duplicidade de placa
-   */
-  private async ensureUniquePlaca(
-    placa: string,
-    ignoreId?: number
-  ): Promise<void> {
-    const existing = await this.db.getPrisma().veiculo.findFirst({
-      where: {
-        placa,
-        deletedAt: null,
-        ...(ignoreId && { NOT: { id: ignoreId } }),
-      },
-    });
-
-    if (existing) {
-      throw new ConflictException(ERROR_MESSAGES.PLACA_DUPLICATE);
-    }
   }
 
   /**
@@ -473,7 +455,6 @@ export class VeiculoService {
     );
 
     try {
-      await this.ensureUniquePlaca(placa.toUpperCase());
       await this.ensureTipoVeiculoExists(tipoVeiculoId);
       await this.ensureContratoExists(contratoId);
 
@@ -518,6 +499,9 @@ export class VeiculoService {
       this.logger.log(`Veículo criado com sucesso - ID: ${veiculo.id}`);
       return veiculo as VeiculoResponseDto;
     } catch (error) {
+      // Tratar erro de constraint única do Prisma primeiro
+      handlePrismaUniqueError(error, this.logger, 'veículo');
+      // Se não for erro de constraint única, tratar como erro CRUD genérico
       handleCrudError(error, this.logger, 'create', 'veículo');
     }
   }
@@ -575,10 +559,6 @@ export class VeiculoService {
         await this.ensureTipoVeiculoExists(tipoVeiculoId);
       }
 
-      if (placa && placa.toUpperCase() !== existingVeiculo.placa) {
-        await this.ensureUniquePlaca(placa.toUpperCase(), id);
-      }
-
       const veiculo = await this.db.getPrisma().veiculo.update({
         where: { id },
         data: {
@@ -625,6 +605,9 @@ export class VeiculoService {
       this.logger.log(`Veículo ${id} atualizado com sucesso`);
       return veiculo as VeiculoResponseDto;
     } catch (error) {
+      // Tratar erro de constraint única do Prisma primeiro
+      handlePrismaUniqueError(error, this.logger, 'veículo');
+      // Se não for erro de constraint única, tratar como erro CRUD genérico
       handleCrudError(error, this.logger, 'update', 'veículo');
     }
   }

@@ -65,6 +65,7 @@ import {
   deleteAuditData,
 } from '@common/utils/audit';
 import { handleCrudError } from '@common/utils/error-handler';
+import { handlePrismaUniqueError } from '@common/utils/error-handler';
 import { ERROR_MESSAGES } from '@common/constants/errors';
 import { ORDER_CONFIG } from '../constants/equipe.constants';
 import {
@@ -137,26 +138,6 @@ export class EquipeService {
     }
 
     return whereClause;
-  }
-
-  /**
-   * Verifica duplicidade de nome
-   */
-  private async ensureUniqueNome(
-    nome: string,
-    ignoreId?: number
-  ): Promise<void> {
-    const existing = await this.db.getPrisma().equipe.findFirst({
-      where: {
-        nome,
-        deletedAt: null,
-        ...(ignoreId && { NOT: { id: ignoreId } }),
-      },
-    });
-
-    if (existing) {
-      throw new ConflictException(ERROR_MESSAGES.NOME_DUPLICATE);
-    }
   }
 
   /**
@@ -461,7 +442,6 @@ export class EquipeService {
     );
 
     try {
-      await this.ensureUniqueNome(nome.trim());
       await this.ensureTipoEquipeExists(tipoEquipeId);
       await this.ensureContratoExists(contratoId);
 
@@ -502,6 +482,9 @@ export class EquipeService {
       this.logger.log(`Equipe criada com sucesso - ID: ${equipe.id}`);
       return equipe as EquipeResponseDto;
     } catch (error) {
+      // Tratar erro de constraint única do Prisma primeiro
+      handlePrismaUniqueError(error, this.logger, 'equipe');
+      // Se não for erro de constraint única, tratar como erro CRUD genérico
       handleCrudError(error, this.logger, 'create', 'equipe');
     }
   }
@@ -559,10 +542,6 @@ export class EquipeService {
         await this.ensureTipoEquipeExists(tipoEquipeId);
       }
 
-      if (nome && nome.trim() !== existingEquipe.nome) {
-        await this.ensureUniqueNome(nome.trim(), id);
-      }
-
       const equipe = await this.db.getPrisma().equipe.update({
         where: { id },
         data: {
@@ -605,6 +584,9 @@ export class EquipeService {
       this.logger.log(`Equipe ${id} atualizada com sucesso`);
       return equipe as EquipeResponseDto;
     } catch (error) {
+      // Tratar erro de constraint única do Prisma primeiro
+      handlePrismaUniqueError(error, this.logger, 'equipe');
+      // Se não for erro de constraint única, tratar como erro CRUD genérico
       handleCrudError(error, this.logger, 'update', 'equipe');
     }
   }
