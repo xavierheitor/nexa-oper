@@ -14,6 +14,7 @@ import {
 import { DatabaseService } from '@database/database.service';
 import { parseMobileDate } from '@common/utils/date-timezone';
 import { handleServiceError } from '@common/utils/error-handler';
+import { PrismaTransactionClient } from '@common/types/prisma';
 import {
   SalvarChecklistPreenchidoDto,
   ChecklistPreenchidoResponseDto,
@@ -41,7 +42,7 @@ export class ChecklistPreenchidoService {
   async salvarChecklistsDoTurno(
     turnoId: number,
     checklists: SalvarChecklistPreenchidoDto[],
-    transaction?: any,
+    transaction?: PrismaTransactionClient,
     userId?: string
   ): Promise<{
     checklistsSalvos: number;
@@ -227,9 +228,9 @@ export class ChecklistPreenchidoService {
   async salvarChecklistPreenchido(
     turnoId: number,
     checklistData: SalvarChecklistPreenchidoDto,
-    transaction?: any,
+    transaction?: PrismaTransactionClient,
     userId?: string
-  ): Promise<any> {
+  ): Promise<ChecklistPreenchidoResponseDto> {
     const prisma = transaction || this.db.getPrisma();
     const createdBy = userId || 'system';
 
@@ -271,7 +272,16 @@ export class ChecklistPreenchidoService {
       });
     }
 
-    return checklistPreenchido;
+    // Mapear para o DTO, convertendo null para undefined
+    return {
+      id: checklistPreenchido.id,
+      turnoId: checklistPreenchido.turnoId,
+      checklistId: checklistPreenchido.checklistId,
+      eletricistaId: checklistPreenchido.eletricistaId,
+      dataPreenchimento: checklistPreenchido.dataPreenchimento,
+      latitude: checklistPreenchido.latitude ?? undefined,
+      longitude: checklistPreenchido.longitude ?? undefined,
+    };
   }
 
   /**
@@ -284,7 +294,7 @@ export class ChecklistPreenchidoService {
   async validarChecklistCompleto(
     checklistId: number,
     respostas: any[],
-    transaction?: any
+    transaction?: PrismaTransactionClient
   ): Promise<void> {
     const prisma = transaction || this.db.getPrisma();
 

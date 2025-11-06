@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { Prisma } from '@nexa-oper/db';
+import { PrismaTransactionClient } from '@common/types/prisma';
 
 export interface ReconciliarParams {
   dataReferencia: string; // ISO date
@@ -331,7 +332,7 @@ export class TurnoReconciliacaoService {
    * Processa atraso e verifica se foi compensado (CASO 7)
    */
   private async processarAtraso(
-    prisma: any,
+    prisma: PrismaTransactionClient,
     slot: any,
     abertura: any,
     executadoPor: string

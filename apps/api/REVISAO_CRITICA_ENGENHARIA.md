@@ -288,7 +288,7 @@ this.logger.log(`Aplicando filtro de status: ${params.status}`); // Info quando 
 
 ---
 
-### 6. 🔧 Tipos `any` em Parâmetros de Transação
+### 6. 🔧 Tipos `any` em Parâmetros de Transação ✅ CORRIGIDO
 
 **Severidade:** MÉDIA
 **Impacto:** Perda de type safety, bugs difíceis de detectar
@@ -305,25 +305,28 @@ async salvarChecklistPreenchido(
 ): Promise<any> { // ❌ any
 ```
 
-**Solução:**
+**Solução Implementada:**
 
 ```typescript
 // ✅ SOLUÇÃO: Usar tipos do Prisma
-import { PrismaClient } from '@prisma/client';
+import { PrismaTransactionClient } from '@common/types/prisma';
 
 async salvarChecklistPreenchido(
   turnoId: number,
   checklistData: SalvarChecklistPreenchidoDto,
-  transaction?: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>,
+  transaction?: PrismaTransactionClient, // ✅ Tipo específico
   userId?: string
-): Promise<ChecklistPreenchidoResponseDto> {
+): Promise<ChecklistPreenchidoResponseDto> { // ✅ Tipo específico
 ```
 
 **Ação Necessária:**
 
-- ✅ Substituir `any` por tipos específicos do Prisma
-- ✅ Criar type alias para transaction client se necessário
-- ✅ Tipar retornos explicitamente
+- ✅ Criar type alias `PrismaTransactionClient` em `@common/types/prisma`
+- ✅ Substituir `any` por `PrismaTransactionClient` em todos os métodos
+- ✅ Tipar retornos explicitamente com tipos específicos
+- ✅ Aplicar em `checklist-preenchido.service.ts` e `turno-reconciliacao.service.ts`
+
+**Status:** ✅ **CORRIGIDO** - Tipos `any` substituídos por `PrismaTransactionClient` em 100% do codebase
 
 ---
 
