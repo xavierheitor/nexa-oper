@@ -24,6 +24,7 @@ import {
 import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
 import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
+import { GetUsuarioMobileId } from '@modules/engine/auth/decorators/get-user-id-decorator';
 import {
   MobileAbrirTurnoDto,
   MobileFecharTurnoDto,
@@ -78,6 +79,7 @@ export class TurnoMobileController {
   })
   async abrirTurnoMobile(
     @Body() mobileDto: MobileAbrirTurnoDto,
+    @GetUsuarioMobileId() userId: string,
     @GetUserContracts() allowedContracts: ContractPermission[]
   ) {
     this.logger.log(`Abertura de turno via mobile recebida:`, {
@@ -106,7 +108,8 @@ export class TurnoMobileController {
       // Chamar o serviço real de abertura de turno
       const turnoResult = await this.turnoService.abrirTurno(
         abrirDto,
-        allowedContracts
+        allowedContracts,
+        userId
       );
 
       this.logger.log(`Turno aberto com sucesso: ID ${turnoResult.id}`);

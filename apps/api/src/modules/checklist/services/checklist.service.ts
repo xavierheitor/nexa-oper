@@ -157,11 +157,18 @@ export class ChecklistService {
   }
 
   /**
-   * Obtém contexto do usuário atual (placeholder para futura implementação)
+   * Obtém contexto do usuário atual
    * @private
+   * @param userId - ID do usuário (opcional, usa 'system' como fallback)
    */
-  private getCurrentUserContext(): UserContext {
-    // TODO: Implementar extração do contexto do usuário do JWT
+  private getCurrentUserContext(userId?: string): UserContext {
+    if (userId) {
+      return {
+        userId,
+        userName: userId,
+        roles: [],
+      };
+    }
     return {
       userId: AUDIT_CONFIG.DEFAULT_USER,
       userName: AUDIT_CONFIG.DEFAULT_USER_NAME,
@@ -618,10 +625,11 @@ export class ChecklistService {
    * Cria novo checklist
    */
   async create(
-    createChecklistDto: CreateChecklistDto
+    createChecklistDto: CreateChecklistDto,
+    userId?: string
   ): Promise<ChecklistResponseDto> {
     const { nome, tipoChecklistId } = createChecklistDto;
-    const userContext = this.getCurrentUserContext();
+    const userContext = this.getCurrentUserContext(userId);
 
     this.logger.log(
       `Criando novo checklist: ${nome} (Tipo: ${tipoChecklistId})`
@@ -707,10 +715,11 @@ export class ChecklistService {
    */
   async update(
     id: number,
-    updateChecklistDto: UpdateChecklistDto
+    updateChecklistDto: UpdateChecklistDto,
+    userId?: string
   ): Promise<ChecklistResponseDto> {
     const { nome, tipoChecklistId } = updateChecklistDto;
-    const userContext = this.getCurrentUserContext();
+    const userContext = this.getCurrentUserContext(userId);
 
     this.logger.log(
       `Atualizando checklist ${id}: Nome=${nome || 'N/A'}, Tipo=${
@@ -825,9 +834,9 @@ export class ChecklistService {
   /**
    * Remove checklist (soft delete)
    */
-  async remove(id: number): Promise<void> {
+  async remove(id: number, userId?: string): Promise<void> {
     this.logger.log(`Removendo checklist: ${id}`);
-    const userContext = this.getCurrentUserContext();
+    const userContext = this.getCurrentUserContext(userId);
 
     this.validateChecklistId(id);
 

@@ -107,7 +107,8 @@ export class TurnoService {
   async abrirTurno(
     abrirDto: AbrirTurnoDto,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    allowedContracts: ContractPermission[]
+    allowedContracts: ContractPermission[],
+    userId?: string
   ): Promise<TurnoResponseDto> {
     this.logger.log(
       `Abrindo turno - Veículo: ${abrirDto.veiculoId}, Equipe: ${abrirDto.equipeId}`
@@ -128,7 +129,9 @@ export class TurnoService {
       this.validateDadosAbertura(abrirDto);
 
       // Contexto do usuário
-      const userContext = getDefaultUserContext();
+      const userContext = userId
+        ? { userId, userName: userId, roles: [] }
+        : getDefaultUserContext();
 
       // Dados de auditoria para criação
       const auditData = createAuditData(userContext);
@@ -192,7 +195,8 @@ export class TurnoService {
               await this.checklistPreenchidoService.salvarChecklistsDoTurno(
                 turno.id,
                 abrirDto.checklists,
-                transaction
+                transaction,
+                userId
               );
           }
 

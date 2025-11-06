@@ -140,11 +140,18 @@ export class AprService {
   }
 
   /**
-   * Obtém contexto do usuário atual (placeholder para futura implementação)
+   * Obtém contexto do usuário atual
    * @private
+   * @param userId - ID do usuário (opcional, usa 'system' como fallback)
    */
-  private getCurrentUserContext(): UserContext {
-    // TODO: Implementar extração do contexto do usuário do JWT
+  private getCurrentUserContext(userId?: string): UserContext {
+    if (userId) {
+      return {
+        userId,
+        userName: userId,
+        roles: [],
+      };
+    }
     return {
       userId: AUDIT_CONFIG.DEFAULT_USER,
       userName: AUDIT_CONFIG.DEFAULT_USER_NAME,
@@ -573,9 +580,9 @@ export class AprService {
    * console.log(`Modelo criado com ID: ${apr.id}`);
    * ```
    */
-  async create(createAprDto: CreateAprDto): Promise<AprResponseDto> {
+  async create(createAprDto: CreateAprDto, userId?: string): Promise<AprResponseDto> {
     const { nome } = createAprDto;
-    const userContext = this.getCurrentUserContext();
+    const userContext = this.getCurrentUserContext(userId);
 
     this.logger.log(`Criando novo modelo APR: ${nome}`);
 
@@ -652,10 +659,11 @@ export class AprService {
    */
   async update(
     id: number,
-    updateAprDto: UpdateAprDto
+    updateAprDto: UpdateAprDto,
+    userId?: string
   ): Promise<AprResponseDto> {
     const { nome } = updateAprDto;
-    const userContext = this.getCurrentUserContext();
+    const userContext = this.getCurrentUserContext(userId);
 
     this.logger.log(`Atualizando modelo APR ${id}: ${nome || 'N/A'}`);
 
@@ -755,9 +763,9 @@ export class AprService {
    * console.log('Modelo APR removido com sucesso');
    * ```
    */
-  async remove(id: number): Promise<void> {
+  async remove(id: number, userId?: string): Promise<void> {
     this.logger.log(`Removendo modelo APR: ${id}`);
-    const userContext = this.getCurrentUserContext();
+    const userContext = this.getCurrentUserContext(userId);
 
     // Validar ID
     this.validateAprId(id);

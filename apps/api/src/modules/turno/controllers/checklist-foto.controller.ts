@@ -29,6 +29,7 @@ import {
 } from '@nestjs/swagger';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { GetUsuarioMobileId } from '@modules/engine/auth/decorators/get-user-id-decorator';
 import { ChecklistFotoService } from '../services/checklist-foto.service';
 import {
   FotoResponseDto,
@@ -109,7 +110,8 @@ export class ChecklistFotoController {
     @UploadedFile() file: any,
     @Body('checklistRespostaId', ParseIntPipe) checklistRespostaId: number,
     @Body('turnoId') turnoId?: number,
-    @Body('metadados') metadados?: string
+    @Body('metadados') metadados?: string,
+    @GetUsuarioMobileId() userId?: string
   ): Promise<FotoResponseDto> {
     this.logger.log(`Sincronizando foto para resposta ${checklistRespostaId}`);
 
@@ -142,7 +144,8 @@ export class ChecklistFotoController {
     return this.checklistFotoService.sincronizarFoto(
       checklistRespostaId,
       file,
-      metadadosParsed
+      metadadosParsed,
+      userId
     );
   }
 
@@ -204,7 +207,8 @@ export class ChecklistFotoController {
     @UploadedFiles() files: any[],
     @Body('checklistRespostaIds') checklistRespostaIds: string,
     @Body('turnoIds') turnoIds?: string,
-    @Body('metadadosArray') metadadosArray?: string
+    @Body('metadadosArray') metadadosArray?: string,
+    @GetUsuarioMobileId() userId?: string
   ): Promise<FotoLoteResponseDto> {
     this.logger.log(`Sincronizando ${files.length} fotos em lote`);
 
@@ -258,7 +262,7 @@ export class ChecklistFotoController {
       },
     }));
 
-    return this.checklistFotoService.sincronizarFotoLote(fotos);
+    return this.checklistFotoService.sincronizarFotoLote(fotos, userId);
   }
 
   /**

@@ -43,7 +43,8 @@ export class ChecklistFotoService {
   async sincronizarFoto(
     checklistRespostaId: number,
     file: any,
-    metadados?: any
+    metadados?: any,
+    userId?: string
   ): Promise<FotoResponseDto> {
     this.logger.log(`Sincronizando foto para resposta ${checklistRespostaId}`);
 
@@ -57,6 +58,7 @@ export class ChecklistFotoService {
     const urlPublica = this.gerarUrlPublica(caminhoArquivo);
 
     // Salvar no banco de dados
+    const createdBy = userId || 'system';
     const foto = await this.db.getPrisma().checklistRespostaFoto.create({
       data: {
         checklistRespostaId,
@@ -67,7 +69,7 @@ export class ChecklistFotoService {
         sincronizadoEm: new Date(),
         metadados: metadados || null,
         createdAt: new Date(),
-        createdBy: 'system', // TODO: pegar do contexto do usuário
+        createdBy,
       },
     });
 
@@ -106,10 +108,12 @@ export class ChecklistFotoService {
    * Sincroniza múltiplas fotos em lote
    *
    * @param fotos - Lista de fotos para sincronizar
+   * @param userId - ID do usuário para auditoria (opcional, usa 'system' como fallback)
    * @returns Resultado do processamento em lote
    */
   async sincronizarFotoLote(
-    fotos: Array<{ file: any; data: SincronizarFotoDto }>
+    fotos: Array<{ file: any; data: SincronizarFotoDto }>,
+    userId?: string
   ): Promise<{
     totalProcessadas: number;
     sucessos: number;
@@ -138,7 +142,8 @@ export class ChecklistFotoService {
         const foto = await this.sincronizarFoto(
           data.checklistRespostaId,
           file,
-          data.metadados
+          data.metadados,
+          userId
         );
 
         resultados.push({

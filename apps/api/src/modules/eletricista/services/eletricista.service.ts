@@ -627,102 +627,37 @@ export class EletricistaService {
   async findAllForSync(
     allowedContracts?: ContractPermission[]
   ): Promise<EletricistaSyncDto[]> {
-    this.logger.debug('=== INÍCIO DO MÉTODO findAllForSync ===');
-    this.logger.debug(`Timestamp: ${new Date().toISOString()}`);
-    this.logger.debug(`Método: ${this.findAllForSync.name}`);
-    this.logger.debug(`Service: ${EletricistaService.name}`);
-
-    this.logger.debug('=== PARÂMETROS RECEBIDOS NO SERVICE ===');
-    this.logger.debug(
-      `allowedContracts recebido: ${JSON.stringify(allowedContracts)}`
-    );
-    this.logger.debug(`Tipo de allowedContracts: ${typeof allowedContracts}`);
-    this.logger.debug(`É array: ${Array.isArray(allowedContracts)}`);
-    this.logger.debug(
-      `Quantidade de contratos: ${allowedContracts?.length || 0}`
-    );
-
     this.logger.log(
       `Sincronizando eletricistas para ${allowedContracts?.length || 0} contratos`
     );
 
-    this.logger.debug('=== EXTRAINDO IDs DOS CONTRATOS ===');
     const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
-    this.logger.debug(
-      `allowedContractIds extraídos: ${JSON.stringify(allowedContractIds)}`
-    );
-    this.logger.debug(
-      `Tipo de allowedContractIds: ${typeof allowedContractIds}`
-    );
-    this.logger.debug(`É array: ${Array.isArray(allowedContractIds)}`);
-    this.logger.debug(`Quantidade de IDs: ${allowedContractIds?.length || 0}`);
 
     if (allowedContractIds && allowedContractIds.length === 0) {
       this.logger.log('Nenhum contrato permitido, retornando lista vazia');
-      this.logger.debug('=== RETORNANDO LISTA VAZIA ===');
       return [];
     }
 
     try {
-      this.logger.debug('=== CONSTRUINDO WHERE CLAUSE ===');
       const whereClause: any = {
         deletedAt: null,
+        ...(allowedContractIds && {
+          contratoId: { in: allowedContractIds },
+        }),
       };
-
-      if (allowedContractIds) {
-        whereClause.contratoId = {
-          in: allowedContractIds,
-        };
-      }
-
-      this.logger.debug(
-        `Where clause construída: ${JSON.stringify(whereClause)}`
-      );
-      this.logger.debug(
-        `ORDER_CONFIG.SYNC_ORDER: ${JSON.stringify(ORDER_CONFIG.SYNC_ORDER)}`
-      );
-
-      this.logger.debug('=== EXECUTANDO QUERY NO BANCO ===');
-      this.logger.debug('Chamando db.getPrisma().eletricista.findMany...');
 
       const eletricistas = await this.db.getPrisma().eletricista.findMany({
         where: whereClause,
         orderBy: ORDER_CONFIG.SYNC_ORDER,
       });
 
-      this.logger.debug('=== RESULTADO DA QUERY ===');
-      this.logger.debug(`Query executada com sucesso`);
-      this.logger.debug(
-        `Quantidade de eletricistas retornados: ${eletricistas.length}`
-      );
-      this.logger.debug(`Tipo do resultado: ${typeof eletricistas}`);
-      this.logger.debug(`É array: ${Array.isArray(eletricistas)}`);
-
-      if (eletricistas.length > 0) {
-        this.logger.debug('=== DETALHES DOS ELETRICISTAS ===');
-        eletricistas.forEach((eletricista, index) => {
-          this.logger.debug(
-            `Eletricista ${index + 1}: ${JSON.stringify(eletricista)}`
-          );
-        });
-      }
-
       this.logger.log(
         `Sincronização concluída - ${eletricistas.length} eletricistas retornados`
       );
 
-      this.logger.debug('=== RETORNANDO RESULTADO DO SERVICE ===');
-      this.logger.debug('=== FIM DO MÉTODO findAllForSync ===');
-
       return eletricistas;
     } catch (error) {
-      this.logger.error('=== ERRO NO SERVICE ===');
-      this.logger.error(`Erro capturado: ${error.message}`);
-      this.logger.error(`Stack trace: ${error.stack}`);
-      this.logger.error(`Nome do erro: ${error.name}`);
-      this.logger.error(`Código do erro: ${error.code}`);
-      this.logger.error(`Tipo do erro: ${typeof error}`);
-      this.logger.error('=== FIM DO ERRO NO SERVICE ===');
+      this.logger.error('Erro ao sincronizar eletricistas:', error);
       throw new BadRequestException('Erro ao sincronizar eletricistas');
     }
   }

@@ -73,10 +73,12 @@ export class TurnoRealizadoService {
         executadoPor: payload.executadoPor,
       })
       .then(() => {
-        console.log(`✅ Reconciliação concluída para equipe ${payload.equipeId} em ${payload.dataReferencia}`);
+        this.logger.log(
+          `Reconciliação concluída para equipe ${payload.equipeId} em ${payload.dataReferencia}`
+        );
       })
       .catch((error) => {
-        console.error('❌ Erro na reconciliação:', error);
+        this.logger.error('Erro na reconciliação:', error);
       });
   }
 

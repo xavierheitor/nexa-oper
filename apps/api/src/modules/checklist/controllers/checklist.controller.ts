@@ -67,6 +67,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { GetUsuarioMobileId } from '@modules/engine/auth/decorators/get-user-id-decorator';
 import { ChecklistService } from '../services/checklist.service';
 import {
   ChecklistListResponseDto,
@@ -228,10 +229,11 @@ export class ChecklistController {
     description: 'Erro interno do servidor',
   })
   async create(
-    @Body() createChecklistDto: CreateChecklistDto
+    @Body() createChecklistDto: CreateChecklistDto,
+    @GetUsuarioMobileId() userId?: string
   ): Promise<ChecklistResponseDto> {
     this.logger.log(`Criando checklist: ${createChecklistDto.nome}`);
-    return this.checklistService.create(createChecklistDto);
+    return this.checklistService.create(createChecklistDto, userId);
   }
 
   /**
@@ -274,10 +276,11 @@ export class ChecklistController {
   })
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateChecklistDto: UpdateChecklistDto
+    @Body() updateChecklistDto: UpdateChecklistDto,
+    @GetUsuarioMobileId() userId?: string
   ): Promise<ChecklistResponseDto> {
     this.logger.log(`Atualizando checklist ${id}`);
-    return this.checklistService.update(id, updateChecklistDto);
+    return this.checklistService.update(id, updateChecklistDto, userId);
   }
 
   /**

@@ -34,12 +34,14 @@ export class ChecklistPreenchidoService {
    * @param turnoId - ID do turno
    * @param checklists - Lista de checklists para salvar
    * @param transaction - Transação Prisma (opcional)
+   * @param userId - ID do usuário para auditoria (opcional, usa 'system' como fallback)
    * @returns Resultado do salvamento básico
    */
   async salvarChecklistsDoTurno(
     turnoId: number,
     checklists: SalvarChecklistPreenchidoDto[],
-    transaction?: any
+    transaction?: any,
+    userId?: string
   ): Promise<{
     checklistsSalvos: number;
     checklistsPreenchidos: Array<{
@@ -73,7 +75,8 @@ export class ChecklistPreenchidoService {
         const checklistPreenchido = await this.salvarChecklistPreenchido(
           turnoId,
           checklistData,
-          prisma
+          prisma,
+          userId
         );
 
         checklistsSalvos++;
@@ -174,14 +177,17 @@ export class ChecklistPreenchidoService {
    * @param turnoId - ID do turno
    * @param checklistData - Dados do checklist
    * @param transaction - Transação Prisma (opcional)
+   * @param userId - ID do usuário para auditoria (opcional, usa 'system' como fallback)
    * @returns Checklist preenchido criado
    */
   async salvarChecklistPreenchido(
     turnoId: number,
     checklistData: SalvarChecklistPreenchidoDto,
-    transaction?: any
+    transaction?: any,
+    userId?: string
   ): Promise<any> {
     const prisma = transaction || this.db.getPrisma();
+    const createdBy = userId || 'system';
 
     // Criar checklist preenchido
     const checklistPreenchido = await prisma.checklistPreenchido.create({
@@ -194,7 +200,7 @@ export class ChecklistPreenchidoService {
         latitude: checklistData.latitude,
         longitude: checklistData.longitude,
         createdAt: new Date(),
-        createdBy: 'system', // TODO: pegar do contexto do usuário
+        createdBy,
       },
     });
 
@@ -209,7 +215,7 @@ export class ChecklistPreenchidoService {
           aguardandoFoto: false, // Será atualizado depois se necessário
           fotosSincronizadas: 0,
           createdAt: new Date(),
-          createdBy: 'system',
+          createdBy,
         },
       });
     }
