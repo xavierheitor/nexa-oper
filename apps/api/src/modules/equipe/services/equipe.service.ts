@@ -292,6 +292,12 @@ export class EquipeService {
 
   /**
    * Lista equipes para sincronização mobile (sem paginação)
+   *
+   * Retorna todas as equipes ativas sem paginação para permitir
+   * que clientes mobile mantenham seus dados em sincronia.
+   *
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Lista completa de equipes ativas para sincronização
    */
   async findAllForSync(
     allowedContracts?: ContractPermission[]
@@ -360,6 +366,12 @@ export class EquipeService {
 
   /**
    * Busca equipe por ID respeitando permissões
+   *
+   * @param id - ID da equipe
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Dados da equipe encontrada
+   * @throws NotFoundException - Se equipe não for encontrada
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
    */
   async findOne(
     id: number,
@@ -422,6 +434,13 @@ export class EquipeService {
 
   /**
    * Cria nova equipe com validações e auditoria
+   *
+   * @param createEquipeDto - Dados da equipe a ser criada
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Equipe criada
+   * @throws ConflictException - Se nome já existir
+   * @throws NotFoundException - Se tipo de equipe ou contrato não forem encontrados
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
    */
   async create(
     createEquipeDto: CreateEquipeDto,
@@ -489,6 +508,14 @@ export class EquipeService {
 
   /**
    * Atualiza equipe existente com validações
+   *
+   * @param id - ID da equipe
+   * @param updateEquipeDto - Dados para atualização
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Equipe atualizada
+   * @throws NotFoundException - Se equipe não for encontrada
+   * @throws ConflictException - Se novo nome já existir
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
    */
   async update(
     id: number,
@@ -584,6 +611,11 @@ export class EquipeService {
 
   /**
    * Remove equipe (soft delete)
+   *
+   * @param id - ID da equipe
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @throws NotFoundException - Se equipe não for encontrada
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
    */
   async remove(
     id: number,
@@ -624,6 +656,9 @@ export class EquipeService {
 
   /**
    * Conta total de equipes ativas respeitando permissões
+   *
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Total de equipes ativas
    */
   async count(allowedContracts?: ContractPermission[]): Promise<number> {
     this.logger.log('Contando equipes ativas');

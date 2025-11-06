@@ -136,6 +136,14 @@ export class EletricistaService {
     }
   }
 
+  /**
+   * Lista eletricistas com paginação e filtros, respeitando permissões
+   *
+   * @param params - Parâmetros de consulta (página, limite, busca, estado, contrato)
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Lista paginada de eletricistas com metadados
+   * @throws BadRequestException - Se parâmetros de paginação forem inválidos
+   */
   async findAll(
     params: FindAllParams,
     allowedContracts?: ContractPermission[]
@@ -236,6 +244,15 @@ export class EletricistaService {
     }
   }
 
+  /**
+   * Busca eletricista por ID respeitando permissões
+   *
+   * @param id - ID do eletricista
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Dados do eletricista encontrado
+   * @throws NotFoundException - Se eletricista não for encontrado
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
+   */
   async findOne(
     id: number,
     allowedContracts?: ContractPermission[]
@@ -298,6 +315,16 @@ export class EletricistaService {
     }
   }
 
+  /**
+   * Cria novo eletricista com validações e auditoria
+   *
+   * @param createEletricistaDto - Dados do eletricista a ser criado
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Eletricista criado
+   * @throws ConflictException - Se matrícula já existir
+   * @throws NotFoundException - Se contrato não for encontrado
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
+   */
   async create(
     createEletricistaDto: CreateEletricistaDto,
     allowedContracts?: ContractPermission[]
@@ -370,6 +397,17 @@ export class EletricistaService {
     }
   }
 
+  /**
+   * Atualiza eletricista existente com validações
+   *
+   * @param id - ID do eletricista
+   * @param updateEletricistaDto - Dados para atualização
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Eletricista atualizado
+   * @throws NotFoundException - Se eletricista não for encontrado
+   * @throws ConflictException - Se nova matrícula já existir
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
+   */
   async update(
     id: number,
     updateEletricistaDto: UpdateEletricistaDto,
@@ -474,6 +512,14 @@ export class EletricistaService {
     }
   }
 
+  /**
+   * Remove eletricista (soft delete)
+   *
+   * @param id - ID do eletricista
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @throws NotFoundException - Se eletricista não for encontrado
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
+   */
   async remove(
     id: number,
     allowedContracts?: ContractPermission[]
@@ -510,6 +556,12 @@ export class EletricistaService {
     }
   }
 
+  /**
+   * Conta total de eletricistas ativos respeitando permissões
+   *
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Total de eletricistas ativos
+   */
   async count(allowedContracts?: ContractPermission[]): Promise<number> {
     this.logger.log('Contando eletricistas ativos');
 
@@ -550,8 +602,13 @@ export class EletricistaService {
   }
 
   /**
-   * Retorna todos os eletricistas para sincronização mobile
-   * Respeitando as permissões de contrato do usuário
+   * Lista todos os eletricistas ativos para sincronização mobile
+   *
+   * Retorna todos os eletricistas ativos sem paginação para permitir
+   * que clientes mobile mantenham seus dados em sincronia.
+   *
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Lista completa de eletricistas ativos para sincronização
    */
   async findAllForSync(
     allowedContracts?: ContractPermission[]

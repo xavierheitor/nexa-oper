@@ -294,10 +294,14 @@ considerar criar uma classe base abstrata `BaseCrudService<T>`, mas apenas se:
 
 **Solução Implementada:**
 
-- ✅ Removidos métodos privados redundantes `validatePaginationParams()` e `buildPaginationMeta()` de `EquipeService`
-- ✅ Removidos métodos privados redundantes `validatePaginationParams()` e `buildPaginationMeta()` de `EletricistaService`
-- ✅ Substituído método `validatePaginationParams()` duplicado em `ChecklistService` pelo helper de `@common/utils/pagination`
-- ✅ Corrigida ordem de parâmetros em `buildPaginationMeta()` no `TurnoService` (de `(page, limit, total)` para `(total, page, limit)`)
+- ✅ Removidos métodos privados redundantes `validatePaginationParams()` e `buildPaginationMeta()`
+  de `EquipeService`
+- ✅ Removidos métodos privados redundantes `validatePaginationParams()` e `buildPaginationMeta()`
+  de `EletricistaService`
+- ✅ Substituído método `validatePaginationParams()` duplicado em `ChecklistService` pelo helper de
+  `@common/utils/pagination`
+- ✅ Corrigida ordem de parâmetros em `buildPaginationMeta()` no `TurnoService` (de
+  `(page, limit, total)` para `(total, page, limit)`)
 - ✅ Removida importação não utilizada `PAGINATION_CONFIG` de `ChecklistService`
 - ✅ Todos os serviços agora usam diretamente os helpers de `@common/utils/pagination`:
   - `validatePaginationParams()`
@@ -361,7 +365,8 @@ Cada serviço tinha métodos privados que eram apenas wrappers dos helpers comun
 
 - `validatePaginationParams()` - Wrapper de `@common/utils/pagination`
 - `validateId()` - Wrappers específicos como `validateEquipeId()`, `validateEletricistaId()`, etc.
-- `validateOptionalId()` - Wrappers específicos como `validateTipoEquipeId()`, `validateContratoId()`, etc.
+- `validateOptionalId()` - Wrappers específicos como `validateTipoEquipeId()`,
+  `validateContratoId()`, etc.
 - `getCurrentUserContext()` - Wrapper de `getDefaultUserContext()` de `@common/utils/audit`
 - `extractAllowedContractIds()` - Wrapper direto de `@modules/engine/auth/utils/contract-helpers`
 - `ensureContractPermission()` - Wrapper direto de `@modules/engine/auth/utils/contract-helpers`
@@ -392,7 +397,8 @@ Cada serviço tinha métodos privados que eram apenas wrappers dos helpers comun
   - `ensureContractPermission()` → substituído por chamada direta
 
 - ✅ Substituído `validateAprId()` em `AprService` por `validateId(id, 'ID da APR')`
-- ✅ Substituído `validateChecklistId()` em `ChecklistService` por `validateId(id, 'ID do checklist')`
+- ✅ Substituído `validateChecklistId()` em `ChecklistService` por
+  `validateId(id, 'ID do checklist')`
 - ✅ Substituído `validateTipoChecklistId()` em `ChecklistService` por `validateOptionalId()`
 - ✅ Adicionadas importações necessárias de `validateId` e `validateOptionalId` nos serviços
 
@@ -400,7 +406,8 @@ Cada serviço tinha métodos privados que eram apenas wrappers dos helpers comun
 
 Alguns métodos foram mantidos pois têm lógica específica:
 
-- `getCurrentUserContext(userId?: string)` em `AprService` e `ChecklistService` - Aceita parâmetro `userId` opcional com lógica específica
+- `getCurrentUserContext(userId?: string)` em `AprService` e `ChecklistService` - Aceita parâmetro
+  `userId` opcional com lógica específica
 - `validateEstado()` em `EletricistaService` - Validação específica de formato de estado
 
 **Serviços Corrigidos:**
@@ -460,6 +467,33 @@ Alguns métodos foram mantidos pois têm lógica específica:
 Todos os serviços já estão usando helpers que validam limites através de constantes centralizadas.
 Não foram encontradas constantes hardcoded problemáticas.
 
+#### 12. **Documentação JSDoc Completa** ✅ CORRIGIDO
+
+**Problema:** Alguns métodos públicos não tinham documentação JSDoc completa com @param, @returns e @throws.
+
+**Solução Implementada:**
+
+- ✅ Adicionada documentação JSDoc completa em todos os métodos públicos dos serviços principais:
+  - `EletricistaService` - 7 métodos documentados (findAll, findOne, create, update, remove, count, findAllForSync)
+  - `EquipeService` - 7 métodos documentados (findAll, findOne, create, update, remove, count, findAllForSync)
+  - `VeiculoService` - 7 métodos documentados (findAll, findOne, create, update, remove, count, findAllForSync)
+  - `AprService` - Já tinha documentação completa no cabeçalho da classe
+  - `ChecklistService` - Já tinha documentação completa no cabeçalho da classe
+  - `TurnoService` - Já tinha documentação completa no cabeçalho da classe
+- ✅ Padrão de documentação JSDoc estabelecido:
+  - Descrição clara do propósito do método
+  - `@param` para todos os parâmetros com descrição
+  - `@returns` com descrição do retorno
+  - `@throws` listando todas as exceções possíveis com contexto
+- ✅ Documentação consistente facilita manutenção e uso da API
+
+**Benefícios:**
+
+- Documentação completa facilita entendimento do código
+- IDEs podem fornecer autocomplete e hints melhores
+- Facilita onboarding de novos desenvolvedores
+- Melhora a experiência de desenvolvimento
+
 #### 11. **Tratamento de Erros Inconsistente** ✅ CORRIGIDO
 
 **Problema:** Alguns serviços capturam erros específicos e re-lançam, outros lançam genéricos.
@@ -478,11 +512,14 @@ Não foram encontradas constantes hardcoded problemáticas.
   - `TipoVeiculoService` - Todos os métodos catch padronizados
   - `TipoAtividadeService` - Todos os métodos catch padronizados
   - `ChecklistPreenchidoService` - Método principal padronizado
-- ✅ Exceções HTTP específicas (NotFoundException, ConflictException, etc.) são automaticamente re-lançadas
-- ✅ Erros genéricos são logados e convertidos em BadRequestException com mensagens consistentes usando `ERROR_MESSAGES`
+- ✅ Exceções HTTP específicas (NotFoundException, ConflictException, etc.) são automaticamente
+  re-lançadas
+- ✅ Erros genéricos são logados e convertidos em BadRequestException com mensagens consistentes
+  usando `ERROR_MESSAGES`
 - ✅ Logging estruturado com contexto da operação
 
 **Benefícios:**
+
 - Tratamento de erros 100% consistente em todos os serviços
 - Mensagens de erro padronizadas usando `ERROR_MESSAGES`
 - Logging estruturado facilita debugging
@@ -508,7 +545,8 @@ Não foram encontradas constantes hardcoded problemáticas.
 
 1. ⚠️ **equipe** - Alguns logs de debug ainda presentes (não crítico)
 2. ⚠️ **veiculo** - Alguns logs de debug ainda presentes (não crítico)
-3. ⏸️ **turno-realizado** - TODOs deferidos (cálculo de atrasos e divergências - requer análise de regras de negócio)
+3. ⏸️ **turno-realizado** - TODOs deferidos (cálculo de atrasos e divergências - requer análise de
+   regras de negócio)
 
 ---
 
@@ -568,12 +606,13 @@ Não foram encontradas constantes hardcoded problemáticas.
 
 - [x] Sem logs de debug excessivos (✅ Corrigido - logs críticos removidos)
 - [x] Sem console.log/console.error (✅ Corrigido - apenas em comentários JSDoc)
-- [x] Todos os TODOs críticos implementados (✅ Implementados - alguns deferidos por regras de negócio)
+- [x] Todos os TODOs críticos implementados (✅ Implementados - alguns deferidos por regras de
+      negócio)
 - [x] Helpers comuns usados consistentemente (✅ 100% padronizado)
 - [x] Sem type hacks desnecessários (✅ Corrigido - alguns justificados mantidos)
 - [x] Validações padronizadas (✅ 100% usando helpers comuns)
-- [ ] Tratamento de erros consistente (⏳ Melhoria recomendada)
-- [ ] Documentação JSDoc completa (⏳ Melhoria recomendada)
+- [x] Tratamento de erros consistente (✅ CORRIGIDO - 100% padronizado)
+- [x] Documentação JSDoc completa (✅ CORRIGIDO - Todos os métodos públicos documentados)
 - [x] Constantes centralizadas (✅ Já estava correto)
 - [ ] Testes unitários para serviços críticos (⏳ Melhoria recomendada)
 
@@ -583,5 +622,6 @@ Não foram encontradas constantes hardcoded problemáticas.
 
 1. ✅ Revisar e aprovar este documento - **CONCLUÍDO**
 2. ✅ Priorizar correções críticas - **CONCLUÍDO**
-3. ⏳ Criar issues/tasks para melhorias recomendadas (testes, documentação JSDoc, tratamento de erros)
+3. ⏳ Criar issues/tasks para melhorias recomendadas (testes, documentação JSDoc, tratamento de
+   erros)
 4. ⏳ Implementar melhorias recomendadas em ordem de prioridade

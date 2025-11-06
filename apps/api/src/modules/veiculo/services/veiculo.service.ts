@@ -195,6 +195,11 @@ export class VeiculoService {
 
   /**
    * Lista veículos com paginação e filtros, respeitando permissões
+   *
+   * @param params - Parâmetros de consulta (página, limite, busca, tipo, contrato)
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Lista paginada de veículos com metadados
+   * @throws BadRequestException - Se parâmetros de paginação forem inválidos
    */
   async findAll(
     params: FindAllParams,
@@ -295,6 +300,12 @@ export class VeiculoService {
 
   /**
    * Lista veículos para sincronização mobile (sem paginação)
+   *
+   * Retorna todos os veículos ativos sem paginação para permitir
+   * que clientes mobile mantenham seus dados em sincronia.
+   *
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Lista completa de veículos ativos para sincronização
    */
   async findAllForSync(
     allowedContracts?: ContractPermission[]
@@ -365,6 +376,12 @@ export class VeiculoService {
 
   /**
    * Busca veículo por ID respeitando permissões
+   *
+   * @param id - ID do veículo
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Dados do veículo encontrado
+   * @throws NotFoundException - Se veículo não for encontrado
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
    */
   async findOne(
     id: number,
@@ -429,6 +446,13 @@ export class VeiculoService {
 
   /**
    * Cria novo veículo com validações e auditoria
+   *
+   * @param createVeiculoDto - Dados do veículo a ser criado
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Veículo criado
+   * @throws ConflictException - Se placa já existir
+   * @throws NotFoundException - Se tipo de veículo ou contrato não forem encontrados
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
    */
   async create(
     createVeiculoDto: CreateVeiculoDto,
@@ -500,6 +524,14 @@ export class VeiculoService {
 
   /**
    * Atualiza veículo existente com validações
+   *
+   * @param id - ID do veículo
+   * @param updateVeiculoDto - Dados para atualização
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Veículo atualizado
+   * @throws NotFoundException - Se veículo não for encontrado
+   * @throws ConflictException - Se nova placa já existir
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
    */
   async update(
     id: number,
@@ -599,6 +631,11 @@ export class VeiculoService {
 
   /**
    * Remove veículo (soft delete)
+   *
+   * @param id - ID do veículo
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @throws NotFoundException - Se veículo não for encontrado
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
    */
   async remove(
     id: number,
@@ -639,6 +676,9 @@ export class VeiculoService {
 
   /**
    * Conta total de veículos ativos respeitando permissões
+   *
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Total de veículos ativos
    */
   async count(allowedContracts?: ContractPermission[]): Promise<number> {
     this.logger.log('Contando veículos ativos');
