@@ -467,6 +467,4 @@ export class TipoAtividadeService {
 
     return where;
   }
-
-  }
 }

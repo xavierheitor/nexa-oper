@@ -53,6 +53,7 @@ import {
   ensureEntityExists,
 } from '@common/utils/validation';
 import { handleCrudError } from '@common/utils/error-handler';
+import { withTransactionTimeout, withSyncTimeout } from '@common/utils/timeout';
 import {
   getDefaultUserContext,
   createAuditData,
@@ -137,10 +138,11 @@ export class TurnoService {
       // Dados de auditoria para criação
       const auditData = createAuditData(userContext);
 
-      // Usar transação para garantir atomicidade
-      const resultado = await this.db
-        .getPrisma()
-        .$transaction(async transaction => {
+      // Usar transação para garantir atomicidade com timeout
+      const resultado = await withTransactionTimeout(
+        this.db
+          .getPrisma()
+          .$transaction(async transaction => {
           // ✅ VALIDAÇÕES DE CONFLITO DENTRO DA TRANSAÇÃO (evita race conditions)
           // Verifica se já existe turno aberto para o veículo
           const turnoVeiculo = await transaction.turno.findFirst({
@@ -270,7 +272,8 @@ export class TurnoService {
           }
 
           return { turno, checklistsBasicResult };
-        });
+        })
+      );
 
       // Busca o turno completo com relacionamentos
       const turnoCompleto = await this.buscarTurnoCompleto(resultado.turno.id);
@@ -489,36 +492,38 @@ export class TurnoService {
         allowedContracts
       );
 
-      const data = await this.db.getPrisma().turno.findMany({
-        where,
-        orderBy: ORDER_CONFIG.SYNC_ORDER,
-        include: {
-          veiculo: {
-            select: {
-              id: true,
-              placa: true,
-              modelo: true,
+      const data = await withSyncTimeout(
+        this.db.getPrisma().turno.findMany({
+          where,
+          orderBy: ORDER_CONFIG.SYNC_ORDER,
+          include: {
+            veiculo: {
+              select: {
+                id: true,
+                placa: true,
+                modelo: true,
+              },
             },
-          },
-          equipe: {
-            select: {
-              id: true,
-              nome: true,
+            equipe: {
+              select: {
+                id: true,
+                nome: true,
+              },
             },
-          },
-          TurnoEletricistas: {
-            include: {
-              eletricista: {
-                select: {
-                  id: true,
-                  nome: true,
-                  matricula: true,
+            TurnoEletricistas: {
+              include: {
+                eletricista: {
+                  select: {
+                    id: true,
+                    nome: true,
+                    matricula: true,
+                  },
                 },
               },
             },
           },
-        },
-      });
+        })
+      );
 
       this.logger.log(
         `Sincronização de turnos retornou ${data.length} registros`

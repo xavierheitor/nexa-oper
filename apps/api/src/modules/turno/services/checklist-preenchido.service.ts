@@ -14,6 +14,7 @@ import {
 import { DatabaseService } from '@database/database.service';
 import { parseMobileDate } from '@common/utils/date-timezone';
 import { handleServiceError } from '@common/utils/error-handler';
+import { withTimeout, TIMEOUT_CONFIG } from '@common/utils/timeout';
 import { PrismaTransactionClient } from '@common/types/prisma';
 import {
   SalvarChecklistPreenchidoDto,
@@ -165,25 +166,30 @@ export class ChecklistPreenchidoService {
 
     try {
       // ✅ Paralelizar processamento de pendências e fotos quando possível
-      const resultados = await Promise.all(
-        checklistsPreenchidos.map(async checklistPreenchido => {
-          // Processar pendências automáticas (fora da transação)
-          const pendencias = await this.processarPendenciasAutomaticas(
-            checklistPreenchido.id,
-            checklistPreenchido.respostas
-          );
+      // ✅ Com timeout para evitar travamentos
+      const resultados = await withTimeout(
+        Promise.all(
+          checklistsPreenchidos.map(async checklistPreenchido => {
+            // Processar pendências automáticas (fora da transação)
+            const pendencias = await this.processarPendenciasAutomaticas(
+              checklistPreenchido.id,
+              checklistPreenchido.respostas
+            );
 
-          // Marcar respostas que aguardam foto (fora da transação)
-          const respostasComFoto = await this.marcarRespostasAguardandoFoto(
-            checklistPreenchido.id,
-            checklistPreenchido.respostas
-          );
+            // Marcar respostas que aguardam foto (fora da transação)
+            const respostasComFoto = await this.marcarRespostasAguardandoFoto(
+              checklistPreenchido.id,
+              checklistPreenchido.respostas
+            );
 
-          return {
-            pendencias,
-            respostasComFoto,
-          };
-        })
+            return {
+              pendencias,
+              respostasComFoto,
+            };
+          })
+        ),
+        TIMEOUT_CONFIG.CHECKLIST_PROCESSING,
+        'Processamento de checklists excedeu o tempo limite'
       );
 
       // Agregar resultados
