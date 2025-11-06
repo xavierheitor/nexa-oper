@@ -48,7 +48,12 @@ import {
   extractAllowedContractIds,
   ensureContractPermission,
 } from '@modules/engine/auth/utils/contract-helpers';
-import { buildPagination, buildPagedResponse } from '@common/utils/pagination';
+import {
+  buildPagination,
+  buildPagedResponse,
+  validatePaginationParams,
+  buildPaginationMeta,
+} from '@common/utils/pagination';
 import { validateId, validateOptionalId } from '@common/utils/validation';
 import {
   getDefaultUserContext,
@@ -95,19 +100,6 @@ export class VeiculoService {
   private readonly logger = new Logger(VeiculoService.name);
 
   constructor(private readonly db: DatabaseService) {}
-
-  /**
-   * Valida parâmetros de paginação
-   */
-  private validatePaginationParams(page: number, limit: number): void {
-    // Mantém validação básica local para não depender de helpers externos
-    if (page < 1) {
-      throw new BadRequestException('Página inválida');
-    }
-    if (limit < 1 || limit > 100) {
-      throw new BadRequestException('Limite inválido');
-    }
-  }
 
   /**
    * Valida ID de veículo
@@ -169,37 +161,26 @@ export class VeiculoService {
     contratoId: number | undefined,
     allowedContractIds: number[] | null
   ) {
-    const whereClause: any = {
-      deletedAt: null,
-    };
+    const whereClause: any = buildBaseWhereClause();
 
-    if (search) {
-      whereClause.OR = [
-        {
-          placa: {
-            contains: search,
-            mode: 'insensitive' as const,
-          },
-        },
-        {
-          modelo: {
-            contains: search,
-            mode: 'insensitive' as const,
-          },
-        },
-      ];
+    // Adicionar busca
+    const searchFilter = buildSearchWhereClause(search, {
+      placa: true,
+      modelo: true,
+    });
+    if (searchFilter) {
+      Object.assign(whereClause, searchFilter);
     }
 
+    // Adicionar filtro de tipo de veículo
     if (tipoVeiculoId) {
       whereClause.tipoVeiculoId = tipoVeiculoId;
     }
 
-    if (contratoId) {
-      whereClause.contratoId = contratoId;
-    } else if (allowedContractIds) {
-      whereClause.contratoId = {
-        in: allowedContractIds,
-      };
+    // Adicionar filtro de contrato
+    const contractFilter = buildContractFilter(contratoId, allowedContractIds);
+    if (contractFilter) {
+      Object.assign(whereClause, contractFilter);
     }
 
     return whereClause;
@@ -208,23 +189,6 @@ export class VeiculoService {
   /**
    * Constrói os metadados de paginação
    */
-  private buildPaginationMeta(
-    total: number,
-    page: number,
-    limit: number
-  ): PaginationMetaDto {
-    const totalPages = Math.max(1, Math.ceil(total / Math.max(1, limit)));
-    return {
-      total,
-      page,
-      limit, // requerido por PaginationMetaDto
-      // manter compatibilidade com respostas que usam pageSize
-      pageSize: limit as unknown as never,
-      totalPages,
-      hasPrevious: page > 1,
-      hasNext: page < totalPages,
-    } as unknown as PaginationMetaDto;
-  }
 
   /**
    * Verifica duplicidade de placa
@@ -295,14 +259,14 @@ export class VeiculoService {
       }`
     );
 
-    this.validatePaginationParams(page, limit);
+    validatePaginationParams(page, limit);
     this.validateTipoVeiculoId(tipoVeiculoId);
     this.validateContratoId(contratoId);
 
     const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
 
     if (allowedContractIds && allowedContractIds.length === 0) {
-      const meta = this.buildPaginationMeta(0, page, limit);
+      const meta = buildPaginationMeta(0, page, limit);
       return {
         data: [],
         meta,
@@ -362,8 +326,13 @@ export class VeiculoService {
         this.db.getPrisma().veiculo.count({ where: whereClause }),
       ]);
 
-      const paged = buildPagedResponse(data as VeiculoResponseDto[], total, currPage, pageSize);
-      return { ...paged, search, timestamp: new Date() } as any;
+      const meta: PaginationMetaDto = buildPaginationMeta(total, currPage, pageSize);
+      return {
+        data: data as VeiculoResponseDto[],
+        meta,
+        search,
+        timestamp: new Date(),
+      };
     } catch (error) {
       this.logger.error('Erro ao listar veículos:', error);
       throw new BadRequestException('Erro ao listar veículos');

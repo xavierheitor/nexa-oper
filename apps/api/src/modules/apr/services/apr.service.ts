@@ -71,7 +71,11 @@ import {
 } from '../dto';
 import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
 import {
-  PAGINATION_CONFIG,
+  validatePaginationParams,
+  buildPaginationMeta,
+} from '@common/utils/pagination';
+import { buildWhereClause as buildWhereClauseHelper } from '@common/utils/where-clause';
+import {
   AUDIT_CONFIG,
   ERROR_MESSAGES,
   APR_ORDER_CONFIG_COMPAT,
@@ -116,18 +120,6 @@ export class AprService {
 
   constructor(private readonly db: DatabaseService) {}
 
-  /**
-   * Valida parâmetros de paginação
-   * @private
-   */
-  private validatePaginationParams(page: number, limit: number): void {
-    if (page < 1) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_PAGE);
-    }
-    if (limit < 1 || limit > PAGINATION_CONFIG.MAX_LIMIT) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_LIMIT);
-    }
-  }
 
   /**
    * Valida ID de modelo APR
@@ -164,36 +156,12 @@ export class AprService {
    * @private
    */
   private buildWhereClause(search?: string) {
-    return {
-      deletedAt: null, // Apenas registros ativos
-      ...(search && {
-        nome: {
-          contains: search,
-          mode: 'insensitive' as const,
-        },
-      }),
-    };
+    return buildWhereClauseHelper({
+      search,
+      searchFields: { nome: true },
+    });
   }
 
-  /**
-   * Constrói metadados de paginação
-   * @private
-   */
-  private buildPaginationMeta(
-    total: number,
-    page: number,
-    limit: number
-  ): PaginationMetaDto {
-    const totalPages = Math.ceil(total / limit);
-    return {
-      total,
-      page,
-      limit,
-      totalPages,
-      hasPrevious: page > 1,
-      hasNext: page < totalPages,
-    };
-  }
 
   /**
    * Lista todos os modelos de APR com paginação e busca
@@ -225,7 +193,7 @@ export class AprService {
     );
 
     // Validar parâmetros
-    this.validatePaginationParams(page, limit);
+    validatePaginationParams(page, limit);
 
     try {
       // Construir filtros de busca
@@ -257,7 +225,7 @@ export class AprService {
       ]);
 
       // Construir metadados de paginação
-      const meta = this.buildPaginationMeta(total, page, limit);
+      const meta = buildPaginationMeta(total, page, limit);
 
       const result: AprListResponseDto = {
         data: data as AprResponseDto[],

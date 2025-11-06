@@ -70,7 +70,12 @@ import {
   CreateChecklistDto,
   UpdateChecklistDto,
 } from '../dto';
-import { buildPagination, buildPagedResponse } from '@common/utils/pagination';
+import {
+  buildPagination,
+  buildPagedResponse,
+  buildPaginationMeta,
+} from '@common/utils/pagination';
+import { buildWhereClause as buildWhereClauseHelper } from '@common/utils/where-clause';
 import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
 import {
   AUDIT_CONFIG,
@@ -181,37 +186,13 @@ export class ChecklistService {
    * @private
    */
   private buildWhereClause(search?: string, tipoChecklistId?: number) {
-    return {
-      deletedAt: null, // Apenas registros ativos
-      ...(search && {
-        nome: {
-          contains: search,
-          mode: 'insensitive' as const,
-        },
-      }),
-      ...(tipoChecklistId && { tipoChecklistId }),
-    };
+    return buildWhereClauseHelper({
+      search,
+      searchFields: { nome: true },
+      additionalFilters: tipoChecklistId ? { tipoChecklistId } : undefined,
+    });
   }
 
-  /**
-   * Constrói metadados de paginação
-   * @private
-   */
-  private buildPaginationMeta(
-    total: number,
-    page: number,
-    limit: number
-  ): PaginationMetaDto {
-    const totalPages = Math.ceil(total / limit);
-    return {
-      total,
-      page,
-      limit,
-      totalPages,
-      hasPrevious: page > 1,
-      hasNext: page < totalPages,
-    };
-  }
 
   /**
    * Lista todos os checklists com paginação e busca
@@ -266,8 +247,13 @@ export class ChecklistService {
         }),
       ]);
 
-      const paged = buildPagedResponse(data as ChecklistResponseDto[], total, currPage, pageSize);
-      const result: ChecklistListResponseDto = { ...paged, search, timestamp: new Date() } as any;
+      const meta = buildPaginationMeta(total, currPage, pageSize);
+      const result: ChecklistListResponseDto = {
+        data: data as ChecklistResponseDto[],
+        meta,
+        search,
+        timestamp: new Date(),
+      };
 
       this.logger.log(
         `Encontrados ${total} checklists (${data.length} nesta página)`

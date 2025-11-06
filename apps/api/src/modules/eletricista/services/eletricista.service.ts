@@ -22,6 +22,11 @@ import {
   validateEstadoFormat,
 } from '@common/utils/validation';
 import {
+  buildSearchWhereClause,
+  buildContractFilter,
+  buildBaseWhereClause,
+} from '@common/utils/where-clause';
+import {
   getDefaultUserContext,
   createAuditData,
   updateAuditData,
@@ -107,44 +112,27 @@ export class EletricistaService {
     contratoId: number | undefined,
     allowedContractIds: number[] | null
   ) {
-    const whereClause: any = {
-      deletedAt: null,
-    };
+    const whereClause: any = buildBaseWhereClause();
 
-    if (search) {
-      const term = search.trim();
-      whereClause.OR = [
-        {
-          nome: {
-            contains: term,
-            mode: 'insensitive' as const,
-          },
-        },
-        {
-          matricula: {
-            contains: term,
-            mode: 'insensitive' as const,
-          },
-        },
-        {
-          telefone: {
-            contains: term,
-            mode: 'insensitive' as const,
-          },
-        },
-      ];
+    // Adicionar busca
+    const searchFilter = buildSearchWhereClause(search, {
+      nome: true,
+      matricula: true,
+      telefone: true,
+    });
+    if (searchFilter) {
+      Object.assign(whereClause, searchFilter);
     }
 
+    // Adicionar filtro de estado
     if (estado) {
       whereClause.estado = estado.toUpperCase();
     }
 
-    if (contratoId) {
-      whereClause.contratoId = contratoId;
-    } else if (allowedContractIds) {
-      whereClause.contratoId = {
-        in: allowedContractIds,
-      };
+    // Adicionar filtro de contrato
+    const contractFilter = buildContractFilter(contratoId, allowedContractIds);
+    if (contractFilter) {
+      Object.assign(whereClause, contractFilter);
     }
 
     return whereClause;

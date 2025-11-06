@@ -52,6 +52,11 @@ import {
   buildPaginationMeta,
   validatePaginationParams,
 } from '@common/utils/pagination';
+import {
+  buildSearchWhereClause,
+  buildContractFilter,
+  buildBaseWhereClause,
+} from '@common/utils/where-clause';
 import { validateId, validateOptionalId } from '@common/utils/validation';
 import {
   getDefaultUserContext,
@@ -166,31 +171,25 @@ export class EquipeService {
     contratoId: number | undefined,
     allowedContractIds: number[] | null
   ) {
-    const whereClause: any = {
-      deletedAt: null,
-    };
+    const whereClause: any = buildBaseWhereClause();
 
-    if (search) {
-      whereClause.OR = [
-        {
-          nome: {
-            contains: search,
-            mode: 'insensitive' as const,
-          },
-        },
-      ];
+    // Adicionar busca
+    const searchFilter = buildSearchWhereClause(search, {
+      nome: true,
+    });
+    if (searchFilter) {
+      Object.assign(whereClause, searchFilter);
     }
 
+    // Adicionar filtro de tipo de equipe
     if (tipoEquipeId) {
       whereClause.tipoEquipeId = tipoEquipeId;
     }
 
-    if (contratoId) {
-      whereClause.contratoId = contratoId;
-    } else if (allowedContractIds) {
-      whereClause.contratoId = {
-        in: allowedContractIds,
-      };
+    // Adicionar filtro de contrato
+    const contractFilter = buildContractFilter(contratoId, allowedContractIds);
+    if (contractFilter) {
+      Object.assign(whereClause, contractFilter);
     }
 
     return whereClause;
