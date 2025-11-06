@@ -393,6 +393,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       label: 'Frequência',
       children: [
         {
+          key: '/dashboard/frequencia/visao-geral',
+          label: <Link href='/dashboard/frequencia/visao-geral'>Visão Geral</Link>,
+        },
+        {
           key: '/dashboard/frequencia/faltas',
           label: <Link href='/dashboard/frequencia/faltas'>Faltas</Link>,
         },
