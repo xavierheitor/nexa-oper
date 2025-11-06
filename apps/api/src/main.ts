@@ -46,7 +46,7 @@ async function bootstrap(): Promise<void> {
   const logger = new StandardLogger('Bootstrap');
 
   try {
-    logger.log('🚀 Iniciando aplicação Nexa Oper API...');
+    logger.log('Iniciando aplicação Nexa Oper API...');
 
     // Carregar configurações
     const appConfig = getAppConfig();
@@ -56,7 +56,7 @@ async function bootstrap(): Promise<void> {
     if (process.env.NODE_ENV !== 'production') {
       await ensurePortFree(appConfig.port, msg => logger.log(msg));
     } else {
-      logger.log('ℹ️ Verificação de porta/kill desabilitada em produção');
+      logger.debug('Verificação de porta/kill desabilitada em produção');
     }
 
     // Cria app
@@ -100,7 +100,7 @@ async function bootstrap(): Promise<void> {
 
     // Filtro global de exceções
     app.useGlobalFilters(new AllExceptionsFilter());
-    logger.log('✅ Filtro global de exceções configurado');
+    logger.log('Filtro global de exceções configurado');
 
     // Swagger (apenas em desenvolvimento)
     configureSwagger(app, logger);
@@ -115,26 +115,26 @@ async function bootstrap(): Promise<void> {
     await app.listen(appConfig.port, '0.0.0.0');
 
     // Logs finais
-    logger.log('🎉 API Nexa Oper iniciada com sucesso!');
-    logger.log(`🌐 Porta: ${appConfig.port}`);
-    logger.log(`📱 Ambiente: ${process.env.NODE_ENV ?? 'development'}`);
+    logger.log('API Nexa Oper iniciada com sucesso!');
+    logger.log(`Porta: ${appConfig.port}`);
+    logger.log(`Ambiente: ${process.env.NODE_ENV ?? 'development'}`);
     logger.log(
-      `🔗 Base URL: http://localhost:${appConfig.port}/${appConfig.globalPrefix}`
+      `Base URL: http://localhost:${appConfig.port}/${appConfig.globalPrefix}`
     );
     if (process.env.NODE_ENV !== 'production') {
       logger.log(
-        `📚 Docs: http://localhost:${appConfig.port}/${appConfig.globalPrefix}/docs`
+        `Docs: http://localhost:${appConfig.port}/${appConfig.globalPrefix}/docs`
       );
     }
   } catch (error) {
-    logger.error('❌ Falha crítica na inicialização da aplicação:', error);
+    logger.error('Falha crítica na inicialização da aplicação:', error);
     process.exit(1);
   }
 }
 
 bootstrap().catch((error: unknown) => {
   const logger = new Logger('Bootstrap');
-  logger.error('💥 Erro fatal durante inicialização:', error);
+  logger.error('Erro fatal durante inicialização:', error);
   logger.error('Stack trace completo:', error);
   process.exit(1);
 });

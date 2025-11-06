@@ -46,7 +46,7 @@ export function configureTrustProxy(
 ): void {
   if (trustProxy) {
     expressApp.set('trust proxy', 1);
-    logger.log('✅ trust proxy habilitado');
+    logger.log('trust proxy habilitado');
   }
 }
 
@@ -60,7 +60,7 @@ export function configureGlobalPrefix(
 ): void {
   app.setGlobalPrefix(prefix);
   app.enableShutdownHooks();
-  logger.log(`✅ Prefixo global "${prefix}" configurado`);
+  logger.log(`Prefixo global "${prefix}" configurado`);
 }
 
 /**
@@ -81,7 +81,7 @@ export function configureValidationPipe(
       skipUndefinedProperties: false,
     })
   );
-  logger.log('✅ Validação global de DTOs configurada');
+  logger.log('Validação global de DTOs configurada');
 }
 
 /**
@@ -96,6 +96,6 @@ export function configureBodyParser(
   expressApp.use(express.json({ limit: jsonLimit }));
   expressApp.use(express.urlencoded({ extended: true, limit: urlencodedLimit }));
 
-  logger.log(`✅ Parsing JSON/URL configurado: limite de ${jsonLimit}`);
+  logger.log(`Parsing JSON/URL configurado: limite de ${jsonLimit}`);
 }
 

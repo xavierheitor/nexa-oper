@@ -38,6 +38,6 @@ export function configureSwagger(
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  logger.log('✅ Documentação Swagger disponível em /api/docs');
+  logger.log('Documentação Swagger disponível em /api/docs');
 }
 

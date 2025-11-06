@@ -49,7 +49,7 @@ export function configureSecurity(
   );
 
   if (config.useHsts) {
-    logger.log('✅ HSTS habilitado (produção + HTTPS verdadeiro)');
+    logger.log('HSTS habilitado (produção + HTTPS verdadeiro)');
   }
 }
 

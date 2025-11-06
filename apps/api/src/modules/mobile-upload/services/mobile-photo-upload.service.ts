@@ -50,12 +50,12 @@ export class MobilePhotoUploadService {
     file: MulterFile | undefined,
     payload: PhotoUploadDto
   ): Promise<PhotoUploadResponseDto> {
-    this.logger.log(
-      `🚀 [UPLOAD] Iniciando upload - tipo: ${payload.tipo}, turnoId: ${payload.turnoId}`
+    this.logger.debug(
+      `[UPLOAD] Iniciando upload - tipo: ${payload.tipo}, turnoId: ${payload.turnoId}`
     );
     // Sanitiza payload para evitar exposição de informações sensíveis
-    this.logger.log(
-      `📋 [UPLOAD] Payload completo:`,
+    this.logger.debug(
+      `[UPLOAD] Payload completo:`,
       JSON.stringify(sanitizeData(payload), null, 2)
     );
 
@@ -125,8 +125,8 @@ export class MobilePhotoUploadService {
       },
     });
 
-    this.logger.log(
-      `✅ [UPLOAD] Foto mobile salva - ID: ${mobilePhoto.id}, tipo: ${mobilePhoto.tipo}`
+    this.logger.debug(
+      `[UPLOAD] Foto mobile salva - ID: ${mobilePhoto.id}, tipo: ${mobilePhoto.tipo}`
     );
 
     // Processar foto de pendência se aplicável
@@ -134,15 +134,15 @@ export class MobilePhotoUploadService {
       (payload.tipo === 'pendencia' || payload.tipo === 'checklistReprova') &&
       payload.checklistPerguntaId;
 
-    this.logger.log(
-      `🔍 [UPLOAD] Deve processar pendência? ${shouldProcessPendencia}`
+    this.logger.debug(
+      `[UPLOAD] Deve processar pendência? ${shouldProcessPendencia}`
     );
-    this.logger.log(
-      `🔍 [UPLOAD] Condições: tipo=${payload.tipo}, checklistUuid=${payload.checklistUuid}, checklistPerguntaId=${payload.checklistPerguntaId}`
+    this.logger.debug(
+      `[UPLOAD] Condições: tipo=${payload.tipo}, checklistUuid=${payload.checklistUuid}, checklistPerguntaId=${payload.checklistPerguntaId}`
     );
 
     if (shouldProcessPendencia) {
-      this.logger.log(`🔄 [UPLOAD] Iniciando processamento de pendência...`);
+      this.logger.debug(`[UPLOAD] Iniciando processamento de pendência...`);
 
       if (payload.checklistUuid && payload.checklistUuid.trim() !== '') {
         // Usar UUID se disponível
@@ -161,7 +161,7 @@ export class MobilePhotoUploadService {
         );
       }
     } else {
-      this.logger.log(`⏭️ [UPLOAD] Pulando processamento de pendência`);
+      this.logger.debug(`[UPLOAD] Pulando processamento de pendência`);
     }
 
     this.logger.log(
@@ -280,8 +280,8 @@ export class MobilePhotoUploadService {
     perguntaId: number
   ): Promise<void> {
     try {
-      this.logger.log(
-        `🔄 [PENDENCIA-SEM-UUID] Processando foto de pendência: turnoId=${turnoId}, perguntaId=${perguntaId}`
+      this.logger.debug(
+        `[PENDENCIA-SEM-UUID] Processando foto de pendência: turnoId=${turnoId}, perguntaId=${perguntaId}`
       );
 
       // Buscar a foto mobile
@@ -290,7 +290,7 @@ export class MobilePhotoUploadService {
       });
 
       if (!mobilePhoto) {
-        this.logger.error(`❌ [PENDENCIA-SEM-UUID] Foto mobile não encontrada: ${mobilePhotoId}`);
+        this.logger.error(`[PENDENCIA-SEM-UUID] Foto mobile não encontrada: ${mobilePhotoId}`);
         return;
       }
 
@@ -309,21 +309,21 @@ export class MobilePhotoUploadService {
         },
       });
 
-      this.logger.log(`🔍 [PENDENCIA-SEM-UUID] Encontradas ${respostas.length} respostas para perguntaId=${perguntaId} no turnoId=${turnoId}`);
+      this.logger.debug(`[PENDENCIA-SEM-UUID] Encontradas ${respostas.length} respostas para perguntaId=${perguntaId} no turnoId=${turnoId}`);
 
       if (respostas.length === 0) {
-        this.logger.warn(`⚠️ [PENDENCIA-SEM-UUID] Nenhuma resposta encontrada para perguntaId=${perguntaId} no turnoId=${turnoId}`);
+        this.logger.warn(`[PENDENCIA-SEM-UUID] Nenhuma resposta encontrada para perguntaId=${perguntaId} no turnoId=${turnoId}`);
         return;
       }
 
       // Processar cada resposta encontrada
       for (const resposta of respostas) {
-        this.logger.log(`🔄 [PENDENCIA-SEM-UUID] Processando resposta ID: ${resposta.id}`);
+        this.logger.debug(`[PENDENCIA-SEM-UUID] Processando resposta ID: ${resposta.id}`);
 
         // Buscar ou criar pendência
         let pendencia = resposta.ChecklistPendencia;
         if (!pendencia) {
-          this.logger.log(`📝 [PENDENCIA-SEM-UUID] Criando nova pendência para resposta ${resposta.id}`);
+          this.logger.debug(`[PENDENCIA-SEM-UUID] Criando nova pendência para resposta ${resposta.id}`);
           pendencia = await this.db.getPrisma().checklistPendencia.create({
             data: {
               checklistRespostaId: resposta.id,
@@ -359,8 +359,8 @@ export class MobilePhotoUploadService {
           },
         });
 
-        this.logger.log(
-          `✅ [PENDENCIA-SEM-UUID] Foto vinculada com sucesso - RespostaFoto ID: ${checklistRespostaFoto.id}, Resposta ID: ${resposta.id}, Pendência ID: ${pendencia.id}`
+        this.logger.debug(
+          `[PENDENCIA-SEM-UUID] Foto vinculada com sucesso - RespostaFoto ID: ${checklistRespostaFoto.id}, Resposta ID: ${resposta.id}, Pendência ID: ${pendencia.id}`
         );
 
         // Atualizar contador de fotos sincronizadas na resposta e marcar como não aguardando mais foto
@@ -376,13 +376,13 @@ export class MobilePhotoUploadService {
           },
         });
 
-        this.logger.log(`📊 [PENDENCIA-SEM-UUID] Contador de fotos atualizado para resposta ${resposta.id}`);
+        this.logger.debug(`[PENDENCIA-SEM-UUID] Contador de fotos atualizado para resposta ${resposta.id}`);
       }
 
-      this.logger.log(`✅ [PENDENCIA-SEM-UUID] Processamento concluído para ${respostas.length} resposta(s)`);
+      this.logger.debug(`[PENDENCIA-SEM-UUID] Processamento concluído para ${respostas.length} resposta(s)`);
     } catch (error) {
       this.logger.error(
-        `❌ [PENDENCIA-SEM-UUID] Erro ao processar foto de pendência: ${error}`,
+        `[PENDENCIA-SEM-UUID] Erro ao processar foto de pendência: ${error}`,
         error
       );
     }
@@ -403,8 +403,8 @@ export class MobilePhotoUploadService {
     perguntaId: number
   ): Promise<void> {
     try {
-      this.logger.log(
-        `🔄 [PENDENCIA-UUID] Processando foto de pendência: turnoId=${turnoId}, checklistUuid=${checklistUuid}, perguntaId=${perguntaId}`
+      this.logger.debug(
+        `[PENDENCIA-UUID] Processando foto de pendência: turnoId=${turnoId}, checklistUuid=${checklistUuid}, perguntaId=${perguntaId}`
       );
 
       // Primeiro, verificar se o turno existe
@@ -414,11 +414,11 @@ export class MobilePhotoUploadService {
       });
 
       if (!turno) {
-        this.logger.error(`❌ [PENDENCIA-UUID] Turno não encontrado: turnoId=${turnoId}`);
+        this.logger.error(`[PENDENCIA-UUID] Turno não encontrado: turnoId=${turnoId}`);
         return;
       }
 
-      this.logger.log(`✅ [PENDENCIA-UUID] Turno encontrado: ${turno.id}, dataInicio: ${turno.dataInicio}`);
+      this.logger.debug(`[PENDENCIA-UUID] Turno encontrado: ${turno.id}, dataInicio: ${turno.dataInicio}`);
 
       // Buscar o checklist preenchido pelo UUID
       const checklistPreenchido = await this.db.getPrisma().checklistPreenchido.findFirst({
@@ -438,20 +438,20 @@ export class MobilePhotoUploadService {
         },
       });
 
-      this.logger.log(`🔍 [PENDENCIA-UUID] Checklist encontrado pelo UUID: ${checklistPreenchido ? 'SIM' : 'NÃO'}`);
+      this.logger.debug(`[PENDENCIA-UUID] Checklist encontrado pelo UUID: ${checklistPreenchido ? 'SIM' : 'NÃO'}`);
 
       if (checklistPreenchido) {
-        this.logger.log(`📋 [PENDENCIA-UUID] Checklist ID: ${checklistPreenchido.id}, checklistId: ${checklistPreenchido.checklistId}`);
-        this.logger.log(`📝 [PENDENCIA-UUID] Total respostas encontradas: ${checklistPreenchido.ChecklistResposta.length}`);
+        this.logger.debug(`[PENDENCIA-UUID] Checklist ID: ${checklistPreenchido.id}, checklistId: ${checklistPreenchido.checklistId}`);
+        this.logger.debug(`[PENDENCIA-UUID] Total respostas encontradas: ${checklistPreenchido.ChecklistResposta.length}`);
 
         checklistPreenchido.ChecklistResposta.forEach((resp, idx) => {
-          this.logger.log(`📝 [PENDENCIA-UUID] Resposta ${idx + 1} - ID: ${resp.id}, perguntaId: ${resp.perguntaId}, opcaoRespostaId: ${resp.opcaoRespostaId}, temPendencia: ${!!resp.ChecklistPendencia}`);
+          this.logger.debug(`[PENDENCIA-UUID] Resposta ${idx + 1} - ID: ${resp.id}, perguntaId: ${resp.perguntaId}, opcaoRespostaId: ${resp.opcaoRespostaId}, temPendencia: ${!!resp.ChecklistPendencia}`);
         });
       }
 
       if (!checklistPreenchido) {
         this.logger.warn(
-          `❌ [PENDENCIA-UUID] Checklist preenchido não encontrado: turnoId=${turnoId}, checklistUuid=${checklistUuid}`
+          `[PENDENCIA-UUID] Checklist preenchido não encontrado: turnoId=${turnoId}, checklistUuid=${checklistUuid}`
         );
         return;
       }
@@ -459,23 +459,23 @@ export class MobilePhotoUploadService {
       const resposta = checklistPreenchido.ChecklistResposta[0];
       if (!resposta) {
         this.logger.warn(
-          `❌ [PENDENCIA-UUID] Resposta não encontrada: turnoId=${turnoId}, checklistUuid=${checklistUuid}, perguntaId=${perguntaId}`
+          `[PENDENCIA-UUID] Resposta não encontrada: turnoId=${turnoId}, checklistUuid=${checklistUuid}, perguntaId=${perguntaId}`
         );
         return;
       }
 
-      this.logger.log(`✅ [PENDENCIA-UUID] Resposta encontrada: ID=${resposta.id}`);
+      this.logger.debug(`[PENDENCIA-UUID] Resposta encontrada: ID=${resposta.id}`);
 
       // Buscar a pendência relacionada à resposta
       const pendencia = resposta.ChecklistPendencia;
       if (!pendencia) {
         this.logger.warn(
-          `❌ [PENDENCIA-UUID] Pendência não encontrada para resposta: checklistRespostaId=${resposta.id}`
+          `[PENDENCIA-UUID] Pendência não encontrada para resposta: checklistRespostaId=${resposta.id}`
         );
         return;
       }
 
-      this.logger.log(`✅ [PENDENCIA-UUID] Pendência encontrada: ID=${pendencia.id}`);
+      this.logger.debug(`[PENDENCIA-UUID] Pendência encontrada: ID=${pendencia.id}`);
 
       // Buscar a foto mobile salva
       const mobilePhoto = await this.db.getPrisma().mobilePhoto.findUnique({
@@ -483,11 +483,11 @@ export class MobilePhotoUploadService {
       });
 
       if (!mobilePhoto) {
-        this.logger.error(`❌ [PENDENCIA-UUID] Foto mobile não encontrada: id=${mobilePhotoId}`);
+        this.logger.error(`[PENDENCIA-UUID] Foto mobile não encontrada: id=${mobilePhotoId}`);
         return;
       }
 
-      this.logger.log(`✅ [PENDENCIA-UUID] Foto mobile encontrada: ID=${mobilePhoto.id}, URL=${mobilePhoto.url}`);
+      this.logger.debug(`[PENDENCIA-UUID] Foto mobile encontrada: ID=${mobilePhoto.id}, URL=${mobilePhoto.url}`);
 
       // Criar registro na tabela ChecklistRespostaFoto
       const checklistRespostaFoto = await this.db.getPrisma().checklistRespostaFoto.create({
@@ -512,7 +512,7 @@ export class MobilePhotoUploadService {
         },
       });
 
-      this.logger.log(`✅ [PENDENCIA-UUID] ChecklistRespostaFoto criada: ID=${checklistRespostaFoto.id}`);
+      this.logger.debug(`[PENDENCIA-UUID] ChecklistRespostaFoto criada: ID=${checklistRespostaFoto.id}`);
 
       // Incrementar contador de fotos na resposta e marcar como não aguardando mais foto
       await this.db.getPrisma().checklistResposta.update({
@@ -527,8 +527,8 @@ export class MobilePhotoUploadService {
         },
       });
 
-      this.logger.log(
-        `✅ [PENDENCIA-UUID] Foto de pendência processada com sucesso: pendenciaId=${pendencia.id}, checklistRespostaId=${resposta.id}`
+      this.logger.debug(
+        `[PENDENCIA-UUID] Foto de pendência processada com sucesso: pendenciaId=${pendencia.id}, checklistRespostaId=${resposta.id}`
       );
 
       // Debug: Verificar se a foto foi salva
@@ -538,13 +538,13 @@ export class MobilePhotoUploadService {
       });
 
       if (fotoVerificacao) {
-        this.logger.log(`✅ [PENDENCIA-UUID] Foto confirmada salva - ID: ${fotoVerificacao.id}, checklistRespostaId: ${fotoVerificacao.checklistRespostaId}`);
+        this.logger.debug(`[PENDENCIA-UUID] Foto confirmada salva - ID: ${fotoVerificacao.id}, checklistRespostaId: ${fotoVerificacao.checklistRespostaId}`);
       } else {
-        this.logger.error(`❌ [PENDENCIA-UUID] Foto NÃO encontrada após salvar!`);
+        this.logger.error(`[PENDENCIA-UUID] Foto NÃO encontrada após salvar!`);
       }
     } catch (error) {
       this.logger.error(
-        `❌ [PENDENCIA-UUID] Erro ao processar foto de pendência: ${error}`,
+        `[PENDENCIA-UUID] Erro ao processar foto de pendência: ${error}`,
         error
       );
     }
@@ -562,8 +562,8 @@ export class MobilePhotoUploadService {
     opcaoRespostaId: number
   ): Promise<void> {
     try {
-      this.logger.log(
-        `🔄 [PENDENCIA] Processando foto de pendência: turnoId=${turnoId}, checklistPreenchidoId=${checklistPreenchidoId}, perguntaId=${perguntaId}, opcaoRespostaId=${opcaoRespostaId}`
+      this.logger.debug(
+        `[PENDENCIA] Processando foto de pendência: turnoId=${turnoId}, checklistPreenchidoId=${checklistPreenchidoId}, perguntaId=${perguntaId}, opcaoRespostaId=${opcaoRespostaId}`
       );
 
       // Primeiro, verificar se o turno existe
@@ -573,11 +573,11 @@ export class MobilePhotoUploadService {
       });
 
       if (!turno) {
-        this.logger.error(`❌ [PENDENCIA] Turno não encontrado: turnoId=${turnoId}`);
+        this.logger.error(`[PENDENCIA] Turno não encontrado: turnoId=${turnoId}`);
         return;
       }
 
-      this.logger.log(`✅ [PENDENCIA] Turno encontrado: ${turno.id}, dataInicio: ${turno.dataInicio}`);
+      this.logger.debug(`[PENDENCIA] Turno encontrado: ${turno.id}, dataInicio: ${turno.dataInicio}`);
 
       // Buscar checklist preenchido no turno
       // Primeiro, buscar todos os checklists do turno para debug
@@ -590,17 +590,17 @@ export class MobilePhotoUploadService {
         }
       });
 
-      this.logger.log(`🔍 [PENDENCIA] Total checklists no turno ${turnoId}: ${todosChecklists.length}`);
+      this.logger.debug(`[PENDENCIA] Total checklists no turno ${turnoId}: ${todosChecklists.length}`);
 
       todosChecklists.forEach((checklist, idx) => {
-        this.logger.log(`📋 [PENDENCIA] Checklist ${idx + 1} - ID: ${checklist.id}, checklistId: ${checklist.checklistId}, respostas: ${checklist.ChecklistResposta.length}`);
+        this.logger.debug(`[PENDENCIA] Checklist ${idx + 1} - ID: ${checklist.id}, checklistId: ${checklist.checklistId}, respostas: ${checklist.ChecklistResposta.length}`);
         checklist.ChecklistResposta.forEach((resp, respIdx) => {
-          this.logger.log(`📝 [PENDENCIA]   Resposta ${respIdx + 1} - ID: ${resp.id}, perguntaId: ${resp.perguntaId}, opcaoRespostaId: ${resp.opcaoRespostaId}, temPendencia: ${!!resp.ChecklistPendencia}`);
+          this.logger.debug(`[PENDENCIA]   Resposta ${respIdx + 1} - ID: ${resp.id}, perguntaId: ${resp.perguntaId}, opcaoRespostaId: ${resp.opcaoRespostaId}, temPendencia: ${!!resp.ChecklistPendencia}`);
         });
       });
 
       // Buscar especificamente pela resposta com os IDs fornecidos
-      this.logger.log(`🔍 [PENDENCIA] Buscando resposta específica: perguntaId=${perguntaId}, opcaoRespostaId=${opcaoRespostaId}`);
+      this.logger.debug(`[PENDENCIA] Buscando resposta específica: perguntaId=${perguntaId}, opcaoRespostaId=${opcaoRespostaId}`);
 
       const checklistPreenchido = await this.db.getPrisma().checklistPreenchido.findFirst({
         where: {
@@ -619,20 +619,20 @@ export class MobilePhotoUploadService {
         },
       });
 
-      this.logger.log(`🔍 [PENDENCIA] Checklist específico encontrado: ${checklistPreenchido ? 'SIM' : 'NÃO'}`);
+      this.logger.debug(`[PENDENCIA] Checklist específico encontrado: ${checklistPreenchido ? 'SIM' : 'NÃO'}`);
 
       if (checklistPreenchido) {
-        this.logger.log(`📋 [PENDENCIA] Checklist ID: ${checklistPreenchido.id}, checklistId: ${checklistPreenchido.checklistId}`);
-        this.logger.log(`📝 [PENDENCIA] Total respostas específicas encontradas: ${checklistPreenchido.ChecklistResposta.length}`);
+        this.logger.debug(`[PENDENCIA] Checklist ID: ${checklistPreenchido.id}, checklistId: ${checklistPreenchido.checklistId}`);
+        this.logger.debug(`[PENDENCIA] Total respostas específicas encontradas: ${checklistPreenchido.ChecklistResposta.length}`);
 
         checklistPreenchido.ChecklistResposta.forEach((resp, idx) => {
-          this.logger.log(`📝 [PENDENCIA] Resposta específica ${idx + 1} - ID: ${resp.id}, perguntaId: ${resp.perguntaId}, opcaoRespostaId: ${resp.opcaoRespostaId}, temPendencia: ${!!resp.ChecklistPendencia}`);
+          this.logger.debug(`[PENDENCIA] Resposta específica ${idx + 1} - ID: ${resp.id}, perguntaId: ${resp.perguntaId}, opcaoRespostaId: ${resp.opcaoRespostaId}, temPendencia: ${!!resp.ChecklistPendencia}`);
         });
       }
 
       if (!checklistPreenchido) {
         this.logger.warn(
-          `❌ [PENDENCIA] Checklist preenchido não encontrado: turnoId=${turnoId}, checklistPreenchidoId=${checklistPreenchidoId}`
+          `[PENDENCIA] Checklist preenchido não encontrado: turnoId=${turnoId}, checklistPreenchidoId=${checklistPreenchidoId}`
         );
         return;
       }
@@ -640,23 +640,23 @@ export class MobilePhotoUploadService {
       const resposta = checklistPreenchido.ChecklistResposta[0];
       if (!resposta) {
         this.logger.warn(
-          `❌ [PENDENCIA] Resposta não encontrada: turnoId=${turnoId}, perguntaId=${perguntaId}, opcaoRespostaId=${opcaoRespostaId}`
+          `[PENDENCIA] Resposta não encontrada: turnoId=${turnoId}, perguntaId=${perguntaId}, opcaoRespostaId=${opcaoRespostaId}`
         );
         return;
       }
 
-      this.logger.log(`✅ [PENDENCIA] Resposta encontrada: ID=${resposta.id}`);
+      this.logger.debug(`[PENDENCIA] Resposta encontrada: ID=${resposta.id}`);
 
       // Buscar a pendência relacionada à resposta
       const pendencia = resposta.ChecklistPendencia;
       if (!pendencia) {
         this.logger.warn(
-          `❌ [PENDENCIA] Pendência não encontrada para resposta: checklistRespostaId=${resposta.id}`
+          `[PENDENCIA] Pendência não encontrada para resposta: checklistRespostaId=${resposta.id}`
         );
         return;
       }
 
-      this.logger.log(`✅ [PENDENCIA] Pendência encontrada: ID=${pendencia.id}`);
+      this.logger.debug(`[PENDENCIA] Pendência encontrada: ID=${pendencia.id}`);
 
       // Buscar a foto mobile salva
       const mobilePhoto = await this.db.getPrisma().mobilePhoto.findUnique({
@@ -664,11 +664,11 @@ export class MobilePhotoUploadService {
       });
 
       if (!mobilePhoto) {
-        this.logger.error(`❌ [PENDENCIA] Foto mobile não encontrada: id=${mobilePhotoId}`);
+        this.logger.error(`[PENDENCIA] Foto mobile não encontrada: id=${mobilePhotoId}`);
         return;
       }
 
-      this.logger.log(`✅ [PENDENCIA] Foto mobile encontrada: ID=${mobilePhoto.id}, URL=${mobilePhoto.url}`);
+      this.logger.debug(`[PENDENCIA] Foto mobile encontrada: ID=${mobilePhoto.id}, URL=${mobilePhoto.url}`);
 
       // Criar registro na tabela ChecklistRespostaFoto
       await this.db.getPrisma().checklistRespostaFoto.create({
@@ -707,8 +707,8 @@ export class MobilePhotoUploadService {
         },
       });
 
-      this.logger.log(
-        `✅ [PENDENCIA] Foto de pendência processada com sucesso: pendenciaId=${pendencia.id}, checklistRespostaId=${resposta.id}`
+      this.logger.debug(
+        `[PENDENCIA] Foto de pendência processada com sucesso: pendenciaId=${pendencia.id}, checklistRespostaId=${resposta.id}`
       );
 
       // Debug: Verificar se a foto foi salva
@@ -718,13 +718,13 @@ export class MobilePhotoUploadService {
       });
 
       if (fotoVerificacao) {
-        this.logger.log(`✅ [PENDENCIA] Foto confirmada salva - ID: ${fotoVerificacao.id}, checklistRespostaId: ${fotoVerificacao.checklistRespostaId}`);
+        this.logger.debug(`[PENDENCIA] Foto confirmada salva - ID: ${fotoVerificacao.id}, checklistRespostaId: ${fotoVerificacao.checklistRespostaId}`);
       } else {
-        this.logger.error(`❌ [PENDENCIA] Foto NÃO encontrada após salvar!`);
+        this.logger.error(`[PENDENCIA] Foto NÃO encontrada após salvar!`);
       }
     } catch (error) {
       this.logger.error(
-        `❌ [PENDENCIA] Erro ao processar foto de pendência: ${error}`,
+        `[PENDENCIA] Erro ao processar foto de pendência: ${error}`,
         error
       );
     }

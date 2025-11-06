@@ -25,20 +25,20 @@ export function setupGracefulShutdown(
   logger: StandardLogger
 ): void {
   const gracefulShutdown = async (signal: string) => {
-    logger.log(`🔄 Recebido sinal ${signal}. Iniciando graceful shutdown...`);
+    logger.log(`Recebido sinal ${signal}. Iniciando graceful shutdown...`);
 
     try {
       const shutdownTimeout = setTimeout(() => {
-        logger.error('❌ Timeout no graceful shutdown. Forçando saída...');
+        logger.error('Timeout no graceful shutdown. Forçando saída...');
         process.exit(1);
       }, 30_000);
 
       await app.close();
       clearTimeout(shutdownTimeout);
-      logger.log('✅ Aplicação finalizada com sucesso');
+      logger.log('Aplicação finalizada com sucesso');
       process.exit(0);
     } catch (error) {
-      logger.error('❌ Erro durante graceful shutdown:', error);
+      logger.error('Erro durante graceful shutdown:', error);
       process.exit(1);
     }
   };

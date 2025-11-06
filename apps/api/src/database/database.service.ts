@@ -45,7 +45,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   });
 
   async onModuleInit() {
-    this.logger.log('🔄 Conectando ao banco de dados...');
+    this.logger.debug('Conectando ao banco de dados...');
     try {
       await this.prisma.$connect();
 
@@ -55,22 +55,22 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
       // Verificar se o timezone foi configurado corretamente
       const timezoneResult = await this.prisma.$queryRaw`SELECT @@session.time_zone as timezone`;
-      this.logger.log('✅ Conectado ao banco de dados com sucesso!');
-      this.logger.log(`🌐 Timezone configurado: ${JSON.stringify(timezoneResult)}`);
+      this.logger.log('Conectado ao banco de dados com sucesso!');
+      this.logger.debug(`Timezone configurado: ${JSON.stringify(timezoneResult)}`);
 
     } catch (error: unknown) {
-      this.logger.error('❌ Erro ao conectar ao banco:', error);
+      this.logger.error('Erro ao conectar ao banco:', error);
       throw error;
     }
   }
 
   async onModuleDestroy() {
-    this.logger.log('🔄 Desconectando do banco de dados...');
+    this.logger.debug('Desconectando do banco de dados...');
     try {
       await this.prisma.$disconnect();
-      this.logger.log('✅ Desconectado do banco de dados com sucesso!');
+      this.logger.log('Desconectado do banco de dados com sucesso!');
     } catch (error: unknown) {
-      this.logger.error('❌ Erro ao desconectar do banco:', error);
+      this.logger.error('Erro ao desconectar do banco:', error);
     }
   }
 
@@ -108,7 +108,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       await this.prisma.$queryRaw`SELECT 1`;
       return true;
     } catch (error) {
-      this.logger.error('❌ Health check falhou:', error);
+      this.logger.error('Health check falhou:', error);
       return false;
     }
   }

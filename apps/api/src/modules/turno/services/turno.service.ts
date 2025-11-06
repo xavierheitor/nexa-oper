@@ -897,8 +897,8 @@ export class TurnoService {
     allowedContracts: ContractPermission[],
     id?: number
   ) {
-    this.logger.log(
-      `🔍 [buildWhereClause] Parâmetros recebidos: ${JSON.stringify(params)}`
+    this.logger.debug(
+      `[buildWhereClause] Parâmetros recebidos: ${JSON.stringify(params)}`
     );
 
     const where: any = {
@@ -943,16 +943,16 @@ export class TurnoService {
 
     // Filtro por status
     if (params.status) {
-      this.logger.log(`🔍 [buildWhereClause] Status: ${params.status}`);
+      this.logger.debug(`[buildWhereClause] Status: ${params.status}`);
       if (params.status === TURNO_STATUS.ABERTO) {
         where.dataFim = null;
-        this.logger.log(
-          '✅ [buildWhereClause] Aplicando filtro: dataFim = null'
+        this.logger.debug(
+          '[buildWhereClause] Aplicando filtro: dataFim = null'
         );
       } else if (params.status === TURNO_STATUS.FECHADO) {
         where.dataFim = { not: null };
-        this.logger.log(
-          '✅ [buildWhereClause] Aplicando filtro: dataFim != null'
+        this.logger.debug(
+          '[buildWhereClause] Aplicando filtro: dataFim != null'
         );
       }
     }
@@ -962,8 +962,8 @@ export class TurnoService {
       where.dataInicio = {
         gte: new Date(params.dataInicio),
       };
-      this.logger.log(
-        `📅 [buildWhereClause] Filtro dataInicio >= ${params.dataInicio}`
+      this.logger.debug(
+        `[buildWhereClause] Filtro dataInicio >= ${params.dataInicio}`
       );
     }
 
@@ -973,8 +973,8 @@ export class TurnoService {
         ...where.dataInicio,
         lte: new Date(params.dataFim),
       };
-      this.logger.log(
-        `📅 [buildWhereClause] Filtro dataInicio <= ${params.dataFim}`
+      this.logger.debug(
+        `[buildWhereClause] Filtro dataInicio <= ${params.dataFim}`
       );
     }
 
@@ -985,8 +985,8 @@ export class TurnoService {
       // where.contratoId = { in: allowedContractIds };
     }
 
-    this.logger.log(
-      `📋 [buildWhereClause] WHERE final: ${JSON.stringify(where)}`
+    this.logger.debug(
+      `[buildWhereClause] WHERE final: ${JSON.stringify(where)}`
     );
 
     return where;
