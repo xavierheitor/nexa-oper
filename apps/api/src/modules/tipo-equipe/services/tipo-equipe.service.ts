@@ -50,6 +50,7 @@ import {
   validatePaginationParams,
   normalizePaginationParams,
 } from '@common/utils/pagination';
+import { handleCrudError } from '@common/utils/error-handler';
 import { validateId } from '@common/utils/validation';
 import {
   getDefaultUserContext,
@@ -136,8 +137,7 @@ export class TipoEquipeService {
         meta,
       };
     } catch (error) {
-      this.logger.error('Erro ao listar tipos de equipe:', error);
-      throw error;
+      handleCrudError(error, this.logger, 'list', 'tipos de equipe');
     }
   }
 
@@ -167,8 +167,7 @@ export class TipoEquipeService {
 
       return this.mapToResponseDto(tipo);
     } catch (error) {
-      this.logger.error(`Erro ao buscar tipo de equipe ${id}:`, error);
-      throw error;
+      handleCrudError(error, this.logger, 'find', 'tipo de equipe');
     }
   }
 
@@ -203,8 +202,7 @@ export class TipoEquipeService {
 
       return this.mapToResponseDto(tipo);
     } catch (error) {
-      this.logger.error('Erro ao criar tipo de equipe:', error);
-      throw error;
+      handleCrudError(error, this.logger, 'create', 'tipo de equipe');
     }
   }
 
@@ -250,8 +248,7 @@ export class TipoEquipeService {
 
       return this.mapToResponseDto(tipo);
     } catch (error) {
-      this.logger.error(`Erro ao atualizar tipo de equipe ${id}:`, error);
-      throw error;
+      handleCrudError(error, this.logger, 'update', 'tipo de equipe');
     }
   }
 
@@ -284,8 +281,7 @@ export class TipoEquipeService {
 
       this.logger.log(`Tipo de equipe removido com sucesso: ${id}`);
     } catch (error) {
-      this.logger.error(`Erro ao remover tipo de equipe ${id}:`, error);
-      throw error;
+      handleCrudError(error, this.logger, 'delete', 'tipo de equipe');
     }
   }
 
@@ -306,8 +302,7 @@ export class TipoEquipeService {
 
       return count;
     } catch (error) {
-      this.logger.error('Erro ao contar tipos de equipe:', error);
-      throw error;
+      handleCrudError(error, this.logger, 'count', 'tipos de equipe');
     }
   }
 
@@ -329,8 +324,7 @@ export class TipoEquipeService {
 
       return tipos.map((tipo) => this.mapToSyncDto(tipo));
     } catch (error) {
-      this.logger.error('Erro na sincronização de tipos de equipe:', error);
-      throw error;
+      handleCrudError(error, this.logger, 'sync', 'tipos de equipe');
     }
   }
 

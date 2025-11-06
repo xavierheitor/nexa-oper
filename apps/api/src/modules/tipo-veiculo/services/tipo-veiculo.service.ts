@@ -50,6 +50,7 @@ import {
   validatePaginationParams,
   normalizePaginationParams,
 } from '@common/utils/pagination';
+import { handleCrudError } from '@common/utils/error-handler';
 import { validateId } from '@common/utils/validation';
 import {
   getDefaultUserContext,
@@ -136,8 +137,7 @@ export class TipoVeiculoService {
         meta,
       };
     } catch (error) {
-      this.logger.error('Erro ao listar tipos de veículo:', error);
-      throw error;
+      handleCrudError(error, this.logger, 'list', 'tipos de veículo');
     }
   }
 
@@ -167,8 +167,7 @@ export class TipoVeiculoService {
 
       return this.mapToResponseDto(tipo);
     } catch (error) {
-      this.logger.error(`Erro ao buscar tipo de veículo ${id}:`, error);
-      throw error;
+      handleCrudError(error, this.logger, 'find', 'tipo de veículo');
     }
   }
 
@@ -203,8 +202,7 @@ export class TipoVeiculoService {
 
       return this.mapToResponseDto(tipo);
     } catch (error) {
-      this.logger.error('Erro ao criar tipo de veículo:', error);
-      throw error;
+      handleCrudError(error, this.logger, 'create', 'tipo de veículo');
     }
   }
 
@@ -250,8 +248,7 @@ export class TipoVeiculoService {
 
       return this.mapToResponseDto(tipo);
     } catch (error) {
-      this.logger.error(`Erro ao atualizar tipo de veículo ${id}:`, error);
-      throw error;
+      handleCrudError(error, this.logger, 'update', 'tipo de veículo');
     }
   }
 
@@ -284,8 +281,7 @@ export class TipoVeiculoService {
 
       this.logger.log(`Tipo de veículo removido com sucesso: ${id}`);
     } catch (error) {
-      this.logger.error(`Erro ao remover tipo de veículo ${id}:`, error);
-      throw error;
+      handleCrudError(error, this.logger, 'delete', 'tipo de veículo');
     }
   }
 
@@ -306,8 +302,7 @@ export class TipoVeiculoService {
 
       return count;
     } catch (error) {
-      this.logger.error('Erro ao contar tipos de veículo:', error);
-      throw error;
+      handleCrudError(error, this.logger, 'count', 'tipos de veículo');
     }
   }
 
@@ -329,8 +324,7 @@ export class TipoVeiculoService {
 
       return tipos.map((tipo) => this.mapToSyncDto(tipo));
     } catch (error) {
-      this.logger.error('Erro na sincronização de tipos de veículo:', error);
-      throw error;
+      handleCrudError(error, this.logger, 'sync', 'tipos de veículo');
     }
   }
 

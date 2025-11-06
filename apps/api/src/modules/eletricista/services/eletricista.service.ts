@@ -32,7 +32,7 @@ import {
   updateAuditData,
   deleteAuditData,
 } from '@common/utils/audit';
-import { ERROR_MESSAGES } from '@common/constants/errors';
+import { handleCrudError } from '@common/utils/error-handler';
 import {
   ORDER_CONFIG,
   PAGINATION_CONFIG,
@@ -67,40 +67,6 @@ export class EletricistaService {
 
   constructor(private readonly db: DatabaseService) {}
 
-  private validateEletricistaId(id: number): void {
-    validateId(id, 'ID do eletricista');
-  }
-
-  private validateEstado(estado?: string): void {
-    if (estado !== undefined) {
-      validateEstadoFormat(estado);
-    }
-  }
-
-  private validateContratoId(contratoId?: number): void {
-    validateOptionalId(contratoId, 'ID do contrato');
-  }
-
-  private getCurrentUserContext(): UserContext {
-    return getDefaultUserContext();
-  }
-
-  private extractAllowedContractIds(
-    allowedContracts?: ContractPermission[]
-  ): number[] | null {
-    return extractAllowedContractIds(allowedContracts);
-  }
-
-  private ensureContractPermission(
-    contratoId: number,
-    allowedContractIds: number[] | null
-  ): void {
-    ensureContractPermission(
-      contratoId,
-      allowedContractIds,
-      ERROR_MESSAGES.FORBIDDEN_CONTRACT
-    );
-  }
 
   private buildWhereClause(
     search: string | undefined,
@@ -183,10 +149,12 @@ export class EletricistaService {
     );
 
     validatePaginationParams(page, limit);
-    this.validateEstado(estado);
-    this.validateContratoId(contratoId);
+    if (estado !== undefined) {
+      validateEstadoFormat(estado);
+    }
+    validateOptionalId(contratoId, 'ID do contrato');
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     if (allowedContractIds && allowedContractIds.length === 0) {
       const meta = buildPaginationMeta(0, page, limit);
@@ -199,7 +167,11 @@ export class EletricistaService {
     }
 
     if (contratoId) {
-      this.ensureContractPermission(contratoId, allowedContractIds);
+      ensureContractPermission(
+        contratoId,
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
+      );
     }
 
     try {
@@ -260,8 +232,7 @@ export class EletricistaService {
         timestamp: new Date(),
       };
     } catch (error) {
-      this.logger.error('Erro ao listar eletricistas:', error);
-      throw new BadRequestException('Erro ao listar eletricistas');
+      handleCrudError(error, this.logger, 'list', 'eletricistas');
     }
   }
 
@@ -270,9 +241,9 @@ export class EletricistaService {
     allowedContracts?: ContractPermission[]
   ): Promise<EletricistaResponseDto> {
     this.logger.log(`Buscando eletricista ${id}`);
-    this.validateEletricistaId(id);
+    validateId(id, 'ID do eletricista');
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     try {
       const eletricista = await this.db.getPrisma().eletricista.findFirst({
@@ -315,19 +286,15 @@ export class EletricistaService {
         throw new NotFoundException(ERROR_MESSAGES.ELETRICISTA_NOT_FOUND);
       }
 
-      this.ensureContractPermission(eletricista.contratoId, allowedContractIds);
+      ensureContractPermission(
+        eletricista.contratoId,
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
+      );
 
       return eletricista as EletricistaResponseDto;
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-
-      this.logger.error(`Erro ao buscar eletricista ${id}:`, error);
-      throw new BadRequestException('Erro ao buscar eletricista');
+      handleCrudError(error, this.logger, 'find', 'eletricista');
     }
   }
 
@@ -337,14 +304,18 @@ export class EletricistaService {
   ): Promise<EletricistaResponseDto> {
     const { nome, matricula, telefone, estado, contratoId } =
       createEletricistaDto;
-    const userContext = this.getCurrentUserContext();
+    const userContext = getDefaultUserContext();
 
     this.logger.log(
       `Criando eletricista ${matricula} - Contrato: ${contratoId}`
     );
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
-    this.ensureContractPermission(contratoId, allowedContractIds);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
+    ensureContractPermission(
+      contratoId,
+      allowedContractIds,
+      ERROR_MESSAGES.FORBIDDEN_CONTRACT
+    );
 
     try {
       await this.ensureContratoExists(contratoId);
@@ -395,16 +366,7 @@ export class EletricistaService {
       this.logger.log(`Eletricista criado com sucesso - ID: ${eletricista.id}`);
       return eletricista as EletricistaResponseDto;
     } catch (error) {
-      if (
-        error instanceof ConflictException ||
-        error instanceof NotFoundException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-
-      this.logger.error('Erro ao criar eletricista:', error);
-      throw new BadRequestException('Erro ao criar eletricista');
+      handleCrudError(error, this.logger, 'create', 'eletricista');
     }
   }
 
@@ -415,12 +377,12 @@ export class EletricistaService {
   ): Promise<EletricistaResponseDto> {
     const { nome, matricula, telefone, estado, admissao, cargoId, contratoId } =
       updateEletricistaDto;
-    const userContext = this.getCurrentUserContext();
+    const userContext = getDefaultUserContext();
 
     this.logger.log(`Atualizando eletricista ${id}`);
-    this.validateEletricistaId(id);
+    validateId(id, 'ID do eletricista');
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     try {
       const existingEletricista = await this.db
@@ -433,13 +395,18 @@ export class EletricistaService {
         throw new NotFoundException(ERROR_MESSAGES.ELETRICISTA_NOT_FOUND);
       }
 
-      this.ensureContractPermission(
+      ensureContractPermission(
         existingEletricista.contratoId,
-        allowedContractIds
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
       );
 
       if (contratoId && contratoId !== existingEletricista.contratoId) {
-        this.ensureContractPermission(contratoId, allowedContractIds);
+        ensureContractPermission(
+        contratoId,
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
+      );
         await this.ensureContratoExists(contratoId);
       }
 
@@ -503,16 +470,7 @@ export class EletricistaService {
       this.logger.log(`Eletricista ${id} atualizado com sucesso`);
       return eletricista as EletricistaResponseDto;
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ConflictException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-
-      this.logger.error(`Erro ao atualizar eletricista ${id}:`, error);
-      throw new BadRequestException('Erro ao atualizar eletricista');
+      handleCrudError(error, this.logger, 'update', 'eletricista');
     }
   }
 
@@ -521,10 +479,10 @@ export class EletricistaService {
     allowedContracts?: ContractPermission[]
   ): Promise<void> {
     this.logger.log(`Removendo eletricista ${id}`);
-    this.validateEletricistaId(id);
+    validateId(id, 'ID do eletricista');
 
-    const userContext = this.getCurrentUserContext();
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const userContext = getDefaultUserContext();
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     try {
       const eletricista = await this.db.getPrisma().eletricista.findFirst({
@@ -535,7 +493,11 @@ export class EletricistaService {
         throw new NotFoundException(ERROR_MESSAGES.ELETRICISTA_NOT_FOUND);
       }
 
-      this.ensureContractPermission(eletricista.contratoId, allowedContractIds);
+      ensureContractPermission(
+        eletricista.contratoId,
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
+      );
 
       await this.db.getPrisma().eletricista.update({
         where: { id },
@@ -544,22 +506,14 @@ export class EletricistaService {
 
       this.logger.log(`Eletricista ${id} removido com sucesso (soft delete)`);
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-
-      this.logger.error(`Erro ao remover eletricista ${id}:`, error);
-      throw new BadRequestException('Erro ao remover eletricista');
+      handleCrudError(error, this.logger, 'delete', 'eletricista');
     }
   }
 
   async count(allowedContracts?: ContractPermission[]): Promise<number> {
     this.logger.log('Contando eletricistas ativos');
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     if (allowedContractIds && allowedContractIds.length === 0) {
       return 0;
@@ -578,8 +532,7 @@ export class EletricistaService {
       this.logger.log(`Total de eletricistas ativos: ${count}`);
       return count;
     } catch (error) {
-      this.logger.error('Erro ao contar eletricistas:', error);
-      throw new BadRequestException('Erro ao contar eletricistas');
+      handleCrudError(error, this.logger, 'count', 'eletricistas');
     }
   }
 
@@ -607,7 +560,7 @@ export class EletricistaService {
       `Sincronizando eletricistas para ${allowedContracts?.length || 0} contratos`
     );
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     if (allowedContractIds && allowedContractIds.length === 0) {
       this.logger.log('Nenhum contrato permitido, retornando lista vazia');
@@ -633,8 +586,7 @@ export class EletricistaService {
 
       return eletricistas;
     } catch (error) {
-      this.logger.error('Erro ao sincronizar eletricistas:', error);
-      throw new BadRequestException('Erro ao sincronizar eletricistas');
+      handleCrudError(error, this.logger, 'sync', 'eletricistas');
     }
   }
 }

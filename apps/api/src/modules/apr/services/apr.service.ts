@@ -74,6 +74,8 @@ import {
   validatePaginationParams,
   buildPaginationMeta,
 } from '@common/utils/pagination';
+import { validateId } from '@common/utils/validation';
+import { handleCrudError } from '@common/utils/error-handler';
 import { buildWhereClause as buildWhereClauseHelper } from '@common/utils/where-clause';
 import {
   AUDIT_CONFIG,
@@ -125,11 +127,6 @@ export class AprService {
    * Valida ID de modelo APR
    * @private
    */
-  private validateAprId(id: number): void {
-    if (!id || !Number.isInteger(id) || id <= 0) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_ID);
-    }
-  }
 
   /**
    * Obtém contexto do usuário atual
@@ -239,8 +236,7 @@ export class AprService {
       );
       return result;
     } catch (error) {
-      this.logger.error('Erro ao buscar modelos APR:', error);
-      throw new BadRequestException('Erro ao buscar modelos APR');
+      handleCrudError(error, this.logger, 'list', 'modelos APR');
     }
   }
 
@@ -278,8 +274,7 @@ export class AprService {
       );
       return data as AprResponseDto[];
     } catch (error) {
-      this.logger.error('Erro ao sincronizar modelos APR:', error);
-      throw new BadRequestException('Erro ao sincronizar modelos APR');
+      handleCrudError(error, this.logger, 'sync', 'modelos APR');
     }
   }
 
@@ -312,8 +307,7 @@ export class AprService {
       );
       return data as AprPerguntaSyncDto[];
     } catch (error) {
-      this.logger.error('Erro ao sincronizar perguntas APR:', error);
-      throw new BadRequestException('Erro ao sincronizar perguntas APR');
+      handleCrudError(error, this.logger, 'sync', 'perguntas APR');
     }
   }
 
@@ -348,10 +342,7 @@ export class AprService {
       );
       return data as AprPerguntaRelacaoSyncDto[];
     } catch (error) {
-      this.logger.error('Erro ao sincronizar relações APR-Perguntas:', error);
-      throw new BadRequestException(
-        'Erro ao sincronizar relações entre APR e perguntas'
-      );
+      handleCrudError(error, this.logger, 'sync', 'relações APR-Perguntas');
     }
   }
 
@@ -384,10 +375,7 @@ export class AprService {
       );
       return data as AprOpcaoRespostaSyncDto[];
     } catch (error) {
-      this.logger.error('Erro ao sincronizar opções de resposta APR:', error);
-      throw new BadRequestException(
-        'Erro ao sincronizar opções de resposta APR'
-      );
+      handleCrudError(error, this.logger, 'sync', 'opções de resposta APR');
     }
   }
 
@@ -423,10 +411,7 @@ export class AprService {
       );
       return data as AprOpcaoRespostaRelacaoSyncDto[];
     } catch (error) {
-      this.logger.error('Erro ao sincronizar relações APR-Opções:', error);
-      throw new BadRequestException(
-        'Erro ao sincronizar relações entre APR e opções de resposta'
-      );
+      handleCrudError(error, this.logger, 'sync', 'relações APR-Opções');
     }
   }
 
@@ -462,13 +447,7 @@ export class AprService {
       );
       return data as AprTipoAtividadeRelacaoSyncDto[];
     } catch (error) {
-      this.logger.error(
-        'Erro ao sincronizar relações APR-Tipo de Atividade:',
-        error
-      );
-      throw new BadRequestException(
-        'Erro ao sincronizar relações entre APR e tipos de atividade'
-      );
+      handleCrudError(error, this.logger, 'sync', 'relações APR-Tipo de Atividade');
     }
   }
 
@@ -494,7 +473,7 @@ export class AprService {
     this.logger.log(`Buscando modelo APR por ID: ${id}`);
 
     // Validar ID
-    this.validateAprId(id);
+    validateId(id, 'ID da APR');
 
     try {
       const apr = await this.db.getPrisma().apr.findFirst({
@@ -519,11 +498,7 @@ export class AprService {
       this.logger.log(`Modelo APR encontrado: ${apr.nome} (ID: ${id})`);
       return apr as AprResponseDto;
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      this.logger.error(`Erro ao buscar modelo APR ${id}:`, error);
-      throw new BadRequestException('Erro ao buscar modelo APR');
+      handleCrudError(error, this.logger, 'find', 'modelo APR');
     }
   }
 
@@ -594,11 +569,7 @@ export class AprService {
       );
       return apr as AprResponseDto;
     } catch (error) {
-      if (error instanceof ConflictException) {
-        throw error;
-      }
-      this.logger.error('Erro ao criar modelo APR:', error);
-      throw new BadRequestException('Erro ao criar modelo APR');
+      handleCrudError(error, this.logger, 'create', 'modelo APR');
     }
   }
 
@@ -636,7 +607,7 @@ export class AprService {
     this.logger.log(`Atualizando modelo APR ${id}: ${nome || 'N/A'}`);
 
     // Validar ID
-    this.validateAprId(id);
+    validateId(id, 'ID da APR');
 
     try {
       // Verificar se o modelo existe
@@ -702,14 +673,7 @@ export class AprService {
       this.logger.log(`Modelo APR ${id} atualizado com sucesso`);
       return apr as AprResponseDto;
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ConflictException
-      ) {
-        throw error;
-      }
-      this.logger.error(`Erro ao atualizar modelo APR ${id}:`, error);
-      throw new BadRequestException('Erro ao atualizar modelo APR');
+      handleCrudError(error, this.logger, 'update', 'modelo APR');
     }
   }
 
@@ -736,7 +700,7 @@ export class AprService {
     const userContext = this.getCurrentUserContext(userId);
 
     // Validar ID
-    this.validateAprId(id);
+    validateId(id, 'ID da APR');
 
     try {
       // Verificar se o modelo existe e está ativo
@@ -762,11 +726,7 @@ export class AprService {
 
       this.logger.log(`Modelo APR ${id} removido com sucesso (soft delete)`);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      this.logger.error(`Erro ao remover modelo APR ${id}:`, error);
-      throw new BadRequestException('Erro ao remover modelo APR');
+      handleCrudError(error, this.logger, 'delete', 'modelo APR');
     }
   }
 
@@ -794,8 +754,7 @@ export class AprService {
       this.logger.log(`Total de modelos APR ativos: ${count}`);
       return count;
     } catch (error) {
-      this.logger.error('Erro ao contar modelos APR:', error);
-      throw new BadRequestException('Erro ao contar modelos APR');
+      handleCrudError(error, this.logger, 'count', 'modelos APR');
     }
   }
 }

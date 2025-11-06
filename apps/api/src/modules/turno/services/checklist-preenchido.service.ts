@@ -96,8 +96,12 @@ export class ChecklistPreenchidoService {
         checklistsPreenchidos,
       };
     } catch (error) {
-      this.logger.error('Erro ao salvar checklists do turno:', error);
-      throw new BadRequestException('Erro ao salvar checklists do turno');
+      handleServiceError(
+        error,
+        this.logger,
+        'Erro ao salvar checklists do turno',
+        { operation: 'salvarChecklistsDoTurno' }
+      );
     }
   }
 

@@ -49,6 +49,7 @@ import {
   normalizePaginationParams,
 } from '@common/utils/pagination';
 import { validateId } from '@common/utils/validation';
+import { handleCrudError } from '@common/utils/error-handler';
 import {
   getDefaultUserContext,
   createAuditData,
@@ -239,14 +240,7 @@ export class TurnoService {
 
       return response;
     } catch (error) {
-      if (
-        error instanceof ConflictException ||
-        error instanceof NotFoundException
-      ) {
-        throw error;
-      }
-      this.logger.error('Erro ao abrir turno:', error);
-      throw new BadRequestException('Erro ao abrir turno');
+      handleCrudError(error, this.logger, 'create', 'turno');
     }
   }
 
@@ -324,14 +318,7 @@ export class TurnoService {
       this.logger.log(`Turno fechado com sucesso - ID: ${turnoFechado.id}`);
       return this.formatarTurnoResponse(turnoFechado);
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ConflictException
-      ) {
-        throw error;
-      }
-      this.logger.error('Erro ao fechar turno:', error);
-      throw new BadRequestException('Erro ao fechar turno');
+      handleCrudError(error, this.logger, 'update', 'turno');
     }
   }
 
@@ -412,8 +399,7 @@ export class TurnoService {
         timestamp: new Date(),
       };
     } catch (error) {
-      this.logger.error('Erro ao listar turnos:', error);
-      throw new BadRequestException('Erro ao listar turnos');
+      handleCrudError(error, this.logger, 'list', 'turnos');
     }
   }
 
@@ -471,8 +457,7 @@ export class TurnoService {
       );
       return data.map(turno => this.formatarTurnoSync(turno));
     } catch (error) {
-      this.logger.error('Erro ao sincronizar turnos:', error);
-      throw new BadRequestException('Erro ao sincronizar turnos');
+      handleCrudError(error, this.logger, 'sync', 'turnos');
     }
   }
 
@@ -537,11 +522,7 @@ export class TurnoService {
       this.logger.log(`Turno encontrado: ${turno.id}`);
       return this.formatarTurnoResponse(turno);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      this.logger.error('Erro ao buscar turno:', error);
-      throw new BadRequestException('Erro ao buscar turno');
+      handleCrudError(error, this.logger, 'find', 'turno');
     }
   }
 
@@ -606,11 +587,7 @@ export class TurnoService {
       this.logger.log(`Turno removido com sucesso: ${turnoRemovido.id}`);
       return this.formatarTurnoResponse(turnoRemovido);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      this.logger.error('Erro ao remover turno:', error);
-      throw new BadRequestException('Erro ao remover turno');
+      handleCrudError(error, this.logger, 'delete', 'turno');
     }
   }
 
@@ -630,8 +607,7 @@ export class TurnoService {
       );
       return await this.db.getPrisma().turno.count({ where });
     } catch (error) {
-      this.logger.error('Erro ao contar turnos:', error);
-      throw new BadRequestException('Erro ao contar turnos');
+      handleCrudError(error, this.logger, 'count', 'turnos');
     }
   }
 
