@@ -52,6 +52,11 @@ import { EquipeHorarioVigenciaService } from '../escala/EquipeHorarioVigenciaSer
 import { HorarioAberturaCatalogoService } from '../escala/HorarioAberturaCatalogoService';
 import { EquipeTurnoHistoricoService } from '../escala/EquipeTurnoHistoricoService';
 import { TurnoService } from '../TurnoService';
+import { JustificativaEquipeService } from '../JustificativaEquipeService';
+import { JustificativaService } from '../JustificativaService';
+import { TipoJustificativaService } from '../TipoJustificativaService';
+import { FaltaService } from '../FaltaService';
+import { HoraExtraService } from '../HoraExtraService';
 import { container } from './ServiceContainer';
 
 /**
@@ -127,6 +132,15 @@ export function registerServices(): void {
     () => new EquipeTurnoHistoricoService()
   );
   container.register('turnoService', () => new TurnoService());
+
+  // Justificativas
+  container.register('justificativaEquipeService', () => new JustificativaEquipeService());
+  container.register('justificativaService', () => new JustificativaService());
+  container.register('tipoJustificativaService', () => new TipoJustificativaService());
+
+  // Faltas e Horas Extras
+  container.register('faltaService', () => new FaltaService());
+  container.register('horaExtraService', () => new HoraExtraService());
 
   // Adicione novos serviços aqui conforme necessário
   // container.register('novoServico', () => new NovoServico());

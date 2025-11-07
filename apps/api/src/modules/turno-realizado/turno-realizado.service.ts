@@ -538,8 +538,8 @@ export class TurnoRealizadoService {
       turnosPorData.get(dataStr)!.push(turno);
     }
 
-    // Agrupar justificativas por data
-    const justificativasPorData = new Map<string, typeof justificativasEquipe>();
+    // Agrupar justificativas por data (apenas uma por data devido ao unique constraint)
+    const justificativasPorData = new Map<string, typeof justificativasEquipe[0]>();
     for (const just of justificativasEquipe) {
       const dataStr = just.dataReferencia.toISOString().split('T')[0];
       justificativasPorData.set(dataStr, just);

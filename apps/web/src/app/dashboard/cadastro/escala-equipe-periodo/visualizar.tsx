@@ -55,6 +55,10 @@ export default function VisualizarEscala({ escalaId, open, onClose }: Visualizar
   // Carregar dados da escala quando o modal abrir
   const { data: dados, loading } = useDataFetch<DadosEscala>(
     async () => {
+      // Só busca se o modal estiver aberto
+      if (!open) {
+        return null as any;
+      }
       const result = await visualizarEscala(escalaId);
       if (result.success && result.data) {
         // Fazer cast explícito para o tipo esperado, já que o handleServerAction
@@ -66,16 +70,18 @@ export default function VisualizarEscala({ escalaId, open, onClose }: Visualizar
     },
     [open, escalaId],
     {
-      immediate: false, // Não carrega automaticamente
+      immediate: true, // Carrega automaticamente quando dependências mudarem
       onError: (error) => {
         message.error(typeof error === 'string' ? error : 'Erro ao carregar escala');
       },
       onSuccess: (data) => {
-        const dadosCompleto = data as DadosEscala;
-        console.log('Dados carregados:', {
-          slots: dadosCompleto.Slots?.length || 0,
-          eletricistas: dadosCompleto.estatisticas?.eletricistasUnicos || 0,
-        });
+        if (data) {
+          const dadosCompleto = data as DadosEscala;
+          console.log('Dados carregados:', {
+            slots: dadosCompleto.Slots?.length || 0,
+            eletricistas: dadosCompleto.estatisticas?.eletricistasUnicos || 0,
+          });
+        }
       }
     }
   );

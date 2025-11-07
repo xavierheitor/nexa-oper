@@ -98,6 +98,8 @@ CREATE TABLE `TipoAtividade` (
     `deletedAt` DATETIME(3) NULL,
     `deletedBy` VARCHAR(255) NULL,
 
+    INDEX `TipoAtividade_nome_idx`(`nome`),
+    UNIQUE INDEX `TipoAtividade_nome_key`(`nome`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -936,6 +938,7 @@ CREATE TABLE `TipoJustificativa` (
     `nome` VARCHAR(255) NOT NULL,
     `descricao` VARCHAR(1000) NULL,
     `ativo` BOOLEAN NOT NULL DEFAULT true,
+    `geraFalta` BOOLEAN NOT NULL DEFAULT true,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `createdBy` VARCHAR(255) NOT NULL,
 
@@ -982,6 +985,38 @@ CREATE TABLE `FaltaJustificativa` (
     INDEX `FaltaJustificativa_faltaId_idx`(`faltaId`),
     INDEX `FaltaJustificativa_justificativaId_idx`(`justificativaId`),
     UNIQUE INDEX `FaltaJustificativa_faltaId_justificativaId_key`(`faltaId`, `justificativaId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `JustificativaEquipe` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `dataReferencia` DATETIME(3) NOT NULL,
+    `equipeId` INTEGER NOT NULL,
+    `tipoJustificativaId` INTEGER NOT NULL,
+    `descricao` VARCHAR(1000) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `createdBy` VARCHAR(255) NOT NULL,
+    `status` VARCHAR(16) NOT NULL,
+    `decidedBy` VARCHAR(255) NULL,
+    `decidedAt` DATETIME(3) NULL,
+
+    INDEX `JustificativaEquipe_equipeId_dataReferencia_idx`(`equipeId`, `dataReferencia`),
+    INDEX `JustificativaEquipe_status_idx`(`status`),
+    UNIQUE INDEX `JustificativaEquipe_dataReferencia_equipeId_key`(`dataReferencia`, `equipeId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `JustificativaEquipeAnexo` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `justificativaEquipeId` INTEGER NOT NULL,
+    `filePath` VARCHAR(1000) NOT NULL,
+    `mimeType` VARCHAR(255) NOT NULL,
+    `uploadedBy` VARCHAR(255) NOT NULL,
+    `uploadedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    INDEX `JustificativaEquipeAnexo_justificativaEquipeId_idx`(`justificativaEquipeId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -1423,6 +1458,15 @@ ALTER TABLE `FaltaJustificativa` ADD CONSTRAINT `FaltaJustificativa_faltaId_fkey
 
 -- AddForeignKey
 ALTER TABLE `FaltaJustificativa` ADD CONSTRAINT `FaltaJustificativa_justificativaId_fkey` FOREIGN KEY (`justificativaId`) REFERENCES `Justificativa`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `JustificativaEquipe` ADD CONSTRAINT `JustificativaEquipe_equipeId_fkey` FOREIGN KEY (`equipeId`) REFERENCES `Equipe`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `JustificativaEquipe` ADD CONSTRAINT `JustificativaEquipe_tipoJustificativaId_fkey` FOREIGN KEY (`tipoJustificativaId`) REFERENCES `TipoJustificativa`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `JustificativaEquipeAnexo` ADD CONSTRAINT `JustificativaEquipeAnexo_justificativaEquipeId_fkey` FOREIGN KEY (`justificativaEquipeId`) REFERENCES `JustificativaEquipe`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `HoraExtra` ADD CONSTRAINT `HoraExtra_eletricistaId_fkey` FOREIGN KEY (`eletricistaId`) REFERENCES `Eletricista`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
