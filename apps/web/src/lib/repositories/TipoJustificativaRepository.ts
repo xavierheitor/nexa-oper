@@ -100,8 +100,11 @@ export class TipoJustificativaRepository extends AbstractCrudRepository<TipoJust
     take: number,
     include?: GenericPrismaIncludeInput
   ): Promise<TipoJustificativa[]> {
+    // Remove deletedAt do where pois TipoJustificativa não tem soft delete
+    const { deletedAt, ...whereWithoutDeleted } = where as any;
+
     return prisma.tipoJustificativa.findMany({
-      where,
+      where: whereWithoutDeleted,
       orderBy,
       skip,
       take,
@@ -113,7 +116,10 @@ export class TipoJustificativaRepository extends AbstractCrudRepository<TipoJust
    * Executa count
    */
   protected async count(where: GenericPrismaWhereInput): Promise<number> {
-    return prisma.tipoJustificativa.count({ where });
+    // Remove deletedAt do where pois TipoJustificativa não tem soft delete
+    const { deletedAt, ...whereWithoutDeleted } = where as any;
+
+    return prisma.tipoJustificativa.count({ where: whereWithoutDeleted });
   }
 
   /**

@@ -238,7 +238,8 @@ export class ChecklistPreenchidoService {
     userId?: string
   ): Promise<ChecklistPreenchidoResponseDto> {
     const prisma = transaction || this.db.getPrisma();
-    const createdBy = userId || 'system';
+    // ✅ Converter userId para string (Prisma espera String para createdBy)
+    const createdBy = userId ? String(userId) : 'system';
 
     // ✅ Validar que array de respostas não está vazio antes de salvar
     if (!checklistData.respostas || checklistData.respostas.length === 0) {

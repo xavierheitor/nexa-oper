@@ -161,6 +161,18 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       '/dashboard/frequencia/equipe': 'frequencia-menu',
       '/dashboard/frequencia/faltas': 'frequencia-menu',
       '/dashboard/frequencia/horas-extras': 'frequencia-menu',
+      '/dashboard/frequencia/justificativas-equipe': 'frequencia-menu',
+
+      // Submenus de Relatórios
+      '/dashboard/relatorios/bases': 'relatorios',
+      '/dashboard/relatorios/veiculos': 'relatorios',
+      '/dashboard/relatorios/equipes': 'relatorios',
+      '/dashboard/relatorios/eletricistas': 'relatorios',
+      '/dashboard/relatorios/escalas': 'relatorios',
+      '/dashboard/relatorios/aderencia-equipe': 'relatorios',
+
+      // Tipo Justificativa
+      '/dashboard/cadastro/tipo-justificativa': 'cadastro',
 
       // Escalas
       '/dashboard/cadastro/escala': 'cadastro',
@@ -283,6 +295,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           key: '/dashboard/cadastro/base',
           label: <Link href='/dashboard/cadastro/base'>Base</Link>,
         },
+        {
+          key: '/dashboard/cadastro/tipo-justificativa',
+          label: <Link href='/dashboard/cadastro/tipo-justificativa'>Tipos de Justificativa</Link>,
+        },
 
 
         {
@@ -370,6 +386,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           key: '/dashboard/relatorios/escalas',
           label: <Link href='/dashboard/relatorios/escalas'>Escalas</Link>,
         },
+        {
+          key: '/dashboard/relatorios/aderencia-equipe',
+          label: <Link href='/dashboard/relatorios/aderencia-equipe'>Aderência de Equipes</Link>,
+        },
       ],
     },
     {
@@ -403,6 +423,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
         {
           key: '/dashboard/frequencia/horas-extras',
           label: <Link href='/dashboard/frequencia/horas-extras'>Horas Extras</Link>,
+        },
+        {
+          key: '/dashboard/frequencia/justificativas-equipe',
+          label: <Link href='/dashboard/frequencia/justificativas-equipe'>Justificativas de Equipe</Link>,
         },
       ],
     },

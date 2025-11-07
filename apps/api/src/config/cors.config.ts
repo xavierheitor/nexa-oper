@@ -62,7 +62,7 @@ export function configureCors(
 
   if (!isAllowedArray) {
     logger.warn(
-      '⚠️ CORS PERMISSIVO (todas as origens). Use CORS_ORIGINS em produção.'
+      '⚠️ CORS PERMISSIVO (todas as origens). Use #CORS_ORIGINS em produção.'
     );
   } else {
     logger.log(

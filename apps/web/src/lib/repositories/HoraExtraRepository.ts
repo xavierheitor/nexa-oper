@@ -93,14 +93,22 @@ export class HoraExtraRepository {
       prisma.horaExtra.count({ where }),
     ]);
 
-    return { items, total };
+    // ✅ Converter campos Decimal para number (React não serializa Decimal)
+    const itemsSerializados = items.map((he) => ({
+      ...he,
+      horasPrevistas: he.horasPrevistas ? Number(he.horasPrevistas) : null,
+      horasRealizadas: Number(he.horasRealizadas),
+      diferencaHoras: Number(he.diferencaHoras),
+    }));
+
+    return { items: itemsSerializados, total };
   }
 
   /**
    * Busca hora extra por ID
    */
   async findById(id: number) {
-    return prisma.horaExtra.findUnique({
+    const horaExtra = await prisma.horaExtra.findUnique({
       where: { id },
       include: {
         eletricista: {
@@ -129,6 +137,18 @@ export class HoraExtraRepository {
         escalaSlot: true,
       },
     });
+
+    if (!horaExtra) {
+      return null;
+    }
+
+    // ✅ Converter campos Decimal para number (React não serializa Decimal)
+    return {
+      ...horaExtra,
+      horasPrevistas: horaExtra.horasPrevistas ? Number(horaExtra.horasPrevistas) : null,
+      horasRealizadas: Number(horaExtra.horasRealizadas),
+      diferencaHoras: Number(horaExtra.diferencaHoras),
+    };
   }
 
   /**

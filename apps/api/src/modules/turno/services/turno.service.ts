@@ -131,8 +131,9 @@ export class TurnoService {
       this.validateDadosAbertura(abrirDto);
 
       // Contexto do usuário
+      // ✅ Converter userId para string (Prisma espera String para createdBy)
       const userContext = userId
-        ? { userId, userName: userId, roles: [] }
+        ? { userId: String(userId), userName: String(userId), roles: [] }
         : getDefaultUserContext();
 
       // Dados de auditoria para criação
