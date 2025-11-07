@@ -147,8 +147,63 @@ export class TurnoReconciliacaoService {
             continue;
           }
 
-          // CASO 2: TRABALHO + NÃO ABRIU (Falta)
-          if (!aberturasEletricista || aberturasEletricista.equipes.size === 0) {
+          // CASO 2: TRABALHO + NÃO ABRIU na equipe prevista
+          // Verificar se abriu em OUTRA equipe primeiro
+          if (!aberturasEletricista || !aberturasEletricista.equipes.has(params.equipePrevistaId)) {
+            // CASO 3: TRABALHO + ABRIU em EQUIPE DIFERENTE (Divergência)
+            // Se abriu em outra equipe, criar divergência e NÃO criar falta
+            if (aberturasEletricista && aberturasEletricista.equipes.size > 0) {
+              const equipeRealId = [...aberturasEletricista.equipes][0];
+              await prisma.divergenciaEscala
+                .create({
+                  data: {
+                    dataReferencia: dataRef,
+                    equipePrevistaId: params.equipePrevistaId,
+                    equipeRealId,
+                    eletricistaId: slot.eletricistaId,
+                    tipo: 'equipe_divergente',
+                    detalhe: null,
+                    createdBy: params.executadoPor,
+                  },
+                })
+                .catch((err: any) => {
+                  if (err.code !== 'P2002') {
+                    this.logger.warn(
+                      `Erro ao criar divergência para eletricista ${slot.eletricistaId}: ${err.message}`
+                    );
+                  }
+                });
+              // Não criar falta pois eletricista trabalhou em outra equipe
+              continue;
+            }
+
+            // CASO 2: TRABALHO + NÃO ABRIU em NENHUMA equipe (Falta)
+            // Verificar se há justificativa de equipe aprovada que não gera falta
+            const justificativaEquipe = await prisma.justificativaEquipe.findUnique({
+              where: {
+                dataReferencia_equipeId: {
+                  dataReferencia: dataRef,
+                  equipeId: params.equipePrevistaId,
+                },
+              },
+              include: {
+                tipoJustificativa: true,
+              },
+            });
+
+            // Se há justificativa aprovada que não gera falta, não criar falta individual
+            if (
+              justificativaEquipe &&
+              justificativaEquipe.status === 'aprovada' &&
+              !justificativaEquipe.tipoJustificativa.geraFalta
+            ) {
+              // Conta como dia trabalhado (não criar falta)
+              this.logger.debug(
+                `Eletricista ${slot.eletricistaId} não abriu, mas equipe tem justificativa aprovada que não gera falta`
+              );
+              continue;
+            }
+
             // Não criar falta se status do eletricista justifica ausência
             if (!statusJustificaFalta) {
               await prisma.falta
@@ -175,29 +230,9 @@ export class TurnoReconciliacaoService {
             continue;
           }
 
-          // CASO 3: TRABALHO + ABRIU em EQUIPE DIFERENTE (Divergência)
-          if (!aberturasEletricista.equipes.has(params.equipePrevistaId)) {
-            const equipeRealId = [...aberturasEletricista.equipes][0];
-            await prisma.divergenciaEscala
-              .create({
-                data: {
-                  dataReferencia: dataRef,
-                  equipePrevistaId: params.equipePrevistaId,
-                  equipeRealId,
-                  eletricistaId: slot.eletricistaId,
-                  tipo: 'equipe_divergente',
-                  detalhe: null,
-                  createdBy: params.executadoPor,
-                },
-              })
-              .catch((err: any) => {
-                if (err.code !== 'P2002') {
-                  this.logger.warn(
-                    `Erro ao criar divergência para eletricista ${slot.eletricistaId}: ${err.message}`
-                  );
-                }
-              });
-          }
+          // Se chegou aqui, eletricista abriu na equipe prevista (CASO 1 já tratado acima)
+          // Este código não deveria ser executado, mas mantido por segurança
+          continue;
         }
 
         // CASO 4: FOLGA + ABRIU (Hora Extra - folga_trabalhada)

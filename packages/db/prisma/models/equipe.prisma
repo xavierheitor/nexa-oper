@@ -50,6 +50,8 @@ model Equipe {
 
   DivergenciaEscalaReal DivergenciaEscala[] @relation("EquipeReal")
 
+  JustificativasEquipe JustificativaEquipe[]
+
   @@unique([nome])
   @@index([nome])
 }

@@ -863,6 +863,7 @@ async function main() {
       nome: 'Atestado Médico',
       descricao: 'Falta justificada por atestado médico',
       ativo: true,
+      geraFalta: true, // Atestado médico gera falta
       createdAt: getToday(),
       createdBy: 'seed-script',
     },
@@ -873,6 +874,40 @@ async function main() {
       nome: 'Falta Justificada',
       descricao: 'Falta com justificativa aprovada',
       ativo: true,
+      geraFalta: true, // Falta justificada ainda gera falta
+      createdAt: getToday(),
+      createdBy: 'seed-script',
+    },
+  });
+
+  const tipoJustificativa3 = await prisma.tipoJustificativa.create({
+    data: {
+      nome: 'Trabalho no Pátio',
+      descricao: 'Equipe trabalhou no pátio devido a problemas operacionais',
+      ativo: true,
+      geraFalta: false, // Trabalho no pátio NÃO gera falta, conta como dia trabalhado
+      createdAt: getToday(),
+      createdBy: 'seed-script',
+    },
+  });
+
+  const tipoJustificativa4 = await prisma.tipoJustificativa.create({
+    data: {
+      nome: 'Problema no Veículo',
+      descricao: 'Veículo quebrado sem veículo reserva disponível',
+      ativo: true,
+      geraFalta: false, // Problema no veículo NÃO gera falta, conta como dia trabalhado
+      createdAt: getToday(),
+      createdBy: 'seed-script',
+    },
+  });
+
+  const tipoJustificativa5 = await prisma.tipoJustificativa.create({
+    data: {
+      nome: 'Falta de Reposição',
+      descricao: 'Falta de eletricista sem reposição disponível',
+      ativo: true,
+      geraFalta: true, // Falta de reposição gera falta
       createdAt: getToday(),
       createdBy: 'seed-script',
     },

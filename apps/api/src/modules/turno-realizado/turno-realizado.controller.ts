@@ -82,6 +82,21 @@ export class TurnoRealizadoController {
     });
   }
 
+  @Get('aderencia/equipe/:equipeId')
+  @ApiOperation({
+    summary: 'Obter aderência de equipe (percentual de execução da escala)',
+    description:
+      'Retorna percentual de aderência da equipe à escala planejada, incluindo dias abertos, justificativas e detalhamento diário',
+  })
+  @ApiResponse({ status: 200, description: 'Aderência retornada com sucesso' })
+  @ApiResponse({ status: 404, description: 'Equipe não encontrada' })
+  async getAderenciaEquipe(
+    @Param('equipeId', ParseIntPipe) equipeId: number,
+    @Query() query: ConsolidadoEquipeQueryDto,
+  ) {
+    return this.service.getAderenciaEquipe(equipeId, query);
+  }
+
   @Get('faltas')
   @ApiOperation({
     summary: 'Listar faltas com filtros',
