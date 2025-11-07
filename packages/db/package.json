@@ -17,9 +17,14 @@
     "migrate:deploy": "prisma migrate deploy",
     "studio": "prisma studio",
     "db:reset": "prisma migrate reset --force",
+    "seed": "tsx prisma/seed.ts",
+    "db:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",
     "clean": "rm -rf generated",
     "prebuild": "npm run clean"
+  },
+  "prisma": {
+    "schema": "./prisma/models/"
   },
   "keywords": [
     "prisma",
@@ -33,11 +38,9 @@
   "workspaces": [
     "."
   ],
-  "prisma": {
-    "schema": "./prisma/models/"
-  },
   "devDependencies": {
     "prisma": "^6.15.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.0.0"
   },
   "dependencies": {
