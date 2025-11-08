@@ -79,11 +79,10 @@ export default function EletricistaStatusForm({
     }
   };
 
-  if (loading) return <Spin spinning />;
-
   return (
-    <Form
-      form={form}
+    <Spin spinning={loading}>
+      <Form
+        form={form}
       layout="vertical"
       onFinish={(values) => {
         onSubmit({
@@ -182,6 +181,7 @@ export default function EletricistaStatusForm({
         </Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 }
 

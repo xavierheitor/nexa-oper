@@ -11,7 +11,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, Button, Tooltip } from 'antd';
-import { ClockCircleOutlined, CalendarOutlined, CheckOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, CalendarOutlined, CheckOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { listTurnos } from '@/lib/actions/turno/list';
 import { Column } from '@ant-design/plots';
@@ -20,6 +20,7 @@ import { getStatsByHoraETipoEquipe } from '@/lib/actions/turno/getStatsByHoraETi
 import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
 import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
+import TurnoLocationMapModal from '@/ui/components/TurnoLocationMapModal';
 import type { ChecklistPreenchido } from '@/ui/components/ChecklistSelectorModal';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
@@ -73,6 +74,10 @@ export default function TurnosPage() {
   const [checklistViewerVisible, setChecklistViewerVisible] = useState(false);
   const [selectedTurno, setSelectedTurno] = useState<TurnoData | null>(null);
   const [selectedChecklist, setSelectedChecklist] = useState<ChecklistPreenchido | null>(null);
+
+  // Estados para o modal de localização
+  const [locationMapVisible, setLocationMapVisible] = useState(false);
+  const [selectedTurnoForLocation, setSelectedTurnoForLocation] = useState<TurnoData | null>(null);
 
   // Fetch de turnos abertos e totais do dia
   const { data: turnosAbertosResult, loading: loadingTurnos } = useDataFetch<{
@@ -173,6 +178,11 @@ export default function TurnosPage() {
     setChecklistSelectorVisible(true);
   };
 
+  const handleViewLocation = (turno: TurnoData) => {
+    setSelectedTurnoForLocation(turno);
+    setLocationMapVisible(true);
+  };
+
   const handleSelectChecklist = (checklist: ChecklistPreenchido) => {
     setSelectedChecklist(checklist);
     setChecklistViewerVisible(true);
@@ -261,16 +271,26 @@ export default function TurnosPage() {
     {
       title: 'Ações',
       key: 'actions',
-      width: 120,
+      width: 180,
       render: (_: unknown, record: TurnoData) => (
-        <Tooltip title="Ver Checklists">
-          <Button
-            type="primary"
-            size="small"
-            icon={<CheckOutlined />}
-            onClick={() => handleViewChecklists(record)}
-          />
-        </Tooltip>
+        <Space>
+          <Tooltip title="Ver Checklists">
+            <Button
+              type="primary"
+              size="small"
+              icon={<CheckOutlined />}
+              onClick={() => handleViewChecklists(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Ver Histórico de Localização">
+            <Button
+              type="default"
+              size="small"
+              icon={<EnvironmentOutlined />}
+              onClick={() => handleViewLocation(record)}
+            />
+          </Tooltip>
+        </Space>
       ),
     },
   ];
@@ -482,6 +502,21 @@ export default function TurnosPage() {
           }}
         />
       </Card>
+
+      {/* Modal de Localização */}
+      <TurnoLocationMapModal
+        visible={locationMapVisible}
+        onClose={() => {
+          setLocationMapVisible(false);
+          setSelectedTurnoForLocation(null);
+        }}
+        turnoId={selectedTurnoForLocation?.id || 0}
+        turnoInfo={selectedTurnoForLocation ? {
+          id: selectedTurnoForLocation.id,
+          veiculo: { placa: selectedTurnoForLocation.veiculoPlaca },
+          equipe: { nome: selectedTurnoForLocation.equipeNome },
+        } : undefined}
+      />
 
       {/* Modais de Checklist */}
       <ChecklistSelectorModal

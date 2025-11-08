@@ -19,10 +19,9 @@ export default function TipoChecklistForm({ onSubmit, initialValues, loading = f
     else form.resetFields();
   }, [initialValues, form]);
 
-    if (loading) return <Spin spinning />;
-
   return (
-    <Form form={form} layout="vertical" onFinish={onSubmit}>
+    <Spin spinning={loading}>
+      <Form form={form} layout="vertical" onFinish={onSubmit}>
       <Form.Item
         name="nome"
         label="Tipo de Checklist"
@@ -34,6 +33,7 @@ export default function TipoChecklistForm({ onSubmit, initialValues, loading = f
         <Button type="primary" htmlType="submit" block loading={loading}>Salvar</Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 }
 

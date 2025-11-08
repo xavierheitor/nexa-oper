@@ -40,12 +40,10 @@ export default function ContratoForm({
     }
   }, [initialValues, form]); // Re-executa quando initialValues ou form mudam
 
-  // Se está em loading, mostra apenas o spinner (evita interação durante submit)
-  if (loading) return <Spin spinning />;
-
   // Renderização do formulário
   return (
-    <Form
+    <Spin spinning={loading}>
+      <Form
       form={form} // Instância do formulário controlada pelo hook
       layout="vertical" // Layout com labels acima dos campos
       onFinish={onSubmit} // Função chamada quando o formulário é válido e submetido
@@ -91,5 +89,6 @@ export default function ContratoForm({
         </Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 }

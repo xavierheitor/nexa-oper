@@ -106,10 +106,9 @@ export default function ChecklistForm({ onSubmit, initialValues, loading = false
     applyInitial();
   }, [initialValues, form]);
 
-  if (loading) return <Spin spinning />;
-
   return (
-    <Form
+    <Spin spinning={loading}>
+      <Form
       form={form}
       layout="vertical"
       onFinish={(vals) =>
@@ -164,6 +163,7 @@ export default function ChecklistForm({ onSubmit, initialValues, loading = false
         </Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 }
 

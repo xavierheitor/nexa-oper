@@ -1,0 +1,18 @@
+/* Estilos do Leaflet */
+@import 'leaflet/dist/leaflet.css';
+
+/* Ajustes para ícones do Leaflet */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 4px;
+}
+
+.leaflet-popup-content {
+  margin: 12px;
+  font-size: 13px;
+}
+

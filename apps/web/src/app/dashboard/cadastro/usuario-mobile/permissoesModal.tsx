@@ -107,18 +107,17 @@ export default function PermissoesModal({
     },
   ];
 
-  if (loading) return <Spin spinning style={{ display: 'block', textAlign: 'center', padding: '20px' }} />;
-
   // Filtra contratos já vinculados
   const contratosDisponiveis = contratos.filter(
     contrato => !permissoes.some(p => p.contratoId === contrato.id)
   );
 
   return (
-    <div>
-      <Card title={`Adicionar Permissão - ${mobileUserName}`} style={{ marginBottom: 16 }}>
-        <Form
-          form={form}
+    <Spin spinning={loading} style={{ display: 'block', minHeight: '200px' }}>
+      <div>
+        <Card title={`Adicionar Permissão - ${mobileUserName}`} style={{ marginBottom: 16 }}>
+          <Form
+            form={form}
           layout="vertical"
           onFinish={handleSubmit}
         >
@@ -170,5 +169,6 @@ export default function PermissoesModal({
         )}
       </Card>
     </div>
+    </Spin>
   );
 }

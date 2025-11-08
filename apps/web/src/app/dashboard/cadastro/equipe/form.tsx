@@ -60,10 +60,9 @@ export default function EquipeForm({
     }
   }, [initialValues, form]);
 
-  if (loading) return <Spin spinning />;
-
   return (
-    <Form form={form} layout="vertical" onFinish={onSubmit}>
+    <Spin spinning={loading}>
+      <Form form={form} layout="vertical" onFinish={onSubmit}>
       <Form.Item
         name="nome"
         label="Nome da Equipe"
@@ -113,6 +112,7 @@ export default function EquipeForm({
         </Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 }
 

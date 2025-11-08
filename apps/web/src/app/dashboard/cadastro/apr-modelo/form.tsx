@@ -246,12 +246,10 @@ export default function AprForm({ onSubmit, initialValues, loading = false }: Pr
     applyInitial();
   }, [initialValues, form]);
 
-  // Exibe spinner durante loading
-  if (loading) return <Spin spinning />;
-
   return (
-    <Form
-      form={form}
+    <Spin spinning={loading}>
+      <Form
+        form={form}
       layout="vertical"
       onFinish={(vals) =>
         onSubmit({
@@ -336,5 +334,6 @@ export default function AprForm({ onSubmit, initialValues, loading = false }: Pr
         </Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 }

@@ -203,13 +203,12 @@ function VinculoTVModal({ onSaved, controllerExec }: { onSaved: () => void; cont
   const tipos = dadosVinculo?.tipos || [];
   const checklists = dadosVinculo?.checklists || [];
 
-  if (loading) return <Spin spinning />;
-
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={(values: VinculoTVFormValues) =>
+    <Spin spinning={loading}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={(values: VinculoTVFormValues) =>
         controllerExec(
           () => setChecklistTipoVeiculo(values),
           'Vínculo salvo com sucesso!'
@@ -228,6 +227,7 @@ function VinculoTVModal({ onSaved, controllerExec }: { onSaved: () => void; cont
         </Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 }
 
@@ -266,13 +266,12 @@ function VinculoTEModal({ onSaved, controllerExec }: { onSaved: () => void; cont
   const tipos = dadosVinculo?.tipos || [];
   const checklists = dadosVinculo?.checklists || [];
 
-  if (loading) return <Spin spinning />;
-
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={(values: VinculoTEFormValues) =>
+    <Spin spinning={loading}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={(values: VinculoTEFormValues) =>
         controllerExec(
           () => setChecklistTipoEquipe(values),
           'Vínculo salvo com sucesso!'
@@ -291,5 +290,6 @@ function VinculoTEModal({ onSaved, controllerExec }: { onSaved: () => void; cont
         </Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 }
