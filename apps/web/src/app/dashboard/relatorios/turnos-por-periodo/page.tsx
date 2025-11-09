@@ -1,38 +1,43 @@
 'use client';
 
+/**
+ * Página de Relatório de Turnos por Período
+ *
+ * Exibe relatório completo de turnos com:
+ * - Gráfico de barras empilhadas por tipo de equipe e dia
+ * - Matriz de turnos por hora de abertura e dia
+ * - Tabela detalhada com todos os dados dos turnos
+ */
+
 import React, { useState, useMemo } from 'react';
-import { Button, Card, Col, DatePicker, Row, Select, Space, Typography } from 'antd';
+import { Button, Card, DatePicker, Select, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
-import DiasTrabalhadosPorEletricista from './components/DiasTrabalhadosPorEletricista';
-import FaltasPorPeriodo from './components/FaltasPorPeriodo';
-import ComparacaoFolgaTrabalho from './components/ComparacaoFolgaTrabalho';
-import EscaladosPorDia from './components/EscaladosPorDia';
-import TurnosPorPeriodo from '../turnos-por-periodo/components/TurnosPorPeriodo';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listContratos } from '@/lib/actions/contrato/list';
+import TurnosPorPeriodo from './components/TurnosPorPeriodo';
 
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
 
-export default function RelatoriosEscalasPage() {
+export default function TurnosPorPeriodoPage() {
   const [filtros, setFiltros] = useState({
-    periodoInicio: dayjs().subtract(1, 'month').startOf('day').toDate(),
+    periodoInicio: dayjs().startOf('month').startOf('day').toDate(),
     periodoFim: dayjs().endOf('day').toDate(),
     contratoId: undefined,
     baseId: undefined,
   });
 
   const { data: contratos, isLoading: loadingContratos } = useEntityData({
-    key: 'relatorios-escalas-contratos',
+    key: 'turnos-por-periodo-contratos',
     fetcherAction: unwrapFetcher(listContratos),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
   const { data: bases, isLoading: loadingBases } = useEntityData({
-    key: 'relatorios-escalas-bases',
+    key: 'turnos-por-periodo-bases',
     fetcherAction: unwrapFetcher(listBases),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
@@ -53,7 +58,7 @@ export default function RelatoriosEscalasPage() {
       // Resetar para valores padrão quando não houver datas selecionadas
       setFiltros((prev) => ({
         ...prev,
-        periodoInicio: dayjs().subtract(1, 'month').startOf('day').toDate(),
+        periodoInicio: dayjs().startOf('month').startOf('day').toDate(),
         periodoFim: dayjs().endOf('day').toDate(),
       }));
     }
@@ -61,7 +66,7 @@ export default function RelatoriosEscalasPage() {
 
   const handleClearFilters = () => {
     setFiltros({
-      periodoInicio: dayjs().subtract(1, 'month').startOf('day').toDate(),
+      periodoInicio: dayjs().startOf('month').startOf('day').toDate(),
       periodoFim: dayjs().endOf('day').toDate(),
       contratoId: undefined,
       baseId: undefined,
@@ -81,7 +86,7 @@ export default function RelatoriosEscalasPage() {
 
   return (
     <div style={{ padding: '24px' }}>
-      <Title level={2}>Relatórios - Escalas</Title>
+      <Title level={2}>Relatório - Turnos por Período</Title>
 
       {/* Filtros de Período */}
       <Card style={{ marginBottom: 24 }}>
@@ -118,41 +123,16 @@ export default function RelatoriosEscalasPage() {
         </Space>
       </Card>
 
-      <Row gutter={[16, 16]}>
-        <Col xs={24} lg={12}>
-          <ComparacaoFolgaTrabalho filtros={filtros} />
-        </Col>
-        <Col xs={24} lg={12}>
-          <FaltasPorPeriodo filtros={filtros} />
-        </Col>
-      </Row>
-      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-        <Col xs={24}>
-          <DiasTrabalhadosPorEletricista filtros={filtros} />
-        </Col>
-      </Row>
-      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-        <Col xs={24}>
-          <EscaladosPorDia
-            filtros={{
-              baseId: filtros.baseId,
-              contratoId: filtros.contratoId,
-            }}
-          />
-        </Col>
-      </Row>
-      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-        <Col xs={24}>
-          <TurnosPorPeriodo
-            filtros={{
-              periodoInicio: filtros.periodoInicio,
-              periodoFim: filtros.periodoFim,
-              baseId: filtros.baseId,
-              contratoId: filtros.contratoId,
-            }}
-          />
-        </Col>
-      </Row>
+      {/* Componente de Relatório */}
+      <TurnosPorPeriodo
+        filtros={{
+          periodoInicio: filtros.periodoInicio,
+          periodoFim: filtros.periodoFim,
+          baseId: filtros.baseId,
+          contratoId: filtros.contratoId,
+        }}
+      />
     </div>
   );
 }
+

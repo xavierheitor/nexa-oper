@@ -170,6 +170,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       '/dashboard/relatorios/eletricistas': 'relatorios',
       '/dashboard/relatorios/escalas': 'relatorios',
       '/dashboard/relatorios/aderencia-equipe': 'relatorios',
+      '/dashboard/relatorios/turnos-por-periodo': 'relatorios',
 
       // Tipo Justificativa
       '/dashboard/cadastro/tipo-justificativa': 'cadastro',
@@ -385,6 +386,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
         {
           key: '/dashboard/relatorios/escalas',
           label: <Link href='/dashboard/relatorios/escalas'>Escalas</Link>,
+        },
+        {
+          key: '/dashboard/relatorios/turnos-por-periodo',
+          label: <Link href='/dashboard/relatorios/turnos-por-periodo'>Turnos por Período</Link>,
         },
         {
           key: '/dashboard/relatorios/aderencia-equipe',
