@@ -70,6 +70,8 @@ export class JustificativaService {
       ...rest,
       dataInicio: dataInicio ? new Date(dataInicio) : undefined,
       dataFim: dataFim ? new Date(dataFim) : undefined,
+      orderBy: 'createdAt',
+      orderDir: 'desc',
     });
   }
 

@@ -7,7 +7,8 @@
 import { TipoJustificativa } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../abstracts/AbstractCrudRepository';
 import { prisma } from '../db/db.service';
-import type { PaginationParams, GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../types/common';
+import type { PaginationParams } from '../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../types/prisma';
 
 interface TipoJustificativaFilter extends PaginationParams {
   ativo?: boolean;
@@ -15,7 +16,7 @@ interface TipoJustificativaFilter extends PaginationParams {
 
 interface CreateTipoJustificativaData {
   nome: string;
-  descricao?: string;
+  descricao?: string | null;
   ativo?: boolean;
   geraFalta?: boolean;
   createdBy: string;

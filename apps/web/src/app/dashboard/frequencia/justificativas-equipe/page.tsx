@@ -23,7 +23,7 @@ export default function JustificativasEquipePage() {
 
   const [loading, setLoading] = useState(false);
 
-  const { data, mutate } = useDataFetch(async () => {
+  const { data, refetch } = useDataFetch(async () => {
     const result = await listJustificativasEquipe(filtros);
     if (result.success) {
       return result.data;
@@ -37,7 +37,7 @@ export default function JustificativasEquipePage() {
       const result = await aprovarJustificativaEquipe({ id });
       if (result.success) {
         message.success('Justificativa aprovada com sucesso');
-        mutate();
+        refetch();
       } else {
         message.error(result.error || 'Erro ao aprovar justificativa');
       }
@@ -52,7 +52,7 @@ export default function JustificativasEquipePage() {
       const result = await rejeitarJustificativaEquipe({ id });
       if (result.success) {
         message.success('Justificativa rejeitada');
-        mutate();
+        refetch();
       } else {
         message.error(result.error || 'Erro ao rejeitar justificativa');
       }

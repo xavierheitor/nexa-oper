@@ -80,7 +80,7 @@ export class HorarioAberturaCatalogoService extends AbstractCrudService<
       observacoes: data.observacoes ?? undefined,
     };
 
-    return this.horarioRepo.update(updateInput, userId);
+    return this.horarioRepo.update(data.id, updateInput, userId);
   }
 
   async list(

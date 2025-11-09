@@ -65,7 +65,39 @@ export default function FaltasPage() {
       throw new Error('Dados não retornados');
     }
 
-    return result.data;
+    // Garantir que o retorno tenha a estrutura correta
+    const responseData = result.data as any;
+
+    // Se já tiver a estrutura correta, retornar
+    if (responseData && typeof responseData === 'object' && 'data' in responseData && 'pagination' in responseData) {
+      return responseData as FaltaListResponse;
+    }
+
+    // Se retornar { items, total }, transformar para { data, pagination }
+    if (responseData && typeof responseData === 'object' && 'items' in responseData && 'total' in responseData) {
+      const { items, total } = responseData as { items: any[]; total: number };
+      return {
+        data: items as FaltaListResponse['data'],
+        pagination: {
+          page: filtros.page || 1,
+          pageSize: filtros.pageSize || 20,
+          total,
+          totalPages: Math.ceil(total / (filtros.pageSize || 20)),
+        },
+      };
+    }
+
+    // Se não tiver a estrutura correta, criar uma estrutura compatível
+    const items = Array.isArray(responseData) ? responseData : [];
+    return {
+      data: items as FaltaListResponse['data'],
+      pagination: {
+        page: filtros.page || 1,
+        pageSize: filtros.pageSize || 20,
+        total: items.length,
+        totalPages: Math.ceil(items.length / (filtros.pageSize || 20)),
+      },
+    };
   };
 
   const { data, error, isLoading, mutate } = useSWR<FaltaListResponse>(

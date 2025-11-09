@@ -42,9 +42,9 @@ export const getStatsByTipoEquipe = async () =>
       const tiposEquipe = resultTipos.data.data || [];
 
       // Validação: Verifica se o limite foi atingido
-      if (resultTipos.data.meta.total > MAX_STATS_ITEMS) {
+      if (resultTipos.data.total > MAX_STATS_ITEMS) {
         logger.warn('Limite de tipos de equipe atingido nas estatísticas', {
-          total: resultTipos.data.meta.total,
+          total: resultTipos.data.total,
           limite: MAX_STATS_ITEMS,
           action: 'getStatsByTipoEquipe',
         });

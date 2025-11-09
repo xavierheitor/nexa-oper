@@ -60,12 +60,9 @@ export class TipoEscalaService extends AbstractCrudService<
 
   async update(data: TipoEscalaUpdate, userId: string): Promise<TipoEscala> {
     const { id, ...updateData } = data;
-    const updateInput: TipoEscalaUpdateInput = {
-      id,
-      ...updateData,
-    };
+    const updateInput = updateData as Partial<TipoEscalaUpdateInput>;
 
-    return this.tipoRepo.update(updateInput, userId);
+    return this.tipoRepo.update(id, updateInput, userId);
   }
 
   async list(params: TipoEscalaFilter): Promise<PaginatedResult<TipoEscala>> {

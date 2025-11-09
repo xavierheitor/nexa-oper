@@ -88,6 +88,8 @@ export class JustificativaEquipeService {
       ...rest,
       dataInicio: dataInicio ? new Date(dataInicio) : undefined,
       dataFim: dataFim ? new Date(dataFim) : undefined,
+      orderBy: 'dataReferencia',
+      orderDir: 'desc',
     });
   }
 

@@ -56,7 +56,7 @@ export default function FrequenciaVisaoGeralPage() {
     []
   );
 
-  const { data: eletricistasData, isLoading: loadingEletricistas } = useDataFetch(
+  const { data: eletricistasData, loading: loadingEletricistas } = useDataFetch(
     eletricistasFetcher,
     []
   );

@@ -7,6 +7,7 @@
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
 import { relatorioEscalasFiltroSchema } from '@/lib/schemas/relatoriosSchema';
+import { z } from 'zod';
 
 /**
  * Retorna dias trabalhados por eletricista
@@ -291,6 +292,167 @@ export const getEstatisticasEscalas = async (rawData?: unknown) =>
           { status: 'Arquivada', quantidade: totalArquivada },
         ],
         total: totalRascunho + totalPublicada + totalArquivada,
+      };
+    },
+    rawData,
+    { entityName: 'Relatorio', actionType: 'read' }
+  );
+
+/**
+ * Schema para buscar escalados por dia específico
+ */
+const escaladosPorDiaSchema = z.object({
+  data: z.string(), // Data no formato ISO string
+  baseId: z.number().int().positive().optional(),
+  contratoId: z.number().int().positive().optional(),
+});
+
+/**
+ * Retorna quem está de folga e quem está escalado em um dia específico
+ */
+export const getEscaladosPorDia = async (rawData?: unknown) =>
+  handleServerAction(
+    escaladosPorDiaSchema,
+    async (filtros) => {
+      // Converter data para início e fim do dia
+      const dataSelecionada = new Date(filtros.data);
+      const inicioDia = new Date(dataSelecionada);
+      inicioDia.setHours(0, 0, 0, 0);
+      const fimDia = new Date(dataSelecionada);
+      fimDia.setHours(23, 59, 59, 999);
+
+      const whereEscala: any = {
+        deletedAt: null,
+        // Escala deve estar publicada para aparecer no relatório
+        status: 'PUBLICADA',
+        // Período da escala deve incluir o dia selecionado
+        periodoInicio: { lte: fimDia },
+        periodoFim: { gte: inicioDia },
+      };
+
+      // Filtro por base
+      if (filtros.baseId) {
+        whereEscala.equipe = {
+          EquipeBaseHistorico: {
+            some: {
+              baseId: filtros.baseId,
+              dataFim: null,
+              deletedAt: null,
+            },
+          },
+        };
+      }
+
+      // Filtro por contrato (através da equipe)
+      if (filtros.contratoId) {
+        whereEscala.equipe = {
+          ...whereEscala.equipe,
+          contratoId: filtros.contratoId,
+          deletedAt: null,
+        };
+      }
+
+      // Buscar slots do dia específico
+      const slots = await prisma.slotEscala.findMany({
+        where: {
+          deletedAt: null,
+          data: {
+            gte: inicioDia,
+            lte: fimDia,
+          },
+          escalaEquipePeriodo: whereEscala,
+        },
+        include: {
+          eletricista: {
+            select: {
+              id: true,
+              nome: true,
+              matricula: true,
+            },
+          },
+          escalaEquipePeriodo: {
+            include: {
+              equipe: {
+                select: {
+                  id: true,
+                  nome: true,
+                  contrato: {
+                    select: {
+                      id: true,
+                      nome: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        orderBy: [
+          { estado: 'asc' }, // FOLGA primeiro, depois TRABALHO
+          { eletricista: { nome: 'asc' } },
+        ],
+      });
+
+      // Buscar bases atuais das equipes
+      const equipeIds = [...new Set(slots.map((s) => s.escalaEquipePeriodo.equipe.id))];
+      const basesEquipes = await prisma.equipeBaseHistorico.findMany({
+        where: {
+          equipeId: { in: equipeIds },
+          dataFim: null,
+          deletedAt: null,
+        },
+        include: {
+          base: {
+            select: {
+              id: true,
+              nome: true,
+            },
+          },
+        },
+      });
+
+      const basePorEquipe = new Map(
+        basesEquipes.map((bh) => [bh.equipeId, bh.base])
+      );
+
+      // Separar em folga e escalados
+      const emFolga = slots
+        .filter((slot) => slot.estado === 'FOLGA')
+        .map((slot) => ({
+          id: slot.eletricista.id,
+          nome: slot.eletricista.nome,
+          matricula: slot.eletricista.matricula,
+        }));
+
+      const escalados = slots
+        .filter((slot) => slot.estado === 'TRABALHO')
+        .map((slot) => {
+          const equipe = slot.escalaEquipePeriodo.equipe;
+          const base = basePorEquipe.get(equipe.id);
+          return {
+            id: slot.eletricista.id,
+            nome: slot.eletricista.nome,
+            matricula: slot.eletricista.matricula,
+            equipeId: equipe.id,
+            equipeNome: equipe.nome,
+            contratoNome: equipe.contrato.nome,
+            baseId: base?.id,
+            baseNome: base?.nome,
+          };
+        });
+
+      // Remover duplicatas (caso um eletricista tenha múltiplos slots no mesmo dia)
+      const emFolgaUnicos = Array.from(
+        new Map(emFolga.map((item) => [item.id, item])).values()
+      );
+
+      const escaladosUnicos = Array.from(
+        new Map(escalados.map((item) => [item.id, item])).values()
+      );
+
+      return {
+        emFolga: emFolgaUnicos,
+        escalados: escaladosUnicos,
       };
     },
     rawData,

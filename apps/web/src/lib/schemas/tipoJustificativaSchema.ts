@@ -38,6 +38,8 @@ export const listarTiposJustificativaSchema = z.object({
   ativo: z.boolean().optional(),
   page: z.number().int().positive().default(1),
   pageSize: z.number().int().positive().max(100).default(20),
+  orderBy: z.string().default('nome'),
+  orderDir: z.enum(['asc', 'desc']).default('asc'),
 });
 
 export type ListarTiposJustificativaInput = z.infer<typeof listarTiposJustificativaSchema>;

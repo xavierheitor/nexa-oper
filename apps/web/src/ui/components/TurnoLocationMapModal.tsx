@@ -263,7 +263,7 @@ export default function TurnoLocationMapModal({
                       <Text type="secondary">Precisão: {loc.accuracy.toFixed(0)}m</Text>
                     )}
                     {loc.tagType && (
-                      <Tag size="small">{loc.tagType}</Tag>
+                      <Tag>{loc.tagType}</Tag>
                     )}
                   </Space>
                   {loc.tagDetail && (

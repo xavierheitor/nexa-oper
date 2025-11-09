@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import DiasTrabalhadosPorEletricista from './components/DiasTrabalhadosPorEletricista';
 import FaltasPorPeriodo from './components/FaltasPorPeriodo';
 import ComparacaoFolgaTrabalho from './components/ComparacaoFolgaTrabalho';
+import EscaladosPorDia from './components/EscaladosPorDia';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
@@ -81,6 +82,7 @@ export default function RelatoriosEscalasPage() {
     <div style={{ padding: '24px' }}>
       <Title level={2}>Relatórios - Escalas</Title>
 
+      {/* Filtros de Período */}
       <Card style={{ marginBottom: 24 }}>
         <Space wrap size='middle'>
           <RangePicker
@@ -126,6 +128,16 @@ export default function RelatoriosEscalasPage() {
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24}>
           <DiasTrabalhadosPorEletricista filtros={filtros} />
+        </Col>
+      </Row>
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Col xs={24}>
+          <EscaladosPorDia
+            filtros={{
+              baseId: filtros.baseId,
+              contratoId: filtros.contratoId,
+            }}
+          />
         </Col>
       </Row>
     </div>

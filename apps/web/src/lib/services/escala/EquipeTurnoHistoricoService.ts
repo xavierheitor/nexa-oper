@@ -113,7 +113,7 @@ export class EquipeTurnoHistoricoService extends AbstractCrudService<
       observacoes: data.observacoes ?? undefined,
     };
 
-    return this.turnoRepo.update(updateInput, userId);
+    return this.turnoRepo.update(data.id, updateInput, userId);
   }
 
   async list(

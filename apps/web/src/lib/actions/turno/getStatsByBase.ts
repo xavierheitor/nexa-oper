@@ -41,9 +41,9 @@ export const getStatsByBase = async () =>
       const bases = resultBases.data.data || [];
 
       // Validação: Verifica se o limite foi atingido
-      if (resultBases.data.meta.total > MAX_STATS_ITEMS) {
+      if (resultBases.data.total > MAX_STATS_ITEMS) {
         logger.warn('Limite de bases atingido nas estatísticas', {
-          total: resultBases.data.meta.total,
+          total: resultBases.data.total,
           limite: MAX_STATS_ITEMS,
           action: 'getStatsByBase',
         });
