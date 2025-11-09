@@ -11,17 +11,7 @@ const compat = new FlatCompat({
 
 export default [
   // Next.js specific configuration
-  ...compat.extends('next/core-web-vitals'),
-
-  // TypeScript configuration with explicit tsconfigRootDir
-  {
-    languageOptions: {
-      parserOptions: {
-        tsconfigRootDir: __dirname,
-        project: ['./tsconfig.json'],
-      },
-    },
-  },
+  ...compat.extends('next/core-web-vitals', 'next/typescript'),
 
   // Project specific rules
   {
