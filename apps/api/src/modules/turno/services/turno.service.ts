@@ -48,7 +48,12 @@ import {
   validatePaginationParams,
   normalizePaginationParams,
 } from '@common/utils/pagination';
-import { validateId } from '@common/utils/validation';
+import {
+  validateId,
+  ensureEntityExists,
+} from '@common/utils/validation';
+import { handleCrudError } from '@common/utils/error-handler';
+import { withTransactionTimeout, withSyncTimeout } from '@common/utils/timeout';
 import {
   getDefaultUserContext,
   createAuditData,
@@ -107,7 +112,8 @@ export class TurnoService {
   async abrirTurno(
     abrirDto: AbrirTurnoDto,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    allowedContracts: ContractPermission[]
+    allowedContracts: ContractPermission[],
+    userId?: string
   ): Promise<TurnoResponseDto> {
     this.logger.log(
       `Abrindo turno - Veículo: ${abrirDto.veiculoId}, Equipe: ${abrirDto.equipeId}`
@@ -118,25 +124,94 @@ export class TurnoService {
       // Por enquanto, turnos não têm restrição de contrato direta
       // mas mantemos a estrutura para futuras implementações
 
-      // Validações de existência
+      // Validações de existência (podem ficar fora da transação)
       await this.validateEntidadesExistem(abrirDto);
-
-      // Validações de conflito
-      await this.validateNaoHaConflitos(abrirDto);
 
       // Validações de negócio
       this.validateDadosAbertura(abrirDto);
 
       // Contexto do usuário
-      const userContext = getDefaultUserContext();
+      // ✅ Converter userId para string (Prisma espera String para createdBy)
+      const userContext = userId
+        ? { userId: String(userId), userName: String(userId), roles: [] }
+        : getDefaultUserContext();
 
       // Dados de auditoria para criação
       const auditData = createAuditData(userContext);
 
-      // Usar transação para garantir atomicidade
-      const resultado = await this.db
-        .getPrisma()
-        .$transaction(async transaction => {
+      // Usar transação para garantir atomicidade com timeout
+      const resultado = await withTransactionTimeout(
+        this.db
+          .getPrisma()
+          .$transaction(async transaction => {
+          // ✅ VALIDAÇÕES DE CONFLITO DENTRO DA TRANSAÇÃO (evita race conditions)
+          // Verifica se já existe turno aberto para o veículo
+          const turnoVeiculo = await transaction.turno.findFirst({
+            where: {
+              veiculoId: abrirDto.veiculoId,
+              dataFim: null,
+              deletedAt: null,
+            },
+          });
+          if (turnoVeiculo) {
+            throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO);
+          }
+
+          // Verifica se já existe turno aberto para a equipe
+          const turnoEquipe = await transaction.turno.findFirst({
+            where: {
+              equipeId: abrirDto.equipeId,
+              dataFim: null,
+              deletedAt: null,
+            },
+          });
+          if (turnoEquipe) {
+            throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO_EQUIPE);
+          }
+
+          // ✅ Paralelizar validação de conflitos de eletricistas
+          // Buscar todos os turnos abertos que têm algum dos eletricistas em paralelo
+          const eletricistaIds = abrirDto.eletricistas.map(
+            e => e.eletricistaId
+          );
+          const turnosComEletricistas = await transaction.turno.findMany({
+            where: {
+              TurnoEletricistas: {
+                some: {
+                  eletricistaId: { in: eletricistaIds },
+                  deletedAt: null,
+                },
+              },
+              dataFim: null,
+              deletedAt: null,
+            },
+            include: {
+              TurnoEletricistas: {
+                where: {
+                  eletricistaId: { in: eletricistaIds },
+                  deletedAt: null,
+                },
+                select: {
+                  eletricistaId: true,
+                },
+              },
+            },
+          });
+
+          // Verificar se algum eletricista já está em turno aberto
+          if (turnosComEletricistas.length > 0) {
+            const eletricistasEmConflito = new Set<number>();
+            turnosComEletricistas.forEach(turno => {
+              turno.TurnoEletricistas.forEach(te => {
+                eletricistasEmConflito.add(te.eletricistaId);
+              });
+            });
+
+            if (eletricistasEmConflito.size > 0) {
+              throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO_ELETRICISTA);
+            }
+          }
+
           // Criação do turno
           const turno = await transaction.turno.create({
             data: {
@@ -192,12 +267,14 @@ export class TurnoService {
               await this.checklistPreenchidoService.salvarChecklistsDoTurno(
                 turno.id,
                 abrirDto.checklists,
-                transaction
+                transaction,
+                userId
               );
           }
 
           return { turno, checklistsBasicResult };
-        });
+        })
+      );
 
       // Busca o turno completo com relacionamentos
       const turnoCompleto = await this.buscarTurnoCompleto(resultado.turno.id);
@@ -235,14 +312,7 @@ export class TurnoService {
 
       return response;
     } catch (error) {
-      if (
-        error instanceof ConflictException ||
-        error instanceof NotFoundException
-      ) {
-        throw error;
-      }
-      this.logger.error('Erro ao abrir turno:', error);
-      throw new BadRequestException('Erro ao abrir turno');
+      handleCrudError(error, this.logger, 'create', 'turno');
     }
   }
 
@@ -320,14 +390,7 @@ export class TurnoService {
       this.logger.log(`Turno fechado com sucesso - ID: ${turnoFechado.id}`);
       return this.formatarTurnoResponse(turnoFechado);
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ConflictException
-      ) {
-        throw error;
-      }
-      this.logger.error('Erro ao fechar turno:', error);
-      throw new BadRequestException('Erro ao fechar turno');
+      handleCrudError(error, this.logger, 'update', 'turno');
     }
   }
 
@@ -395,7 +458,7 @@ export class TurnoService {
       ]);
 
       // Construção dos metadados de paginação
-      const meta = buildPaginationMeta(page, limit, total);
+      const meta = buildPaginationMeta(total, page, limit);
 
       this.logger.log(
         `Listagem de turnos retornou ${data.length} registros de ${total} total`
@@ -408,8 +471,7 @@ export class TurnoService {
         timestamp: new Date(),
       };
     } catch (error) {
-      this.logger.error('Erro ao listar turnos:', error);
-      throw new BadRequestException('Erro ao listar turnos');
+      handleCrudError(error, this.logger, 'list', 'turnos');
     }
   }
 
@@ -431,44 +493,45 @@ export class TurnoService {
         allowedContracts
       );
 
-      const data = await this.db.getPrisma().turno.findMany({
-        where,
-        orderBy: ORDER_CONFIG.SYNC_ORDER,
-        include: {
-          veiculo: {
-            select: {
-              id: true,
-              placa: true,
-              modelo: true,
+      const data = await withSyncTimeout(
+        this.db.getPrisma().turno.findMany({
+          where,
+          orderBy: ORDER_CONFIG.SYNC_ORDER,
+          include: {
+            veiculo: {
+              select: {
+                id: true,
+                placa: true,
+                modelo: true,
+              },
             },
-          },
-          equipe: {
-            select: {
-              id: true,
-              nome: true,
+            equipe: {
+              select: {
+                id: true,
+                nome: true,
+              },
             },
-          },
-          TurnoEletricistas: {
-            include: {
-              eletricista: {
-                select: {
-                  id: true,
-                  nome: true,
-                  matricula: true,
+            TurnoEletricistas: {
+              include: {
+                eletricista: {
+                  select: {
+                    id: true,
+                    nome: true,
+                    matricula: true,
+                  },
                 },
               },
             },
           },
-        },
-      });
+        })
+      );
 
       this.logger.log(
         `Sincronização de turnos retornou ${data.length} registros`
       );
       return data.map(turno => this.formatarTurnoSync(turno));
     } catch (error) {
-      this.logger.error('Erro ao sincronizar turnos:', error);
-      throw new BadRequestException('Erro ao sincronizar turnos');
+      handleCrudError(error, this.logger, 'sync', 'turnos');
     }
   }
 
@@ -533,11 +596,7 @@ export class TurnoService {
       this.logger.log(`Turno encontrado: ${turno.id}`);
       return this.formatarTurnoResponse(turno);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      this.logger.error('Erro ao buscar turno:', error);
-      throw new BadRequestException('Erro ao buscar turno');
+      handleCrudError(error, this.logger, 'find', 'turno');
     }
   }
 
@@ -602,11 +661,7 @@ export class TurnoService {
       this.logger.log(`Turno removido com sucesso: ${turnoRemovido.id}`);
       return this.formatarTurnoResponse(turnoRemovido);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      this.logger.error('Erro ao remover turno:', error);
-      throw new BadRequestException('Erro ao remover turno');
+      handleCrudError(error, this.logger, 'delete', 'turno');
     }
   }
 
@@ -626,8 +681,7 @@ export class TurnoService {
       );
       return await this.db.getPrisma().turno.count({ where });
     } catch (error) {
-      this.logger.error('Erro ao contar turnos:', error);
-      throw new BadRequestException('Erro ao contar turnos');
+      handleCrudError(error, this.logger, 'count', 'turnos');
     }
   }
 
@@ -637,79 +691,41 @@ export class TurnoService {
   private async validateEntidadesExistem(
     abrirDto: AbrirTurnoDto
   ): Promise<void> {
-    // Validação do veículo
-    const veiculo = await this.db.getPrisma().veiculo.findFirst({
-      where: { id: abrirDto.veiculoId, deletedAt: null },
-    });
-    if (!veiculo) {
-      throw new NotFoundException(TURNO_ERRORS.VEICULO_NOT_FOUND);
+    // ✅ Validar que arrays não estão vazios antes de usar
+    if (!abrirDto.eletricistas || abrirDto.eletricistas.length === 0) {
+      throw new BadRequestException(
+        'Pelo menos um eletricista é obrigatório para abrir um turno'
+      );
     }
 
-    // Validação da equipe
-    const equipe = await this.db.getPrisma().equipe.findFirst({
-      where: { id: abrirDto.equipeId, deletedAt: null },
-    });
-    if (!equipe) {
-      throw new NotFoundException(TURNO_ERRORS.EQUIPE_NOT_FOUND);
-    }
+    const prisma = this.db.getPrisma();
 
-    // Validação dos eletricistas
-    for (const eletricistaDto of abrirDto.eletricistas) {
-      const eletricista = await this.db.getPrisma().eletricista.findFirst({
-        where: { id: eletricistaDto.eletricistaId, deletedAt: null },
-      });
-      if (!eletricista) {
-        throw new NotFoundException(TURNO_ERRORS.ELETRICISTA_NOT_FOUND);
-      }
-    }
-  }
-
-  /**
-   * Valida se não há conflitos de turno aberto
-   */
-  private async validateNaoHaConflitos(abrirDto: AbrirTurnoDto): Promise<void> {
-    // Verifica se já existe turno aberto para o veículo
-    const turnoVeiculo = await this.db.getPrisma().turno.findFirst({
-      where: {
-        veiculoId: abrirDto.veiculoId,
-        dataFim: null,
-        deletedAt: null,
-      },
-    });
-    if (turnoVeiculo) {
-      throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO);
-    }
-
-    // Verifica se já existe turno aberto para a equipe
-    const turnoEquipe = await this.db.getPrisma().turno.findFirst({
-      where: {
-        equipeId: abrirDto.equipeId,
-        dataFim: null,
-        deletedAt: null,
-      },
-    });
-    if (turnoEquipe) {
-      throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO_EQUIPE);
-    }
-
-    // Verifica se já existe turno aberto para algum eletricista
-    for (const eletricistaDto of abrirDto.eletricistas) {
-      const turnoEletricista = await this.db.getPrisma().turno.findFirst({
-        where: {
-          TurnoEletricistas: {
-            some: {
-              eletricistaId: eletricistaDto.eletricistaId,
-              deletedAt: null,
-            },
-          },
-          dataFim: null,
-          deletedAt: null,
-        },
-      });
-      if (turnoEletricista) {
-        throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO_ELETRICISTA);
-      }
-    }
+    // ✅ Paralelizar validações de existência usando helpers centralizados
+    await Promise.all([
+      // Validação do veículo
+      ensureEntityExists(
+        prisma,
+        'veiculo',
+        abrirDto.veiculoId,
+        TURNO_ERRORS.VEICULO_NOT_FOUND
+      ),
+      // Validação da equipe
+      ensureEntityExists(
+        prisma,
+        'equipe',
+        abrirDto.equipeId,
+        TURNO_ERRORS.EQUIPE_NOT_FOUND
+      ),
+      // Validação dos eletricistas (paralelizada)
+      ...abrirDto.eletricistas.map(eletricistaDto =>
+        ensureEntityExists(
+          prisma,
+          'eletricista',
+          eletricistaDto.eletricistaId,
+          TURNO_ERRORS.ELETRICISTA_NOT_FOUND
+        )
+      ),
+    ]);
   }
 
   /**
@@ -886,8 +902,8 @@ export class TurnoService {
     allowedContracts: ContractPermission[],
     id?: number
   ) {
-    this.logger.log(
-      `🔍 [buildWhereClause] Parâmetros recebidos: ${JSON.stringify(params)}`
+    this.logger.debug(
+      `[buildWhereClause] Parâmetros recebidos: ${JSON.stringify(params)}`
     );
 
     const where: any = {
@@ -932,16 +948,16 @@ export class TurnoService {
 
     // Filtro por status
     if (params.status) {
-      this.logger.log(`🔍 [buildWhereClause] Status: ${params.status}`);
+      this.logger.debug(`[buildWhereClause] Status: ${params.status}`);
       if (params.status === TURNO_STATUS.ABERTO) {
         where.dataFim = null;
-        this.logger.log(
-          '✅ [buildWhereClause] Aplicando filtro: dataFim = null'
+        this.logger.debug(
+          '[buildWhereClause] Aplicando filtro: dataFim = null'
         );
       } else if (params.status === TURNO_STATUS.FECHADO) {
         where.dataFim = { not: null };
-        this.logger.log(
-          '✅ [buildWhereClause] Aplicando filtro: dataFim != null'
+        this.logger.debug(
+          '[buildWhereClause] Aplicando filtro: dataFim != null'
         );
       }
     }
@@ -951,8 +967,8 @@ export class TurnoService {
       where.dataInicio = {
         gte: new Date(params.dataInicio),
       };
-      this.logger.log(
-        `📅 [buildWhereClause] Filtro dataInicio >= ${params.dataInicio}`
+      this.logger.debug(
+        `[buildWhereClause] Filtro dataInicio >= ${params.dataInicio}`
       );
     }
 
@@ -962,8 +978,8 @@ export class TurnoService {
         ...where.dataInicio,
         lte: new Date(params.dataFim),
       };
-      this.logger.log(
-        `📅 [buildWhereClause] Filtro dataInicio <= ${params.dataFim}`
+      this.logger.debug(
+        `[buildWhereClause] Filtro dataInicio <= ${params.dataFim}`
       );
     }
 
@@ -974,8 +990,8 @@ export class TurnoService {
       // where.contratoId = { in: allowedContractIds };
     }
 
-    this.logger.log(
-      `📋 [buildWhereClause] WHERE final: ${JSON.stringify(where)}`
+    this.logger.debug(
+      `[buildWhereClause] WHERE final: ${JSON.stringify(where)}`
     );
 
     return where;

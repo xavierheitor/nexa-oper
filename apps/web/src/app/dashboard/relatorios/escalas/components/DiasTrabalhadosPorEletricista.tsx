@@ -2,7 +2,7 @@
 
 import { Column } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
-import { useEffect, useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosDias {
   eletricista: string;
@@ -16,29 +16,20 @@ interface DiasTrabalhadosPorEletricistaProps {
 export default function DiasTrabalhadosPorEletricista({
   filtros,
 }: DiasTrabalhadosPorEletricistaProps) {
-  const [dados, setDados] = useState<DadosDias[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: dados = [], loading } = useDataFetch<DadosDias[]>(
+    async () => {
+      const { getDiasTrabalhadosPorEletricista } = await import(
+        '@/lib/actions/relatorios/relatoriosEscalas'
+      );
+      const result = await getDiasTrabalhadosPorEletricista(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getDiasTrabalhadosPorEletricista } = await import(
-          '@/lib/actions/relatorios/relatoriosEscalas'
-        );
-        const result = await getDiasTrabalhadosPorEletricista(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
-
-    fetchDados();
-  }, [filtros]);
+      throw new Error('Erro ao carregar dados de dias trabalhados');
+    },
+    [filtros]
+  );
 
   if (loading) {
     return (
@@ -50,7 +41,7 @@ export default function DiasTrabalhadosPorEletricista({
     );
   }
 
-  if (dados.length === 0) {
+  if (!dados?.length) {
     return (
       <Card title="Top 20 - Dias Trabalhados por Eletricista">
         <Empty description="Nenhum dado disponível" />
@@ -58,8 +49,11 @@ export default function DiasTrabalhadosPorEletricista({
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     xField: 'eletricista',
     yField: 'diasTrabalhados',
     label: {

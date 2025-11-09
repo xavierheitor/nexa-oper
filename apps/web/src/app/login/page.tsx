@@ -5,6 +5,7 @@ import { App, Button, Card, Form, Input, Typography } from 'antd';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import { errorHandler } from '@/lib/utils/errorHandler';
 
 const { Title } = Typography;
 
@@ -34,7 +35,8 @@ const LoginPage: React.FC = () => {
         setFormError('Usuário ou senha inválidos!');
       }
     } catch (err) {
-      console.error('Erro no login:', err);
+      // Usa errorHandler padronizado
+      errorHandler.log(err, 'LoginPage');
       message.error('Erro inesperado ao tentar fazer login. Tente novamente.');
     } finally {
       setLoading(false);

@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { listEquipes } from '@/lib/actions/equipe/list';
 import { listHorarioAberturaCatalogo } from '@/lib/actions/escala/horarioAberturaCatalogo';
+import { HorarioAberturaCatalogo, Equipe } from '@nexa-oper/db';
 
 const { RangePicker } = DatePicker;
 
@@ -40,7 +41,7 @@ export default function EquipeTurnoHistoricoForm({
 }: EquipeTurnoHistoricoFormProps) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [horarioSelecionado, setHorarioSelecionado] = useState<any>(null);
+  const [horarioSelecionado, setHorarioSelecionado] = useState<HorarioAberturaCatalogo | null>(null);
 
   // Carregar equipes
   const { data: equipes, isLoading: equipesLoading } = useEntityData({
@@ -81,7 +82,15 @@ export default function EquipeTurnoHistoricoForm({
     return `${String(horasFim).padStart(2, '0')}:${String(minutosFim).padStart(2, '0')}`;
   };
 
-  const handleSubmit = async (values: any) => {
+  interface FormValues {
+    equipeId: number;
+    horarioAberturaCatalogoId?: number;
+    vigencia: [dayjs.Dayjs, dayjs.Dayjs | null];
+    motivo?: string;
+    observacoes?: string;
+  }
+
+  const handleSubmit = async (values: FormValues) => {
     setLoading(true);
     try {
       // Se selecionou um horário do catálogo, pega os dados dele
@@ -150,7 +159,7 @@ export default function EquipeTurnoHistoricoForm({
           filterOption={(input, option) =>
             (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
           }
-          options={equipes?.map((equipe: any) => ({
+          options={equipes?.map((equipe: Equipe) => ({
             value: equipe.id,
             label: equipe.nome,
           }))}
@@ -199,7 +208,7 @@ export default function EquipeTurnoHistoricoForm({
               </span>
             </Space>
             <div style={{ fontSize: '12px', color: '#666' }}>
-              {horarioSelecionado.duracaoHoras}h trabalho + {horarioSelecionado.duracaoIntervaloHoras}h intervalo
+              {Number(horarioSelecionado.duracaoHoras)}h trabalho + {Number(horarioSelecionado.duracaoIntervaloHoras)}h intervalo
             </div>
           </Space>
         </Card>

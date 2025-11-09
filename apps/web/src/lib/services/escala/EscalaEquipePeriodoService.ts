@@ -112,17 +112,17 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
     // A proteção do histórico é feita na edição de slots individuais
     // Aqui apenas atualizamos metadados da escala (observações, datas, etc)
 
-    // @ts-ignore - Compatibilidade de tipos do repositório
-    const updateInput: EscalaEquipePeriodoUpdateInput = {
-      equipeId: data.equipeId,
-      tipoEscalaId: data.tipoEscalaId,
-      periodoInicio: data.periodoInicio,
-      periodoFim: data.periodoFim,
-      observacoes: data.observacoes ?? undefined,
-      status: data.status,
-    };
+    const { id, ...updateData } = data;
+    const updateInput = {
+      equipeId: updateData.equipeId,
+      tipoEscalaId: updateData.tipoEscalaId,
+      periodoInicio: updateData.periodoInicio,
+      periodoFim: updateData.periodoFim,
+      observacoes: updateData.observacoes ?? undefined,
+      status: updateData.status,
+    } as Partial<EscalaEquipePeriodoUpdateInput>;
 
-    return this.escalaRepo.update(updateInput, userId);
+    return this.escalaRepo.update(id, updateInput, userId);
   }
 
   async list(

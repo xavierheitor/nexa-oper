@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { listEquipes } from '@/lib/actions/equipe/list';
 import { listSupervisores } from '@/lib/actions/supervisor/list';
 import { Equipe, Supervisor } from '@nexa-oper/db';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 export interface VinculoFormData {
   supervisorId: number;
@@ -23,26 +24,28 @@ interface VinculoFormProps {
 
 export default function VinculoForm({ onSubmit, initialValues, loading = false }: VinculoFormProps) {
   const [form] = Form.useForm<VinculoFormData>();
-  const [equipes, setEquipes] = useState<Equipe[]>([]);
-  const [supervisores, setSupervisores] = useState<Supervisor[]>([]);
-  const [loadingSelects, setLoadingSelects] = useState(true);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setLoadingSelects(true);
-        const [eqRes, supRes] = await Promise.all([
-          listEquipes({ page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' }),
-          listSupervisores({ page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' }),
-        ]);
-        setEquipes(eqRes.data?.data || []);
-        setSupervisores(supRes.data?.data || []);
-      } finally {
-        setLoadingSelects(false);
+  // Carregar equipes e supervisores
+  const { data: dadosVinculo, loading: loadingSelects } = useDataFetch(
+    async () => {
+      const [eqRes, supRes] = await Promise.all([
+        listEquipes({ page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' }),
+        listSupervisores({ page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' }),
+      ]);
+
+      if (eqRes.success && eqRes.data && supRes.success && supRes.data) {
+        return {
+          equipes: eqRes.data.data || [],
+          supervisores: supRes.data.data || [],
+        };
       }
-    };
-    load();
-  }, []);
+      throw new Error('Erro ao carregar dados');
+    },
+    []
+  );
+
+  const equipes = dadosVinculo?.equipes || [];
+  const supervisores = dadosVinculo?.supervisores || [];
 
   useEffect(() => {
     if (initialValues) {
@@ -51,7 +54,7 @@ export default function VinculoForm({ onSubmit, initialValues, loading = false }
         equipeId: initialValues.equipeId,
         inicio: initialValues.inicio ? dayjs(initialValues.inicio) : undefined,
         fim: initialValues.fim ? dayjs(initialValues.fim) : undefined,
-      } as any);
+      });
     } else {
       form.resetFields();
     }
@@ -84,7 +87,7 @@ export default function VinculoForm({ onSubmit, initialValues, loading = false }
         />
       </Form.Item>
 
-      <Form.Item name="equipeId" label="Equipe" rules={[{ required: true, message: 'Equipe é obrigatória' }]}> 
+      <Form.Item name="equipeId" label="Equipe" rules={[{ required: true, message: 'Equipe é obrigatória' }]}>
         <Select
           placeholder="Selecione a equipe"
           loading={loadingSelects}
@@ -94,11 +97,11 @@ export default function VinculoForm({ onSubmit, initialValues, loading = false }
         />
       </Form.Item>
 
-      <Form.Item name="inicio" label="Início" rules={[{ required: true, message: 'Data de início é obrigatória' }]}> 
+      <Form.Item name="inicio" label="Início" rules={[{ required: true, message: 'Data de início é obrigatória' }]}>
         <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
       </Form.Item>
 
-      <Form.Item name="fim" label="Fim"> 
+      <Form.Item name="fim" label="Fim">
         <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
       </Form.Item>
 

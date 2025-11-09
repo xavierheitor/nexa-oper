@@ -5,8 +5,10 @@
  * entre diferentes módulos da aplicação.
  */
 
-import { BadRequestException } from '@nestjs/common';
-import { VALIDATION_ERRORS } from '../constants/errors';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { VALIDATION_ERRORS, ERROR_MESSAGES } from '../constants/errors';
+import { PrismaClient } from '@nexa-oper/db';
+import { PrismaTransactionClient } from '@common/types/prisma';
 
 /**
  * Valida se um ID é válido (número inteiro positivo)
@@ -122,4 +124,135 @@ export function validateEnumValue<T>(
       `${fieldName} deve ser um dos seguintes valores: ${validValues.join(', ')}`
     );
   }
+}
+
+/**
+ * Valida se uma entidade existe no banco de dados
+ *
+ * Helper genérico para validar existência de entidades com soft delete.
+ * Usa o PrismaClient ou PrismaTransactionClient para fazer a consulta.
+ *
+ * @param prisma - Cliente Prisma (pode ser transação ou cliente normal)
+ * @param modelName - Nome do modelo Prisma (ex: 'contrato', 'tipoVeiculo')
+ * @param id - ID da entidade a validar
+ * @param errorMessage - Mensagem de erro a lançar se não encontrado
+ * @returns Promise que resolve se a entidade existe
+ * @throws NotFoundException se a entidade não for encontrada
+ *
+ * @example
+ * ```typescript
+ * // Validar contrato
+ * await ensureEntityExists(
+ *   this.db.getPrisma(),
+ *   'contrato',
+ *   contratoId,
+ *   ERROR_MESSAGES.CONTRATO_NOT_FOUND
+ * );
+ *
+ * // Validar dentro de transação
+ * await prisma.$transaction(async tx => {
+ *   await ensureEntityExists(
+ *     tx,
+ *     'tipoVeiculo',
+ *     tipoVeiculoId,
+ *     ERROR_MESSAGES.TIPO_VEICULO_NOT_FOUND
+ *   );
+ * });
+ * ```
+ */
+export async function ensureEntityExists(
+  prisma: PrismaClient | PrismaTransactionClient,
+  modelName: 'contrato' | 'tipoVeiculo' | 'tipoEquipe' | 'veiculo' | 'equipe' | 'eletricista',
+  id: number,
+  errorMessage: string
+): Promise<void> {
+  const entity = await (prisma as any)[modelName].findFirst({
+    where: {
+      id,
+      deletedAt: null,
+    },
+  });
+
+  if (!entity) {
+    throw new NotFoundException(errorMessage);
+  }
+}
+
+/**
+ * Valida se um contrato existe
+ *
+ * Helper específico para validação de contratos.
+ * Usa o helper genérico ensureEntityExists internamente.
+ *
+ * @param prisma - Cliente Prisma (pode ser transação ou cliente normal)
+ * @param contratoId - ID do contrato a validar
+ * @throws NotFoundException se o contrato não for encontrado
+ *
+ * @example
+ * ```typescript
+ * await ensureContratoExists(this.db.getPrisma(), contratoId);
+ * ```
+ */
+export async function ensureContratoExists(
+  prisma: PrismaClient | PrismaTransactionClient,
+  contratoId: number
+): Promise<void> {
+  await ensureEntityExists(
+    prisma,
+    'contrato',
+    contratoId,
+    ERROR_MESSAGES.CONTRATO_NOT_FOUND
+  );
+}
+
+/**
+ * Valida se um tipo de veículo existe
+ *
+ * Helper específico para validação de tipos de veículo.
+ *
+ * @param prisma - Cliente Prisma (pode ser transação ou cliente normal)
+ * @param tipoVeiculoId - ID do tipo de veículo a validar
+ * @throws NotFoundException se o tipo de veículo não for encontrado
+ *
+ * @example
+ * ```typescript
+ * await ensureTipoVeiculoExists(this.db.getPrisma(), tipoVeiculoId);
+ * ```
+ */
+export async function ensureTipoVeiculoExists(
+  prisma: PrismaClient | PrismaTransactionClient,
+  tipoVeiculoId: number
+): Promise<void> {
+  await ensureEntityExists(
+    prisma,
+    'tipoVeiculo',
+    tipoVeiculoId,
+    ERROR_MESSAGES.TIPO_VEICULO_NOT_FOUND
+  );
+}
+
+/**
+ * Valida se um tipo de equipe existe
+ *
+ * Helper específico para validação de tipos de equipe.
+ *
+ * @param prisma - Cliente Prisma (pode ser transação ou cliente normal)
+ * @param tipoEquipeId - ID do tipo de equipe a validar
+ * @throws NotFoundException se o tipo de equipe não for encontrado
+ *
+ * @example
+ * ```typescript
+ * await ensureTipoEquipeExists(this.db.getPrisma(), tipoEquipeId);
+ * ```
+ */
+export async function ensureTipoEquipeExists(
+  prisma: PrismaClient | PrismaTransactionClient,
+  tipoEquipeId: number
+): Promise<void> {
+  await ensureEntityExists(
+    prisma,
+    'tipoEquipe',
+    tipoEquipeId,
+    ERROR_MESSAGES.TIPO_EQUIPE_NOT_FOUND
+  );
 }

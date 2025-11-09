@@ -27,8 +27,9 @@
 'use client';
 
 import { Button, DatePicker, Form, Input, Modal, Select, Tag } from 'antd';
+import type { Rule } from 'antd/es/form';
 import { useEffect } from 'react';
-import dayjs from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 import { StatusEletricistaLabels, StatusEletricistaColors, StatusEletricistaEnum, StatusEletricista } from '@/lib/schemas/eletricistaStatusSchema';
 
 const { TextArea } = Input;
@@ -84,8 +85,8 @@ export default function AlterarStatusModal({
 
   const handleSubmit = async (values: {
     status: string;
-    dataInicio: any;
-    dataFim?: any;
+    dataInicio: Dayjs;
+    dataFim?: Dayjs;
     motivo?: string;
     observacoes?: string;
   }) => {
@@ -118,7 +119,7 @@ export default function AlterarStatusModal({
   };
 
   // Validação para data fim
-  const validateDataFim = (_: unknown, value: any) => {
+  const validateDataFim = (_: Rule, value: Dayjs | undefined) => {
     if (!value) return Promise.resolve();
     const dataInicio = form.getFieldValue('dataInicio');
     if (dataInicio && value.isBefore(dataInicio)) {
@@ -136,11 +137,12 @@ export default function AlterarStatusModal({
       destroyOnHidden
       width={600}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-      >
+      {open && (
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+        >
         {/* Status Atual (readonly) */}
         <Form.Item label="Status Atual">
           <Tag color={StatusEletricistaColors[currentStatus]}>
@@ -242,6 +244,7 @@ export default function AlterarStatusModal({
           </div>
         </Form.Item>
       </Form>
+      )}
     </Modal>
   );
 }

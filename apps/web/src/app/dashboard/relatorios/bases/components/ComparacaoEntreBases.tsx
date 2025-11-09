@@ -2,7 +2,8 @@
 
 import { Column } from '@ant-design/plots';
 import { Card, Empty, Select, Spin } from 'antd';
-import { useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosComparacao {
   base: string;
@@ -18,58 +19,45 @@ interface ComparacaoEntreBasesProps {
 export default function ComparacaoEntreBases({
   filtros,
 }: ComparacaoEntreBasesProps) {
-  const [dados, setDados] = useState<DadosComparacao[]>([]);
-  const [loading, setLoading] = useState(true);
   const [metrica, setMetrica] = useState<'veiculos' | 'eletricistas' | 'equipes'>(
     'eletricistas'
   );
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getComparacaoEntreBases } = await import(
-          '@/lib/actions/relatorios/relatoriosBases'
-        );
-        const result = await getComparacaoEntreBases(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+  // Memoiza a função fetcher para evitar recriações desnecessárias
+  const fetcher = useMemo(
+    () => async () => {
+      const { getComparacaoEntreBases } = await import(
+        '@/lib/actions/relatorios/relatoriosBases'
+      );
+      const result = await getComparacaoEntreBases(filtros);
+
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
+      throw new Error('Erro ao carregar dados de comparação entre bases');
+    },
+    [filtros]
+  );
 
-    fetchDados();
-  }, [filtros]);
+  const { data: dadosRaw, loading } = useDataFetch<DadosComparacao[]>(fetcher, [fetcher]);
 
-  if (loading) {
-    return (
-      <Card title="Comparação entre Bases">
-        <div style={{ textAlign: 'center', padding: '40px 0' }}>
-          <Spin size="large" />
-        </div>
-      </Card>
-    );
-  }
+  // Garante que dados nunca seja null
+  const dados: DadosComparacao[] = dadosRaw ?? [];
 
-  if (dados.length === 0) {
-    return (
-      <Card title="Comparação entre Bases">
-        <Empty description="Nenhum dado disponível" />
-      </Card>
-    );
-  }
+  // Memoiza os dados do gráfico para evitar recálculos desnecessários
+  // IMPORTANTE: Todos os hooks devem ser chamados antes de qualquer retorno condicional
+  const dadosGrafico = useMemo(
+    () =>
+      (dados || []).map((d) => ({
+        base: d.base,
+        quantidade: d[metrica],
+      })),
+    [dados, metrica]
+  );
 
-  // Preparar dados para o gráfico com base na métrica selecionada
-  const dadosGrafico = dados.map((d) => ({
-    base: d.base,
-    quantidade: d[metrica],
-  }));
-
-  const config = {
+  // Memoiza a configuração do gráfico
+  const config = useMemo(
+    () => ({
     data: dadosGrafico,
     xField: 'base',
     yField: 'quantidade',
@@ -95,7 +83,38 @@ export default function ComparacaoEntreBases({
         autoHide: false,
       },
     },
-  };
+    }),
+    [dadosGrafico, metrica]
+  );
+
+  // Memoiza as opções do Select
+  const metricOptions = useMemo(
+    () => [
+      { value: 'veiculos' as const, label: 'Veículos' },
+      { value: 'eletricistas' as const, label: 'Eletricistas' },
+      { value: 'equipes' as const, label: 'Equipes' },
+    ],
+    []
+  );
+
+  // Retornos condicionais após todos os hooks
+  if (loading) {
+    return (
+      <Card title="Comparação entre Bases">
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Spin size="large" />
+        </div>
+      </Card>
+    );
+  }
+
+  if (dados.length === 0) {
+    return (
+      <Card title="Comparação entre Bases">
+        <Empty description="Nenhum dado disponível" />
+      </Card>
+    );
+  }
 
   return (
     <Card
@@ -105,11 +124,7 @@ export default function ComparacaoEntreBases({
           value={metrica}
           onChange={setMetrica}
           style={{ width: 150 }}
-          options={[
-            { value: 'veiculos', label: 'Veículos' },
-            { value: 'eletricistas', label: 'Eletricistas' },
-            { value: 'equipes', label: 'Equipes' },
-          ]}
+          options={metricOptions}
         />
       }
     >

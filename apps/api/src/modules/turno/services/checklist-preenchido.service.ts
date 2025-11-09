@@ -13,6 +13,9 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from '@database/database.service';
 import { parseMobileDate } from '@common/utils/date-timezone';
+import { handleServiceError } from '@common/utils/error-handler';
+import { withTimeout, TIMEOUT_CONFIG } from '@common/utils/timeout';
+import { PrismaTransactionClient } from '@common/types/prisma';
 import {
   SalvarChecklistPreenchidoDto,
   ChecklistPreenchidoResponseDto,
@@ -34,12 +37,14 @@ export class ChecklistPreenchidoService {
    * @param turnoId - ID do turno
    * @param checklists - Lista de checklists para salvar
    * @param transaction - Transação Prisma (opcional)
+   * @param userId - ID do usuário para auditoria (opcional, usa 'system' como fallback)
    * @returns Resultado do salvamento básico
    */
   async salvarChecklistsDoTurno(
     turnoId: number,
     checklists: SalvarChecklistPreenchidoDto[],
-    transaction?: any
+    transaction?: PrismaTransactionClient,
+    userId?: string
   ): Promise<{
     checklistsSalvos: number;
     checklistsPreenchidos: Array<{
@@ -48,6 +53,13 @@ export class ChecklistPreenchidoService {
       respostas: any[];
     }>;
   }> {
+    // ✅ Validar que array não está vazio antes de usar
+    if (!checklists || checklists.length === 0) {
+      throw new BadRequestException(
+        'Pelo menos um checklist é obrigatório para salvar'
+      );
+    }
+
     this.logger.log(
       `Salvando ${checklists.length} checklists para turno ${turnoId}`
     );
@@ -61,19 +73,26 @@ export class ChecklistPreenchidoService {
     }> = [];
 
     try {
-      for (const checklistData of checklists) {
-        // Validar se o checklist existe
-        await this.validarChecklistCompleto(
-          checklistData.checklistId,
-          checklistData.respostas,
-          prisma
-        );
+      // ✅ Paralelizar validações de checklists (não dependem um do outro)
+      // Validar todos os checklists em paralelo antes de salvar
+      await Promise.all(
+        checklists.map(checklistData =>
+          this.validarChecklistCompleto(
+            checklistData.checklistId,
+            checklistData.respostas,
+            prisma
+          )
+        )
+      );
 
-        // Salvar checklist preenchido
+      // Salvar checklists sequencialmente (dentro da transação, precisa ser sequencial)
+      // mas as validações já foram feitas em paralelo
+      for (const checklistData of checklists) {
         const checklistPreenchido = await this.salvarChecklistPreenchido(
           turnoId,
           checklistData,
-          prisma
+          prisma,
+          userId
         );
 
         checklistsSalvos++;
@@ -93,8 +112,14 @@ export class ChecklistPreenchidoService {
         checklistsPreenchidos,
       };
     } catch (error) {
-      this.logger.error('Erro ao salvar checklists do turno:', error);
-      throw new BadRequestException('Erro ao salvar checklists do turno');
+      handleServiceError(
+        error,
+        this.logger,
+        'Erro ao salvar checklists do turno',
+        { operation: 'salvarChecklistsDoTurno' }
+      );
+      // Nunca chega aqui porque handleServiceError lança exceção, mas TypeScript precisa disso
+      throw error;
     }
   }
 
@@ -121,6 +146,14 @@ export class ChecklistPreenchidoService {
       perguntaId: number;
     }>;
   }> {
+    // ✅ Validar que array não está vazio antes de processar
+    if (!checklistsPreenchidos || checklistsPreenchidos.length === 0) {
+      return {
+        pendenciasGeradas: 0,
+        respostasAguardandoFoto: [],
+      };
+    }
+
     this.logger.log(
       `Processando ${checklistsPreenchidos.length} checklists de forma assíncrona`
     );
@@ -132,23 +165,44 @@ export class ChecklistPreenchidoService {
     }> = [];
 
     try {
-      for (const checklistPreenchido of checklistsPreenchidos) {
-        // Processar pendências automáticas (fora da transação)
-        const pendencias = await this.processarPendenciasAutomaticas(
-          checklistPreenchido.id,
-          checklistPreenchido.respostas
-        );
+      // ✅ Paralelizar processamento de pendências e fotos quando possível
+      // ✅ Com timeout para evitar travamentos
+      const resultados = await withTimeout(
+        Promise.all(
+          checklistsPreenchidos.map(async checklistPreenchido => {
+            // Processar pendências automáticas (fora da transação)
+            const pendencias = await this.processarPendenciasAutomaticas(
+              checklistPreenchido.id,
+              checklistPreenchido.respostas
+            );
 
-        pendenciasGeradas += pendencias.length;
+            // Marcar respostas que aguardam foto (fora da transação)
+            const respostasComFoto = await this.marcarRespostasAguardandoFoto(
+              checklistPreenchido.id,
+              checklistPreenchido.respostas
+            );
 
-        // Marcar respostas que aguardam foto (fora da transação)
-        const respostasComFoto = await this.marcarRespostasAguardandoFoto(
-          checklistPreenchido.id,
-          checklistPreenchido.respostas
-        );
+            return {
+              pendencias,
+              respostasComFoto,
+            };
+          })
+        ),
+        TIMEOUT_CONFIG.CHECKLIST_PROCESSING,
+        'Processamento de checklists excedeu o tempo limite'
+      );
 
-        respostasAguardandoFoto.push(...respostasComFoto);
-      }
+      // Agregar resultados
+      let pendenciasGeradas = 0;
+      const respostasAguardandoFoto: Array<{
+        checklistRespostaId: number;
+        perguntaId: number;
+      }> = [];
+
+      resultados.forEach(resultado => {
+        pendenciasGeradas += resultado.pendencias.length;
+        respostasAguardandoFoto.push(...resultado.respostasComFoto);
+      });
 
       this.logger.log(
         `Processamento assíncrono concluído - Pendências: ${pendenciasGeradas}, Aguardando foto: ${respostasAguardandoFoto.length}`
@@ -174,14 +228,25 @@ export class ChecklistPreenchidoService {
    * @param turnoId - ID do turno
    * @param checklistData - Dados do checklist
    * @param transaction - Transação Prisma (opcional)
+   * @param userId - ID do usuário para auditoria (opcional, usa 'system' como fallback)
    * @returns Checklist preenchido criado
    */
   async salvarChecklistPreenchido(
     turnoId: number,
     checklistData: SalvarChecklistPreenchidoDto,
-    transaction?: any
-  ): Promise<any> {
+    transaction?: PrismaTransactionClient,
+    userId?: string
+  ): Promise<ChecklistPreenchidoResponseDto> {
     const prisma = transaction || this.db.getPrisma();
+    // ✅ Converter userId para string (Prisma espera String para createdBy)
+    const createdBy = userId ? String(userId) : 'system';
+
+    // ✅ Validar que array de respostas não está vazio antes de salvar
+    if (!checklistData.respostas || checklistData.respostas.length === 0) {
+      throw new BadRequestException(
+        'Lista de respostas não pode estar vazia'
+      );
+    }
 
     // Criar checklist preenchido
     const checklistPreenchido = await prisma.checklistPreenchido.create({
@@ -194,7 +259,7 @@ export class ChecklistPreenchidoService {
         latitude: checklistData.latitude,
         longitude: checklistData.longitude,
         createdAt: new Date(),
-        createdBy: 'system', // TODO: pegar do contexto do usuário
+        createdBy,
       },
     });
 
@@ -209,12 +274,21 @@ export class ChecklistPreenchidoService {
           aguardandoFoto: false, // Será atualizado depois se necessário
           fotosSincronizadas: 0,
           createdAt: new Date(),
-          createdBy: 'system',
+          createdBy,
         },
       });
     }
 
-    return checklistPreenchido;
+    // Mapear para o DTO, convertendo null para undefined
+    return {
+      id: checklistPreenchido.id,
+      turnoId: checklistPreenchido.turnoId,
+      checklistId: checklistPreenchido.checklistId,
+      eletricistaId: checklistPreenchido.eletricistaId,
+      dataPreenchimento: checklistPreenchido.dataPreenchimento,
+      latitude: checklistPreenchido.latitude ?? undefined,
+      longitude: checklistPreenchido.longitude ?? undefined,
+    };
   }
 
   /**
@@ -227,9 +301,16 @@ export class ChecklistPreenchidoService {
   async validarChecklistCompleto(
     checklistId: number,
     respostas: any[],
-    transaction?: any
+    transaction?: PrismaTransactionClient
   ): Promise<void> {
     const prisma = transaction || this.db.getPrisma();
+
+    // ✅ Validar que array de respostas não está vazio
+    if (!respostas || respostas.length === 0) {
+      throw new BadRequestException(
+        'Lista de respostas não pode estar vazia'
+      );
+    }
 
     // Buscar perguntas obrigatórias do checklist
     const perguntasObrigatorias =
@@ -272,6 +353,11 @@ export class ChecklistPreenchidoService {
   ): Promise<any[]> {
     const prisma = this.db.getPrisma();
     const pendencias: any[] = [];
+
+    // ✅ Validar que array de respostas não está vazio
+    if (!respostas || respostas.length === 0) {
+      return pendencias; // Retorna vazio se não houver respostas
+    }
 
     // Buscar informações do checklist preenchido
     const checklistPreenchido = await prisma.checklistPreenchido.findUnique({
@@ -339,6 +425,11 @@ export class ChecklistPreenchidoService {
       checklistRespostaId: number;
       perguntaId: number;
     }> = [];
+
+    // ✅ Validar que array de respostas não está vazio
+    if (!respostas || respostas.length === 0) {
+      return respostasAguardandoFoto; // Retorna vazio se não houver respostas
+    }
 
     for (const respostaData of respostas) {
       const opcaoResposta = await prisma.checklistOpcaoResposta.findUnique({

@@ -20,13 +20,21 @@ import {
   validateId,
   validateOptionalId,
   validateEstadoFormat,
+  ensureContratoExists,
 } from '@common/utils/validation';
+import {
+  buildSearchWhereClause,
+  buildContractFilter,
+  buildBaseWhereClause,
+} from '@common/utils/where-clause';
 import {
   getDefaultUserContext,
   createAuditData,
   updateAuditData,
   deleteAuditData,
 } from '@common/utils/audit';
+import { handleCrudError } from '@common/utils/error-handler';
+import { handlePrismaUniqueError } from '@common/utils/error-handler';
 import { ERROR_MESSAGES } from '@common/constants/errors';
 import {
   ORDER_CONFIG,
@@ -62,44 +70,6 @@ export class EletricistaService {
 
   constructor(private readonly db: DatabaseService) {}
 
-  private validatePaginationParams(page: number, limit: number): void {
-    validatePaginationParams(page, limit);
-  }
-
-  private validateEletricistaId(id: number): void {
-    validateId(id, 'ID do eletricista');
-  }
-
-  private validateEstado(estado?: string): void {
-    if (estado !== undefined) {
-      validateEstadoFormat(estado);
-    }
-  }
-
-  private validateContratoId(contratoId?: number): void {
-    validateOptionalId(contratoId, 'ID do contrato');
-  }
-
-  private getCurrentUserContext(): UserContext {
-    return getDefaultUserContext();
-  }
-
-  private extractAllowedContractIds(
-    allowedContracts?: ContractPermission[]
-  ): number[] | null {
-    return extractAllowedContractIds(allowedContracts);
-  }
-
-  private ensureContractPermission(
-    contratoId: number,
-    allowedContractIds: number[] | null
-  ): void {
-    ensureContractPermission(
-      contratoId,
-      allowedContractIds,
-      ERROR_MESSAGES.FORBIDDEN_CONTRACT
-    );
-  }
 
   private buildWhereClause(
     search: string | undefined,
@@ -107,93 +77,40 @@ export class EletricistaService {
     contratoId: number | undefined,
     allowedContractIds: number[] | null
   ) {
-    const whereClause: any = {
-      deletedAt: null,
-    };
+    const whereClause: any = buildBaseWhereClause();
 
-    if (search) {
-      const term = search.trim();
-      whereClause.OR = [
-        {
-          nome: {
-            contains: term,
-            mode: 'insensitive' as const,
-          },
-        },
-        {
-          matricula: {
-            contains: term,
-            mode: 'insensitive' as const,
-          },
-        },
-        {
-          telefone: {
-            contains: term,
-            mode: 'insensitive' as const,
-          },
-        },
-      ];
+    // Adicionar busca
+    const searchFilter = buildSearchWhereClause(search, {
+      nome: true,
+      matricula: true,
+      telefone: true,
+    });
+    if (searchFilter) {
+      Object.assign(whereClause, searchFilter);
     }
 
+    // Adicionar filtro de estado
     if (estado) {
       whereClause.estado = estado.toUpperCase();
     }
 
-    if (contratoId) {
-      whereClause.contratoId = contratoId;
-    } else if (allowedContractIds) {
-      whereClause.contratoId = {
-        in: allowedContractIds,
-      };
+    // Adicionar filtro de contrato
+    const contractFilter = buildContractFilter(contratoId, allowedContractIds);
+    if (contractFilter) {
+      Object.assign(whereClause, contractFilter);
     }
 
     return whereClause;
   }
 
-  private buildPaginationMeta(
-    total: number,
-    page: number,
-    limit: number
-  ): PaginationMetaDto {
-    return buildPaginationMeta(total, page, limit);
-  }
-
-  private async ensureContratoExists(contratoId: number): Promise<void> {
-    const contrato = await this.db.getPrisma().contrato.findFirst({
-      where: {
-        id: contratoId,
-        deletedAt: null,
-      },
-    });
-
-    if (!contrato) {
-      throw new NotFoundException(ERROR_MESSAGES.CONTRATO_NOT_FOUND);
-    }
-  }
-
-  private async ensureUniqueMatricula(
-    matricula: string,
-    ignoreId?: number
-  ): Promise<void> {
-    const existing = await this.db.getPrisma().eletricista.findFirst({
-      where: {
-        deletedAt: null,
-        matricula: {
-          equals: matricula,
-        },
-        ...(ignoreId && {
-          id: {
-            not: ignoreId,
-          },
-        }),
-      },
-    });
-
-    if (existing) {
-      throw new ConflictException(ERROR_MESSAGES.MATRICULA_DUPLICATE);
-    }
-  }
-
+  /**
+   * Lista eletricistas com paginação e filtros, respeitando permissões
+   *
+   * @param params - Parâmetros de consulta (página, limite, busca, estado, contrato)
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Lista paginada de eletricistas com metadados
+   * @throws BadRequestException - Se parâmetros de paginação forem inválidos
+   */
   async findAll(
     params: FindAllParams,
     allowedContracts?: ContractPermission[]
@@ -206,14 +123,16 @@ export class EletricistaService {
       }, Estado: ${estado ?? 'Todos'}, Contrato: ${contratoId ?? 'Todos'}`
     );
 
-    this.validatePaginationParams(page, limit);
-    this.validateEstado(estado);
-    this.validateContratoId(contratoId);
+    validatePaginationParams(page, limit);
+    if (estado !== undefined) {
+      validateEstadoFormat(estado);
+    }
+    validateOptionalId(contratoId, 'ID do contrato');
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     if (allowedContractIds && allowedContractIds.length === 0) {
-      const meta = this.buildPaginationMeta(0, page, limit);
+      const meta = buildPaginationMeta(0, page, limit);
       return {
         data: [],
         meta,
@@ -223,7 +142,11 @@ export class EletricistaService {
     }
 
     if (contratoId) {
-      this.ensureContractPermission(contratoId, allowedContractIds);
+      ensureContractPermission(
+        contratoId,
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
+      );
     }
 
     try {
@@ -275,7 +198,7 @@ export class EletricistaService {
         this.db.getPrisma().eletricista.count({ where: whereClause }),
       ]);
 
-      const meta = this.buildPaginationMeta(total, page, limit);
+      const meta = buildPaginationMeta(total, page, limit);
 
       return {
         data: data as EletricistaResponseDto[],
@@ -284,19 +207,27 @@ export class EletricistaService {
         timestamp: new Date(),
       };
     } catch (error) {
-      this.logger.error('Erro ao listar eletricistas:', error);
-      throw new BadRequestException('Erro ao listar eletricistas');
+      handleCrudError(error, this.logger, 'list', 'eletricistas');
     }
   }
 
+  /**
+   * Busca eletricista por ID respeitando permissões
+   *
+   * @param id - ID do eletricista
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Dados do eletricista encontrado
+   * @throws NotFoundException - Se eletricista não for encontrado
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
+   */
   async findOne(
     id: number,
     allowedContracts?: ContractPermission[]
   ): Promise<EletricistaResponseDto> {
     this.logger.log(`Buscando eletricista ${id}`);
-    this.validateEletricistaId(id);
+    validateId(id, 'ID do eletricista');
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     try {
       const eletricista = await this.db.getPrisma().eletricista.findFirst({
@@ -339,40 +270,49 @@ export class EletricistaService {
         throw new NotFoundException(ERROR_MESSAGES.ELETRICISTA_NOT_FOUND);
       }
 
-      this.ensureContractPermission(eletricista.contratoId, allowedContractIds);
+      ensureContractPermission(
+        eletricista.contratoId,
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
+      );
 
       return eletricista as EletricistaResponseDto;
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-
-      this.logger.error(`Erro ao buscar eletricista ${id}:`, error);
-      throw new BadRequestException('Erro ao buscar eletricista');
+      handleCrudError(error, this.logger, 'find', 'eletricista');
     }
   }
 
+  /**
+   * Cria novo eletricista com validações e auditoria
+   *
+   * @param createEletricistaDto - Dados do eletricista a ser criado
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Eletricista criado
+   * @throws ConflictException - Se matrícula já existir
+   * @throws NotFoundException - Se contrato não for encontrado
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
+   */
   async create(
     createEletricistaDto: CreateEletricistaDto,
     allowedContracts?: ContractPermission[]
   ): Promise<EletricistaResponseDto> {
     const { nome, matricula, telefone, estado, contratoId } =
       createEletricistaDto;
-    const userContext = this.getCurrentUserContext();
+    const userContext = getDefaultUserContext();
 
     this.logger.log(
       `Criando eletricista ${matricula} - Contrato: ${contratoId}`
     );
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
-    this.ensureContractPermission(contratoId, allowedContractIds);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
+    ensureContractPermission(
+      contratoId,
+      allowedContractIds,
+      ERROR_MESSAGES.FORBIDDEN_CONTRACT
+    );
 
     try {
-      await this.ensureContratoExists(contratoId);
-      await this.ensureUniqueMatricula(matricula.trim());
+      await ensureContratoExists(this.db.getPrisma(), contratoId);
 
       const eletricista = await this.db.getPrisma().eletricista.create({
         data: {
@@ -419,19 +359,24 @@ export class EletricistaService {
       this.logger.log(`Eletricista criado com sucesso - ID: ${eletricista.id}`);
       return eletricista as EletricistaResponseDto;
     } catch (error) {
-      if (
-        error instanceof ConflictException ||
-        error instanceof NotFoundException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-
-      this.logger.error('Erro ao criar eletricista:', error);
-      throw new BadRequestException('Erro ao criar eletricista');
+      // Tratar erro de constraint única do Prisma primeiro
+      handlePrismaUniqueError(error, this.logger, 'eletricista');
+      // Se não for erro de constraint única, tratar como erro CRUD genérico
+      handleCrudError(error, this.logger, 'create', 'eletricista');
     }
   }
 
+  /**
+   * Atualiza eletricista existente com validações
+   *
+   * @param id - ID do eletricista
+   * @param updateEletricistaDto - Dados para atualização
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Eletricista atualizado
+   * @throws NotFoundException - Se eletricista não for encontrado
+   * @throws ConflictException - Se nova matrícula já existir
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
+   */
   async update(
     id: number,
     updateEletricistaDto: UpdateEletricistaDto,
@@ -439,12 +384,12 @@ export class EletricistaService {
   ): Promise<EletricistaResponseDto> {
     const { nome, matricula, telefone, estado, admissao, cargoId, contratoId } =
       updateEletricistaDto;
-    const userContext = this.getCurrentUserContext();
+    const userContext = getDefaultUserContext();
 
     this.logger.log(`Atualizando eletricista ${id}`);
-    this.validateEletricistaId(id);
+    validateId(id, 'ID do eletricista');
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     try {
       const existingEletricista = await this.db
@@ -457,22 +402,19 @@ export class EletricistaService {
         throw new NotFoundException(ERROR_MESSAGES.ELETRICISTA_NOT_FOUND);
       }
 
-      this.ensureContractPermission(
+      ensureContractPermission(
         existingEletricista.contratoId,
-        allowedContractIds
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
       );
 
       if (contratoId && contratoId !== existingEletricista.contratoId) {
-        this.ensureContractPermission(contratoId, allowedContractIds);
-        await this.ensureContratoExists(contratoId);
-      }
-
-      if (
-        matricula &&
-        matricula.trim().toLowerCase() !==
-          existingEletricista.matricula.toLowerCase()
-      ) {
-        await this.ensureUniqueMatricula(matricula.trim(), id);
+        ensureContractPermission(
+        contratoId,
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
+      );
+        await ensureContratoExists(this.db.getPrisma(), contratoId);
       }
 
       const eletricista = await this.db.getPrisma().eletricista.update({
@@ -527,28 +469,30 @@ export class EletricistaService {
       this.logger.log(`Eletricista ${id} atualizado com sucesso`);
       return eletricista as EletricistaResponseDto;
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ConflictException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-
-      this.logger.error(`Erro ao atualizar eletricista ${id}:`, error);
-      throw new BadRequestException('Erro ao atualizar eletricista');
+      // Tratar erro de constraint única do Prisma primeiro
+      handlePrismaUniqueError(error, this.logger, 'eletricista');
+      // Se não for erro de constraint única, tratar como erro CRUD genérico
+      handleCrudError(error, this.logger, 'update', 'eletricista');
     }
   }
 
+  /**
+   * Remove eletricista (soft delete)
+   *
+   * @param id - ID do eletricista
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @throws NotFoundException - Se eletricista não for encontrado
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
+   */
   async remove(
     id: number,
     allowedContracts?: ContractPermission[]
   ): Promise<void> {
     this.logger.log(`Removendo eletricista ${id}`);
-    this.validateEletricistaId(id);
+    validateId(id, 'ID do eletricista');
 
-    const userContext = this.getCurrentUserContext();
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const userContext = getDefaultUserContext();
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     try {
       const eletricista = await this.db.getPrisma().eletricista.findFirst({
@@ -559,7 +503,11 @@ export class EletricistaService {
         throw new NotFoundException(ERROR_MESSAGES.ELETRICISTA_NOT_FOUND);
       }
 
-      this.ensureContractPermission(eletricista.contratoId, allowedContractIds);
+      ensureContractPermission(
+        eletricista.contratoId,
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
+      );
 
       await this.db.getPrisma().eletricista.update({
         where: { id },
@@ -568,22 +516,20 @@ export class EletricistaService {
 
       this.logger.log(`Eletricista ${id} removido com sucesso (soft delete)`);
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-
-      this.logger.error(`Erro ao remover eletricista ${id}:`, error);
-      throw new BadRequestException('Erro ao remover eletricista');
+      handleCrudError(error, this.logger, 'delete', 'eletricista');
     }
   }
 
+  /**
+   * Conta total de eletricistas ativos respeitando permissões
+   *
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Total de eletricistas ativos
+   */
   async count(allowedContracts?: ContractPermission[]): Promise<number> {
     this.logger.log('Contando eletricistas ativos');
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     if (allowedContractIds && allowedContractIds.length === 0) {
       return 0;
@@ -602,8 +548,7 @@ export class EletricistaService {
       this.logger.log(`Total de eletricistas ativos: ${count}`);
       return count;
     } catch (error) {
-      this.logger.error('Erro ao contar eletricistas:', error);
-      throw new BadRequestException('Erro ao contar eletricistas');
+      handleCrudError(error, this.logger, 'count', 'eletricistas');
     }
   }
 
@@ -621,109 +566,48 @@ export class EletricistaService {
   }
 
   /**
-   * Retorna todos os eletricistas para sincronização mobile
-   * Respeitando as permissões de contrato do usuário
+   * Lista todos os eletricistas ativos para sincronização mobile
+   *
+   * Retorna todos os eletricistas ativos sem paginação para permitir
+   * que clientes mobile mantenham seus dados em sincronia.
+   *
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Lista completa de eletricistas ativos para sincronização
    */
   async findAllForSync(
     allowedContracts?: ContractPermission[]
   ): Promise<EletricistaSyncDto[]> {
-    this.logger.debug('=== INÍCIO DO MÉTODO findAllForSync ===');
-    this.logger.debug(`Timestamp: ${new Date().toISOString()}`);
-    this.logger.debug(`Método: ${this.findAllForSync.name}`);
-    this.logger.debug(`Service: ${EletricistaService.name}`);
-
-    this.logger.debug('=== PARÂMETROS RECEBIDOS NO SERVICE ===');
-    this.logger.debug(
-      `allowedContracts recebido: ${JSON.stringify(allowedContracts)}`
-    );
-    this.logger.debug(`Tipo de allowedContracts: ${typeof allowedContracts}`);
-    this.logger.debug(`É array: ${Array.isArray(allowedContracts)}`);
-    this.logger.debug(
-      `Quantidade de contratos: ${allowedContracts?.length || 0}`
-    );
-
     this.logger.log(
       `Sincronizando eletricistas para ${allowedContracts?.length || 0} contratos`
     );
 
-    this.logger.debug('=== EXTRAINDO IDs DOS CONTRATOS ===');
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
-    this.logger.debug(
-      `allowedContractIds extraídos: ${JSON.stringify(allowedContractIds)}`
-    );
-    this.logger.debug(
-      `Tipo de allowedContractIds: ${typeof allowedContractIds}`
-    );
-    this.logger.debug(`É array: ${Array.isArray(allowedContractIds)}`);
-    this.logger.debug(`Quantidade de IDs: ${allowedContractIds?.length || 0}`);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     if (allowedContractIds && allowedContractIds.length === 0) {
       this.logger.log('Nenhum contrato permitido, retornando lista vazia');
-      this.logger.debug('=== RETORNANDO LISTA VAZIA ===');
       return [];
     }
 
     try {
-      this.logger.debug('=== CONSTRUINDO WHERE CLAUSE ===');
       const whereClause: any = {
         deletedAt: null,
+        ...(allowedContractIds && {
+          contratoId: { in: allowedContractIds },
+        }),
       };
-
-      if (allowedContractIds) {
-        whereClause.contratoId = {
-          in: allowedContractIds,
-        };
-      }
-
-      this.logger.debug(
-        `Where clause construída: ${JSON.stringify(whereClause)}`
-      );
-      this.logger.debug(
-        `ORDER_CONFIG.SYNC_ORDER: ${JSON.stringify(ORDER_CONFIG.SYNC_ORDER)}`
-      );
-
-      this.logger.debug('=== EXECUTANDO QUERY NO BANCO ===');
-      this.logger.debug('Chamando db.getPrisma().eletricista.findMany...');
 
       const eletricistas = await this.db.getPrisma().eletricista.findMany({
         where: whereClause,
         orderBy: ORDER_CONFIG.SYNC_ORDER,
       });
 
-      this.logger.debug('=== RESULTADO DA QUERY ===');
-      this.logger.debug(`Query executada com sucesso`);
-      this.logger.debug(
-        `Quantidade de eletricistas retornados: ${eletricistas.length}`
-      );
-      this.logger.debug(`Tipo do resultado: ${typeof eletricistas}`);
-      this.logger.debug(`É array: ${Array.isArray(eletricistas)}`);
-
-      if (eletricistas.length > 0) {
-        this.logger.debug('=== DETALHES DOS ELETRICISTAS ===');
-        eletricistas.forEach((eletricista, index) => {
-          this.logger.debug(
-            `Eletricista ${index + 1}: ${JSON.stringify(eletricista)}`
-          );
-        });
-      }
-
       this.logger.log(
         `Sincronização concluída - ${eletricistas.length} eletricistas retornados`
       );
 
-      this.logger.debug('=== RETORNANDO RESULTADO DO SERVICE ===');
-      this.logger.debug('=== FIM DO MÉTODO findAllForSync ===');
-
       return eletricistas;
     } catch (error) {
-      this.logger.error('=== ERRO NO SERVICE ===');
-      this.logger.error(`Erro capturado: ${error.message}`);
-      this.logger.error(`Stack trace: ${error.stack}`);
-      this.logger.error(`Nome do erro: ${error.name}`);
-      this.logger.error(`Código do erro: ${error.code}`);
-      this.logger.error(`Tipo do erro: ${typeof error}`);
-      this.logger.error('=== FIM DO ERRO NO SERVICE ===');
-      throw new BadRequestException('Erro ao sincronizar eletricistas');
+      handleCrudError(error, this.logger, 'sync', 'eletricistas');
     }
   }
 }

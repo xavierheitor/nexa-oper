@@ -19,10 +19,9 @@ export default function TipoAtividadeForm({ onSubmit, initialValues, loading = f
     else form.resetFields();
   }, [initialValues, form]);
 
-  if (loading) return <Spin spinning />;
-
   return (
-    <Form form={form} layout="vertical" onFinish={onSubmit}>
+    <Spin spinning={loading}>
+      <Form form={form} layout="vertical" onFinish={onSubmit}>
       <Form.Item name="nome" label="Tipo de Atividade" rules={[{ required: true, message: 'Nome é obrigatório' }, { min: 1, max: 255 }]}>
         <Input autoFocus placeholder="Digite o nome do tipo" />
       </Form.Item>
@@ -30,6 +29,7 @@ export default function TipoAtividadeForm({ onSubmit, initialValues, loading = f
         <Button type="primary" htmlType="submit" block loading={loading}>Salvar</Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 }
 

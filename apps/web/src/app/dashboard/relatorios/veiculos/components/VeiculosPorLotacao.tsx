@@ -2,7 +2,7 @@
 
 import { Column } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
-import { useEffect, useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosLotacao {
   base: string;
@@ -14,29 +14,20 @@ interface VeiculosPorLotacaoProps {
 }
 
 export default function VeiculosPorLotacao({ filtros }: VeiculosPorLotacaoProps) {
-  const [dados, setDados] = useState<DadosLotacao[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: dados = [], loading } = useDataFetch<DadosLotacao[]>(
+    async () => {
+      const { getVeiculosPorLotacao } = await import(
+        '@/lib/actions/relatorios/relatoriosVeiculos'
+      );
+      const result = await getVeiculosPorLotacao(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getVeiculosPorLotacao } = await import(
-          '@/lib/actions/relatorios/relatoriosVeiculos'
-        );
-        const result = await getVeiculosPorLotacao(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
-
-    fetchDados();
-  }, [filtros]);
+      throw new Error('Erro ao carregar dados de veículos por lotação');
+    },
+    [filtros]
+  );
 
   if (loading) {
     return (
@@ -48,7 +39,7 @@ export default function VeiculosPorLotacao({ filtros }: VeiculosPorLotacaoProps)
     );
   }
 
-  if (dados.length === 0) {
+  if (!dados?.length) {
     return (
       <Card title="Veículos por Lotação">
         <Empty description="Nenhum dado disponível" />
@@ -56,8 +47,11 @@ export default function VeiculosPorLotacao({ filtros }: VeiculosPorLotacaoProps)
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     xField: 'base',
     yField: 'quantidade',
     label: {

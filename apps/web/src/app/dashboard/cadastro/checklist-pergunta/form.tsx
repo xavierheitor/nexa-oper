@@ -19,10 +19,9 @@ export default function ChecklistPerguntaForm({ onSubmit, initialValues, loading
     else form.resetFields();
   }, [initialValues, form]);
 
-  if (loading) return <Spin spinning />;
-
   return (
-    <Form form={form} layout="vertical" onFinish={onSubmit}>
+    <Spin spinning={loading}>
+      <Form form={form} layout="vertical" onFinish={onSubmit}>
       <Form.Item
         name="nome"
         label="Pergunta"
@@ -40,6 +39,7 @@ export default function ChecklistPerguntaForm({ onSubmit, initialValues, loading
         </Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 }
 

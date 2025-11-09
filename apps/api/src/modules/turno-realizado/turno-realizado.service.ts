@@ -73,10 +73,12 @@ export class TurnoRealizadoService {
         executadoPor: payload.executadoPor,
       })
       .then(() => {
-        console.log(`✅ Reconciliação concluída para equipe ${payload.equipeId} em ${payload.dataReferencia}`);
+        this.logger.log(
+          `Reconciliação concluída para equipe ${payload.equipeId} em ${payload.dataReferencia}`
+        );
       })
       .catch((error) => {
-        console.error('❌ Erro na reconciliação:', error);
+        this.logger.error('Erro na reconciliação:', error);
       });
   }
 
@@ -448,6 +450,208 @@ export class TurnoRealizadoService {
         dataFim,
       },
       eletricistas,
+    };
+  }
+
+  /**
+   * Retorna aderência de equipe (percentual de execução da escala)
+   */
+  async getAderenciaEquipe(
+    equipeId: number,
+    query: ConsolidadoEquipeQueryDto
+  ) {
+    const prisma = this.db.getPrisma();
+
+    // Verificar se equipe existe
+    const equipe = await prisma.equipe.findUnique({
+      where: { id: equipeId },
+      select: { id: true, nome: true },
+    });
+
+    if (!equipe) {
+      throw new Error(`Equipe ${equipeId} não encontrada`);
+    }
+
+    const dataInicio = new Date(query.dataInicio);
+    const dataFim = new Date(query.dataFim);
+
+    // Buscar slots da escala (previstos)
+    const slotsEscala = await prisma.slotEscala.findMany({
+      where: {
+        escalaEquipePeriodo: { equipeId },
+        data: { gte: dataInicio, lte: dataFim },
+        estado: 'TRABALHO',
+      },
+      include: {
+        eletricista: {
+          select: { id: true, nome: true, matricula: true },
+        },
+      },
+    });
+
+    // Buscar turnos realmente abertos pela equipe
+    const turnosAbertos = await prisma.turnoRealizado.findMany({
+      where: {
+        equipeId,
+        dataReferencia: { gte: dataInicio, lte: dataFim },
+      },
+      include: {
+        Itens: {
+          include: {
+            eletricista: {
+              select: { id: true, nome: true, matricula: true },
+            },
+          },
+        },
+      },
+    });
+
+    // Buscar justificativas de equipe aprovadas que não geram falta
+    const justificativasEquipe = await prisma.justificativaEquipe.findMany({
+      where: {
+        equipeId,
+        dataReferencia: { gte: dataInicio, lte: dataFim },
+        status: 'aprovada',
+      },
+      include: {
+        tipoJustificativa: true,
+      },
+    });
+
+    // Agrupar slots por data
+    const slotsPorData = new Map<string, typeof slotsEscala>();
+    for (const slot of slotsEscala) {
+      const dataStr = slot.data.toISOString().split('T')[0];
+      if (!slotsPorData.has(dataStr)) {
+        slotsPorData.set(dataStr, []);
+      }
+      slotsPorData.get(dataStr)!.push(slot);
+    }
+
+    // Agrupar turnos por data
+    const turnosPorData = new Map<string, typeof turnosAbertos>();
+    for (const turno of turnosAbertos) {
+      const dataStr = turno.dataReferencia.toISOString().split('T')[0];
+      if (!turnosPorData.has(dataStr)) {
+        turnosPorData.set(dataStr, []);
+      }
+      turnosPorData.get(dataStr)!.push(turno);
+    }
+
+    // Agrupar justificativas por data (apenas uma por data devido ao unique constraint)
+    const justificativasPorData = new Map<string, typeof justificativasEquipe[0]>();
+    for (const just of justificativasEquipe) {
+      const dataStr = just.dataReferencia.toISOString().split('T')[0];
+      justificativasPorData.set(dataStr, just);
+    }
+
+    // Calcular métricas
+    let diasEscalados = 0;
+    let diasAbertos = 0;
+    let diasJustificadosSemFalta = 0;
+    let totalEletricistasEscalados = 0;
+    let totalEletricistasQueTrabalharam = 0;
+    let totalEletricistasPrevistos = 0;
+
+    const detalhamento: Array<{
+      data: Date;
+      eletricistasEscalados: number;
+      eletricistasQueTrabalharam: number;
+      turnoAberto: boolean;
+      justificativa?: {
+        tipo: string;
+        geraFalta: boolean;
+      };
+      aderencia: number;
+    }> = [];
+
+    // Processar cada dia do período
+    const dataAtual = new Date(dataInicio);
+    while (dataAtual <= dataFim) {
+      const dataStr = dataAtual.toISOString().split('T')[0];
+      const slotsDoDia = slotsPorData.get(dataStr) || [];
+      const turnosDoDia = turnosPorData.get(dataStr) || [];
+      const justificativaDoDia = justificativasPorData.get(dataStr);
+
+      if (slotsDoDia.length > 0) {
+        diasEscalados++;
+        totalEletricistasPrevistos += slotsDoDia.length;
+
+        const eletricistasEscalados = new Set(
+          slotsDoDia.map((s) => s.eletricistaId)
+        );
+        const eletricistasQueTrabalharam = new Set(
+          turnosDoDia.flatMap((t) => t.Itens.map((i) => i.eletricistaId))
+        );
+
+        // Se há justificativa aprovada que não gera falta, contar como trabalhado
+        if (
+          justificativaDoDia &&
+          !justificativaDoDia.tipoJustificativa.geraFalta
+        ) {
+          diasJustificadosSemFalta++;
+          totalEletricistasQueTrabalharam += eletricistasEscalados.size;
+        } else {
+          totalEletricistasQueTrabalharam += eletricistasQueTrabalharam.size;
+        }
+
+        const turnoAberto = turnosDoDia.length > 0;
+        if (turnoAberto) {
+          diasAbertos++;
+        }
+
+        const aderencia =
+          eletricistasEscalados.size > 0
+            ? (eletricistasQueTrabalharam.size / eletricistasEscalados.size) *
+              100
+            : 0;
+
+        detalhamento.push({
+          data: new Date(dataAtual),
+          eletricistasEscalados: eletricistasEscalados.size,
+          eletricistasQueTrabalharam: eletricistasQueTrabalharam.size,
+          turnoAberto,
+          justificativa: justificativaDoDia
+            ? {
+                tipo: justificativaDoDia.tipoJustificativa.nome,
+                geraFalta: justificativaDoDia.tipoJustificativa.geraFalta,
+              }
+            : undefined,
+          aderencia: Math.round(aderencia * 100) / 100,
+        });
+      }
+
+      dataAtual.setDate(dataAtual.getDate() + 1);
+    }
+
+    // Calcular percentuais
+    const aderenciaDias =
+      diasEscalados > 0 ? (diasAbertos / diasEscalados) * 100 : 0;
+    const aderenciaEletricistas =
+      totalEletricistasPrevistos > 0
+        ? (totalEletricistasQueTrabalharam / totalEletricistasPrevistos) *
+          100
+        : 0;
+
+    return {
+      equipe: {
+        id: equipe.id,
+        nome: equipe.nome,
+      },
+      periodo: {
+        dataInicio,
+        dataFim,
+      },
+      resumo: {
+        diasEscalados,
+        diasAbertos,
+        diasJustificadosSemFalta,
+        aderenciaDias: Math.round(aderenciaDias * 100) / 100,
+        totalEletricistasPrevistos,
+        totalEletricistasQueTrabalharam,
+        aderenciaEletricistas: Math.round(aderenciaEletricistas * 100) / 100,
+      },
+      detalhamento,
     };
   }
 

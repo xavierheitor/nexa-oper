@@ -5,6 +5,7 @@ import { UploadOutlined, DeleteOutlined, PaperClipOutlined } from '@ant-design/i
 import { Falta } from '@/lib/schemas/turnoRealizadoSchema';
 import { useEffect, useState } from 'react';
 import type { UploadFile } from 'antd/es/upload/interface';
+import type { UploadChangeEvent } from '@/lib/types/antd';
 
 const { TextArea } = Input;
 
@@ -47,7 +48,7 @@ export default function JustificarFaltaModal({
     }
   }, [open, falta, form]);
 
-  const handleFileChange = (info: any) => {
+  const handleFileChange = (info: UploadChangeEvent) => {
     let newFileList = [...info.fileList];
 
     // Limitar a 5 arquivos

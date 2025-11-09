@@ -29,7 +29,7 @@ export class TurnoReconciliacaoSchedulerService {
     timeZone: 'America/Sao_Paulo',
   })
   async executarReconciliacaoDiaria(): Promise<void> {
-    this.logger.log('🚀 Iniciando reconciliação diária de turnos...');
+    this.logger.log('Iniciando reconciliação diária de turnos...');
     const inicioExecucao = Date.now();
 
     try {
@@ -47,8 +47,8 @@ export class TurnoReconciliacaoSchedulerService {
       dataInicio.setDate(dataInicio.getDate() - diasParaProcessar);
       dataInicio.setHours(0, 0, 0, 0);
 
-      this.logger.log(
-        `📅 Período: ${dataInicio.toISOString().split('T')[0]} até ${dataFim.toISOString().split('T')[0]}`
+      this.logger.debug(
+        `Período: ${dataInicio.toISOString().split('T')[0]} até ${dataFim.toISOString().split('T')[0]}`
       );
 
       // Buscar todas as equipes que têm escala ativa no período
@@ -64,7 +64,7 @@ export class TurnoReconciliacaoSchedulerService {
         distinct: ['equipeId'],
       });
 
-      this.logger.log(`📊 Encontradas ${equipesComEscala.length} equipes com escala no período`);
+      this.logger.debug(`Encontradas ${equipesComEscala.length} equipes com escala no período`);
 
       let diasProcessados = 0;
       let equipesProcessadas = 0;
@@ -179,11 +179,11 @@ export class TurnoReconciliacaoSchedulerService {
       );
 
       if (erros.length > 0) {
-        this.logger.warn(`⚠️ Erros encontrados: ${JSON.stringify(erros)}`);
+        this.logger.warn(`Erros encontrados: ${JSON.stringify(erros)}`);
       }
     } catch (error) {
       this.logger.error(
-        `❌ Erro crítico na reconciliação diária: ${error}`,
+        `Erro crítico na reconciliação diária: ${error}`,
         error instanceof Error ? error.stack : undefined
       );
       // Não lançar erro para não interromper o job
@@ -198,7 +198,7 @@ export class TurnoReconciliacaoSchedulerService {
     dataReferencia: string
   ): Promise<void> {
     this.logger.log(
-      `🔧 Executando reconciliação manual para equipe ${equipeId} em ${dataReferencia}`
+      `Executando reconciliação manual para equipe ${equipeId} em ${dataReferencia}`
     );
 
     await this.turnoReconciliacaoService.reconciliarDiaEquipe({

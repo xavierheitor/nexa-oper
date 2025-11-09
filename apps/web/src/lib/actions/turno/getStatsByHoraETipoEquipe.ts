@@ -10,6 +10,9 @@
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
 import { listTiposEquipe } from '../tipoEquipe/list';
+import { getTodayDateRange } from '@/lib/utils/dateHelpers';
+import { DEFAULT_STATS_PAGE_SIZE, MAX_STATS_ITEMS } from '@/lib/constants/statsLimits';
+import { logger } from '@/lib/utils/logger';
 import { z } from 'zod';
 
 const turnoStatsByHoraETipoEquipeSchema = z.object({});
@@ -23,12 +26,10 @@ export const getStatsByHoraETipoEquipe = async () =>
   handleServerAction(
     turnoStatsByHoraETipoEquipeSchema,
     async () => {
-      console.log('🔍 [getStatsByHoraETipoEquipe] Iniciando busca de dados...');
-
       // 1. Buscar tipos de equipe
       const resultTipos = await listTiposEquipe({
         page: 1,
-        pageSize: 100,
+        pageSize: DEFAULT_STATS_PAGE_SIZE,
         orderBy: 'id',
         orderDir: 'asc',
       });
@@ -38,19 +39,25 @@ export const getStatsByHoraETipoEquipe = async () =>
       }
 
       const tiposEquipe = resultTipos.data.data || [];
-      console.log('📋 [getStatsByHoraETipoEquipe] Tipos encontrados:', tiposEquipe.length);
+
+      // Validação: Verifica se o limite foi atingido
+      if (resultTipos.data.total > MAX_STATS_ITEMS) {
+        logger.warn('Limite de tipos de equipe atingido nas estatísticas', {
+          total: resultTipos.data.total,
+          limite: MAX_STATS_ITEMS,
+          action: 'getStatsByHoraETipoEquipe',
+        });
+      }
 
       // 2. Buscar turnos do dia com relacionamentos
-      const hoje = new Date();
-      const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0);
-      const fimHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 23, 59, 59);
+      const { inicio, fim } = getTodayDateRange();
 
       const turnos = await prisma.turno.findMany({
         where: {
           deletedAt: null,
           dataInicio: {
-            gte: inicioHoje,
-            lte: fimHoje,
+            gte: inicio,
+            lte: fim,
           },
         },
         include: {
@@ -61,8 +68,6 @@ export const getStatsByHoraETipoEquipe = async () =>
           },
         },
       });
-
-      console.log('✅ [getStatsByHoraETipoEquipe] Turnos encontrados:', turnos.length);
 
       // 3. Inicializar estrutura de contagem: hora -> tipo -> quantidade
       const contagem: Record<number, Record<string, number>> = {};
@@ -104,8 +109,6 @@ export const getStatsByHoraETipoEquipe = async () =>
           });
         });
       }
-
-      console.log('📊 [getStatsByHoraETipoEquipe] Dados finais:', dados.length, 'registros');
 
       return dados;
     },

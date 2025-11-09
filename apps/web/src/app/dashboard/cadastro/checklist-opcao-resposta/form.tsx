@@ -22,10 +22,9 @@ export default function ChecklistOpcaoRespostaForm({ onSubmit, initialValues, lo
     else form.resetFields();
   }, [initialValues, form]);
 
-  if (loading) return <Spin spinning />;
-
   return (
-    <Form form={form} layout="vertical" onFinish={onSubmit}>
+    <Spin spinning={loading}>
+      <Form form={form} layout="vertical" onFinish={onSubmit}>
       <Form.Item
         name="nome"
         label="Opção de Resposta"
@@ -47,6 +46,7 @@ export default function ChecklistOpcaoRespostaForm({ onSubmit, initialValues, lo
         </Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 }
 

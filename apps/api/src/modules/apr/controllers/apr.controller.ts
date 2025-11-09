@@ -66,6 +66,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { GetUsuarioMobileId } from '@modules/engine/auth/decorators/get-user-id-decorator';
 import { AprService } from '../services/apr.service';
 import {
   AprListResponseDto,
@@ -246,9 +247,12 @@ export class AprController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor',
   })
-  async create(@Body() createAprDto: CreateAprDto): Promise<AprResponseDto> {
+  async create(
+    @Body() createAprDto: CreateAprDto,
+    @GetUsuarioMobileId() userId?: string
+  ): Promise<AprResponseDto> {
     this.logger.log(`Criando novo modelo APR: ${createAprDto.nome}`);
-    return this.aprService.create(createAprDto);
+    return this.aprService.create(createAprDto, userId);
   }
 
   /**
@@ -298,10 +302,11 @@ export class AprController {
   })
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateAprDto: UpdateAprDto
+    @Body() updateAprDto: UpdateAprDto,
+    @GetUsuarioMobileId() userId?: string
   ): Promise<AprResponseDto> {
     this.logger.log(`Atualizando modelo APR ${id}`);
-    return this.aprService.update(id, updateAprDto);
+    return this.aprService.update(id, updateAprDto, userId);
   }
 
   /**
@@ -343,9 +348,12 @@ export class AprController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor',
   })
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUsuarioMobileId() userId?: string
+  ): Promise<void> {
     this.logger.log(`Removendo modelo APR: ${id}`);
-    return this.aprService.remove(id);
+    return this.aprService.remove(id, userId);
   }
 
   /**

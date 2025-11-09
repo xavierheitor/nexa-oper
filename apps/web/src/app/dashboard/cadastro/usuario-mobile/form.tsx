@@ -105,10 +105,9 @@ export default function MobileUserForm({
     return 'Muito Forte';
   };
 
-  if (loading) return <Spin spinning />;
-
   return (
-    <Form
+    <Spin spinning={loading}>
+      <Form
       form={form}
       layout="vertical"
       onFinish={onSubmit}
@@ -283,5 +282,6 @@ export default function MobileUserForm({
         </Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 }

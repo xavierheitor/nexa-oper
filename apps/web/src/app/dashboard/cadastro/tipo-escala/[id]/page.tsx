@@ -6,11 +6,12 @@
 
 'use client';
 
-import React, { useEffect, useState, useCallback, use } from 'react';
+import React, { useEffect, useState, use } from 'react';
 import { Card, Tabs, Button, Tag, Space, Row, Col, Switch, Spin, App } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import { getTipoEscalaById, salvarPosicoesCiclo, salvarMascarasSemanas } from '@/lib/actions/escala/tipoEscala';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface Props {
   params: Promise<{
@@ -54,26 +55,35 @@ export default function TipoEscalaDetailPage({ params }: Props) {
   const router = useRouter();
   const resolvedParams = use(params);
   const { message } = App.useApp();
-  const [loading, setLoading] = useState(true);
   const [tipoEscala, setTipoEscala] = useState<TipoEscalaWithRelations | null>(null);
   const [cicloPosicoes, setCicloPosicoes] = useState<{ posicao: number; status: string }[]>([]);
   const [semanaMascaras, setSemanaMascaras] = useState<{ semanaIndex: number; dia: string; status: string }[]>([]);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
+  // Carregar dados do tipo de escala
+  const { data: tipoEscalaData, loading, refetch } = useDataFetch<TipoEscalaWithRelations>(
+    async () => {
       const result = await getTipoEscalaById(Number(resolvedParams.id));
       if (result.success && result.data) {
-        const tipoEscalaData = result.data as TipoEscalaWithRelations;
-        setTipoEscala(tipoEscalaData);
+        return result.data as TipoEscalaWithRelations;
+      }
+      throw new Error(result.error || 'Erro ao carregar tipo de escala');
+    },
+    [resolvedParams.id],
+    {
+      onError: () => {
+        message.error('Erro ao carregar tipo de escala');
+      },
+      onSuccess: (data) => {
+        const tipoEscalaLoaded = data as TipoEscalaWithRelations;
+        setTipoEscala(tipoEscalaLoaded);
 
         // Inicializar posições do ciclo
-        if (tipoEscalaData.modoRepeticao === 'CICLO_DIAS' && tipoEscalaData.cicloDias) {
-          const posicoes = tipoEscalaData.CicloPosicoes || [];
+        if (tipoEscalaLoaded.modoRepeticao === 'CICLO_DIAS' && tipoEscalaLoaded.cicloDias) {
+          const posicoes = tipoEscalaLoaded.CicloPosicoes || [];
           const posicoesCompletas = [];
 
-          for (let i = 0; i < tipoEscalaData.cicloDias; i++) {
-            const existente = posicoes.find((p: any) => p.posicao === i);
+          for (let i = 0; i < tipoEscalaLoaded.cicloDias; i++) {
+            const existente = posicoes.find((p) => p.posicao === i);
             posicoesCompletas.push({
               posicao: i,
               status: existente?.status || 'TRABALHO',
@@ -85,16 +95,16 @@ export default function TipoEscalaDetailPage({ params }: Props) {
         }
 
         // Inicializar máscaras de semana
-        if (tipoEscalaData.modoRepeticao === 'SEMANA_DEPENDENTE' && tipoEscalaData.periodicidadeSemanas) {
-          const mascaras = tipoEscalaData.SemanaMascaras || [];
+        if (tipoEscalaLoaded.modoRepeticao === 'SEMANA_DEPENDENTE' && tipoEscalaLoaded.periodicidadeSemanas) {
+          const mascaras = tipoEscalaLoaded.SemanaMascaras || [];
           const mascarasCompletas = [];
 
           // Para cada semana e cada dia, criar uma máscara
           const diasSemana = ['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO', 'DOMINGO'];
-          for (let semanaIdx = 0; semanaIdx < tipoEscalaData.periodicidadeSemanas; semanaIdx++) {
+          for (let semanaIdx = 0; semanaIdx < tipoEscalaLoaded.periodicidadeSemanas; semanaIdx++) {
             for (const dia of diasSemana) {
               const existente = mascaras.find(
-                (m: any) => m.semanaIndex === semanaIdx && m.dia === dia
+                (m) => m.semanaIndex === semanaIdx && m.dia === dia
               );
               mascarasCompletas.push({
                 semanaIndex: semanaIdx,
@@ -107,16 +117,15 @@ export default function TipoEscalaDetailPage({ params }: Props) {
           setSemanaMascaras(mascarasCompletas);
         }
       }
-    } catch (error) {
-      message.error('Erro ao carregar tipo de escala');
-    } finally {
-      setLoading(false);
     }
-  }, [resolvedParams.id, message]);
+  );
 
+  // Sincronizar tipoEscalaData com tipoEscala state quando os dados mudarem
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (tipoEscalaData && !tipoEscala) {
+      setTipoEscala(tipoEscalaData);
+    }
+  }, [tipoEscalaData, tipoEscala]);
 
   const handleTogglePosicao = (posicao: number) => {
     setCicloPosicoes(prev =>
@@ -156,7 +165,7 @@ export default function TipoEscalaDetailPage({ params }: Props) {
 
         if (result.success) {
           message.success('Posições do ciclo salvas com sucesso!');
-          await loadData();
+          await refetch();
         } else {
           message.error(result.error || 'Erro ao salvar posições');
         }
@@ -172,7 +181,7 @@ export default function TipoEscalaDetailPage({ params }: Props) {
 
         if (result.success) {
           message.success('Máscaras de semana salvas com sucesso!');
-          await loadData();
+          await refetch();
         } else {
           message.error(result.error || 'Erro ao salvar máscaras');
         }

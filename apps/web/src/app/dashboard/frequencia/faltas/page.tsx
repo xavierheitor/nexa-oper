@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, Space, DatePicker, Select, Button, message } from 'antd';
 import { App } from 'antd';
 import { listFaltas } from '@/lib/actions/turno-realizado/listFaltas';
 import { FaltaListResponse, FaltaStatus, FaltaStatusLabels } from '@/lib/schemas/turnoRealizadoSchema';
 import { listTiposJustificativa } from '@/lib/actions/justificativa/listTipos';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { criarJustificativa } from '@/lib/actions/justificativa/criarJustificativa';
 import { uploadAnexoJustificativa } from '@/lib/actions/justificativa/uploadAnexo';
 import FaltaTable from '@/ui/components/FaltaTable';
@@ -34,23 +35,19 @@ export default function FaltasPage() {
 
   const [faltaSelecionada, setFaltaSelecionada] = useState<FaltaListResponse['data'][0] | null>(null);
   const [modalJustificarOpen, setModalJustificarOpen] = useState(false);
-  const [tiposJustificativa, setTiposJustificativa] = useState<Array<{ id: number; nome: string }>>([]);
   const [loadingJustificar, setLoadingJustificar] = useState(false);
 
   // Carregar tipos de justificativa
-  useEffect(() => {
-    const loadTipos = async () => {
-      try {
-        const result = await listTiposJustificativa();
-        if (result.success && result.data) {
-          setTiposJustificativa(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar tipos de justificativa:', error);
+  const { data: tiposJustificativa = [] } = useDataFetch<Array<{ id: number; nome: string }>>(
+    async () => {
+      const result = await listTiposJustificativa();
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
-    loadTipos();
-  }, []);
+      throw new Error(result.error || 'Erro ao carregar tipos de justificativa');
+    },
+    []
+  );
 
   // Fetcher para SWR
   const fetcher = async (): Promise<FaltaListResponse> => {
@@ -68,7 +65,39 @@ export default function FaltasPage() {
       throw new Error('Dados não retornados');
     }
 
-    return result.data;
+    // Garantir que o retorno tenha a estrutura correta
+    const responseData = result.data as any;
+
+    // Se já tiver a estrutura correta, retornar
+    if (responseData && typeof responseData === 'object' && 'data' in responseData && 'pagination' in responseData) {
+      return responseData as FaltaListResponse;
+    }
+
+    // Se retornar { items, total }, transformar para { data, pagination }
+    if (responseData && typeof responseData === 'object' && 'items' in responseData && 'total' in responseData) {
+      const { items, total } = responseData as { items: any[]; total: number };
+      return {
+        data: items as FaltaListResponse['data'],
+        pagination: {
+          page: filtros.page || 1,
+          pageSize: filtros.pageSize || 20,
+          total,
+          totalPages: Math.ceil(total / (filtros.pageSize || 20)),
+        },
+      };
+    }
+
+    // Se não tiver a estrutura correta, criar uma estrutura compatível
+    const items = Array.isArray(responseData) ? responseData : [];
+    return {
+      data: items as FaltaListResponse['data'],
+      pagination: {
+        page: filtros.page || 1,
+        pageSize: filtros.pageSize || 20,
+        total: items.length,
+        totalPages: Math.ceil(items.length / (filtros.pageSize || 20)),
+      },
+    };
   };
 
   const { data, error, isLoading, mutate } = useSWR<FaltaListResponse>(
@@ -157,9 +186,10 @@ export default function FaltasPage() {
       setModalJustificarOpen(false);
       setFaltaSelecionada(null);
       await mutate();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao justificar falta:', error);
-      messageApi.error(error.message || 'Erro ao criar justificativa');
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao criar justificativa';
+      messageApi.error(errorMessage);
     } finally {
       setLoadingJustificar(false);
     }
@@ -216,7 +246,7 @@ export default function FaltasPage() {
         onJustificar={handleJustificarSubmit}
         falta={faltaSelecionada}
         loading={loadingJustificar}
-        tiposJustificativa={tiposJustificativa}
+        tiposJustificativa={tiposJustificativa || undefined}
       />
     </div>
   );

@@ -100,10 +100,15 @@ model TipoJustificativa {
   descricao String? @db.VarChar(1000)
   ativo     Boolean @default(true)
 
+  // Se true, a justificativa ainda gera falta (ex: atestado médico)
+  // Se false, não gera falta e conta como dia trabalhado (ex: trabalho no pátio)
+  geraFalta Boolean @default(true)
+
   createdAt DateTime @default(now())
   createdBy String   @db.VarChar(255)
 
-  Justificativas Justificativa[]
+  Justificativas        Justificativa[]
+  JustificativasEquipe JustificativaEquipe[]
 
   @@unique([nome])
   @@index([ativo])
@@ -154,6 +159,49 @@ model FaltaJustificativa {
   @@unique([faltaId, justificativaId])
   @@index([faltaId])
   @@index([justificativaId])
+}
+
+/// =========================
+/// Justificativa de Equipe (quando equipe não abre turno)
+/// =========================
+model JustificativaEquipe {
+  id             Int      @id @default(autoincrement())
+  dataReferencia DateTime
+  equipeId       Int
+  equipe         Equipe   @relation(fields: [equipeId], references: [id])
+
+  tipoJustificativaId Int
+  tipoJustificativa   TipoJustificativa @relation(fields: [tipoJustificativaId], references: [id])
+
+  descricao String?  @db.VarChar(1000)
+  createdAt DateTime @default(now())
+  createdBy String   @db.VarChar(255)
+
+  status    String    @db.VarChar(16) // pendente | aprovada | rejeitada
+  decidedBy String?   @db.VarChar(255)
+  decidedAt DateTime?
+
+  // Se aprovada e não gera falta, conta como dia trabalhado para todos os eletricistas escalados
+  // Se aprovada e gera falta, mantém as faltas individuais criadas
+
+  Anexos JustificativaEquipeAnexo[]
+
+  @@unique([dataReferencia, equipeId])
+  @@index([equipeId, dataReferencia])
+  @@index([status])
+}
+
+model JustificativaEquipeAnexo {
+  id                    Int                @id @default(autoincrement())
+  justificativaEquipeId Int
+  justificativaEquipe   JustificativaEquipe @relation(fields: [justificativaEquipeId], references: [id], onDelete: Cascade)
+
+  filePath   String   @db.VarChar(1000)
+  mimeType   String   @db.VarChar(255)
+  uploadedBy String   @db.VarChar(255)
+  uploadedAt DateTime @default(now())
+
+  @@index([justificativaEquipeId])
 }
 
 /// =========================

@@ -1,7 +1,8 @@
 'use client';
 
 import { Card, Empty, Spin, Table, Tag } from 'antd';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosBase {
   id: number;
@@ -25,41 +26,30 @@ interface ConsolidacaoPorBaseProps {
 }
 
 export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProps) {
-  const [dados, setDados] = useState<DadosBase[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Memoiza a função fetcher para evitar recriações desnecessárias
+  const fetcher = useMemo(
+    () => async () => {
+      const { getConsolidacaoPorBase } = await import(
+        '@/lib/actions/relatorios/relatoriosBases'
+      );
+      const result = await getConsolidacaoPorBase(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        console.log('[ConsolidacaoPorBase] Buscando dados com filtros:', filtros);
-        const { getConsolidacaoPorBase } = await import(
-          '@/lib/actions/relatorios/relatoriosBases'
-        );
-        const result = await getConsolidacaoPorBase(filtros);
-        console.log('[ConsolidacaoPorBase] Resultado completo:', result);
-        console.log('[ConsolidacaoPorBase] result.success:', result.success);
-        console.log('[ConsolidacaoPorBase] result.data:', result.data);
-        console.log('[ConsolidacaoPorBase] Tipo de result.data:', typeof result.data);
-        console.log('[ConsolidacaoPorBase] Array.isArray(result.data):', Array.isArray(result.data));
-
-        if (result.success && result.data) {
-          console.log('[ConsolidacaoPorBase] ✅ Definindo dados, length:', result.data.length);
-          setDados(result.data);
-        } else {
-          console.error('[ConsolidacaoPorBase] ❌ Erro ou sem dados. success:', result.success, 'data:', result.data);
-        }
-      } catch (error) {
-        console.error('[ConsolidacaoPorBase] Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
+      throw new Error('Erro ao carregar dados de consolidação por base');
+    },
+    [filtros]
+  );
 
-    fetchDados();
-  }, [filtros]);
+  const { data: dadosRaw, loading } = useDataFetch<DadosBase[]>(fetcher, [fetcher]);
 
-  const columns = [
+  // Garante que dados nunca seja null
+  const dados: DadosBase[] = dadosRaw ?? [];
+
+  // Memoiza as colunas para evitar recriações desnecessárias
+  const columns = useMemo(
+    () => [
     {
       title: 'Base',
       dataIndex: 'nome',
@@ -150,7 +140,35 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
         </Tag>
       ),
     },
-  ];
+    ],
+    []
+  );
+
+  // Memoiza o cálculo de totais para evitar recálculos desnecessários
+  const totais = useMemo(
+    () =>
+      dados.reduce(
+        (acc, base) => ({
+          veiculos: acc.veiculos + base.veiculos,
+          eletricistasTotal: acc.eletricistasTotal + base.eletricistas.total,
+          eletricistasEscalados: acc.eletricistasEscalados + base.eletricistas.escalados,
+          eletricistasNaoEscalados: acc.eletricistasNaoEscalados + base.eletricistas.naoEscalados,
+          equipesTotal: acc.equipesTotal + base.equipes.total,
+          equipesEscaladas: acc.equipesEscaladas + base.equipes.escaladas,
+          equipesInativas: acc.equipesInativas + base.equipes.inativas,
+        }),
+        {
+          veiculos: 0,
+          eletricistasTotal: 0,
+          eletricistasEscalados: 0,
+          eletricistasNaoEscalados: 0,
+          equipesTotal: 0,
+          equipesEscaladas: 0,
+          equipesInativas: 0,
+        }
+      ),
+    [dados]
+  );
 
   if (loading) {
     return (
@@ -169,28 +187,6 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
       </Card>
     );
   }
-
-  // Calcular totais
-  const totais = dados.reduce(
-    (acc, base) => ({
-      veiculos: acc.veiculos + base.veiculos,
-      eletricistasTotal: acc.eletricistasTotal + base.eletricistas.total,
-      eletricistasEscalados: acc.eletricistasEscalados + base.eletricistas.escalados,
-      eletricistasNaoEscalados: acc.eletricistasNaoEscalados + base.eletricistas.naoEscalados,
-      equipesTotal: acc.equipesTotal + base.equipes.total,
-      equipesEscaladas: acc.equipesEscaladas + base.equipes.escaladas,
-      equipesInativas: acc.equipesInativas + base.equipes.inativas,
-    }),
-    {
-      veiculos: 0,
-      eletricistasTotal: 0,
-      eletricistasEscalados: 0,
-      eletricistasNaoEscalados: 0,
-      equipesTotal: 0,
-      equipesEscaladas: 0,
-      equipesInativas: 0,
-    }
-  );
 
   return (
     <Card

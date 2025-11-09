@@ -2,7 +2,7 @@
 
 import { Column } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
-import { useEffect, useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosHorario {
   horario: string;
@@ -14,29 +14,20 @@ interface EquipesPorHorarioProps {
 }
 
 export default function EquipesPorHorario({ filtros }: EquipesPorHorarioProps) {
-  const [dados, setDados] = useState<DadosHorario[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: dados = [], loading } = useDataFetch<DadosHorario[]>(
+    async () => {
+      const { getEquipesPorHorario } = await import(
+        '@/lib/actions/relatorios/relatoriosEquipes'
+      );
+      const result = await getEquipesPorHorario(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getEquipesPorHorario } = await import(
-          '@/lib/actions/relatorios/relatoriosEquipes'
-        );
-        const result = await getEquipesPorHorario(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
-
-    fetchDados();
-  }, [filtros]);
+      throw new Error('Erro ao carregar dados de equipes por horário');
+    },
+    [filtros]
+  );
 
   if (loading) {
     return (
@@ -48,7 +39,7 @@ export default function EquipesPorHorario({ filtros }: EquipesPorHorarioProps) {
     );
   }
 
-  if (dados.length === 0) {
+  if (!dados?.length) {
     return (
       <Card title="Equipes por Horário">
         <Empty description="Nenhum dado disponível" />
@@ -56,8 +47,11 @@ export default function EquipesPorHorario({ filtros }: EquipesPorHorarioProps) {
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     xField: 'horario',
     yField: 'quantidade',
     label: {

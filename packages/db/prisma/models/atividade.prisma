@@ -10,4 +10,7 @@ model TipoAtividade {
   updatedBy String?   @db.VarChar(255)
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
+
+  @@unique([nome])
+  @@index([nome])
 }

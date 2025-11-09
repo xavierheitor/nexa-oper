@@ -2,7 +2,7 @@
 
 import { Line } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
-import { useEffect, useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosFaltas {
   data: string;
@@ -14,29 +14,20 @@ interface FaltasPorPeriodoProps {
 }
 
 export default function FaltasPorPeriodo({ filtros }: FaltasPorPeriodoProps) {
-  const [dados, setDados] = useState<DadosFaltas[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: dados = [], loading } = useDataFetch<DadosFaltas[]>(
+    async () => {
+      const { getFaltasPorPeriodo } = await import(
+        '@/lib/actions/relatorios/relatoriosEscalas'
+      );
+      const result = await getFaltasPorPeriodo(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getFaltasPorPeriodo } = await import(
-          '@/lib/actions/relatorios/relatoriosEscalas'
-        );
-        const result = await getFaltasPorPeriodo(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
-
-    fetchDados();
-  }, [filtros]);
+      throw new Error('Erro ao carregar dados de faltas por período');
+    },
+    [filtros]
+  );
 
   if (loading) {
     return (
@@ -48,7 +39,7 @@ export default function FaltasPorPeriodo({ filtros }: FaltasPorPeriodoProps) {
     );
   }
 
-  if (dados.length === 0) {
+  if (!dados?.length) {
     return (
       <Card title="Evolução de Faltas por Período">
         <Empty description="Nenhum dado disponível" />
@@ -56,8 +47,11 @@ export default function FaltasPorPeriodo({ filtros }: FaltasPorPeriodoProps) {
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     xField: 'data',
     yField: 'quantidade',
     point: {

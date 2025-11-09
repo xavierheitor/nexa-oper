@@ -10,6 +10,9 @@
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
 import { listBases } from '../base/list';
+import { getTodayDateRange } from '@/lib/utils/dateHelpers';
+import { DEFAULT_STATS_PAGE_SIZE, MAX_STATS_ITEMS } from '@/lib/constants/statsLimits';
+import { logger } from '@/lib/utils/logger';
 import { z } from 'zod';
 
 const turnoStatsByBaseSchema = z.object({});
@@ -23,12 +26,10 @@ export const getStatsByBase = async () =>
   handleServerAction(
     turnoStatsByBaseSchema,
     async () => {
-      console.log('🔍 [getStatsByBase] Iniciando busca de dados...');
-
       // 1. Buscar todas as bases
       const resultBases = await listBases({
         page: 1,
-        pageSize: 100,
+        pageSize: DEFAULT_STATS_PAGE_SIZE,
         orderBy: 'nome',
         orderDir: 'asc',
       });
@@ -38,19 +39,25 @@ export const getStatsByBase = async () =>
       }
 
       const bases = resultBases.data.data || [];
-      console.log('✅ [getStatsByBase] Bases encontradas:', bases.length);
+
+      // Validação: Verifica se o limite foi atingido
+      if (resultBases.data.total > MAX_STATS_ITEMS) {
+        logger.warn('Limite de bases atingido nas estatísticas', {
+          total: resultBases.data.total,
+          limite: MAX_STATS_ITEMS,
+          action: 'getStatsByBase',
+        });
+      }
 
       // 2. Buscar turnos do dia com relacionamentos de equipe e base
-      const hoje = new Date();
-      const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0);
-      const fimHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 23, 59, 59);
+      const { inicio, fim } = getTodayDateRange();
 
       const turnos = await prisma.turno.findMany({
         where: {
           deletedAt: null,
           dataInicio: {
-            gte: inicioHoje,
-            lte: fimHoje,
+            gte: inicio,
+            lte: fim,
           },
         },
         include: {
@@ -71,8 +78,6 @@ export const getStatsByBase = async () =>
         },
       });
 
-      console.log('✅ [getStatsByBase] Turnos encontrados:', turnos.length);
-
       // 3. Inicializar contagem para todas as bases com 0
       const contagem: Record<string, number> = {};
       bases.forEach((base: any) => {
@@ -87,15 +92,11 @@ export const getStatsByBase = async () =>
         }
       });
 
-      console.log('🔢 [getStatsByBase] Contagem por base:', contagem);
-
       // 5. Converter para array formatado
       const dados = bases.map((base: any) => ({
         base: base.nome,
         quantidade: contagem[base.nome] || 0,
       }));
-
-      console.log('📊 [getStatsByBase] Dados finais:', dados);
 
       return dados;
     },

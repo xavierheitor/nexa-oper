@@ -28,6 +28,19 @@ import { EletricistaRepository } from '../repositories/EletricistaRepository';
 import { EletricistaCreate, eletricistaCreateSchema, EletricistaFilter, EletricistaUpdate, eletricistaUpdateSchema } from '../schemas/eletricistaSchema';
 import { PaginatedResult } from '../types/common';
 
+/**
+ * Tipo para dados brutos recebidos do handleServerAction (inclui campos de auditoria)
+ */
+type EletricistaCreateWithAudit = EletricistaCreate & {
+  createdBy?: string;
+  createdAt?: Date;
+};
+
+type EletricistaUpdateWithAudit = EletricistaUpdate & {
+  updatedBy?: string;
+  updatedAt?: Date;
+};
+
 export class EletricistaService extends AbstractCrudService<
   EletricistaCreate,
   EletricistaUpdate,
@@ -44,6 +57,9 @@ export class EletricistaService extends AbstractCrudService<
     const repo = new EletricistaRepository();
     // EletricistaRepository tem assinatura customizada de create que aceita status e baseId
     // Por isso fazemos cast para compatibilidade com AbstractCrudService
+    // O cast é necessário porque o AbstractCrudService espera um ICrudRepository genérico
+    // mas EletricistaRepository implementa métodos com assinaturas específicas
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     super(repo as any);
     this.eletricistaRepo = repo;
   }
@@ -55,7 +71,7 @@ export class EletricistaService extends AbstractCrudService<
    * @param userId - ID do usuário que está criando
    * @returns Eletricista criado
    */
-  async create(raw: any, userId: string): Promise<Eletricista> {
+  async create(raw: EletricistaCreateWithAudit, userId: string): Promise<Eletricista> {
     // Extrai campos de auditoria adicionados pelo handleServerAction
     const { createdBy, createdAt, ...businessData } = raw;
 
@@ -76,7 +92,7 @@ export class EletricistaService extends AbstractCrudService<
         ...eletricistaCoreData,
         ...(createdBy && { createdBy }),
         ...(createdAt && { createdAt }),
-      } as any,
+      } as EletricistaCreate & { createdBy?: string; createdAt?: Date },
       userId,
       normalizedBaseId
     );
@@ -89,7 +105,7 @@ export class EletricistaService extends AbstractCrudService<
    * @param userId - ID do usuário que está atualizando
    * @returns Eletricista atualizado
    */
-  async update(raw: any, userId: string): Promise<Eletricista> {
+  async update(raw: EletricistaUpdateWithAudit, userId: string): Promise<Eletricista> {
     // Extrai campos de auditoria adicionados pelo handleServerAction
     const { updatedBy, updatedAt, ...businessData } = raw;
 
@@ -111,7 +127,7 @@ export class EletricistaService extends AbstractCrudService<
         ...eletricistaCoreData,
         ...(updatedBy && { updatedBy }),
         ...(updatedAt && { updatedAt }),
-      } as any,
+      } as EletricistaUpdate & { updatedBy?: string; updatedAt?: Date },
       userId,
       normalizedBaseId
     );

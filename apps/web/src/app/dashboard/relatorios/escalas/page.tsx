@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button, Card, Col, DatePicker, Row, Select, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
 import DiasTrabalhadosPorEletricista from './components/DiasTrabalhadosPorEletricista';
 import FaltasPorPeriodo from './components/FaltasPorPeriodo';
 import ComparacaoFolgaTrabalho from './components/ComparacaoFolgaTrabalho';
+import EscaladosPorDia from './components/EscaladosPorDia';
+import TurnosPorPeriodo from '../turnos-por-periodo/components/TurnosPorPeriodo';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
@@ -66,10 +68,22 @@ export default function RelatoriosEscalasPage() {
     });
   };
 
+  // Memoiza as opções dos Selects para evitar recriações desnecessárias
+  const contratosOptions = useMemo(
+    () => contratos?.map((c: any) => ({ label: c.nome, value: c.id })) || [],
+    [contratos]
+  );
+
+  const basesOptions = useMemo(
+    () => bases?.map((b: any) => ({ label: b.nome, value: b.id })) || [],
+    [bases]
+  );
+
   return (
     <div style={{ padding: '24px' }}>
       <Title level={2}>Relatórios - Escalas</Title>
 
+      {/* Filtros de Período */}
       <Card style={{ marginBottom: 24 }}>
         <Space wrap size='middle'>
           <RangePicker
@@ -89,7 +103,7 @@ export default function RelatoriosEscalasPage() {
             loading={loadingContratos}
             value={filtros.contratoId}
             onChange={(value) => handleFilterChange('contratoId', value)}
-            options={contratos?.map((c: any) => ({ label: c.nome, value: c.id }))}
+            options={contratosOptions}
           />
           <Select
             placeholder='Filtrar por Base'
@@ -98,7 +112,7 @@ export default function RelatoriosEscalasPage() {
             loading={loadingBases}
             value={filtros.baseId}
             onChange={(value) => handleFilterChange('baseId', value)}
-            options={bases?.map((b: any) => ({ label: b.nome, value: b.id }))}
+            options={basesOptions}
           />
           <Button onClick={handleClearFilters}>Limpar Filtros</Button>
         </Space>
@@ -115,6 +129,28 @@ export default function RelatoriosEscalasPage() {
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24}>
           <DiasTrabalhadosPorEletricista filtros={filtros} />
+        </Col>
+      </Row>
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Col xs={24}>
+          <EscaladosPorDia
+            filtros={{
+              baseId: filtros.baseId,
+              contratoId: filtros.contratoId,
+            }}
+          />
+        </Col>
+      </Row>
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Col xs={24}>
+          <TurnosPorPeriodo
+            filtros={{
+              periodoInicio: filtros.periodoInicio,
+              periodoFim: filtros.periodoFim,
+              baseId: filtros.baseId,
+              contratoId: filtros.contratoId,
+            }}
+          />
         </Col>
       </Row>
     </div>

@@ -44,8 +44,8 @@ export async function GET(
     };
     const contentType = mimeTypes[ext || ''] || 'application/octet-stream';
 
-    // Retornar o arquivo
-    return new NextResponse(fileBuffer, {
+    // Retornar o arquivo (convertendo Buffer para Uint8Array)
+    return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',

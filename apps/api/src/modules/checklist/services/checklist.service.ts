@@ -70,13 +70,20 @@ import {
   CreateChecklistDto,
   UpdateChecklistDto,
 } from '../dto';
-import { buildPagination, buildPagedResponse } from '@common/utils/pagination';
+import {
+  buildPagination,
+  buildPagedResponse,
+  buildPaginationMeta,
+  validatePaginationParams,
+} from '@common/utils/pagination';
+import { validateId, validateOptionalId } from '@common/utils/validation';
+import { handleCrudError } from '@common/utils/error-handler';
+import { buildWhereClause as buildWhereClauseHelper } from '@common/utils/where-clause';
 import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
 import {
   AUDIT_CONFIG,
   ERROR_MESSAGES,
   CHECKLIST_ORDER_CONFIG_COMPAT,
-  PAGINATION_CONFIG,
   ORDER_CONFIG,
 } from '../constants/checklist.constants';
 
@@ -120,48 +127,20 @@ export class ChecklistService {
 
   constructor(private readonly db: DatabaseService) {}
 
-  /**
-   * Valida parâmetros de paginação
-   * @private
-   */
-  private validatePaginationParams(page: number, limit: number): void {
-    if (page < 1) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_PAGE);
-    }
-    if (limit < 1 || limit > PAGINATION_CONFIG.MAX_LIMIT) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_LIMIT);
-    }
-  }
 
   /**
-   * Valida ID de checklist
+   * Obtém contexto do usuário atual
    * @private
+   * @param userId - ID do usuário (opcional, usa 'system' como fallback)
    */
-  private validateChecklistId(id: number): void {
-    if (!id || !Number.isInteger(id) || id <= 0) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_ID);
+  private getCurrentUserContext(userId?: string): UserContext {
+    if (userId) {
+      return {
+        userId,
+        userName: userId,
+        roles: [],
+      };
     }
-  }
-
-  /**
-   * Valida ID de tipo de checklist
-   * @private
-   */
-  private validateTipoChecklistId(tipoChecklistId?: number): void {
-    if (
-      tipoChecklistId !== undefined &&
-      (!Number.isInteger(tipoChecklistId) || tipoChecklistId <= 0)
-    ) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_TIPO_CHECKLIST_ID);
-    }
-  }
-
-  /**
-   * Obtém contexto do usuário atual (placeholder para futura implementação)
-   * @private
-   */
-  private getCurrentUserContext(): UserContext {
-    // TODO: Implementar extração do contexto do usuário do JWT
     return {
       userId: AUDIT_CONFIG.DEFAULT_USER,
       userName: AUDIT_CONFIG.DEFAULT_USER_NAME,
@@ -174,37 +153,13 @@ export class ChecklistService {
    * @private
    */
   private buildWhereClause(search?: string, tipoChecklistId?: number) {
-    return {
-      deletedAt: null, // Apenas registros ativos
-      ...(search && {
-        nome: {
-          contains: search,
-          mode: 'insensitive' as const,
-        },
-      }),
-      ...(tipoChecklistId && { tipoChecklistId }),
-    };
+    return buildWhereClauseHelper({
+      search,
+      searchFields: { nome: true },
+      additionalFilters: tipoChecklistId ? { tipoChecklistId } : undefined,
+    });
   }
 
-  /**
-   * Constrói metadados de paginação
-   * @private
-   */
-  private buildPaginationMeta(
-    total: number,
-    page: number,
-    limit: number
-  ): PaginationMetaDto {
-    const totalPages = Math.ceil(total / limit);
-    return {
-      total,
-      page,
-      limit,
-      totalPages,
-      hasPrevious: page > 1,
-      hasNext: page < totalPages,
-    };
-  }
 
   /**
    * Lista todos os checklists com paginação e busca
@@ -219,8 +174,8 @@ export class ChecklistService {
     );
 
     // Validar parâmetros
-    this.validatePaginationParams(page, limit);
-    this.validateTipoChecklistId(tipoChecklistId);
+    validatePaginationParams(page, limit);
+    validateOptionalId(tipoChecklistId, 'ID do tipo de checklist');
 
     try {
       // Construir filtros de busca
@@ -259,16 +214,20 @@ export class ChecklistService {
         }),
       ]);
 
-      const paged = buildPagedResponse(data as ChecklistResponseDto[], total, currPage, pageSize);
-      const result: ChecklistListResponseDto = { ...paged, search, timestamp: new Date() } as any;
+      const meta = buildPaginationMeta(total, currPage, pageSize);
+      const result: ChecklistListResponseDto = {
+        data: data as ChecklistResponseDto[],
+        meta,
+        search,
+        timestamp: new Date(),
+      };
 
       this.logger.log(
         `Encontrados ${total} checklists (${data.length} nesta página)`
       );
       return result;
     } catch (error) {
-      this.logger.error('Erro ao buscar checklists:', error);
-      throw new BadRequestException('Erro ao buscar checklists');
+      handleCrudError(error, this.logger, 'list', 'checklists');
     }
   }
 
@@ -308,8 +267,7 @@ export class ChecklistService {
       );
       return data as ChecklistResponseDto[];
     } catch (error) {
-      this.logger.error('Erro ao sincronizar checklists:', error);
-      throw new BadRequestException('Erro ao sincronizar checklists');
+      handleCrudError(error, this.logger, 'sync', 'checklists');
     }
   }
 
@@ -342,10 +300,7 @@ export class ChecklistService {
       );
       return data as ChecklistPerguntaSyncDto[];
     } catch (error) {
-      this.logger.error('Erro ao sincronizar perguntas de checklist:', error);
-      throw new BadRequestException(
-        'Erro ao sincronizar perguntas de checklist'
-      );
+      handleCrudError(error, this.logger, 'sync', 'perguntas de checklist');
     }
   }
 
@@ -381,13 +336,7 @@ export class ChecklistService {
       );
       return data as ChecklistPerguntaRelacaoSyncDto[];
     } catch (error) {
-      this.logger.error(
-        'Erro ao sincronizar relações Checklist-Perguntas:',
-        error
-      );
-      throw new BadRequestException(
-        'Erro ao sincronizar relações entre checklists e perguntas'
-      );
+      handleCrudError(error, this.logger, 'sync', 'relações Checklist-Perguntas');
     }
   }
 
@@ -421,13 +370,7 @@ export class ChecklistService {
       );
       return data as ChecklistOpcaoRespostaSyncDto[];
     } catch (error) {
-      this.logger.error(
-        'Erro ao sincronizar opções de resposta de checklist:',
-        error
-      );
-      throw new BadRequestException(
-        'Erro ao sincronizar opções de resposta de checklist'
-      );
+      handleCrudError(error, this.logger, 'sync', 'opções de resposta de checklist');
     }
   }
 
@@ -465,13 +408,7 @@ export class ChecklistService {
       );
       return data as ChecklistOpcaoRespostaRelacaoSyncDto[];
     } catch (error) {
-      this.logger.error(
-        'Erro ao sincronizar relações Checklist-Opções de resposta:',
-        error
-      );
-      throw new BadRequestException(
-        'Erro ao sincronizar relações entre checklists e opções de resposta'
-      );
+      handleCrudError(error, this.logger, 'sync', 'relações Checklist-Opções de resposta');
     }
   }
 
@@ -509,13 +446,7 @@ export class ChecklistService {
       );
       return data as ChecklistTipoVeiculoRelacaoSyncDto[];
     } catch (error) {
-      this.logger.error(
-        'Erro ao sincronizar relações Checklist-Tipo de Veículo:',
-        error
-      );
-      throw new BadRequestException(
-        'Erro ao sincronizar relações entre checklists e tipos de veículo'
-      );
+      handleCrudError(error, this.logger, 'sync', 'relações Checklist-Tipo de Veículo');
     }
   }
 
@@ -553,13 +484,7 @@ export class ChecklistService {
       );
       return data as ChecklistTipoEquipeRelacaoSyncDto[];
     } catch (error) {
-      this.logger.error(
-        'Erro ao sincronizar relações Checklist-Tipo de Equipe:',
-        error
-      );
-      throw new BadRequestException(
-        'Erro ao sincronizar relações entre checklists e tipos de equipe'
-      );
+      handleCrudError(error, this.logger, 'sync', 'relações Checklist-Tipo de Equipe');
     }
   }
 
@@ -569,7 +494,7 @@ export class ChecklistService {
   async findOne(id: number): Promise<ChecklistResponseDto> {
     this.logger.log(`Buscando checklist por ID: ${id}`);
 
-    this.validateChecklistId(id);
+    validateId(id, 'ID do checklist');
 
     try {
       const checklist = await this.db.getPrisma().checklist.findFirst({
@@ -606,11 +531,7 @@ export class ChecklistService {
       this.logger.log(`Checklist encontrado: ${checklist.nome} (ID: ${id})`);
       return checklist as ChecklistResponseDto;
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      this.logger.error(`Erro ao buscar checklist ${id}:`, error);
-      throw new BadRequestException('Erro ao buscar checklist');
+      handleCrudError(error, this.logger, 'find', 'checklist');
     }
   }
 
@@ -618,16 +539,17 @@ export class ChecklistService {
    * Cria novo checklist
    */
   async create(
-    createChecklistDto: CreateChecklistDto
+    createChecklistDto: CreateChecklistDto,
+    userId?: string
   ): Promise<ChecklistResponseDto> {
     const { nome, tipoChecklistId } = createChecklistDto;
-    const userContext = this.getCurrentUserContext();
+    const userContext = this.getCurrentUserContext(userId);
 
     this.logger.log(
       `Criando novo checklist: ${nome} (Tipo: ${tipoChecklistId})`
     );
 
-    this.validateTipoChecklistId(tipoChecklistId);
+    validateOptionalId(tipoChecklistId, 'ID do tipo de checklist');
 
     try {
       const existingChecklist = await this.db.getPrisma().checklist.findFirst({
@@ -691,14 +613,7 @@ export class ChecklistService {
       );
       return checklist as ChecklistResponseDto;
     } catch (error) {
-      if (
-        error instanceof ConflictException ||
-        error instanceof NotFoundException
-      ) {
-        throw error;
-      }
-      this.logger.error('Erro ao criar checklist:', error);
-      throw new BadRequestException('Erro ao criar checklist');
+      handleCrudError(error, this.logger, 'create', 'checklist');
     }
   }
 
@@ -707,10 +622,11 @@ export class ChecklistService {
    */
   async update(
     id: number,
-    updateChecklistDto: UpdateChecklistDto
+    updateChecklistDto: UpdateChecklistDto,
+    userId?: string
   ): Promise<ChecklistResponseDto> {
     const { nome, tipoChecklistId } = updateChecklistDto;
-    const userContext = this.getCurrentUserContext();
+    const userContext = this.getCurrentUserContext(userId);
 
     this.logger.log(
       `Atualizando checklist ${id}: Nome=${nome || 'N/A'}, Tipo=${
@@ -718,8 +634,8 @@ export class ChecklistService {
       }`
     );
 
-    this.validateChecklistId(id);
-    this.validateTipoChecklistId(tipoChecklistId);
+    validateId(id, 'ID do checklist');
+    validateOptionalId(tipoChecklistId, 'ID do tipo de checklist');
 
     try {
       const existingChecklist = await this.db.getPrisma().checklist.findFirst({
@@ -811,25 +727,18 @@ export class ChecklistService {
       this.logger.log(`Checklist ${id} atualizado com sucesso`);
       return checklist as ChecklistResponseDto;
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ConflictException
-      ) {
-        throw error;
-      }
-      this.logger.error(`Erro ao atualizar checklist ${id}:`, error);
-      throw new BadRequestException('Erro ao atualizar checklist');
+      handleCrudError(error, this.logger, 'update', 'checklist');
     }
   }
 
   /**
    * Remove checklist (soft delete)
    */
-  async remove(id: number): Promise<void> {
+  async remove(id: number, userId?: string): Promise<void> {
     this.logger.log(`Removendo checklist: ${id}`);
-    const userContext = this.getCurrentUserContext();
+    const userContext = this.getCurrentUserContext(userId);
 
-    this.validateChecklistId(id);
+    validateId(id, 'ID do checklist');
 
     try {
       const existingChecklist = await this.db.getPrisma().checklist.findFirst({
@@ -853,11 +762,7 @@ export class ChecklistService {
 
       this.logger.log(`Checklist ${id} removido com sucesso (soft delete)`);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      this.logger.error(`Erro ao remover checklist ${id}:`, error);
-      throw new BadRequestException('Erro ao remover checklist');
+      handleCrudError(error, this.logger, 'delete', 'checklist');
     }
   }
 
@@ -875,8 +780,7 @@ export class ChecklistService {
       this.logger.log(`Total de checklists ativos: ${count}`);
       return count;
     } catch (error) {
-      this.logger.error('Erro ao contar checklists:', error);
-      throw new BadRequestException('Erro ao contar checklists');
+      handleCrudError(error, this.logger, 'count', 'checklists');
     }
   }
 }

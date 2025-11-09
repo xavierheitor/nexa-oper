@@ -2,7 +2,7 @@
 
 import { Column } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
-import { useEffect, useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosLotacao {
   base: string;
@@ -16,29 +16,23 @@ interface EletricistasPorLotacaoProps {
 export default function EletricistasPorLotacao({
   filtros,
 }: EletricistasPorLotacaoProps) {
-  const [dados, setDados] = useState<DadosLotacao[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: dadosRaw, loading } = useDataFetch<DadosLotacao[]>(
+    async () => {
+      const { getEletricistasPorLotacao } = await import(
+        '@/lib/actions/relatorios/relatoriosEletricistas'
+      );
+      const result = await getEletricistasPorLotacao(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getEletricistasPorLotacao } = await import(
-          '@/lib/actions/relatorios/relatoriosEletricistas'
-        );
-        const result = await getEletricistasPorLotacao(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
+      throw new Error('Erro ao carregar dados de eletricistas por lotação');
+    },
+    [filtros]
+  );
 
-    fetchDados();
-  }, [filtros]);
+  // Garante que dados nunca seja null
+  const dados: DadosLotacao[] = dadosRaw ?? [];
 
   if (loading) {
     return (
@@ -58,8 +52,11 @@ export default function EletricistasPorLotacao({
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     xField: 'base',
     yField: 'quantidade',
     label: {

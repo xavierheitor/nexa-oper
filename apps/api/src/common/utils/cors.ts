@@ -2,6 +2,10 @@ export function getCorsOrigins(): (string | boolean)[] | ((origin: string | unde
   const corsOriginsEnv = process.env.CORS_ORIGINS;
 
   if (!corsOriginsEnv || corsOriginsEnv.trim() === '') {
+    // Em desenvolvimento, libera todas as origens para facilitar testes
+    if (process.env.NODE_ENV === 'development') {
+      return () => true; // Libera todas as origens
+    }
     if (process.env.NODE_ENV === 'production') {
       return () => true;
     }

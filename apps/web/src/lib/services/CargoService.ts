@@ -59,7 +59,7 @@ export class CargoService extends AbstractCrudService<
       salarioBase: data.salarioBase,
     };
 
-    return this.cargoRepo.update(updateInput, userId);
+    return this.cargoRepo.update(data.id, updateInput, userId);
   }
 
   async list(params: CargoFilter): Promise<PaginatedResult<Cargo>> {

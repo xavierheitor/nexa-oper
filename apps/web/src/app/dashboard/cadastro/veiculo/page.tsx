@@ -171,7 +171,7 @@ export default function VeiculoPage() {
         key: 'contrato',
         render: (nome: string, record: Veiculo) => {
           // Mostra nome e número do contrato se disponível
-          const contrato = (record as any).contrato;
+          const contrato = (record as Veiculo & { contrato?: { nome: string; numero: string } }).contrato;
           return contrato ? `${contrato.nome} (${contrato.numero})` : '-';
         },
         width: 200,
@@ -181,7 +181,7 @@ export default function VeiculoPage() {
         title: 'Base Atual',
         dataIndex: 'baseAtual',
         key: 'baseAtual',
-        render: (baseAtual: any) => {
+        render: (baseAtual: { nome: string } | null | undefined) => {
           return baseAtual ? (
             <Tag color="green">{baseAtual.nome}</Tag>
           ) : (

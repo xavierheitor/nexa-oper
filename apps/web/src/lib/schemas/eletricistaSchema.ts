@@ -115,7 +115,6 @@ export const eletricistaLoteSchema = z.object({
       'DESLIGADO',
       'APOSENTADO',
     ])
-    .optional()
     .default('ATIVO'),
   eletricistas: z
     .array(eletricistaLoteItemSchema)

@@ -48,8 +48,20 @@ import {
   extractAllowedContractIds,
   ensureContractPermission,
 } from '@modules/engine/auth/utils/contract-helpers';
-import { buildPagination, buildPagedResponse } from '@common/utils/pagination';
-import { validateId, validateOptionalId } from '@common/utils/validation';
+import {
+  buildPagination,
+  buildPagedResponse,
+  validatePaginationParams,
+  buildPaginationMeta,
+} from '@common/utils/pagination';
+import { handleCrudError } from '@common/utils/error-handler';
+import { handlePrismaUniqueError } from '@common/utils/error-handler';
+import { validateId, validateOptionalId, ensureContratoExists, ensureTipoVeiculoExists } from '@common/utils/validation';
+import {
+  buildSearchWhereClause,
+  buildContractFilter,
+  buildBaseWhereClause,
+} from '@common/utils/where-clause';
 import {
   getDefaultUserContext,
   createAuditData,
@@ -96,69 +108,6 @@ export class VeiculoService {
 
   constructor(private readonly db: DatabaseService) {}
 
-  /**
-   * Valida parâmetros de paginação
-   */
-  private validatePaginationParams(page: number, limit: number): void {
-    // Mantém validação básica local para não depender de helpers externos
-    if (page < 1) {
-      throw new BadRequestException('Página inválida');
-    }
-    if (limit < 1 || limit > 100) {
-      throw new BadRequestException('Limite inválido');
-    }
-  }
-
-  /**
-   * Valida ID de veículo
-   */
-  private validateVeiculoId(id: number): void {
-    validateId(id, 'ID do veículo');
-  }
-
-  /**
-   * Valida ID de tipo de veículo
-   */
-  private validateTipoVeiculoId(tipoVeiculoId?: number): void {
-    validateOptionalId(tipoVeiculoId, 'ID do tipo de veículo');
-  }
-
-  /**
-   * Valida ID de contrato
-   */
-  private validateContratoId(contratoId?: number): void {
-    validateOptionalId(contratoId, 'ID do contrato');
-  }
-
-  /**
-   * Obtém contexto do usuário
-   */
-  private getCurrentUserContext(): UserContext {
-    return getDefaultUserContext();
-  }
-
-  /**
-   * Extrai IDs de contratos permitidos a partir da lista de permissões
-   */
-  private extractAllowedContractIds(
-    allowedContracts?: ContractPermission[]
-  ): number[] | null {
-    return extractAllowedContractIds(allowedContracts);
-  }
-
-  /**
-   * Garante que o usuário tenha permissão para acessar o contrato informado
-   */
-  private ensureContractPermission(
-    contratoId: number,
-    allowedContractIds: number[] | null
-  ): void {
-    ensureContractPermission(
-      contratoId,
-      allowedContractIds,
-      ERROR_MESSAGES.FORBIDDEN_CONTRACT
-    );
-  }
 
   /**
    * Constrói filtros de consulta considerando busca, filtros e permissões
@@ -169,117 +118,39 @@ export class VeiculoService {
     contratoId: number | undefined,
     allowedContractIds: number[] | null
   ) {
-    const whereClause: any = {
-      deletedAt: null,
-    };
+    const whereClause: any = buildBaseWhereClause();
 
-    if (search) {
-      whereClause.OR = [
-        {
-          placa: {
-            contains: search,
-            mode: 'insensitive' as const,
-          },
-        },
-        {
-          modelo: {
-            contains: search,
-            mode: 'insensitive' as const,
-          },
-        },
-      ];
+    // Adicionar busca
+    const searchFilter = buildSearchWhereClause(search, {
+      placa: true,
+      modelo: true,
+    });
+    if (searchFilter) {
+      Object.assign(whereClause, searchFilter);
     }
 
+    // Adicionar filtro de tipo de veículo
     if (tipoVeiculoId) {
       whereClause.tipoVeiculoId = tipoVeiculoId;
     }
 
-    if (contratoId) {
-      whereClause.contratoId = contratoId;
-    } else if (allowedContractIds) {
-      whereClause.contratoId = {
-        in: allowedContractIds,
-      };
+    // Adicionar filtro de contrato
+    const contractFilter = buildContractFilter(contratoId, allowedContractIds);
+    if (contractFilter) {
+      Object.assign(whereClause, contractFilter);
     }
 
     return whereClause;
   }
 
-  /**
-   * Constrói os metadados de paginação
-   */
-  private buildPaginationMeta(
-    total: number,
-    page: number,
-    limit: number
-  ): PaginationMetaDto {
-    const totalPages = Math.max(1, Math.ceil(total / Math.max(1, limit)));
-    return {
-      total,
-      page,
-      limit, // requerido por PaginationMetaDto
-      // manter compatibilidade com respostas que usam pageSize
-      pageSize: limit as unknown as never,
-      totalPages,
-      hasPrevious: page > 1,
-      hasNext: page < totalPages,
-    } as unknown as PaginationMetaDto;
-  }
-
-  /**
-   * Verifica duplicidade de placa
-   */
-  private async ensureUniquePlaca(
-    placa: string,
-    ignoreId?: number
-  ): Promise<void> {
-    const existing = await this.db.getPrisma().veiculo.findFirst({
-      where: {
-        placa,
-        deletedAt: null,
-        ...(ignoreId && { NOT: { id: ignoreId } }),
-      },
-    });
-
-    if (existing) {
-      throw new ConflictException(ERROR_MESSAGES.PLACA_DUPLICATE);
-    }
-  }
-
-  /**
-   * Valida existência de tipo de veículo
-   */
-  private async ensureTipoVeiculoExists(tipoVeiculoId: number): Promise<void> {
-    const tipoVeiculo = await this.db.getPrisma().tipoVeiculo.findFirst({
-      where: {
-        id: tipoVeiculoId,
-        deletedAt: null,
-      },
-    });
-
-    if (!tipoVeiculo) {
-      throw new NotFoundException(ERROR_MESSAGES.TIPO_VEICULO_NOT_FOUND);
-    }
-  }
-
-  /**
-   * Valida existência de contrato
-   */
-  private async ensureContratoExists(contratoId: number): Promise<void> {
-    const contrato = await this.db.getPrisma().contrato.findFirst({
-      where: {
-        id: contratoId,
-        deletedAt: null,
-      },
-    });
-
-    if (!contrato) {
-      throw new NotFoundException(ERROR_MESSAGES.CONTRATO_NOT_FOUND);
-    }
-  }
 
   /**
    * Lista veículos com paginação e filtros, respeitando permissões
+   *
+   * @param params - Parâmetros de consulta (página, limite, busca, tipo, contrato)
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Lista paginada de veículos com metadados
+   * @throws BadRequestException - Se parâmetros de paginação forem inválidos
    */
   async findAll(
     params: FindAllParams,
@@ -295,14 +166,14 @@ export class VeiculoService {
       }`
     );
 
-    this.validatePaginationParams(page, limit);
-    this.validateTipoVeiculoId(tipoVeiculoId);
-    this.validateContratoId(contratoId);
+    validatePaginationParams(page, limit);
+    validateOptionalId(tipoVeiculoId, 'ID do tipo de veículo');
+    validateOptionalId(contratoId, 'ID do contrato');
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     if (allowedContractIds && allowedContractIds.length === 0) {
-      const meta = this.buildPaginationMeta(0, page, limit);
+      const meta = buildPaginationMeta(0, page, limit);
       return {
         data: [],
         meta,
@@ -312,7 +183,11 @@ export class VeiculoService {
     }
 
     if (contratoId) {
-      this.ensureContractPermission(contratoId, allowedContractIds);
+      ensureContractPermission(
+        contratoId,
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
+      );
     }
 
     try {
@@ -362,16 +237,26 @@ export class VeiculoService {
         this.db.getPrisma().veiculo.count({ where: whereClause }),
       ]);
 
-      const paged = buildPagedResponse(data as VeiculoResponseDto[], total, currPage, pageSize);
-      return { ...paged, search, timestamp: new Date() } as any;
+      const meta: PaginationMetaDto = buildPaginationMeta(total, currPage, pageSize);
+      return {
+        data: data as VeiculoResponseDto[],
+        meta,
+        search,
+        timestamp: new Date(),
+      };
     } catch (error) {
-      this.logger.error('Erro ao listar veículos:', error);
-      throw new BadRequestException('Erro ao listar veículos');
+      handleCrudError(error, this.logger, 'list', 'veículos');
     }
   }
 
   /**
    * Lista veículos para sincronização mobile (sem paginação)
+   *
+   * Retorna todos os veículos ativos sem paginação para permitir
+   * que clientes mobile mantenham seus dados em sincronia.
+   *
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Lista completa de veículos ativos para sincronização
    */
   async findAllForSync(
     allowedContracts?: ContractPermission[]
@@ -385,7 +270,7 @@ export class VeiculoService {
     );
     this.logger.debug(`É array no service: ${Array.isArray(allowedContracts)}`);
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
     this.logger.debug(
       `IDs de contratos extraídos: ${JSON.stringify(allowedContractIds)}`
     );
@@ -436,23 +321,27 @@ export class VeiculoService {
       );
       return data as VeiculoSyncDto[];
     } catch (error) {
-      this.logger.error('Erro ao sincronizar veículos:', error);
-      this.logger.error(`Stack trace:`, error.stack);
-      throw new BadRequestException('Erro ao sincronizar veículos');
+      handleCrudError(error, this.logger, 'sync', 'veículos');
     }
   }
 
   /**
    * Busca veículo por ID respeitando permissões
+   *
+   * @param id - ID do veículo
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Dados do veículo encontrado
+   * @throws NotFoundException - Se veículo não for encontrado
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
    */
   async findOne(
     id: number,
     allowedContracts?: ContractPermission[]
   ): Promise<VeiculoResponseDto> {
     this.logger.log(`Buscando veículo por ID: ${id}`);
-    this.validateVeiculoId(id);
+    validateId(id, 'ID do veículo');
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     try {
       const veiculo = await this.db.getPrisma().veiculo.findFirst({
@@ -494,43 +383,49 @@ export class VeiculoService {
         throw new NotFoundException(ERROR_MESSAGES.VEICULO_NOT_FOUND);
       }
 
-      this.ensureContractPermission(veiculo.contratoId, allowedContractIds);
+      ensureContractPermission(
+        veiculo.contratoId,
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
+      );
 
       return veiculo as VeiculoResponseDto;
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-
-      this.logger.error(`Erro ao buscar veículo ${id}:`, error);
-      throw new BadRequestException('Erro ao buscar veículo');
+      handleCrudError(error, this.logger, 'find', 'veículo');
     }
   }
 
   /**
    * Cria novo veículo com validações e auditoria
+   *
+   * @param createVeiculoDto - Dados do veículo a ser criado
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Veículo criado
+   * @throws ConflictException - Se placa já existir
+   * @throws NotFoundException - Se tipo de veículo ou contrato não forem encontrados
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
    */
   async create(
     createVeiculoDto: CreateVeiculoDto,
     allowedContracts?: ContractPermission[]
   ): Promise<VeiculoResponseDto> {
     const { placa, modelo, ano, tipoVeiculoId, contratoId } = createVeiculoDto;
-    const userContext = this.getCurrentUserContext();
+    const userContext = getDefaultUserContext();
 
     this.logger.log(
       `Criando veículo ${placa} - Contrato: ${contratoId}, Tipo: ${tipoVeiculoId}`
     );
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
-    this.ensureContractPermission(contratoId, allowedContractIds);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
+    ensureContractPermission(
+      contratoId,
+      allowedContractIds,
+      ERROR_MESSAGES.FORBIDDEN_CONTRACT
+    );
 
     try {
-      await this.ensureUniquePlaca(placa.toUpperCase());
-      await this.ensureTipoVeiculoExists(tipoVeiculoId);
-      await this.ensureContratoExists(contratoId);
+      await ensureTipoVeiculoExists(this.db.getPrisma(), tipoVeiculoId);
+      await ensureContratoExists(this.db.getPrisma(), contratoId);
 
       const veiculo = await this.db.getPrisma().veiculo.create({
         data: {
@@ -573,21 +468,23 @@ export class VeiculoService {
       this.logger.log(`Veículo criado com sucesso - ID: ${veiculo.id}`);
       return veiculo as VeiculoResponseDto;
     } catch (error) {
-      if (
-        error instanceof ConflictException ||
-        error instanceof NotFoundException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-
-      this.logger.error('Erro ao criar veículo:', error);
-      throw new BadRequestException('Erro ao criar veículo');
+      // Tratar erro de constraint única do Prisma primeiro
+      handlePrismaUniqueError(error, this.logger, 'veículo');
+      // Se não for erro de constraint única, tratar como erro CRUD genérico
+      handleCrudError(error, this.logger, 'create', 'veículo');
     }
   }
 
   /**
    * Atualiza veículo existente com validações
+   *
+   * @param id - ID do veículo
+   * @param updateVeiculoDto - Dados para atualização
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Veículo atualizado
+   * @throws NotFoundException - Se veículo não for encontrado
+   * @throws ConflictException - Se nova placa já existir
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
    */
   async update(
     id: number,
@@ -595,12 +492,12 @@ export class VeiculoService {
     allowedContracts?: ContractPermission[]
   ): Promise<VeiculoResponseDto> {
     const { placa, modelo, ano, tipoVeiculoId, contratoId } = updateVeiculoDto;
-    const userContext = this.getCurrentUserContext();
+    const userContext = getDefaultUserContext();
 
     this.logger.log(`Atualizando veículo ${id}`);
-    this.validateVeiculoId(id);
+    validateId(id, 'ID do veículo');
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     try {
       const existingVeiculo = await this.db.getPrisma().veiculo.findFirst({
@@ -612,22 +509,23 @@ export class VeiculoService {
         throw new NotFoundException(ERROR_MESSAGES.VEICULO_NOT_FOUND);
       }
 
-      this.ensureContractPermission(
+      ensureContractPermission(
         existingVeiculo.contratoId,
-        allowedContractIds
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
       );
 
       if (contratoId && contratoId !== existingVeiculo.contratoId) {
-        this.ensureContractPermission(contratoId, allowedContractIds);
-        await this.ensureContratoExists(contratoId);
+        ensureContractPermission(
+        contratoId,
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
+      );
+        await ensureContratoExists(this.db.getPrisma(), contratoId);
       }
 
       if (tipoVeiculoId) {
-        await this.ensureTipoVeiculoExists(tipoVeiculoId);
-      }
-
-      if (placa && placa.toUpperCase() !== existingVeiculo.placa) {
-        await this.ensureUniquePlaca(placa.toUpperCase(), id);
+        await ensureTipoVeiculoExists(this.db.getPrisma(), tipoVeiculoId);
       }
 
       const veiculo = await this.db.getPrisma().veiculo.update({
@@ -676,31 +574,30 @@ export class VeiculoService {
       this.logger.log(`Veículo ${id} atualizado com sucesso`);
       return veiculo as VeiculoResponseDto;
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ConflictException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-
-      this.logger.error(`Erro ao atualizar veículo ${id}:`, error);
-      throw new BadRequestException('Erro ao atualizar veículo');
+      // Tratar erro de constraint única do Prisma primeiro
+      handlePrismaUniqueError(error, this.logger, 'veículo');
+      // Se não for erro de constraint única, tratar como erro CRUD genérico
+      handleCrudError(error, this.logger, 'update', 'veículo');
     }
   }
 
   /**
    * Remove veículo (soft delete)
+   *
+   * @param id - ID do veículo
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @throws NotFoundException - Se veículo não for encontrado
+   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
    */
   async remove(
     id: number,
     allowedContracts?: ContractPermission[]
   ): Promise<void> {
     this.logger.log(`Removendo veículo ${id}`);
-    this.validateVeiculoId(id);
+    validateId(id, 'ID do veículo');
 
-    const userContext = this.getCurrentUserContext();
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const userContext = getDefaultUserContext();
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     try {
       const veiculo = await this.db.getPrisma().veiculo.findFirst({
@@ -712,7 +609,11 @@ export class VeiculoService {
         throw new NotFoundException(ERROR_MESSAGES.VEICULO_NOT_FOUND);
       }
 
-      this.ensureContractPermission(veiculo.contratoId, allowedContractIds);
+      ensureContractPermission(
+        veiculo.contratoId,
+        allowedContractIds,
+        ERROR_MESSAGES.FORBIDDEN_CONTRACT
+      );
 
       await this.db.getPrisma().veiculo.update({
         where: { id },
@@ -721,25 +622,20 @@ export class VeiculoService {
 
       this.logger.log(`Veículo ${id} removido com sucesso (soft delete)`);
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-
-      this.logger.error(`Erro ao remover veículo ${id}:`, error);
-      throw new BadRequestException('Erro ao remover veículo');
+      handleCrudError(error, this.logger, 'delete', 'veículo');
     }
   }
 
   /**
    * Conta total de veículos ativos respeitando permissões
+   *
+   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
+   * @returns Total de veículos ativos
    */
   async count(allowedContracts?: ContractPermission[]): Promise<number> {
     this.logger.log('Contando veículos ativos');
 
-    const allowedContractIds = this.extractAllowedContractIds(allowedContracts);
+    const allowedContractIds = extractAllowedContractIds(allowedContracts);
 
     if (allowedContractIds && allowedContractIds.length === 0) {
       return 0;
@@ -758,8 +654,7 @@ export class VeiculoService {
       this.logger.log(`Total de veículos ativos: ${count}`);
       return count;
     } catch (error) {
-      this.logger.error('Erro ao contar veículos:', error);
-      throw new BadRequestException('Erro ao contar veículos');
+      handleCrudError(error, this.logger, 'count', 'veículos');
     }
   }
 }

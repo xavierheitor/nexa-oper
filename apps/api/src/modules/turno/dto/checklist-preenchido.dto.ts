@@ -5,7 +5,7 @@
  * relacionados aos checklists preenchidos pelos eletricistas.
  */
 
-import { IsNotEmpty, IsInt, IsString, IsDateString, IsArray, IsOptional, IsNumber, ValidateNested } from 'class-validator';
+import { IsNotEmpty, IsInt, IsString, IsDateString, IsArray, IsOptional, IsNumber, ValidateNested, ArrayMinSize } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ChecklistRespostaDto } from './checklist-resposta.dto';
@@ -69,8 +69,9 @@ export class SalvarChecklistPreenchidoDto {
     description: 'Lista de respostas do checklist',
     type: [ChecklistRespostaDto],
   })
-  @IsNotEmpty()
-  @IsArray()
+  @IsNotEmpty({ message: 'Lista de respostas é obrigatória' })
+  @IsArray({ message: 'Respostas deve ser uma lista' })
+  @ArrayMinSize(1, { message: 'Pelo menos uma resposta é obrigatória' })
   @ValidateNested({ each: true })
   @Type(() => ChecklistRespostaDto)
   respostas: ChecklistRespostaDto[];
@@ -133,8 +134,9 @@ export class SalvarChecklistsDoTurnoDto {
     description: 'Lista de checklists preenchidos',
     type: [SalvarChecklistPreenchidoDto]
   })
-  @IsNotEmpty()
-  @IsArray()
+  @IsNotEmpty({ message: 'Lista de checklists é obrigatória' })
+  @IsArray({ message: 'Checklists deve ser uma lista' })
+  @ArrayMinSize(1, { message: 'Pelo menos um checklist é obrigatório' })
   @ValidateNested({ each: true })
   @Type(() => SalvarChecklistPreenchidoDto)
   checklists: SalvarChecklistPreenchidoDto[];

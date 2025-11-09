@@ -2,7 +2,7 @@
 
 import { Pie } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
-import { useEffect, useState } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface DadosTipo {
   tipo: string;
@@ -16,29 +16,23 @@ interface EletricistasPorTipoEquipeProps {
 export default function EletricistasPorTipoEquipe({
   filtros,
 }: EletricistasPorTipoEquipeProps) {
-  const [dados, setDados] = useState<DadosTipo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: dadosRaw, loading } = useDataFetch<DadosTipo[]>(
+    async () => {
+      const { getEletricistasPorTipoEquipe } = await import(
+        '@/lib/actions/relatorios/relatoriosEletricistas'
+      );
+      const result = await getEletricistasPorTipoEquipe(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getEletricistasPorTipoEquipe } = await import(
-          '@/lib/actions/relatorios/relatoriosEletricistas'
-        );
-        const result = await getEletricistasPorTipoEquipe(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
+      throw new Error('Erro ao carregar dados de eletricistas por tipo de equipe');
+    },
+    [filtros]
+  );
 
-    fetchDados();
-  }, [filtros]);
+  // Garante que dados nunca seja null
+  const dados: DadosTipo[] = dadosRaw ?? [];
 
   if (loading) {
     return (
@@ -58,8 +52,11 @@ export default function EletricistasPorTipoEquipe({
     );
   }
 
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
   const config = {
-    data: dados,
+    data: dadosSeguros,
     angleField: 'quantidade',
     colorField: 'tipo',
     label: {

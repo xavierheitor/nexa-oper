@@ -1,7 +1,8 @@
 'use client';
 
 import { Card, Empty, Spin, Table, Tag } from 'antd';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface EquipeSemHorario {
   id: number;
@@ -16,31 +17,33 @@ interface EquipesSemHorarioProps {
 }
 
 export default function EquipesSemHorario({ filtros }: EquipesSemHorarioProps) {
-  const [dados, setDados] = useState<EquipeSemHorario[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Memoiza a função fetcher para evitar recriações desnecessárias
+  const fetcher = useMemo(
+    () => async () => {
+      const { getEquipesSemHorario } = await import(
+        '@/lib/actions/relatorios/relatoriosEquipes'
+      );
+      const result = await getEquipesSemHorario(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getEquipesSemHorario } = await import(
-          '@/lib/actions/relatorios/relatoriosEquipes'
-        );
-        const result = await getEquipesSemHorario(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
+      throw new Error('Erro ao carregar dados de equipes sem horário');
+    },
+    [filtros]
+  );
 
-    fetchDados();
-  }, [filtros]);
+  const { data: dadosRaw, loading } = useDataFetch<EquipeSemHorario[]>(
+    fetcher,
+    [fetcher]
+  );
 
-  const columns = [
+  // Garante que dados nunca seja null
+  const dados: EquipeSemHorario[] = dadosRaw ?? [];
+
+  // Memoiza as colunas para evitar recriações desnecessárias
+  const columns = useMemo(
+    () => [
     {
       title: 'Equipe',
       dataIndex: 'nome',
@@ -69,7 +72,9 @@ export default function EquipesSemHorario({ filtros }: EquipesSemHorarioProps) {
       dataIndex: 'contrato',
       key: 'contrato',
     },
-  ];
+    ],
+    []
+  );
 
   if (loading) {
     return (

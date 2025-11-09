@@ -57,10 +57,9 @@ export default function SupervisorForm({
     }
   }, [initialValues, form]);
 
-  if (loading) return <Spin spinning />;
-
   return (
-    <Form form={form} layout="vertical" onFinish={onSubmit}>
+    <Spin spinning={loading}>
+      <Form form={form} layout="vertical" onFinish={onSubmit}>
       <Form.Item
         name="nome"
         label="Nome do Supervisor"
@@ -94,6 +93,7 @@ export default function SupervisorForm({
         </Button>
       </Form.Item>
     </Form>
+    </Spin>
   );
 }
 

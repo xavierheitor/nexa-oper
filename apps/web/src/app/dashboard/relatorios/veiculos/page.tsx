@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button, Card, Col, DatePicker, Row, Select, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
 import VeiculosPorTipo from './components/VeiculosPorTipo';
@@ -66,6 +66,17 @@ export default function RelatoriosVeiculosPage() {
     });
   };
 
+  // Memoiza as opções dos Selects para evitar recriações desnecessárias
+  const contratosOptions = useMemo(
+    () => contratos?.map((c: any) => ({ label: c.nome, value: c.id })) || [],
+    [contratos]
+  );
+
+  const basesOptions = useMemo(
+    () => bases?.map((b: any) => ({ label: b.nome, value: b.id })) || [],
+    [bases]
+  );
+
   return (
     <div style={{ padding: '24px' }}>
       <Title level={2}>Relatórios - Veículos</Title>
@@ -89,7 +100,7 @@ export default function RelatoriosVeiculosPage() {
             loading={loadingContratos}
             value={filtros.contratoId}
             onChange={(value) => handleFilterChange('contratoId', value)}
-            options={contratos?.map((c: any) => ({ label: c.nome, value: c.id }))}
+            options={contratosOptions}
           />
           <Select
             placeholder='Filtrar por Base'
@@ -98,7 +109,7 @@ export default function RelatoriosVeiculosPage() {
             loading={loadingBases}
             value={filtros.baseId}
             onChange={(value) => handleFilterChange('baseId', value)}
-            options={bases?.map((b: any) => ({ label: b.nome, value: b.id }))}
+            options={basesOptions}
           />
           <Button onClick={handleClearFilters}>Limpar Filtros</Button>
         </Space>

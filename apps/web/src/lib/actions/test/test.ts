@@ -34,6 +34,7 @@
 'use server';
 
 import { prisma } from '../../db/db.service';
+import { errorHandler } from '../../utils/errorHandler';
 
 /**
  * Lista todos os testes cadastrados
@@ -46,7 +47,7 @@ export async function getTests() {
     const tests = await prisma.test.findMany();
     return tests;
   } catch (error) {
-    console.error('Erro ao buscar testes:', error);
+    errorHandler.log(error, 'Test', { actionType: 'get' });
     throw new Error(
       `Falha na conexão com o banco: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
     );
@@ -67,7 +68,7 @@ export async function createTest(name: string) {
     });
     return test;
   } catch (error) {
-    console.error('Erro ao criar teste:', error);
+    errorHandler.log(error, 'Test', { actionType: 'create' });
     throw new Error(
       `Falha ao criar teste: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
     );
@@ -88,7 +89,7 @@ export async function getTestById(id: number) {
     });
     return test;
   } catch (error) {
-    console.error('Erro ao buscar teste por ID:', error);
+    errorHandler.log(error, 'Test', { actionType: 'getById' });
     throw new Error(
       `Falha ao buscar teste: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
     );
@@ -111,7 +112,7 @@ export async function updateTest(id: number, name: string) {
     });
     return test;
   } catch (error) {
-    console.error('Erro ao atualizar teste:', error);
+    errorHandler.log(error, 'Test', { actionType: 'update' });
     throw new Error(
       `Falha ao atualizar teste: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
     );
@@ -132,7 +133,7 @@ export async function deleteTest(id: number) {
     });
     return test;
   } catch (error) {
-    console.error('Erro ao deletar teste:', error);
+    errorHandler.log(error, 'Test', { actionType: 'delete' });
     throw new Error(
       `Falha ao deletar teste: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
     );
@@ -152,7 +153,7 @@ export async function healthCheck() {
     await prisma.$queryRaw`SELECT 1`;
     return true;
   } catch (error) {
-    console.error('Erro no health check:', error);
+    errorHandler.log(error, 'Test', { actionType: 'healthCheck' });
     return false;
   }
 }

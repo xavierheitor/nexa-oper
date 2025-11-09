@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import { Alert, Button, Card, DatePicker, Form, Input, Select, Space, Table, Tag, App } from 'antd';
 import { DeleteOutlined, PlusOutlined, FileExcelOutlined } from '@ant-design/icons';
-import type { Cargo, Contrato } from '@nexa-oper/db';
+import type { Base, Cargo, Contrato } from '@nexa-oper/db';
 import dayjs, { Dayjs } from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { StatusEletricistaLabels } from '../../../../lib/schemas/eletricistaStatusSchema';
@@ -22,7 +22,7 @@ interface EletricistaLoteItem {
   admissao: Date;
 }
 
-interface EletricistaLoteFormData {
+export interface EletricistaLoteFormData {
   contratoId: number;
   cargoId: number;
   baseId: number;
@@ -35,7 +35,7 @@ interface EletricistaLoteFormProps {
   loading?: boolean;
   contratos: Contrato[];
   cargos: Cargo[];
-  bases: any[];
+  bases: Base[];
 }
 
 export default function EletricistaLoteForm({
@@ -90,8 +90,9 @@ export default function EletricistaLoteForm({
       setEletricistas(novosEletricistas);
       setPasteValue('');
       message.success(`${novosEletricistas.length} eletricista(s) carregado(s)`);
-    } catch (error: any) {
-      message.error(error.message || 'Erro ao processar dados colados');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao processar dados colados';
+      message.error(errorMessage);
     }
   };
 
@@ -99,7 +100,7 @@ export default function EletricistaLoteForm({
     setEletricistas(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = (values: { contratoId: number; cargoId: number; baseId: number; status?: string }) => {
     if (eletricistas.length === 0) {
       message.warning('Adicione pelo menos um eletricista');
       return;
@@ -127,7 +128,7 @@ export default function EletricistaLoteForm({
       title: 'Nome',
       dataIndex: 'nome',
       key: 'nome',
-      render: (text: string, _: any, index: number) => (
+      render: (text: string, _: EletricistaLoteItem, index: number) => (
         <Input
           value={text}
           onChange={e => handleUpdateEletricista(index, 'nome', e.target.value)}
@@ -140,7 +141,7 @@ export default function EletricistaLoteForm({
       dataIndex: 'matricula',
       key: 'matricula',
       width: 130,
-      render: (text: string, _: any, index: number) => (
+      render: (text: string, _: EletricistaLoteItem, index: number) => (
         <Input
           value={text}
           onChange={e => handleUpdateEletricista(index, 'matricula', e.target.value)}
@@ -153,7 +154,7 @@ export default function EletricistaLoteForm({
       dataIndex: 'telefone',
       key: 'telefone',
       width: 140,
-      render: (text: string, _: any, index: number) => (
+      render: (text: string, _: EletricistaLoteItem, index: number) => (
         <Input
           value={text}
           onChange={e => handleUpdateEletricista(index, 'telefone', e.target.value)}
@@ -166,7 +167,7 @@ export default function EletricistaLoteForm({
       dataIndex: 'estado',
       key: 'estado',
       width: 70,
-      render: (text: string, _: any, index: number) => (
+      render: (text: string, _: EletricistaLoteItem, index: number) => (
         <Input
           value={text}
           onChange={e => handleUpdateEletricista(index, 'estado', e.target.value.substring(0, 2).toUpperCase())}
@@ -181,7 +182,7 @@ export default function EletricistaLoteForm({
       dataIndex: 'admissao',
       key: 'admissao',
       width: 150,
-      render: (date: Date, _: any, index: number) => (
+      render: (date: Date, _: EletricistaLoteItem, index: number) => (
         <DatePicker
           value={dayjs(date)}
           onChange={(value) => value && handleUpdateEletricista(index, 'admissao', value.toDate())}
@@ -196,7 +197,7 @@ export default function EletricistaLoteForm({
       key: 'actions',
       width: 80,
       fixed: 'right' as const,
-      render: (_: any, __: any, index: number) => (
+      render: (_: unknown, __: EletricistaLoteItem, index: number) => (
         <Button
           type="text"
           danger

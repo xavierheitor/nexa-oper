@@ -97,7 +97,6 @@ export class EquipeHorarioVigenciaService extends AbstractCrudService<
 
     // @ts-ignore - Compatibilidade de tipos do repositório
     const updateInput: EquipeHorarioVigenciaUpdateInput = {
-      id: data.id,
       equipeId: data.equipeId,
       inicioTurnoHora: data.inicioTurnoHora,
       duracaoHoras: data.duracaoHoras,
@@ -105,7 +104,7 @@ export class EquipeHorarioVigenciaService extends AbstractCrudService<
       vigenciaFim: data.vigenciaFim,
     };
 
-    return this.horarioRepo.update(updateInput, userId);
+    return this.horarioRepo.update(data.id, updateInput, userId);
   }
 
   async list(

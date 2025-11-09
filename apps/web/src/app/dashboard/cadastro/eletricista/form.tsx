@@ -7,6 +7,7 @@ import { listBases } from '../../../../lib/actions/base/list';
 import { listContratos } from '../../../../lib/actions/contrato/list';
 import { listCargos } from '../../../../lib/actions/cargo/list';
 import { StatusEletricistaLabels } from '../../../../lib/schemas/eletricistaStatusSchema';
+import { errorHandler } from '@/lib/utils/errorHandler';
 import dayjs from 'dayjs';
 
 // Importações do Ant Design e React
@@ -84,7 +85,8 @@ export default function EletricistaForm({
         setCargos(cargosResponse.data?.data || []);
         setBases(basesResponse.data?.data || []);
       } catch (error) {
-        console.error('Erro ao carregar dados dos selects:', error);
+        // Usa errorHandler padronizado
+        errorHandler.log(error, 'EletricistaForm');
         message.error('Erro ao carregar dados dos selects');
       } finally {
         setLoadingSelects(false);

@@ -1,7 +1,8 @@
 'use client';
 
 import { Card, Empty, Spin, Table, Tag } from 'antd';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface EletricistaDetalhado {
   id: number;
@@ -26,31 +27,33 @@ interface EletricistasDetalhadoProps {
 export default function EletricistasDetalhado({
   filtros,
 }: EletricistasDetalhadoProps) {
-  const [dados, setDados] = useState<EletricistaDetalhado[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Memoiza a função fetcher para evitar recriações desnecessárias
+  const fetcher = useMemo(
+    () => async () => {
+      const { getEletricistasDetalhado } = await import(
+        '@/lib/actions/relatorios/relatoriosEletricistas'
+      );
+      const result = await getEletricistasDetalhado(filtros);
 
-  useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const { getEletricistasDetalhado } = await import(
-          '@/lib/actions/relatorios/relatoriosEletricistas'
-        );
-        const result = await getEletricistasDetalhado(filtros);
-        if (result.success && result.data) {
-          setDados(result.data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        return result.data;
       }
-    };
+      throw new Error('Erro ao carregar dados de eletricistas detalhado');
+    },
+    [filtros]
+  );
 
-    fetchDados();
-  }, [filtros]);
+  const { data: dadosRaw, loading } = useDataFetch<EletricistaDetalhado[]>(
+    fetcher,
+    [fetcher]
+  );
 
-  const columns = [
+  // Garante que dados nunca seja null
+  const dados: EletricistaDetalhado[] = dadosRaw ?? [];
+
+  // Memoiza as colunas para evitar recriações desnecessárias
+  const columns = useMemo(
+    () => [
     {
       title: 'Matrícula',
       dataIndex: 'matricula',
@@ -117,7 +120,9 @@ export default function EletricistasDetalhado({
       render: (_: any, record: EletricistaDetalhado) =>
         record.estatisticas.totalDias,
     },
-  ];
+    ],
+    []
+  );
 
   if (loading) {
     return (
