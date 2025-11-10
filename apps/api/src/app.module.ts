@@ -88,6 +88,14 @@ import { WebLogsModule } from './modules/web-logs/web-logs.module';
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: envValidationSchema,
+      // Especificar caminho do .env para funcionar em produção com PM2
+      envFilePath: [
+        process.env.ENV_FILE_PATH || '.env', // Permite sobrescrever via variável de ambiente
+        '.env.local',
+        '.env',
+      ],
+      // Expandir variáveis de ambiente do sistema
+      expandVariables: true,
     }),
 
     // Módulo de agendamento de jobs

@@ -1,0 +1,116 @@
+/** PM2 ecosystem for Nexa Oper (API + Web) */
+const path = require('path');
+const fs = require('fs');
+
+// Função para carregar variáveis de ambiente de um arquivo .env
+function loadEnvFile(filePath) {
+  const env = {};
+  if (fs.existsSync(filePath)) {
+    const content = fs.readFileSync(filePath, 'utf8');
+    content.split('\n').forEach((line) => {
+      const trimmedLine = line.trim();
+      if (trimmedLine && !trimmedLine.startsWith('#')) {
+        const [key, ...valueParts] = trimmedLine.split('=');
+        if (key && valueParts.length > 0) {
+          // Remove aspas do início e fim se existirem
+          let value = valueParts.join('=');
+          if ((value.startsWith('"') && value.endsWith('"')) ||
+              (value.startsWith("'") && value.endsWith("'"))) {
+            value = value.slice(1, -1);
+          }
+          env[key.trim()] = value.trim();
+        }
+      }
+    });
+  }
+  return env;
+}
+
+// Carregar variáveis de ambiente dos arquivos .env
+const apiEnv = loadEnvFile('/var/www/nexa-oper/apps/api/.env');
+const webEnv = loadEnvFile('/var/www/nexa-oper/apps/web/.env');
+
+module.exports = {
+  apps: [
+    // ===================== API =====================
+    {
+      name: 'nexa-api',
+      cwd: '/var/www/nexa-oper',
+      script: './apps/api/dist/main.js',
+      exec_mode: 'cluster',
+      instances: 2,
+      // Interpreter & Node flags
+      interpreter: 'node',
+      node_args: [
+        '--unhandled-rejections=strict',
+        '--trace-warnings',
+      ],
+      // Health & lifecycle
+      listen_timeout: 10000,
+      kill_timeout: 30000,
+      wait_ready: false,
+      shutdown_with_message: false,
+      // Restart policy
+      autorestart: true,
+      min_uptime: '10s',
+      max_restarts: 10,
+      restart_delay: 4000,
+      exp_backoff_restart_delay: 2000,
+      max_memory_restart: '1G',
+      // Env - mesclar variáveis do .env com as padrões
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3001,
+        LOG_PATH: '/var/www/nexa-oper/logs',
+        TRUST_PROXY: 'true',
+        HAS_HTTPS: 'false',
+        // Especificar caminho do .env para o NestJS encontrar o arquivo
+        ENV_FILE_PATH: '/var/www/nexa-oper/apps/api/.env',
+        // Carregar todas as variáveis do arquivo .env
+        ...apiEnv,
+      },
+      // Logs
+      merge_logs: true,
+      time: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      out_file: '/var/www/nexa-oper/logs/api-out.log',
+      error_file: '/var/www/nexa-oper/logs/api-error.log',
+    },
+
+    // ===================== WEB (Next.js) =====================
+    {
+      name: 'nexa-web',
+      cwd: '/var/www/nexa-oper/apps/web',
+      script: './node_modules/.bin/next',
+      args: 'start -p 3000',
+      exec_mode: 'cluster',
+      instances: 2,
+      interpreter: 'node',
+      node_args: ['--trace-warnings'],
+      listen_timeout: 15000,
+      kill_timeout: 30000,
+      wait_ready: false,
+      shutdown_with_message: false,
+      autorestart: true,
+      min_uptime: '10s',
+      max_restarts: 10,
+      restart_delay: 4000,
+      exp_backoff_restart_delay: 2000,
+      max_memory_restart: '1G',
+      // Env - mesclar variáveis do .env com as padrões
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3000,
+        LOG_PATH: '/var/www/nexa-oper/logs',
+        // Carregar todas as variáveis do arquivo .env
+        ...webEnv,
+      },
+      merge_logs: true,
+      time: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      out_file: '/var/www/nexa-oper/logs/web-out.log',
+      error_file: '/var/www/nexa-oper/logs/web-error.log',
+    },
+  ],
+};
+
