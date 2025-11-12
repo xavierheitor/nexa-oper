@@ -10,6 +10,7 @@ import {
   Post,
   Body,
   HttpStatus,
+  HttpException,
   Logger,
   UseGuards,
   BadRequestException,
@@ -273,6 +274,33 @@ export class TurnoMobileController {
     type: MobileFecharTurnoResponseDto,
   })
   @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Turno já está fechado - retorna dados para sincronização',
+    schema: {
+      type: 'object',
+      properties: {
+        status: {
+          type: 'string',
+          example: 'already_closed',
+        },
+        remoteId: {
+          type: 'number',
+          example: 123,
+        },
+        closedAt: {
+          type: 'string',
+          format: 'date-time',
+          example: '2024-01-01T17:00:00.000Z',
+        },
+        kmFinal: {
+          type: 'number',
+          nullable: true,
+          example: 50120,
+        },
+      },
+    },
+  })
+  @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Dados inválidos ou erro de validação',
   })
@@ -311,6 +339,21 @@ export class TurnoMobileController {
         allowedContracts
       );
 
+      // Verificar se o turno já estava fechado (retorno especial do service)
+      if (turnoResult && (turnoResult as any)._alreadyClosed) {
+        this.logger.log(`Turno já estava fechado: ID ${turnoResult.id}`);
+        // Retornar HTTP 409 com formato JSON específico para o app sincronizar
+        throw new HttpException(
+          {
+            status: 'already_closed',
+            remoteId: turnoResult.id,
+            closedAt: turnoResult.dataFim?.toISOString() || new Date().toISOString(),
+            kmFinal: (turnoResult as any).KmFim || null,
+          },
+          HttpStatus.CONFLICT
+        );
+      }
+
       this.logger.log(`Turno fechado com sucesso: ID ${turnoResult.id}`);
 
       return {
@@ -342,6 +385,12 @@ export class TurnoMobileController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
+      // Se for HttpException com status 409 (Conflict), re-lançar diretamente
+      // Isso permite que o app receba o formato JSON específico para sincronização
+      if (error instanceof HttpException && error.getStatus() === HttpStatus.CONFLICT) {
+        throw error;
+      }
+
       this.logger.error('Erro ao fechar turno via mobile:', error);
 
       // Usar padronização de erros
