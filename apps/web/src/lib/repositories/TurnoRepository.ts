@@ -94,16 +94,32 @@ export class TurnoRepository extends AbstractCrudRepository<Turno, TurnoFilter> 
     data: TurnoUpdateInput,
     userId?: string
   ): Promise<Turno> {
-    const { eletricistaIds, ...turnoData } = data;
+    // Remover id e eletricistaIds do objeto de dados (id vai no where, eletricistaIds é tratado separadamente)
+    const { id: _, eletricistaIds, kmFim, ...turnoData } = data;
+
+    // Preparar dados para o Prisma (mapear kmFim para KmFim)
+    const prismaData: any = {
+      ...turnoData,
+      updatedAt: new Date(),
+      updatedBy: userId,
+    };
+
+    // Mapear kmFim para KmFim (campo no banco tem K maiúsculo)
+    if (kmFim !== undefined) {
+      prismaData.KmFim = kmFim;
+    }
+
+    // Remover campos undefined para evitar erros do Prisma
+    Object.keys(prismaData).forEach(key => {
+      if (prismaData[key] === undefined) {
+        delete prismaData[key];
+      }
+    });
 
     // Atualizar dados do turno
     const turno = await prisma.turno.update({
       where: { id },
-      data: {
-        ...turnoData,
-        updatedAt: new Date(),
-        updatedBy: userId,
-      },
+      data: prismaData,
       include: {
         veiculo: true,
         equipe: true,

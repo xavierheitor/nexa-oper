@@ -9,7 +9,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, DatePicker, Button, Tooltip } from 'antd';
-import { ClockCircleOutlined, CalendarOutlined, SearchOutlined, CheckOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, CalendarOutlined, SearchOutlined, CheckOutlined, EnvironmentOutlined, CloseOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { listTurnos } from '@/lib/actions/turno/list';
 import { Column } from '@ant-design/plots';
@@ -20,6 +20,7 @@ import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 import TurnoLocationMapModal from '@/ui/components/TurnoLocationMapModal';
+import FecharTurnoModal from '@/ui/components/FecharTurnoModal';
 import { useLoadingStates } from '@/lib/hooks/useLoadingStates';
 import dayjs from 'dayjs';
 
@@ -96,6 +97,10 @@ export default function HistoricoPage() {
   // Estados para o modal de localização
   const [locationMapVisible, setLocationMapVisible] = useState(false);
   const [selectedTurnoForLocation, setSelectedTurnoForLocation] = useState<TurnoData | null>(null);
+
+  // Estados para o modal de fechar turno
+  const [fecharTurnoVisible, setFecharTurnoVisible] = useState(false);
+  const [selectedTurnoParaFechar, setSelectedTurnoParaFechar] = useState<TurnoData | null>(null);
 
   const buscarHistorico = useCallback(async (data: dayjs.Dayjs) => {
     setLoading('main', true);
@@ -337,6 +342,28 @@ export default function HistoricoPage() {
     setSelectedChecklist(null);
   };
 
+  const handleFecharTurno = (turno: TurnoData) => {
+    // Só permitir fechar turnos que ainda estão abertos
+    if (turno.dataFim) {
+      return;
+    }
+    setSelectedTurnoParaFechar(turno);
+    setFecharTurnoVisible(true);
+  };
+
+  const handleCloseFecharTurno = () => {
+    setFecharTurnoVisible(false);
+    setSelectedTurnoParaFechar(null);
+  };
+
+  const handleFecharTurnoSuccess = async () => {
+    // Recarregar os dados após fechar o turno
+    await Promise.all([
+      buscarHistorico(dataSelecionada),
+      buscarGraficos(dataSelecionada),
+    ]);
+  };
+
   const columns: ColumnsType<TurnoData> = [
 
     {
@@ -418,7 +445,7 @@ export default function HistoricoPage() {
     {
       title: 'Ações',
       key: 'actions',
-      width: 180,
+      width: 220,
       render: (_: unknown, record: TurnoData) => (
         <Space>
           <Tooltip title="Ver Checklists">
@@ -437,6 +464,17 @@ export default function HistoricoPage() {
               onClick={() => handleViewLocation(record)}
             />
           </Tooltip>
+          {!record.dataFim && (
+            <Tooltip title="Fechar Turno">
+              <Button
+                type="default"
+                danger
+                size="small"
+                icon={<CloseOutlined />}
+                onClick={() => handleFecharTurno(record)}
+              />
+            </Tooltip>
+          )}
         </Space>
       ),
     },
@@ -684,6 +722,14 @@ export default function HistoricoPage() {
         visible={checklistViewerVisible}
         onClose={handleCloseChecklistViewer}
         checklist={selectedChecklist}
+      />
+
+      {/* Modal de Fechar Turno */}
+      <FecharTurnoModal
+        visible={fecharTurnoVisible}
+        onClose={handleCloseFecharTurno}
+        turno={selectedTurnoParaFechar}
+        onSuccess={handleFecharTurnoSuccess}
       />
     </div>
   );

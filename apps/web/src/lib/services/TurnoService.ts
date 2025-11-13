@@ -56,20 +56,22 @@ export class TurnoService extends AbstractCrudService<
    * Atualiza um turno existente
    */
   async update(data: TurnoUpdate, userId: string): Promise<Turno> {
+    // Remover o id do objeto de dados, pois ele só é usado no where
+    const { id, ...updateFields } = data;
+
     const updateData: TurnoUpdateInput = {
-      id: data.id,
-      dataSolicitacao: data.dataSolicitacao,
-      dataInicio: data.dataInicio,
-      dataFim: data.dataFim,
-      veiculoId: data.veiculoId,
-      equipeId: data.equipeId,
-      dispositivo: data.dispositivo,
-      kmInicio: data.kmInicio,
-      kmFim: data.kmFim,
-      eletricistaIds: data.eletricistaIds,
+      dataSolicitacao: updateFields.dataSolicitacao,
+      dataInicio: updateFields.dataInicio,
+      dataFim: updateFields.dataFim,
+      veiculoId: updateFields.veiculoId,
+      equipeId: updateFields.equipeId,
+      dispositivo: updateFields.dispositivo,
+      kmInicio: updateFields.kmInicio,
+      kmFim: updateFields.kmFim,
+      eletricistaIds: updateFields.eletricistaIds,
     };
 
-    return this.turnoRepo.update(data.id, updateData, userId);
+    return this.turnoRepo.update(id, updateData, userId);
   }
 
   /**

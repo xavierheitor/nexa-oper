@@ -11,7 +11,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, Button, Tooltip } from 'antd';
-import { ClockCircleOutlined, CalendarOutlined, CheckOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, CalendarOutlined, CheckOutlined, EnvironmentOutlined, CloseOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { listTurnos } from '@/lib/actions/turno/list';
 import { Column } from '@ant-design/plots';
@@ -21,6 +21,7 @@ import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
 import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 import TurnoLocationMapModal from '@/ui/components/TurnoLocationMapModal';
+import FecharTurnoModal from '@/ui/components/FecharTurnoModal';
 import type { ChecklistPreenchido } from '@/ui/components/ChecklistSelectorModal';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
@@ -79,8 +80,12 @@ export default function TurnosPage() {
   const [locationMapVisible, setLocationMapVisible] = useState(false);
   const [selectedTurnoForLocation, setSelectedTurnoForLocation] = useState<TurnoData | null>(null);
 
+  // Estados para o modal de fechar turno
+  const [fecharTurnoVisible, setFecharTurnoVisible] = useState(false);
+  const [selectedTurnoParaFechar, setSelectedTurnoParaFechar] = useState<TurnoData | null>(null);
+
   // Fetch de turnos abertos e totais do dia
-  const { data: turnosAbertosResult, loading: loadingTurnos } = useDataFetch<{
+  const { data: turnosAbertosResult, loading: loadingTurnos, refetch: refetchTurnos } = useDataFetch<{
     turnosAbertos: TurnoData[];
     totalDiarios: number;
   }>(
@@ -134,7 +139,7 @@ export default function TurnosPage() {
   }, [turnosAbertosResult]);
 
   // Fetch de gráfico por tipo de equipe
-  const { data: dadosGrafico, loading: loadingGrafico } = useDataFetch<DadosGraficoTipoEquipe[]>(
+  const { data: dadosGrafico, loading: loadingGrafico, refetch: refetchGrafico } = useDataFetch<DadosGraficoTipoEquipe[]>(
     async () => {
       const result = await getStatsByTipoEquipe();
       if (result.success && result.data) {
@@ -146,7 +151,7 @@ export default function TurnosPage() {
   );
 
   // Fetch de gráfico por hora e tipo
-  const { data: dadosGraficoHora, loading: loadingGraficoHora } = useDataFetch<DadosGraficoHora[]>(
+  const { data: dadosGraficoHora, loading: loadingGraficoHora, refetch: refetchGraficoHora } = useDataFetch<DadosGraficoHora[]>(
     async () => {
       const result = await getStatsByHoraETipoEquipe();
       if (result.success && result.data) {
@@ -158,7 +163,7 @@ export default function TurnosPage() {
   );
 
   // Fetch de gráfico por base
-  const { data: dadosGraficoBase, loading: loadingGraficoBase } = useDataFetch<DadosGraficoBase[]>(
+  const { data: dadosGraficoBase, loading: loadingGraficoBase, refetch: refetchGraficoBase } = useDataFetch<DadosGraficoBase[]>(
     async () => {
       const result = await getStatsByBase();
       if (result.success && result.data) {
@@ -196,6 +201,30 @@ export default function TurnosPage() {
   const handleCloseChecklistViewer = () => {
     setChecklistViewerVisible(false);
     setSelectedChecklist(null);
+  };
+
+  const handleFecharTurno = (turno: TurnoData) => {
+    // Só permitir fechar turnos que ainda estão abertos
+    if (turno.dataFim) {
+      return;
+    }
+    setSelectedTurnoParaFechar(turno);
+    setFecharTurnoVisible(true);
+  };
+
+  const handleCloseFecharTurno = () => {
+    setFecharTurnoVisible(false);
+    setSelectedTurnoParaFechar(null);
+  };
+
+  const handleFecharTurnoSuccess = async () => {
+    // Atualizar os dados após fechar o turno usando refetch
+    await Promise.all([
+      refetchTurnos(),
+      refetchGrafico(),
+      refetchGraficoHora(),
+      refetchGraficoBase(),
+    ]);
   };
 
   const columns: ColumnsType<TurnoData> = [
@@ -271,7 +300,7 @@ export default function TurnosPage() {
     {
       title: 'Ações',
       key: 'actions',
-      width: 180,
+      width: 220,
       render: (_: unknown, record: TurnoData) => (
         <Space>
           <Tooltip title="Ver Checklists">
@@ -290,6 +319,17 @@ export default function TurnosPage() {
               onClick={() => handleViewLocation(record)}
             />
           </Tooltip>
+          {!record.dataFim && (
+            <Tooltip title="Fechar Turno">
+              <Button
+                type="default"
+                danger
+                size="small"
+                icon={<CloseOutlined />}
+                onClick={() => handleFecharTurno(record)}
+              />
+            </Tooltip>
+          )}
         </Space>
       ),
     },
@@ -535,6 +575,14 @@ export default function TurnosPage() {
         visible={checklistViewerVisible}
         onClose={handleCloseChecklistViewer}
         checklist={selectedChecklist}
+      />
+
+      {/* Modal de Fechar Turno */}
+      <FecharTurnoModal
+        visible={fecharTurnoVisible}
+        onClose={handleCloseFecharTurno}
+        turno={selectedTurnoParaFechar}
+        onSuccess={handleFecharTurnoSuccess}
       />
     </div>
   );
