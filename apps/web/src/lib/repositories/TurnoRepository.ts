@@ -29,10 +29,9 @@ export type TurnoCreateInput = {
 
 /**
  * Tipo para dados de atualização de turno
+ * Nota: O id não está incluído aqui porque é passado separadamente no método update
  */
-export type TurnoUpdateInput = Partial<TurnoCreateInput> & {
-  id: number;
-};
+export type TurnoUpdateInput = Partial<TurnoCreateInput>;
 
 export class TurnoRepository extends AbstractCrudRepository<Turno, TurnoFilter> {
   /**
@@ -94,8 +93,8 @@ export class TurnoRepository extends AbstractCrudRepository<Turno, TurnoFilter> 
     data: TurnoUpdateInput,
     userId?: string
   ): Promise<Turno> {
-    // Remover id e eletricistaIds do objeto de dados (id vai no where, eletricistaIds é tratado separadamente)
-    const { id: _, eletricistaIds, kmFim, ...turnoData } = data;
+    // Remover eletricistaIds do objeto de dados (eletricistaIds é tratado separadamente)
+    const { eletricistaIds, kmFim, ...turnoData } = data;
 
     // Preparar dados para o Prisma (mapear kmFim para KmFim)
     const prismaData: any = {

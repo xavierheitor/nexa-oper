@@ -171,7 +171,10 @@ export default function FecharTurnoModal({
             placeholder="Informe o KM final"
             min={turno.kmInicio}
             formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
-            parser={(value) => value!.replace(/\s?\./g, '')}
+            parser={(value) => {
+              const parsed = value!.replace(/\s?\./g, '');
+              return parsed ? Number(parsed) : 0;
+            }}
           />
         </Form.Item>
       </Form>
