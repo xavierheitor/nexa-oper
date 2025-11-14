@@ -117,12 +117,40 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // Extrai e normaliza mensagem segura para o cliente
     let safeMessage: string | string[] = 'Internal server error';
+    let responseBody: any = {
+      statusCode: status,
+      timestamp: new Date().toISOString(),
+      path: request.url,
+    };
+
     if (exception instanceof HttpException) {
       const resp = exception.getResponse() as any;
-      const msg = typeof resp === 'string' ? resp : resp?.message;
-      safeMessage = Array.isArray(msg) ? msg : msg ?? exception.message;
+
+      // Se o response é um objeto, preservar todos os campos
+      if (typeof resp === 'object' && resp !== null) {
+        // Se tem message, extrair para compatibilidade
+        const msg = resp.message;
+        safeMessage = Array.isArray(msg) ? msg : msg ?? exception.message;
+
+        // Preservar todos os campos do objeto original (status, closedAt, kmFinal, etc.)
+        // mas sobrescrever com campos padrão se necessário
+        responseBody = {
+          ...resp, // Preserva campos originais (status, closedAt, kmFinal, etc.)
+          statusCode: status, // Garante que statusCode está correto
+          timestamp: resp.timestamp || responseBody.timestamp, // Usa timestamp do objeto se existir
+          path: resp.path || responseBody.path, // Usa path do objeto se existir
+          message: safeMessage, // Usa mensagem normalizada
+        };
+      } else {
+        // Se é string, usar formato padrão
+        safeMessage = resp ?? exception.message;
+        responseBody.message = safeMessage;
+      }
     } else if (process.env.NODE_ENV !== 'production' && exception instanceof Error) {
       safeMessage = exception.message;
+      responseBody.message = safeMessage;
+    } else {
+      responseBody.message = safeMessage;
     }
 
     // Cria payload estruturado para logging com informações relevantes
@@ -145,14 +173,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       this.logger.warn(`[${status}] ${request.method} ${request.url} - ${JSON.stringify(safeMessage)}`);
     }
 
-    // Prepara mensagem de erro para o cliente (sanitizada)
-    // Envia resposta HTTP padronizada ao cliente (sanitizada)
-    // Em produção, não expõe stack traces ou detalhes internos
-    response.status(status).json({
-      statusCode: status, // Código de status HTTP
-      timestamp: new Date().toISOString(), // Timestamp da ocorrência do erro
-      path: request.url, // URL onde o erro ocorreu
-      message: safeMessage,
-    });
+    // Envia resposta HTTP padronizada ao cliente (preservando campos adicionais quando for objeto)
+    response.status(status).json(responseBody);
   }
 }

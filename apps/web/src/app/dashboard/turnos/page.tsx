@@ -10,17 +10,19 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, Button, Tooltip } from 'antd';
-import { ClockCircleOutlined, CalendarOutlined, CheckOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, Button, Tooltip, Input, Select } from 'antd';
+import { ClockCircleOutlined, CalendarOutlined, CheckOutlined, EnvironmentOutlined, CloseOutlined, SearchOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { listTurnos } from '@/lib/actions/turno/list';
 import { Column } from '@ant-design/plots';
 import { getStatsByTipoEquipe } from '@/lib/actions/turno/getStatsByTipoEquipe';
 import { getStatsByHoraETipoEquipe } from '@/lib/actions/turno/getStatsByHoraETipoEquipe';
 import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
+import { listBases } from '@/lib/actions/base/list';
 import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 import TurnoLocationMapModal from '@/ui/components/TurnoLocationMapModal';
+import FecharTurnoModal from '@/ui/components/FecharTurnoModal';
 import type { ChecklistPreenchido } from '@/ui/components/ChecklistSelectorModal';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
@@ -69,6 +71,12 @@ interface TurnoData {
 }
 
 export default function TurnosPage() {
+  // Estados para os filtros
+  const [filtroVeiculo, setFiltroVeiculo] = useState<string>('');
+  const [filtroEquipe, setFiltroEquipe] = useState<string>('');
+  const [filtroEletricista, setFiltroEletricista] = useState<string>('');
+  const [filtroBase, setFiltroBase] = useState<string | undefined>(undefined);
+
   // Estados para os modais de checklist
   const [checklistSelectorVisible, setChecklistSelectorVisible] = useState(false);
   const [checklistViewerVisible, setChecklistViewerVisible] = useState(false);
@@ -79,8 +87,12 @@ export default function TurnosPage() {
   const [locationMapVisible, setLocationMapVisible] = useState(false);
   const [selectedTurnoForLocation, setSelectedTurnoForLocation] = useState<TurnoData | null>(null);
 
+  // Estados para o modal de fechar turno
+  const [fecharTurnoVisible, setFecharTurnoVisible] = useState(false);
+  const [selectedTurnoParaFechar, setSelectedTurnoParaFechar] = useState<TurnoData | null>(null);
+
   // Fetch de turnos abertos e totais do dia
-  const { data: turnosAbertosResult, loading: loadingTurnos } = useDataFetch<{
+  const { data: turnosAbertosResult, loading: loadingTurnos, refetch: refetchTurnos } = useDataFetch<{
     turnosAbertos: TurnoData[];
     totalDiarios: number;
   }>(
@@ -94,11 +106,6 @@ export default function TurnosPage() {
         listTurnos({ page: 1, pageSize: 1000, dataInicio: inicioHoje, dataFim: fimHoje }),
       ]);
 
-      if (resultAbertos.redirectToLogin) {
-        window.location.href = '/login';
-        throw new Error('Redirecionando para login');
-      }
-
       if (resultAbertos.success && resultAbertos.data && resultTodos.success && resultTodos.data) {
         return {
           turnosAbertos: (resultAbertos.data.data || []) as unknown as TurnoData[],
@@ -111,30 +118,69 @@ export default function TurnosPage() {
     []
   );
 
-  // Processar dados dos turnos e calcular estatísticas
-  const { turnosAbertos, stats } = useMemo(() => {
+  // Processar dados dos turnos, aplicar filtros e calcular estatísticas
+  const { turnosAbertos, turnosFiltrados, stats } = useMemo(() => {
     const turnos = turnosAbertosResult?.turnosAbertos || [];
     const totalDiarios = turnosAbertosResult?.totalDiarios || 0;
 
-    // Calcular estatísticas por base
+    // Aplicar filtros
+    let turnosFiltrados = turnos;
+
+    // Filtro por veículo (placa ou modelo)
+    if (filtroVeiculo) {
+      const filtroLower = filtroVeiculo.toLowerCase();
+      turnosFiltrados = turnosFiltrados.filter((turno: TurnoData) =>
+        turno.veiculoPlaca?.toLowerCase().includes(filtroLower) ||
+        turno.veiculoModelo?.toLowerCase().includes(filtroLower)
+      );
+    }
+
+    // Filtro por equipe
+    if (filtroEquipe) {
+      const filtroLower = filtroEquipe.toLowerCase();
+      turnosFiltrados = turnosFiltrados.filter((turno: TurnoData) =>
+        turno.equipeNome?.toLowerCase().includes(filtroLower)
+      );
+    }
+
+    // Filtro por eletricista (nome ou matrícula)
+    if (filtroEletricista) {
+      const filtroLower = filtroEletricista.toLowerCase();
+      turnosFiltrados = turnosFiltrados.filter((turno: TurnoData) =>
+        turno.eletricistas?.some((elet) =>
+          elet.nome?.toLowerCase().includes(filtroLower) ||
+          elet.matricula?.toLowerCase().includes(filtroLower)
+        )
+      );
+    }
+
+    // Filtro por base
+    if (filtroBase) {
+      turnosFiltrados = turnosFiltrados.filter((turno: TurnoData) =>
+        turno.baseNome === filtroBase
+      );
+    }
+
+    // Calcular estatísticas por base (dos turnos originais, não filtrados)
     const porBase: Record<string, number> = {};
     turnos.forEach((turno: TurnoData) => {
-      const base = turno.equipeNome?.split('-')[0] || 'Não identificada';
+      const base = turno.baseNome || 'Não identificada';
       porBase[base] = (porBase[base] || 0) + 1;
     });
 
     return {
       turnosAbertos: turnos,
+      turnosFiltrados,
       stats: {
         total: turnos.length,
         totalDiarios,
         porBase,
       },
     };
-  }, [turnosAbertosResult]);
+  }, [turnosAbertosResult, filtroVeiculo, filtroEquipe, filtroEletricista, filtroBase]);
 
   // Fetch de gráfico por tipo de equipe
-  const { data: dadosGrafico, loading: loadingGrafico } = useDataFetch<DadosGraficoTipoEquipe[]>(
+  const { data: dadosGrafico, loading: loadingGrafico, refetch: refetchGrafico } = useDataFetch<DadosGraficoTipoEquipe[]>(
     async () => {
       const result = await getStatsByTipoEquipe();
       if (result.success && result.data) {
@@ -146,7 +192,7 @@ export default function TurnosPage() {
   );
 
   // Fetch de gráfico por hora e tipo
-  const { data: dadosGraficoHora, loading: loadingGraficoHora } = useDataFetch<DadosGraficoHora[]>(
+  const { data: dadosGraficoHora, loading: loadingGraficoHora, refetch: refetchGraficoHora } = useDataFetch<DadosGraficoHora[]>(
     async () => {
       const result = await getStatsByHoraETipoEquipe();
       if (result.success && result.data) {
@@ -158,13 +204,25 @@ export default function TurnosPage() {
   );
 
   // Fetch de gráfico por base
-  const { data: dadosGraficoBase, loading: loadingGraficoBase } = useDataFetch<DadosGraficoBase[]>(
+  const { data: dadosGraficoBase, loading: loadingGraficoBase, refetch: refetchGraficoBase } = useDataFetch<DadosGraficoBase[]>(
     async () => {
       const result = await getStatsByBase();
       if (result.success && result.data) {
         return result.data;
       }
       throw new Error(result.error || 'Erro ao carregar dados do gráfico por base');
+    },
+    []
+  );
+
+  // Fetch de bases para o select
+  const { data: basesData, loading: loadingBases } = useDataFetch<Array<{ id: number; nome: string }>>(
+    async () => {
+      const result = await listBases({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' });
+      if (result.success && result.data) {
+        return result.data.data || [];
+      }
+      throw new Error(result.error || 'Erro ao carregar bases');
     },
     []
   );
@@ -196,6 +254,30 @@ export default function TurnosPage() {
   const handleCloseChecklistViewer = () => {
     setChecklistViewerVisible(false);
     setSelectedChecklist(null);
+  };
+
+  const handleFecharTurno = (turno: TurnoData) => {
+    // Só permitir fechar turnos que ainda estão abertos
+    if (turno.dataFim) {
+      return;
+    }
+    setSelectedTurnoParaFechar(turno);
+    setFecharTurnoVisible(true);
+  };
+
+  const handleCloseFecharTurno = () => {
+    setFecharTurnoVisible(false);
+    setSelectedTurnoParaFechar(null);
+  };
+
+  const handleFecharTurnoSuccess = async () => {
+    // Atualizar os dados após fechar o turno usando refetch
+    await Promise.all([
+      refetchTurnos(),
+      refetchGrafico(),
+      refetchGraficoHora(),
+      refetchGraficoBase(),
+    ]);
   };
 
   const columns: ColumnsType<TurnoData> = [
@@ -271,7 +353,7 @@ export default function TurnosPage() {
     {
       title: 'Ações',
       key: 'actions',
-      width: 180,
+      width: 220,
       render: (_: unknown, record: TurnoData) => (
         <Space>
           <Tooltip title="Ver Checklists">
@@ -290,12 +372,23 @@ export default function TurnosPage() {
               onClick={() => handleViewLocation(record)}
             />
           </Tooltip>
+          {!record.dataFim && (
+            <Tooltip title="Fechar Turno">
+              <Button
+                type="default"
+                danger
+                size="small"
+                icon={<CloseOutlined />}
+                onClick={() => handleFecharTurno(record)}
+              />
+            </Tooltip>
+          )}
         </Space>
       ),
     },
   ];
 
-  if (loading && !turnosAbertos.length) {
+  if (loading && !turnosAbertosResult?.turnosAbertos?.length) {
     return (
       <div style={{ textAlign: 'center', padding: '40px' }}>
         <Spin size="large" />
@@ -488,17 +581,67 @@ export default function TurnosPage() {
 
       {/* Tabela de Turnos */}
       <Card>
+        {/* Filtros */}
+        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={12} md={6}>
+            <Input
+              placeholder="Filtrar por veículo (placa/modelo)"
+              prefix={<SearchOutlined />}
+              value={filtroVeiculo}
+              onChange={(e) => setFiltroVeiculo(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Input
+              placeholder="Filtrar por equipe"
+              prefix={<SearchOutlined />}
+              value={filtroEquipe}
+              onChange={(e) => setFiltroEquipe(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Input
+              placeholder="Filtrar por eletricista (nome/matrícula)"
+              prefix={<SearchOutlined />}
+              value={filtroEletricista}
+              onChange={(e) => setFiltroEletricista(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Select
+              placeholder="Filtrar por base"
+              style={{ width: '100%' }}
+              value={filtroBase}
+              onChange={setFiltroBase}
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              loading={loadingBases}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              options={basesData?.map((base) => ({
+                label: base.nome,
+                value: base.nome,
+              }))}
+            />
+          </Col>
+        </Row>
+
         <Table
           columns={columns}
-          dataSource={turnosAbertos}
+          dataSource={turnosFiltrados}
           rowKey="id"
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
-            showTotal: (total) => `Total de ${total} turnos`,
+            showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? ' (filtrado)' : ''}`,
           }}
           locale={{
-            emptyText: <Empty description="Nenhum turno aberto no momento" />,
+            emptyText: <Empty description="Nenhum turno encontrado com os filtros aplicados" />,
           }}
         />
       </Card>
@@ -535,6 +678,14 @@ export default function TurnosPage() {
         visible={checklistViewerVisible}
         onClose={handleCloseChecklistViewer}
         checklist={selectedChecklist}
+      />
+
+      {/* Modal de Fechar Turno */}
+      <FecharTurnoModal
+        visible={fecharTurnoVisible}
+        onClose={handleCloseFecharTurno}
+        turno={selectedTurnoParaFechar}
+        onSuccess={handleFecharTurnoSuccess}
       />
     </div>
   );

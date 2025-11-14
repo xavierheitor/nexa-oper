@@ -187,6 +187,14 @@ export function useDataFetch<T>(
       if (result && typeof result === 'object' && 'success' in result) {
         const actionResult = result as ActionResult<T>;
 
+        // Verifica se precisa redirecionar para login
+        if (actionResult.redirectToLogin) {
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+          return; // Interrompe o processamento
+        }
+
         if (actionResult.success && actionResult.data !== undefined) {
           // Aplica transformação se fornecida
           const transformFn = transformRef.current;

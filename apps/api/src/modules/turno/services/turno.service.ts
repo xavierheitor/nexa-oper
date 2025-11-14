@@ -342,6 +342,18 @@ export class TurnoService {
         throw new NotFoundException(TURNO_ERRORS.TURNO_NOT_FOUND);
       }
 
+      // Verifica se o turno já está fechado ANTES de validar
+      // Se estiver fechado, retorna os dados do turno fechado para o app sincronizar
+      if (turno.dataFim) {
+        // Retorna um objeto especial que será tratado no controller
+        return {
+          _alreadyClosed: true,
+          id: turno.id,
+          dataFim: turno.dataFim,
+          KmFim: turno.KmFim,
+        } as any;
+      }
+
       // Validações de fechamento
       this.validatePodeFecharTurno(turno, fecharDto);
 
