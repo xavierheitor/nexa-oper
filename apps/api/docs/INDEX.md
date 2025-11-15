@@ -5,6 +5,7 @@ Este diretório reúne a documentação completa da API (NestJS), cobrindo arqui
 ## Sumário
 
 - [Visão e Arquitetura](./ARQUITETURA.md)
+- [Manual Iniciante (conceitos + tour guiado)](./MANUAL_INICIANTE.md)
 - [Manuais de Execução e Configuração](./MANUAL_EXECUCAO.md)
 - [Middlewares e Interceptors](./MIDDLEWARES_INTERCEPTORS.md)
 - [Fluxos de Negócio: Turnos](./FLUXOS_TURNO.md)

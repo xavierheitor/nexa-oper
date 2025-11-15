@@ -23,6 +23,7 @@ src/
 ## Documentação do Código
 Consulte a documentação detalhada em `apps/api/docs/`:
 - `ARQUITETURA.md` — visão e organização
+- `MANUAL_INICIANTE.md` — guia para entender NestJS e este projeto passo a passo
 - `MIDDLEWARES_INTERCEPTORS.md` — comportamento e pontos de extensão
 - `FLUXOS_TURNO.md` — fluxos de abertura/fechamento (web e mobile)
 - `PAYLOADS.md` — contratos de entrada/saída por endpoint
