@@ -29,6 +29,7 @@ import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@modules/engine/auth/auth.module';
+import { TurnoRealizadoModule } from '@modules/turno-realizado/turno-realizado.module';
 import { TurnoService } from './services/turno.service';
 import { ChecklistPreenchidoService } from './services/checklist-preenchido.service';
 import { ChecklistFotoService } from './services/checklist-foto.service';
@@ -53,6 +54,7 @@ import {
   imports: [
     DatabaseModule,
     AuthModule,
+    TurnoRealizadoModule, // Para criar TurnoRealizado quando Turno é aberto
     MulterModule.register({
       dest: './uploads/checklists',
       limits: {

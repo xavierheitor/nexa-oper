@@ -41,6 +41,7 @@ export class TurnoReconciliacaoService {
 
     try {
       // 1. Buscar slots da escala (previstos) com estado e horários
+      // Buscar slots da equipe específica para processar faltas/divergências desta equipe
       const slots = await prisma.slotEscala.findMany({
         where: {
           data: {
@@ -57,6 +58,26 @@ export class TurnoReconciliacaoService {
           },
         },
       });
+
+      // 1b. Buscar TODOS os slots do dia (de todas as equipes) para verificar se eletricista tinha escala
+      // Isso é necessário para detectar corretamente "extrafora" (trabalho sem escala)
+      const todosSlotsDia = await prisma.slotEscala.findMany({
+        where: {
+          data: {
+            gte: dataRefInicio,
+            lte: dataRefFim,
+          },
+          escalaEquipePeriodo: {
+            status: 'PUBLICADA', // Apenas escalas publicadas
+          },
+        },
+        select: {
+          eletricistaId: true,
+        },
+      });
+
+      // Criar Set de eletricistas que têm escala no dia (qualquer equipe)
+      const eletricistasComEscala = new Set(todosSlotsDia.map((s) => s.eletricistaId));
 
       // 2. Buscar turnos realmente abertos no dia (todas as equipes)
       const aberturasDia = await prisma.turnoRealizadoEletricista.findMany({
@@ -303,10 +324,9 @@ export class TurnoReconciliacaoService {
 
       // 5. Processar turnos abertos SEM escala (CASO 6: extrafora)
       for (const [eletricistaId, aberturas] of abertosPorEletricista.entries()) {
-        // Verificar se este eletricista tinha algum slot na escala
-        const tinhaSlotNaEscala = slots.some(
-          (s) => s.eletricistaId === eletricistaId
-        );
+        // Verificar se este eletricista tinha algum slot na escala (em QUALQUER equipe)
+        // Usar todosSlotsDia ao invés de slots para verificar todas as equipes
+        const tinhaSlotNaEscala = eletricistasComEscala.has(eletricistaId);
 
         if (!tinhaSlotNaEscala) {
           // Eletricista abriu turno sem estar na escala = trabalho extrafora

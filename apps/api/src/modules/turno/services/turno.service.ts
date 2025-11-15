@@ -74,6 +74,7 @@ import {
   TurnoSyncDto,
 } from '../dto';
 import { ChecklistPreenchidoService } from './checklist-preenchido.service';
+import { TurnoRealizadoService } from '@modules/turno-realizado/turno-realizado.service';
 
 /**
  * Interface de parâmetros para consulta paginada interna
@@ -99,7 +100,8 @@ export class TurnoService {
 
   constructor(
     private readonly db: DatabaseService,
-    private readonly checklistPreenchidoService: ChecklistPreenchidoService
+    private readonly checklistPreenchidoService: ChecklistPreenchidoService,
+    private readonly turnoRealizadoService: TurnoRealizadoService
   ) {}
 
   /**
@@ -280,6 +282,36 @@ export class TurnoService {
       const turnoCompleto = await this.buscarTurnoCompleto(resultado.turno.id);
 
       this.logger.log(`Turno aberto com sucesso - ID: ${resultado.turno.id}`);
+
+      // Criar TurnoRealizado e TurnoRealizadoEletricista para reconciliação
+      // Isso permite que a reconciliação funcione mesmo quando turnos são abertos via mobile
+      try {
+        const dataReferencia = new Date(turnoCompleto.dataInicio);
+        // Normalizar para início do dia (00:00:00) para dataReferencia
+        dataReferencia.setHours(0, 0, 0, 0);
+
+        await this.turnoRealizadoService.abrirTurno({
+          equipeId: turnoCompleto.equipeId,
+          dataReferencia: dataReferencia.toISOString().split('T')[0], // YYYY-MM-DD
+          eletricistasAbertos: turnoCompleto.TurnoEletricistas.map((te: any) => ({
+            eletricistaId: te.eletricistaId,
+            abertoEm: turnoCompleto.dataInicio.toISOString(),
+            deviceInfo: turnoCompleto.dispositivo || undefined,
+          })),
+          origem: 'mobile',
+          executadoPor: userId || turnoCompleto.createdBy || 'system',
+        });
+
+        this.logger.log(
+          `TurnoRealizado criado para reconciliação - Turno ID: ${resultado.turno.id}`
+        );
+      } catch (error: any) {
+        // Não bloquear a resposta se falhar criar TurnoRealizado
+        // Mas logar o erro para debug
+        this.logger.warn(
+          `Erro ao criar TurnoRealizado para reconciliação (Turno ID: ${resultado.turno.id}): ${error.message}`
+        );
+      }
 
       // Processar pendências e fotos de forma assíncrona (fora da transação)
       const checklistsParaProcessar =
