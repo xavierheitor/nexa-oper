@@ -168,6 +168,12 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
             horasPrevistas: 0, // Será calculado se houver slot
             horasRealizadas,
             status: 'normal',
+            equipe: turno.turnoRealizado?.equipe ? {
+              id: turno.turnoRealizado.equipe.id,
+              nome: turno.turnoRealizado.equipe.nome,
+            } : undefined,
+            horaInicio: turno.abertoEm,
+            horaFim: turno.fechadoEm || undefined,
           });
         }
       }

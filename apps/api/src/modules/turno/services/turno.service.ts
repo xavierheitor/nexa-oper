@@ -293,13 +293,14 @@ export class TurnoService {
         await this.turnoRealizadoService.abrirTurno({
           equipeId: turnoCompleto.equipeId,
           dataReferencia: dataReferencia.toISOString().split('T')[0], // YYYY-MM-DD
+          turnoId: resultado.turno.id, // Referência ao Turno original
           eletricistasAbertos: turnoCompleto.TurnoEletricistas.map((te: any) => ({
             eletricistaId: te.eletricistaId,
             abertoEm: turnoCompleto.dataInicio.toISOString(),
             deviceInfo: turnoCompleto.dispositivo || undefined,
           })),
           origem: 'mobile',
-          executadoPor: userId || turnoCompleto.createdBy || 'system',
+          executadoPor: userId || String(turnoCompleto.createdBy || 'system'),
         });
 
         this.logger.log(
@@ -432,6 +433,37 @@ export class TurnoService {
       });
 
       this.logger.log(`Turno fechado com sucesso - ID: ${turnoFechado.id}`);
+
+      // Fechar também o TurnoRealizado correspondente para manter sincronização
+      // Primeiro tenta buscar pelo turnoId (método preferencial após migração)
+      // Se não encontrar, usa fallback por data e equipe
+      try {
+        const userContext = getDefaultUserContext();
+        const executadoPor = String(userContext.userId || turnoFechado.updatedBy || 'system');
+
+        // Tentar fechar pelo turnoId primeiro (mais preciso)
+        let turnoRealizadoFechado = await this.turnoRealizadoService.fecharTurnoPorTurnoId(
+          turnoFechado.id,
+          executadoPor
+        );
+
+        // Se não encontrou pelo turnoId, tentar por data e equipe (fallback para turnos antigos)
+        if (!turnoRealizadoFechado) {
+          const dataReferencia = new Date(turnoFechado.dataInicio);
+          turnoRealizadoFechado = await this.turnoRealizadoService.fecharTurnoPorDataEquipe(
+            dataReferencia,
+            turnoFechado.equipeId,
+            executadoPor
+          );
+        }
+      } catch (error: any) {
+        // Não falhar o fechamento do Turno se houver erro ao fechar TurnoRealizado
+        // Apenas logar o erro para debug
+        this.logger.warn(
+          `Erro ao fechar TurnoRealizado correspondente (Turno ID: ${turnoFechado.id}): ${error.message}`
+        );
+      }
+
       return this.formatarTurnoResponse(turnoFechado);
     } catch (error) {
       handleCrudError(error, this.logger, 'update', 'turno');

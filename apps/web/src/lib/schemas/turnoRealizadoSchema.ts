@@ -100,6 +100,9 @@ export const detalhamentoDiaSchema = z.object({
   faltaId: z.number().optional(),
   horaExtraId: z.number().optional(),
   tipoHoraExtra: HoraExtraTipoEnum.optional(),
+  equipe: equipeBasicaSchema.optional(), // Equipe em que trabalhou (quando tipo = 'trabalho')
+  horaInicio: z.coerce.date().optional(), // Hora de início do turno (quando tipo = 'trabalho')
+  horaFim: z.coerce.date().optional(), // Hora de fim do turno (quando tipo = 'trabalho')
 });
 
 export const consolidadoEletricistaResponseSchema = z.object({

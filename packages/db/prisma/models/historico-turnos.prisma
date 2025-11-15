@@ -8,6 +8,10 @@ model TurnoRealizado {
   equipeId       Int
   equipe         Equipe   @relation(fields: [equipeId], references: [id])
 
+  // Referência opcional ao Turno original (quando criado a partir de um Turno)
+  turnoId Int?
+  turno   Turno? @relation(fields: [turnoId], references: [id])
+
   origem     String    @db.VarChar(32) // mobile | backoffice
   abertoEm   DateTime
   abertoPor  String    @db.VarChar(255)
@@ -21,6 +25,7 @@ model TurnoRealizado {
 
   @@index([dataReferencia])
   @@index([equipeId, dataReferencia])
+  @@index([turnoId])
 }
 
 model TurnoRealizadoEletricista {

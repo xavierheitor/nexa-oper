@@ -26,6 +26,7 @@ model Turno {
   TurnoEletricistas    TurnoEletricista[]
   ChecklistPreenchidos ChecklistPreenchido[]
   ChecklistPendencias  ChecklistPendencia[]
+  TurnoRealizado       TurnoRealizado[]
 }
 
 model TurnoEletricista {
