@@ -114,12 +114,12 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
           },
         }),
 
-        // Slots de escala (para calcular dias escalados)
+        // Slots de escala (para calcular dias escalados) - buscar TODOS os slots (TRABALHO e FOLGA)
         prisma.slotEscala.findMany({
           where: {
             eletricistaId: data.eletricistaId,
             data: { gte: dataInicio, lte: dataFim },
-            estado: 'TRABALHO',
+            // Buscar todos os estados para saber quais dias têm escala
           },
         }),
       ]);
@@ -129,7 +129,17 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
         turnosRealizados.map((t) => t.abertoEm.toISOString().split('T')[0])
       ).size;
 
-      const diasEscalados = slotsEscala.length;
+      // Filtrar apenas slots de TRABALHO para calcular dias escalados
+      const slotsTrabalho = slotsEscala.filter(s => s.estado === 'TRABALHO');
+      const diasEscalados = slotsTrabalho.length;
+      
+      // Criar mapa de dias com escala (qualquer estado) para uso no calendário
+      const diasComEscala = new Set<string>();
+      slotsEscala.forEach(slot => {
+        const dataStr = slot.data.toISOString().split('T')[0];
+        diasComEscala.add(dataStr);
+      });
+      
       const faltasTotal = faltas.length;
       const faltasJustificadas = faltas.filter(
         (f) => f.status === 'justificada'
@@ -265,6 +275,7 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
           divergenciasEquipe: 0, // TODO: calcular divergências
         },
         detalhamento,
+        diasComEscala: Array.from(diasComEscala), // Lista de datas (YYYY-MM-DD) que têm escala
       };
 
       // Validar resposta com schema Zod

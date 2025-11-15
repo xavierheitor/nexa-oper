@@ -110,6 +110,7 @@ export const consolidadoEletricistaResponseSchema = z.object({
   periodo: periodoResponseSchema,
   resumo: resumoEletricistaSchema,
   detalhamento: z.array(detalhamentoDiaSchema),
+  diasComEscala: z.array(z.string()).optional(), // Lista de datas (YYYY-MM-DD) que têm escala
 });
 
 export const resumoEletricistaEquipeSchema = z.object({

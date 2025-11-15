@@ -27,6 +27,9 @@ export default function CalendarioFrequencia({
     dadosPorData.set(dataStr, dia);
   });
 
+  // Criar Set de dias com escala para verificar "não escalado"
+  const diasComEscalaSet = new Set<string>(consolidado.diasComEscala || []);
+
   // Função para obter cor de fundo baseada no tipo
   const getBackgroundColor = (tipo: string, status?: string): string => {
     switch (tipo) {
@@ -96,18 +99,40 @@ export default function CalendarioFrequencia({
     return list;
   };
 
-  // Customizar células do calendário
-  const dateCellRender = (value: Dayjs) => {
-    const listData = getListData(value);
-    const dataStr = value.format('YYYY-MM-DD');
+  // Customizar apenas o conteúdo da célula (não o número do dia, que já é renderizado pelo calendário)
+  const cellRender = (current: Dayjs, info: any) => {
+    const dataStr = current.format('YYYY-MM-DD');
     const dia = dadosPorData.get(dataStr);
+    const listData = getListData(current);
+    const temEscala = diasComEscalaSet.has(dataStr);
 
-    if (!listData.length) {
+    // Se não há dados para este dia
+    if (!dia || !listData.length) {
+      // Se não tem escala, mostrar "Não escalado"
+      if (!temEscala) {
+        return (
+          <div style={{ fontSize: '10px', color: '#999', fontStyle: 'italic' }}>
+            Não escalado
+          </div>
+        );
+      }
+      // Se tem escala mas não tem dados, retornar vazio (só o número do dia será mostrado)
       return null;
     }
 
+    const backgroundColor = getBackgroundColor(dia.tipo, dia.status);
+
+    // Renderizar apenas o conteúdo customizado (sem o número do dia)
     return (
-      <div style={{ minHeight: '60px', padding: '2px' }}>
+      <div
+        style={{
+          backgroundColor,
+          borderRadius: '4px',
+          minHeight: '40px',
+          padding: '4px',
+          marginTop: '4px',
+        }}
+      >
         {listData.map((item, index) => (
           <div key={index} style={{ marginTop: index > 0 ? '4px' : 0 }}>
             <Tooltip
@@ -157,32 +182,6 @@ export default function CalendarioFrequencia({
     );
   };
 
-  // Customizar toda a célula do calendário (incluindo fundo)
-  const cellRender = (current: Dayjs, info: any) => {
-    const dataStr = current.format('YYYY-MM-DD');
-    const dia = dadosPorData.get(dataStr);
-
-    if (!dia) {
-      return info.originNode;
-    }
-
-    const backgroundColor = getBackgroundColor(dia.tipo, dia.status);
-
-    // Envolver a célula original com estilo customizado
-    return (
-      <div
-        style={{
-          backgroundColor,
-          borderRadius: '4px',
-          minHeight: '100%',
-          padding: '4px',
-        }}
-      >
-        {info.originNode}
-      </div>
-    );
-  };
-
   // Desabilitar datas fora do período selecionado
   const disabledDate = (current: Dayjs) => {
     const inicio = dayjs(dataInicio).startOf('day');
@@ -200,7 +199,6 @@ export default function CalendarioFrequencia({
         mode="month"
         defaultValue={mesInicial}
         cellRender={cellRender}
-        dateCellRender={dateCellRender}
         disabledDate={disabledDate}
         headerRender={({ value, type, onChange, onTypeChange }) => {
           // Customizar header para mostrar apenas o período selecionado
