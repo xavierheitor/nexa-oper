@@ -108,9 +108,11 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       throw new Error('Escala não encontrada');
     }
 
-    // ✅ PERMITE editar escalas publicadas
-    // A proteção do histórico é feita na edição de slots individuais
-    // Aqui apenas atualizamos metadados da escala (observações, datas, etc)
+    // ❌ BLOQUEIA edição de escalas publicadas (exceto via prolongar)
+    // Escalas publicadas só podem ser prolongadas ou arquivadas
+    if (periodo.status === 'PUBLICADA') {
+      throw new Error('Não é possível editar escalas publicadas. Use a opção "Prolongar" para estender o período.');
+    }
 
     const { id, ...updateData } = data;
     const updateInput = {
@@ -709,6 +711,192 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
     }
 
     return novoPeriodo;
+  }
+
+  /**
+   * Prolonga um período de escala (estende periodoFim e volta status para RASCUNHO)
+   */
+  async prolongar(
+    input: { escalaEquipePeriodoId: number; novoPeriodoFim: Date },
+    userId: string
+  ): Promise<EscalaEquipePeriodo> {
+    const periodo = await this.escalaRepo.findById(input.escalaEquipePeriodoId);
+    if (!periodo) {
+      throw new Error('Período não encontrado');
+    }
+
+    if (periodo.status !== 'PUBLICADA') {
+      throw new Error('Apenas escalas publicadas podem ser prolongadas');
+    }
+
+    if (input.novoPeriodoFim <= periodo.periodoFim) {
+      throw new Error('Novo período fim deve ser maior que o período fim atual');
+    }
+
+    // Salvar periodoFim antigo para gerar slots apenas a partir do dia seguinte
+    const periodoFimAntigo = new Date(periodo.periodoFim);
+    const dataInicioNovosSlots = new Date(periodoFimAntigo);
+    dataInicioNovosSlots.setDate(dataInicioNovosSlots.getDate() + 1);
+    dataInicioNovosSlots.setHours(0, 0, 0, 0);
+
+    // Atualizar período fim e voltar status para RASCUNHO
+    const periodoAtualizado = await this.escalaRepo.update(
+      input.escalaEquipePeriodoId,
+      {
+        periodoFim: input.novoPeriodoFim,
+        status: 'RASCUNHO',
+        observacoes: periodo.observacoes
+          ? `${periodo.observacoes}\n[Prolongado em ${new Date().toLocaleDateString()}]`
+          : `[Prolongado em ${new Date().toLocaleDateString()}]`,
+      },
+      userId
+    );
+
+    // Gerar slots apenas para o período estendido (a partir do dia seguinte ao fim antigo)
+    await this.gerarSlots(
+      {
+        escalaEquipePeriodoId: input.escalaEquipePeriodoId,
+        mode: 'fromDate',
+        fromDate: dataInicioNovosSlots,
+      },
+      userId
+    );
+
+    return periodoAtualizado;
+  }
+
+  /**
+   * Transfere escala de um eletricista para outro a partir de uma data
+   */
+  async transferirEscala(
+    input: {
+      escalaEquipePeriodoId: number;
+      eletricistaOrigemId: number;
+      eletricistaDestinoId: number;
+      dataInicio: Date;
+    },
+    userId: string
+  ): Promise<{ slotsTransferidos: number; slotsLiberados: number }> {
+    const periodo = await this.escalaRepo.findById(input.escalaEquipePeriodoId);
+    if (!periodo) {
+      throw new Error('Período não encontrado');
+    }
+
+    if (periodo.status !== 'PUBLICADA') {
+      throw new Error('Apenas escalas publicadas podem ter transferências');
+    }
+
+    // Validar que a data não é hoje ou antes
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const dataInicio = new Date(input.dataInicio);
+    dataInicio.setHours(0, 0, 0, 0);
+
+    if (dataInicio <= hoje) {
+      throw new Error('A data de início da transferência deve ser a partir de amanhã');
+    }
+
+    // Validar que a data está dentro do período da escala
+    const periodoInicio = new Date(periodo.periodoInicio);
+    periodoInicio.setHours(0, 0, 0, 0);
+    const periodoFim = new Date(periodo.periodoFim);
+    periodoFim.setHours(23, 59, 59, 999);
+
+    if (dataInicio < periodoInicio || dataInicio > periodoFim) {
+      throw new Error('A data de início deve estar dentro do período da escala');
+    }
+
+    // Verificar se o eletricista origem tem slots nesta escala
+    const slotsOrigem = await prisma.slotEscala.findMany({
+      where: {
+        escalaEquipePeriodoId: input.escalaEquipePeriodoId,
+        eletricistaId: input.eletricistaOrigemId,
+        data: {
+          gte: dataInicio,
+          lte: periodoFim,
+        },
+        deletedAt: null,
+      },
+    });
+
+    if (slotsOrigem.length === 0) {
+      throw new Error('Eletricista origem não possui slots para transferir a partir desta data');
+    }
+
+    // Verificar se o eletricista destino já está escalado em outra escala no mesmo período
+    const slotsDestinoOutrasEscalas = await prisma.slotEscala.findMany({
+      where: {
+        eletricistaId: input.eletricistaDestinoId,
+        data: {
+          gte: dataInicio,
+          lte: periodoFim,
+        },
+        escalaEquipePeriodoId: {
+          not: input.escalaEquipePeriodoId, // Excluir a escala atual
+        },
+        deletedAt: null,
+      },
+      include: {
+        escalaEquipePeriodo: {
+          select: {
+            id: true,
+            equipe: {
+              select: {
+                nome: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Executar transferência em transação
+    const resultado = await prisma.$transaction(async (tx) => {
+      let slotsLiberados = 0;
+
+      // Se o eletricista destino já está escalado, marcar seus slots como deletados (soft delete)
+      if (slotsDestinoOutrasEscalas.length > 0) {
+        await tx.slotEscala.updateMany({
+          where: {
+            id: {
+              in: slotsDestinoOutrasEscalas.map(s => s.id),
+            },
+          },
+          data: {
+            deletedAt: new Date(),
+            deletedBy: userId,
+            updatedAt: new Date(),
+            updatedBy: userId,
+            observacoes: `Slot liberado para transferência de escala. Eletricista transferido para escala ${input.escalaEquipePeriodoId} em ${dataInicio.toLocaleDateString()}`,
+          },
+        });
+        slotsLiberados = slotsDestinoOutrasEscalas.length;
+      }
+
+      // Transferir slots do eletricista origem para o destino
+      // Atualizar os slots existentes
+      const slotsAtualizados = await tx.slotEscala.updateMany({
+        where: {
+          id: {
+            in: slotsOrigem.map(s => s.id),
+          },
+        },
+        data: {
+          eletricistaId: input.eletricistaDestinoId,
+          origem: 'REMANEJAMENTO',
+          updatedAt: new Date(),
+          updatedBy: userId,
+          observacoes: `Transferido de eletricista ${input.eletricistaOrigemId} em ${dataInicio.toLocaleDateString()}`,
+        },
+      });
+
+      return {
+        slotsTransferidos: slotsAtualizados.count,
+        slotsLiberados,
+      };
+    });
+
+    return resultado;
   }
 
   /**

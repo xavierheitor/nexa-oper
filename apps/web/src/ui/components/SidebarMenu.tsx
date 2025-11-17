@@ -17,13 +17,17 @@
  * - Dashboard (página principal)
  * - Cadastro (submenu com várias seções)
  *   - Contratos
+ *   - Escalas (submenu: Tipos de Escala, Catálogo de Horários, Horários das Equipes)
  *   - Equipe (submenu: Tipos, Equipes)
  *   - Veículos (submenu: Tipos, Veículos)
  *   - Eletricista, Supervisor, Tipo de Atividade, Base
  *   - APR (submenu: Perguntas, Opções, Modelo)
  *   - Checklist (submenu: Tipo, Perguntas, Opções, Modelo)
  *   - Usuários (submenu: Web, Móveis)
- * - PMA, Anomalias
+ * - Relatórios (submenu com vários relatórios)
+ * - Turnos (submenu: Visão Geral, Histórico)
+ * - Frequência (submenu: Visão Geral, Faltas, Horas Extras, Justificativas de Equipe)
+ * - Escalas (submenu: Gestão de Escala, Associar Horário)
  * - Logout
  *
  * COMPORTAMENTO DE EXPANSÃO:
@@ -121,6 +125,13 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       openKeys.push('cadastro');
     }
 
+    // Sempre abre 'escalas-menu' se a rota for de escalas principal
+    if (pathname === '/dashboard/cadastro/escala-equipe-periodo' ||
+        pathname === '/dashboard/cadastro/equipe-horario' ||
+        pathname === '/dashboard/escalas/edicao-em-curso') {
+      openKeys.push('escalas-menu');
+    }
+
     // Mapeamento de rotas para suas chaves de menu pai
     const routeToMenuKey: Record<string, string> = {
       // Submenus de Equipe
@@ -131,11 +142,16 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       '/dashboard/cadastro/tipo-veiculo': 'veiculos-menu',
       '/dashboard/cadastro/veiculo': 'veiculos-menu',
 
-      // Submenus de Escalas
+      // Submenus de Escalas (no menu principal Escalas)
       '/dashboard/cadastro/escala-equipe-periodo': 'escalas-menu',
-      '/dashboard/cadastro/tipo-escala': 'escalas-menu',
-      '/dashboard/cadastro/horario-equipe': 'escalas-menu',
       '/dashboard/cadastro/equipe-horario': 'escalas-menu',
+
+      // Submenus de Escalas (dentro de Cadastro)
+      '/dashboard/cadastro/tipo-escala': 'escalas-cadastro-menu',
+      '/dashboard/cadastro/horario-equipe': 'escalas-cadastro-menu',
+
+      // Submenus de Escalas (menu principal)
+      '/dashboard/escalas/edicao-em-curso': 'escalas-menu',
 
       // Submenus de APR
       '/dashboard/cadastro/apr-pergunta': 'apr',
@@ -222,14 +238,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           label: <Link href='/dashboard/cadastro/contrato'>Contratos</Link>,
         },
         {
-          key: 'escalas-menu',
+          key: 'escalas-cadastro-menu',
           label: 'Escalas',
           icon: <CalendarOutlined />,
           children: [
-            {
-              key: '/dashboard/cadastro/escala-equipe-periodo',
-              label: <Link href='/dashboard/cadastro/escala-equipe-periodo'>Períodos de Escala</Link>,
-            },
             {
               key: '/dashboard/cadastro/tipo-escala',
               label: <Link href='/dashboard/cadastro/tipo-escala'>Tipos de Escala</Link>,
@@ -237,10 +249,6 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
             {
               key: '/dashboard/cadastro/horario-equipe',
               label: <Link href='/dashboard/cadastro/horario-equipe'>Catálogo de Horários</Link>,
-            },
-            {
-              key: '/dashboard/cadastro/equipe-horario',
-              label: <Link href='/dashboard/cadastro/equipe-horario'>Horários das Equipes</Link>,
             },
           ]
         },
@@ -432,6 +440,25 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
         {
           key: '/dashboard/frequencia/justificativas-equipe',
           label: <Link href='/dashboard/frequencia/justificativas-equipe'>Justificativas de Equipe</Link>,
+        },
+      ],
+    },
+    {
+      key: 'escalas-menu',
+      icon: <CalendarOutlined />,
+      label: 'Escalas',
+      children: [
+        {
+          key: '/dashboard/cadastro/escala-equipe-periodo',
+          label: <Link href='/dashboard/cadastro/escala-equipe-periodo'>Gestão de Escala</Link>,
+        },
+        {
+          key: '/dashboard/cadastro/equipe-horario',
+          label: <Link href='/dashboard/cadastro/equipe-horario'>Associar Horário</Link>,
+        },
+        {
+          key: '/dashboard/escalas/edicao-em-curso',
+          label: <Link href='/dashboard/escalas/edicao-em-curso'>Edição em Curso</Link>,
         },
       ],
     },

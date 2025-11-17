@@ -172,7 +172,7 @@ export default function CalendarioFrequencia({
               </div>
             )}
             {item.equipe && (
-              <Tag size="small" color="blue" style={{ marginTop: '2px', display: 'block', fontSize: '10px' }}>
+              <Tag color="blue" style={{ marginTop: '2px', display: 'block', fontSize: '10px' }}>
                 {item.equipe}
               </Tag>
             )}

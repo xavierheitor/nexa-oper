@@ -591,6 +591,15 @@ export const duplicarPeriodoSchema = z
   });
 
 /**
+ * Schema para prolongar período de escala
+ */
+export const prolongarPeriodoSchema = z
+  .object({
+    escalaEquipePeriodoId: z.number().int().positive(),
+    novoPeriodoFim: z.coerce.date(),
+  });
+
+/**
  * Schema para validar composição mínima
  */
 export const validarComposicaoSchema = z.object({
@@ -734,6 +743,20 @@ export type GerarSlotsInput = z.infer<typeof gerarSlotsSchema>;
 export type PublicarPeriodoInput = z.infer<typeof publicarPeriodoSchema>;
 export type ArquivarPeriodoInput = z.infer<typeof arquivarPeriodoSchema>;
 export type DuplicarPeriodoInput = z.infer<typeof duplicarPeriodoSchema>;
+export type ProlongarPeriodoInput = z.infer<typeof prolongarPeriodoSchema>;
+
+/**
+ * Schema para transferir escala entre eletricistas
+ */
+export const transferirEscalaSchema = z
+  .object({
+    escalaEquipePeriodoId: z.number().int().positive(),
+    eletricistaOrigemId: z.number().int().positive(),
+    eletricistaDestinoId: z.number().int().positive(),
+    dataInicio: z.coerce.date(),
+  });
+
+export type TransferirEscalaInput = z.infer<typeof transferirEscalaSchema>;
 export type AtribuirEletricistasInput = z.infer<
   typeof atribuirEletricistasSchema
 >;

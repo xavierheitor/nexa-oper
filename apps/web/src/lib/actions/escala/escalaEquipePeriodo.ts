@@ -17,6 +17,8 @@ import {
   publicarPeriodoSchema,
   arquivarPeriodoSchema,
   duplicarPeriodoSchema,
+  prolongarPeriodoSchema,
+  transferirEscalaSchema,
   marcarFaltaSchema,
   registrarTrocaSchema,
 } from '../../schemas/escalaSchemas';
@@ -167,6 +169,22 @@ export const duplicarEscala = async (rawData: unknown) =>
   );
 
 /**
+ * Prolonga período de escala (estende periodoFim e volta status para RASCUNHO)
+ */
+export const prolongarEscala = async (rawData: unknown) =>
+  handleServerAction(
+    prolongarPeriodoSchema,
+    async (data, session) => {
+      const service = container.get<EscalaEquipePeriodoService>(
+        'escalaEquipePeriodoService'
+      );
+      return service.prolongar(data, session.user.id);
+    },
+    rawData,
+    { entityName: 'EscalaEquipePeriodo', actionType: 'update' }
+  );
+
+/**
  * Marca falta de um eletricista em uma data específica
  */
 export const marcarFaltaAction = async (rawData: unknown) =>
@@ -218,5 +236,29 @@ export const visualizarEscala = async (id: number) =>
     },
     { id },
     { entityName: 'EscalaEquipePeriodo', actionType: 'get' }
+  );
+
+/**
+ * Transfere escala de um eletricista para outro
+ */
+export const transferirEscala = async (rawData: unknown) =>
+  handleServerAction(
+    transferirEscalaSchema,
+    async (data, session) => {
+      const service = container.get<EscalaEquipePeriodoService>(
+        'escalaEquipePeriodoService'
+      );
+      return service.transferirEscala(
+        {
+          escalaEquipePeriodoId: data.escalaEquipePeriodoId,
+          eletricistaOrigemId: data.eletricistaOrigemId,
+          eletricistaDestinoId: data.eletricistaDestinoId,
+          dataInicio: data.dataInicio,
+        },
+        session.user.id
+      );
+    },
+    rawData,
+    { entityName: 'SlotEscala', actionType: 'update' }
   );
 
