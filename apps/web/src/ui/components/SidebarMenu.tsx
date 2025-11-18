@@ -465,7 +465,18 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
     {
       key: 'logout',
       icon: <LogoutOutlined />,
-      label: <span onClick={() => signOut({ callbackUrl: '/' })}>Sair</span>,
+      label: (
+        <span
+          onClick={async () => {
+            await signOut({
+              callbackUrl: '/login',
+              redirect: true
+            });
+          }}
+        >
+          Sair
+        </span>
+      ),
     },
   ];
 

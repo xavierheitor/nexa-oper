@@ -23,7 +23,7 @@ import {
   Button,
   Modal,
   Form,
-  message,
+  App,
 } from 'antd';
 import { CalendarOutlined, SearchOutlined, SwapOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
@@ -49,6 +49,7 @@ interface Slot {
 }
 
 export default function EdicaoEmCursoPage() {
+  const { message } = App.useApp();
   const [periodo, setPeriodo] = useState<[Dayjs, Dayjs]>([
     dayjs().startOf('month'),
     dayjs().endOf('month'),

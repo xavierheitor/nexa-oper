@@ -850,11 +850,25 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       },
     });
 
+    // Verificar se o eletricista destino já tem slots na mesma escala (mesma escalaEquipePeriodoId)
+    // Isso causaria conflito de constraint única
+    const slotsDestinoMesmaEscala = await prisma.slotEscala.findMany({
+      where: {
+        escalaEquipePeriodoId: input.escalaEquipePeriodoId,
+        eletricistaId: input.eletricistaDestinoId,
+        data: {
+          gte: dataInicio,
+          lte: periodoFim,
+        },
+        deletedAt: null,
+      },
+    });
+
     // Executar transferência em transação
     const resultado = await prisma.$transaction(async (tx) => {
       let slotsLiberados = 0;
 
-      // Se o eletricista destino já está escalado, marcar seus slots como deletados (soft delete)
+      // Se o eletricista destino já está escalado em outras escalas, marcar seus slots como deletados (soft delete)
       if (slotsDestinoOutrasEscalas.length > 0) {
         await tx.slotEscala.updateMany({
           where: {
@@ -871,6 +885,24 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
           },
         });
         slotsLiberados = slotsDestinoOutrasEscalas.length;
+      }
+
+      // Se o eletricista destino já tem slots na mesma escala, deletá-los primeiro para evitar conflito de constraint
+      if (slotsDestinoMesmaEscala.length > 0) {
+        await tx.slotEscala.updateMany({
+          where: {
+            id: {
+              in: slotsDestinoMesmaEscala.map(s => s.id),
+            },
+          },
+          data: {
+            deletedAt: new Date(),
+            deletedBy: userId,
+            updatedAt: new Date(),
+            updatedBy: userId,
+            observacoes: `Slot removido para permitir transferência de escala. Substituído por slots do eletricista ${input.eletricistaOrigemId} em ${dataInicio.toLocaleDateString()}`,
+          },
+        });
       }
 
       // Transferir slots do eletricista origem para o destino

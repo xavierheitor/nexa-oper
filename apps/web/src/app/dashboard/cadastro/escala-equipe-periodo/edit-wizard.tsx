@@ -64,10 +64,15 @@ export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: Escal
 
   // Carregar dados da escala existente
   useEffect(() => {
+    let isMounted = true;
+
     const carregarDados = async () => {
+      if (!isMounted) return;
       setLoadingData(true);
       try {
         const result = await visualizarEscala(escalaId);
+        if (!isMounted) return;
+
         if (result.success && result.data) {
           const dados = result.data;
           setDadosOriginais(dados);
@@ -88,6 +93,8 @@ export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: Escal
 
           // Encontrar tipo de escala
           const tipos = await listTiposEscala({ page: 1, pageSize: 1000, ativo: true });
+          if (!isMounted) return;
+
           if (tipos.success && tipos.data) {
             // @ts-ignore - tipos.data.data existe e é um array no runtime
             const tipo = tipos.data.data?.find((t: any) => t.id === dados.tipoEscalaId);
@@ -138,18 +145,28 @@ export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: Escal
             primeiroDiaFolga: info.primeiroDiaFolga ?? 0,
           }));
 
-          setEletricistasEscala(eletricistasConfig);
+          if (isMounted) {
+            setEletricistasEscala(eletricistasConfig);
+          }
         }
       } catch (error) {
-        message.error('Erro ao carregar dados da escala');
-        console.error(error);
+        if (isMounted) {
+          message.error('Erro ao carregar dados da escala');
+          console.error(error);
+        }
       } finally {
-        setLoadingData(false);
+        if (isMounted) {
+          setLoadingData(false);
+        }
       }
     };
 
     carregarDados();
-  }, [escalaId, form, message]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [escalaId, form]);
 
   // Carregar equipes
   const { data: equipes, isLoading: equipesLoading } = useEntityData({
