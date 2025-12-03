@@ -232,7 +232,14 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
     } else {
       dataInicio = new Date(periodo.periodoInicio);
     }
-    const dataFim = periodo.periodoFim;
+
+    // ✅ CORREÇÃO: Recarregar período para garantir que periodoFim está atualizado
+    // Isso é importante ao prolongar, pois o período foi atualizado antes de chamar gerarSlots
+    const periodoAtualizado = await this.escalaRepo.findById(input.escalaEquipePeriodoId);
+    if (!periodoAtualizado) {
+      throw new Error('Período não encontrado após atualização');
+    }
+    const dataFim = periodoAtualizado.periodoFim;
 
     const slotsToUpsert: Array<{
       escalaEquipePeriodoId: number;
@@ -245,7 +252,90 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       origem: 'GERACAO';
     }> = [];
 
+    // ✅ CORREÇÃO: Ao prolongar CICLO_DIAS, buscar último slot e dia de folga de referência
+    // Para SEMANA_DEPENDENTE, não precisa fazer nada especial (usa semanaIndex baseado em semanas)
+    let ultimoSlotPorEletricista: Map<number, { data: Date; estado: 'TRABALHO' | 'FOLGA' }> = new Map();
+    let diaFolgaReferenciaPorEletricista: Map<number, Date> = new Map();
+
+    if (input.mode === 'fromDate' && input.fromDate && tipoEscala.modoRepeticao === 'CICLO_DIAS') {
+      // Buscar último slot de cada eletricista (para calcular posição atual no ciclo)
+      const dataAntesNovosSlots = new Date(input.fromDate);
+      dataAntesNovosSlots.setDate(dataAntesNovosSlots.getDate() - 1);
+      dataAntesNovosSlots.setHours(23, 59, 59, 999);
+
+      const ultimosSlots = await prisma.slotEscala.findMany({
+        where: {
+          escalaEquipePeriodoId: input.escalaEquipePeriodoId,
+          eletricistaId: { in: eletricistasParaGerar.map(e => e.id) },
+          data: { lte: dataAntesNovosSlots },
+          deletedAt: null,
+        },
+        orderBy: [
+          { eletricistaId: 'asc' },
+          { data: 'desc' },
+        ],
+      });
+
+      // Agrupar por eletricistaId, pegando o mais recente
+      for (const slot of ultimosSlots) {
+        if (!ultimoSlotPorEletricista.has(slot.eletricistaId)) {
+          ultimoSlotPorEletricista.set(slot.eletricistaId, {
+            data: slot.data,
+            estado: slot.estado as 'TRABALHO' | 'FOLGA',
+          });
+        }
+      }
+
+      // Contar quantos dias de folga existem no ciclo
+      const quantidadeFolgasNoCiclo = tipoEscala.CicloPosicoes.filter(
+        p => p.status === 'FOLGA'
+      ).length;
+
+      // Determinar qual dia de folga usar como referência:
+      // - Se tiver 2 ou mais folgas: usar o penúltimo dia de folga
+      // - Se tiver apenas 1 folga: usar o último dia de folga
+      const indiceFolgaReferencia = quantidadeFolgasNoCiclo >= 2 ? 1 : 0; // 1 = penúltimo, 0 = último
+
+      // Buscar slots de folga de cada eletricista antes da data de início dos novos slots
+      const slotsFolga = await prisma.slotEscala.findMany({
+        where: {
+          escalaEquipePeriodoId: input.escalaEquipePeriodoId,
+          eletricistaId: { in: eletricistasParaGerar.map(e => e.id) },
+          data: { lte: dataAntesNovosSlots },
+          estado: 'FOLGA',
+          deletedAt: null,
+        },
+        orderBy: [
+          { eletricistaId: 'asc' },
+          { data: 'desc' },
+        ],
+      });
+
+      // Agrupar por eletricistaId
+      const slotsFolgaPorEletricista = new Map<number, Date[]>();
+      for (const slot of slotsFolga) {
+        if (!slotsFolgaPorEletricista.has(slot.eletricistaId)) {
+          slotsFolgaPorEletricista.set(slot.eletricistaId, []);
+        }
+        slotsFolgaPorEletricista.get(slot.eletricistaId)!.push(slot.data);
+      }
+
+      // Para cada eletricista, pegar o dia de folga de referência baseado na quantidade de folgas no ciclo
+      for (const [eletricistaId, datasFolga] of slotsFolgaPorEletricista.entries()) {
+        if (datasFolga.length > indiceFolgaReferencia) {
+          // Pegar o dia de folga no índice correto (penúltimo se 2+ folgas, último se 1 folga)
+          diaFolgaReferenciaPorEletricista.set(eletricistaId, datasFolga[indiceFolgaReferencia]);
+        } else if (datasFolga.length > 0) {
+          // Se não tem folgas suficientes, usar a última disponível
+          diaFolgaReferenciaPorEletricista.set(eletricistaId, datasFolga[0]);
+        }
+      }
+    }
+
     // Pré-calcular posições iniciais no ciclo para cada eletricista
+    const periodoInicio = new Date(periodo.periodoInicio);
+    periodoInicio.setHours(0, 0, 0, 0);
+
     const eletricistasComPosicao = eletricistasParaGerar.map(
       eletricistaConfig => {
         let posicaoInicial = 0;
@@ -253,19 +343,82 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
         if (tipoEscala.modoRepeticao === 'CICLO_DIAS') {
           const cicloDias = tipoEscala.cicloDias || 1;
 
-          // Encontrar a primeira posição de FOLGA no ciclo
-          const primeiraFolga = tipoEscala.CicloPosicoes.find(
-            p => p.status === 'FOLGA'
-          );
+          // ✅ CORREÇÃO: Ao prolongar CICLO_DIAS, calcular posicaoInicial baseado no dia de folga de referência
+          // O dia de folga de referência marca o início do ciclo específico daquela escala
+          if (input.mode === 'fromDate') {
+            if (diaFolgaReferenciaPorEletricista.has(eletricistaConfig.id)) {
+              const diaFolgaReferencia = diaFolgaReferenciaPorEletricista.get(eletricistaConfig.id)!;
 
-          if (primeiraFolga) {
-            // Calcular posição inicial: quando primeiroDiaFolga acontece,
-            // o eletricista deve estar na primeira posição de folga
-            posicaoInicial =
-              (primeiraFolga.posicao -
-                eletricistaConfig.primeiroDiaFolga +
-                cicloDias) %
-              cicloDias;
+              // Calcular diaIndex do dia de folga de referência (desde o início do período original)
+              const dataFolgaReferencia = new Date(diaFolgaReferencia);
+              dataFolgaReferencia.setHours(0, 0, 0, 0);
+              const diffMs = dataFolgaReferencia.getTime() - periodoInicio.getTime();
+              const diaIndexFolgaReferencia = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+              // Encontrar a primeira posição de FOLGA no ciclo (menor posição que é FOLGA)
+              const primeiraFolga = tipoEscala.CicloPosicoes
+                .filter(p => p.status === 'FOLGA')
+                .sort((a, b) => a.posicao - b.posicao)[0];
+
+              if (primeiraFolga) {
+                // O dia de folga de referência deve estar na primeira posição de folga do ciclo
+                // Isso marca o início do ciclo específico daquela escala
+                // posicaoAtual = ((posicaoInicial + diaIndex) % cicloDias) + 1
+                // Queremos que: primeiraFolga.posicao = ((posicaoInicial + diaIndexFolgaReferencia) % cicloDias) + 1
+                // Então: primeiraFolga.posicao - 1 = (posicaoInicial + diaIndexFolgaReferencia) % cicloDias
+                // posicaoInicial = (primeiraFolga.posicao - 1 - diaIndexFolgaReferencia + cicloDias) % cicloDias
+
+                const primeiraFolga0Indexed = primeiraFolga.posicao - 1; // Converter para 0-indexed
+                posicaoInicial = (primeiraFolga0Indexed - diaIndexFolgaReferencia + cicloDias) % cicloDias;
+              } else {
+                // Se não há posição de folga configurada, usar 0
+                posicaoInicial = 0;
+              }
+            } else if (ultimoSlotPorEletricista.has(eletricistaConfig.id)) {
+              // Fallback: se não encontrou dia de folga de referência, usar último slot para calcular posição atual
+              const ultimoSlot = ultimoSlotPorEletricista.get(eletricistaConfig.id)!;
+              const ultimaData = new Date(ultimoSlot.data);
+              ultimaData.setHours(0, 0, 0, 0);
+              const diffMs = ultimaData.getTime() - periodoInicio.getTime();
+              const diaIndexUltimoSlot = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+              // Calcular qual posição no ciclo o último slot tinha
+              const posicaoUltimoSlot = ((diaIndexUltimoSlot) % cicloDias) + 1;
+
+              // Encontrar a configuração dessa posição
+              const posicaoConfig = tipoEscala.CicloPosicoes.find(p => p.posicao === posicaoUltimoSlot);
+
+              if (posicaoConfig && posicaoConfig.status === ultimoSlot.estado) {
+                // Se bate, calcular posicaoInicial para que o próximo dia continue corretamente
+                // O próximo dia será diaIndexUltimoSlot + 1
+                // Queremos que: posicaoProximoDia = ((posicaoInicial + diaIndexUltimoSlot + 1) % cicloDias) + 1
+                // Mas como não sabemos qual será a próxima posição, vamos usar posicaoInicial = 0
+                // e confiar que diaIndex já está correto
+                posicaoInicial = 0;
+              } else {
+                // Se não bate, usar 0 como fallback
+                posicaoInicial = 0;
+              }
+            } else {
+              // Se não encontrou nem dia de folga nem último slot, usar 0
+              posicaoInicial = 0;
+            }
+          } else {
+            // Cálculo normal para criação inicial da escala
+            // Encontrar a primeira posição de FOLGA no ciclo (menor posição que é FOLGA)
+            const primeiraFolga = tipoEscala.CicloPosicoes
+              .filter(p => p.status === 'FOLGA')
+              .sort((a, b) => a.posicao - b.posicao)[0];
+
+            if (primeiraFolga) {
+              // Calcular posição inicial: quando primeiroDiaFolga acontece,
+              // o eletricista deve estar na primeira posição de folga
+              posicaoInicial =
+                (primeiraFolga.posicao -
+                  eletricistaConfig.primeiroDiaFolga +
+                  cicloDias) %
+                cicloDias;
+            }
           }
         }
         // Para SEMANA_DEPENDENTE, não precisamos calcular posição inicial
@@ -279,10 +432,24 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
     );
 
     let currentDate = new Date(dataInicio);
-    let diaIndex = 0; // Índice do dia desde o início da escala
+    currentDate.setHours(0, 0, 0, 0);
+
+    // ✅ CORREÇÃO: Calcular diaIndex desde o início do período original
+    // para manter continuidade do ciclo ao prolongar escala
+    // (periodoInicio já foi calculado acima)
+    const diffMs = currentDate.getTime() - periodoInicio.getTime();
+    let diaIndex = Math.floor(diffMs / (1000 * 60 * 60 * 24)); // Índice do dia desde o início da escala
+
+    // Normalizar dataFim para comparação correta
+    const dataFimNormalizada = new Date(dataFim);
+    dataFimNormalizada.setHours(23, 59, 59, 999);
+
+    // ✅ PROTEÇÃO: Limitar número máximo de dias para evitar loop infinito
+    const maxDias = 365 * 2; // Máximo 2 anos
+    let diasProcessados = 0;
 
     // Para cada dia do período
-    while (currentDate <= dataFim) {
+    while (currentDate <= dataFimNormalizada && diasProcessados < maxDias) {
       // Buscar horários vigentes para este dia
       const horarios = await horarioVigente(periodo.equipeId, currentDate);
 
@@ -293,8 +460,10 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
         if (tipoEscala.modoRepeticao === 'CICLO_DIAS') {
           // Para ciclo de dias, calcula a posição no ciclo
           const cicloDias = tipoEscala.cicloDias || 1;
+          // ✅ CORREÇÃO: posicaoAtual deve ser 1-indexed (1..N) para corresponder ao banco
+          // O cálculo (X % cicloDias) retorna 0..(cicloDias-1), então +1 resulta em 1..cicloDias
           const posicaoAtual =
-            (eletricistaConfig.posicaoInicial + diaIndex) % cicloDias;
+            ((eletricistaConfig.posicaoInicial + diaIndex) % cicloDias) + 1;
 
           // Busca o status configurado para essa posição
           const posicaoConfig = tipoEscala.CicloPosicoes.find(
@@ -344,39 +513,58 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
         });
       }
 
-      currentDate.setDate(currentDate.getDate() + 1);
+      // ✅ CORREÇÃO: Incrementar data de forma segura (evita problemas ao mudar mês/ano)
+      const proximaData = new Date(currentDate);
+      proximaData.setDate(proximaData.getDate() + 1);
+      currentDate = proximaData;
       diaIndex++;
+      diasProcessados++;
     }
 
-    // Upsert slots no banco pela chave composta [escalaEquipePeriodoId, data, eletricistaId]
-    for (const slot of slotsToUpsert) {
-      await prisma.slotEscala.upsert({
-        where: {
-          escalaEquipePeriodoId_data_eletricistaId: {
-            escalaEquipePeriodoId: slot.escalaEquipePeriodoId,
-            data: slot.data,
-            eletricistaId: slot.eletricistaId,
-          },
-        },
-        create: {
-          escalaEquipePeriodoId: slot.escalaEquipePeriodoId,
-          eletricistaId: slot.eletricistaId,
-          data: slot.data,
-          estado: slot.estado,
-          inicioPrevisto: slot.inicioPrevisto,
-          fimPrevisto: slot.fimPrevisto,
-          anotacoesDia: slot.anotacoesDia,
-          origem: slot.origem,
-          createdBy: userId,
-        },
-        update: {
-          estado: slot.estado,
-          inicioPrevisto: slot.inicioPrevisto,
-          fimPrevisto: slot.fimPrevisto,
-          updatedBy: userId,
-        },
-      });
+    // ✅ VALIDAÇÃO: Verificar se não excedeu limite de segurança
+    if (diasProcessados >= maxDias) {
+      throw new Error(
+        `Limite de segurança atingido: tentativa de gerar mais de ${maxDias} dias de slots. Verifique o período da escala.`
+      );
     }
+
+    // ✅ OTIMIZAÇÃO: Upsert slots em transação para melhor performance e atomicidade
+    await prisma.$transaction(
+      async (tx) => {
+        for (const slot of slotsToUpsert) {
+          await tx.slotEscala.upsert({
+            where: {
+              escalaEquipePeriodoId_data_eletricistaId: {
+                escalaEquipePeriodoId: slot.escalaEquipePeriodoId,
+                data: slot.data,
+                eletricistaId: slot.eletricistaId,
+              },
+            },
+            create: {
+              escalaEquipePeriodoId: slot.escalaEquipePeriodoId,
+              eletricistaId: slot.eletricistaId,
+              data: slot.data,
+              estado: slot.estado,
+              inicioPrevisto: slot.inicioPrevisto,
+              fimPrevisto: slot.fimPrevisto,
+              anotacoesDia: slot.anotacoesDia,
+              origem: slot.origem,
+              createdBy: userId,
+            },
+            update: {
+              estado: slot.estado,
+              inicioPrevisto: slot.inicioPrevisto,
+              fimPrevisto: slot.fimPrevisto,
+              updatedBy: userId,
+            },
+          });
+        }
+      },
+      {
+        maxWait: 10000, // 10 segundos máximo de espera
+        timeout: 60000, // 60 segundos timeout (para muitos slots)
+      }
+    );
 
     return { slotsGerados: slotsToUpsert.length };
   }
@@ -739,6 +927,29 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
     dataInicioNovosSlots.setDate(dataInicioNovosSlots.getDate() + 1);
     dataInicioNovosSlots.setHours(0, 0, 0, 0);
 
+    // ✅ CORREÇÃO: Buscar apenas os eletricistas que já têm slots na escala original
+    // Não adicionar novos eletricistas ao prolongar
+    const slotsExistentes = await prisma.slotEscala.findMany({
+      where: {
+        escalaEquipePeriodoId: input.escalaEquipePeriodoId,
+        deletedAt: null,
+      },
+      select: {
+        eletricistaId: true,
+      },
+      distinct: ['eletricistaId'],
+    });
+
+    if (slotsExistentes.length === 0) {
+      throw new Error('Não há slots na escala para prolongar. A escala está vazia.');
+    }
+
+    // Criar configuração dos eletricistas (gerarSlots vai buscar o último slot de cada um)
+    const eletricistasConfig = slotsExistentes.map((slot) => ({
+      eletricistaId: slot.eletricistaId,
+      primeiroDiaFolga: 0, // Não usado ao prolongar, mas necessário para o schema
+    }));
+
     // Atualizar período fim e voltar status para RASCUNHO
     const periodoAtualizado = await this.escalaRepo.update(
       input.escalaEquipePeriodoId,
@@ -752,12 +963,13 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       userId
     );
 
-    // Gerar slots apenas para o período estendido (a partir do dia seguinte ao fim antigo)
+    // ✅ CORREÇÃO: Gerar slots apenas para os eletricistas que já estão escalados
     await this.gerarSlots(
       {
         escalaEquipePeriodoId: input.escalaEquipePeriodoId,
         mode: 'fromDate',
         fromDate: dataInicioNovosSlots,
+        eletricistasConfig, // Passar apenas os eletricistas que já têm slots
       },
       userId
     );

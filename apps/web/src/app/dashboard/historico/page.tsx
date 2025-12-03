@@ -7,8 +7,8 @@
  * incluindo estatísticas e gráficos relacionados ao dia selecionado.
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, DatePicker, Button, Tooltip } from 'antd';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, DatePicker, Button, Tooltip, Input, Select } from 'antd';
 import { ClockCircleOutlined, CalendarOutlined, SearchOutlined, CheckOutlined, EnvironmentOutlined, CloseOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { listTurnos } from '@/lib/actions/turno/list';
@@ -17,11 +17,13 @@ import { getStatsByTipoEquipe } from '@/lib/actions/turno/getStatsByTipoEquipe';
 import { getStatsByHoraETipoEquipe } from '@/lib/actions/turno/getStatsByHoraETipoEquipe';
 import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
+import { listBases } from '@/lib/actions/base/list';
 import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 import TurnoLocationMapModal from '@/ui/components/TurnoLocationMapModal';
 import FecharTurnoModal from '@/ui/components/FecharTurnoModal';
 import { useLoadingStates } from '@/lib/hooks/useLoadingStates';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -70,6 +72,12 @@ interface TurnoData {
 }
 
 export default function HistoricoPage() {
+  // Estados para os filtros
+  const [filtroVeiculo, setFiltroVeiculo] = useState<string>('');
+  const [filtroEquipe, setFiltroEquipe] = useState<string>('');
+  const [filtroEletricista, setFiltroEletricista] = useState<string>('');
+  const [filtroBase, setFiltroBase] = useState<string | undefined>(undefined);
+
   const [turnosHistorico, setTurnosHistorico] = useState<TurnoData[]>([]);
   const { loading, setLoading } = useLoadingStates({
     main: false,
@@ -363,6 +371,60 @@ export default function HistoricoPage() {
       buscarGraficos(dataSelecionada),
     ]);
   };
+
+  // Fetch de bases para o select
+  const { data: basesData, loading: loadingBases } = useDataFetch<Array<{ id: number; nome: string }>>(
+    async () => {
+      const result = await listBases({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' });
+      if (result.success && result.data) {
+        return result.data.data || [];
+      }
+      throw new Error(result.error || 'Erro ao carregar bases');
+    },
+    []
+  );
+
+  // Aplicar filtros aos turnos do histórico
+  const turnosFiltrados = useMemo(() => {
+    let turnos = turnosHistorico;
+
+    // Filtro por veículo (placa ou modelo)
+    if (filtroVeiculo) {
+      const filtroLower = filtroVeiculo.toLowerCase();
+      turnos = turnos.filter((turno: TurnoData) =>
+        turno.veiculoPlaca?.toLowerCase().includes(filtroLower) ||
+        turno.veiculoModelo?.toLowerCase().includes(filtroLower)
+      );
+    }
+
+    // Filtro por equipe
+    if (filtroEquipe) {
+      const filtroLower = filtroEquipe.toLowerCase();
+      turnos = turnos.filter((turno: TurnoData) =>
+        turno.equipeNome?.toLowerCase().includes(filtroLower)
+      );
+    }
+
+    // Filtro por eletricista (nome ou matrícula)
+    if (filtroEletricista) {
+      const filtroLower = filtroEletricista.toLowerCase();
+      turnos = turnos.filter((turno: TurnoData) =>
+        turno.eletricistas?.some((elet) =>
+          elet.nome?.toLowerCase().includes(filtroLower) ||
+          elet.matricula?.toLowerCase().includes(filtroLower)
+        )
+      );
+    }
+
+    // Filtro por base
+    if (filtroBase) {
+      turnos = turnos.filter((turno: TurnoData) =>
+        turno.baseNome === filtroBase
+      );
+    }
+
+    return turnos;
+  }, [turnosHistorico, filtroVeiculo, filtroEquipe, filtroEletricista, filtroBase]);
 
   const columns: ColumnsType<TurnoData> = [
 
@@ -675,17 +737,67 @@ export default function HistoricoPage() {
 
       {/* Tabela de Histórico */}
       <Card>
+        {/* Filtros */}
+        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={12} md={6}>
+            <Input
+              placeholder="Filtrar por veículo (placa/modelo)"
+              prefix={<SearchOutlined />}
+              value={filtroVeiculo}
+              onChange={(e) => setFiltroVeiculo(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Input
+              placeholder="Filtrar por equipe"
+              prefix={<SearchOutlined />}
+              value={filtroEquipe}
+              onChange={(e) => setFiltroEquipe(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Input
+              placeholder="Filtrar por eletricista (nome/matrícula)"
+              prefix={<SearchOutlined />}
+              value={filtroEletricista}
+              onChange={(e) => setFiltroEletricista(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Select
+              placeholder="Filtrar por base"
+              style={{ width: '100%' }}
+              value={filtroBase}
+              onChange={setFiltroBase}
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              loading={loadingBases}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              options={basesData?.map((base) => ({
+                label: base.nome,
+                value: base.nome,
+              }))}
+            />
+          </Col>
+        </Row>
+
         <Table
           columns={columns}
-          dataSource={turnosHistorico}
+          dataSource={turnosFiltrados}
           rowKey="id"
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
-            showTotal: (total) => `Total de ${total} turnos em ${dataSelecionada.format('DD/MM/YYYY')}`,
+            showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''} em ${dataSelecionada.format('DD/MM/YYYY')}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? ' (filtrado)' : ''}`,
           }}
           locale={{
-            emptyText: <Empty description={`Nenhum turno encontrado para ${dataSelecionada.format('DD/MM/YYYY')}`} />,
+            emptyText: <Empty description={filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? 'Nenhum turno encontrado com os filtros aplicados' : `Nenhum turno encontrado para ${dataSelecionada.format('DD/MM/YYYY')}`} />,
           }}
         />
       </Card>
