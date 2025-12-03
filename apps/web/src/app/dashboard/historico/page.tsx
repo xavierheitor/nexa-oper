@@ -24,6 +24,7 @@ import TurnoLocationMapModal from '@/ui/components/TurnoLocationMapModal';
 import FecharTurnoModal from '@/ui/components/FecharTurnoModal';
 import { useLoadingStates } from '@/lib/hooks/useLoadingStates';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useTablePagination } from '@/lib/hooks/useTablePagination';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -77,6 +78,12 @@ export default function HistoricoPage() {
   const [filtroEquipe, setFiltroEquipe] = useState<string>('');
   const [filtroEletricista, setFiltroEletricista] = useState<string>('');
   const [filtroBase, setFiltroBase] = useState<string | undefined>(undefined);
+
+  // Hook para paginação client-side
+  const { pagination } = useTablePagination({
+    defaultPageSize: 10,
+    showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''} em ${dataSelecionada.format('DD/MM/YYYY')}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? ' (filtrado)' : ''}`,
+  });
 
   const [turnosHistorico, setTurnosHistorico] = useState<TurnoData[]>([]);
   const { loading, setLoading } = useLoadingStates({
@@ -791,11 +798,7 @@ export default function HistoricoPage() {
           columns={columns}
           dataSource={turnosFiltrados}
           rowKey="id"
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''} em ${dataSelecionada.format('DD/MM/YYYY')}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? ' (filtrado)' : ''}`,
-          }}
+          pagination={pagination}
           locale={{
             emptyText: <Empty description={filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? 'Nenhum turno encontrado com os filtros aplicados' : `Nenhum turno encontrado para ${dataSelecionada.format('DD/MM/YYYY')}`} />,
           }}

@@ -27,6 +27,7 @@ import { SearchOutlined } from '@ant-design/icons';
 import { Column } from '@ant-design/plots';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useEntityData } from '@/lib/hooks/useEntityData';
+import { useTablePagination } from '@/lib/hooks/useTablePagination';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { BarChartOutlined, TeamOutlined, CarOutlined, ClockCircleOutlined, FileExcelOutlined } from '@ant-design/icons';
@@ -96,6 +97,12 @@ function formatarHora(data: Date | string): string {
 
 export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
   const [tipoEquipeFiltro, setTipoEquipeFiltro] = useState<number | undefined>(undefined);
+
+  // Hook para paginação client-side
+  const { pagination } = useTablePagination({
+    defaultPageSize: 20,
+    showTotal: (total) => `Total: ${total} turno(s)`,
+  });
 
   // Buscar tipos de equipe para filtro
   const { data: tiposEquipe, isLoading: loadingTiposEquipe } = useEntityData({
@@ -763,11 +770,7 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
           dataSource={turnosFiltrados}
           columns={colunasTabela}
           rowKey="id"
-          pagination={{
-            pageSize: 20,
-            showSizeChanger: true,
-            showTotal: (total) => `Total: ${total} turno(s)`,
-          }}
+          pagination={pagination}
           scroll={{ x: 'max-content' }}
         />
       </Card>

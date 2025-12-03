@@ -3,6 +3,7 @@
 import { Card, Empty, Spin, Table, Tag } from 'antd';
 import { useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useTablePagination } from '@/lib/hooks/useTablePagination';
 
 interface DadosBase {
   id: number;
@@ -26,6 +27,11 @@ interface ConsolidacaoPorBaseProps {
 }
 
 export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProps) {
+  // Hook para paginação client-side
+  const { pagination } = useTablePagination({
+    defaultPageSize: 10,
+  });
+
   // Memoiza a função fetcher para evitar recriações desnecessárias
   const fetcher = useMemo(
     () => async () => {
@@ -204,7 +210,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
         columns={columns}
         dataSource={dados}
         rowKey="id"
-        pagination={{ pageSize: 10 }}
+        pagination={pagination}
         size="small"
         scroll={{ x: 1500 }}
       />

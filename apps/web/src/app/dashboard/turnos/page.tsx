@@ -25,6 +25,7 @@ import TurnoLocationMapModal from '@/ui/components/TurnoLocationMapModal';
 import FecharTurnoModal from '@/ui/components/FecharTurnoModal';
 import type { ChecklistPreenchido } from '@/ui/components/ChecklistSelectorModal';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useTablePagination } from '@/lib/hooks/useTablePagination';
 
 const { Title } = Typography;
 
@@ -76,6 +77,12 @@ export default function TurnosPage() {
   const [filtroEquipe, setFiltroEquipe] = useState<string>('');
   const [filtroEletricista, setFiltroEletricista] = useState<string>('');
   const [filtroBase, setFiltroBase] = useState<string | undefined>(undefined);
+
+  // Hook para paginação client-side
+  const { pagination } = useTablePagination({
+    defaultPageSize: 10,
+    showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? ' (filtrado)' : ''}`,
+  });
 
   // Estados para os modais de checklist
   const [checklistSelectorVisible, setChecklistSelectorVisible] = useState(false);
@@ -635,11 +642,7 @@ export default function TurnosPage() {
           columns={columns}
           dataSource={turnosFiltrados}
           rowKey="id"
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? ' (filtrado)' : ''}`,
-          }}
+          pagination={pagination}
           locale={{
             emptyText: <Empty description="Nenhum turno encontrado com os filtros aplicados" />,
           }}

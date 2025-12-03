@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Card, Form, Select, DatePicker, Button, Table, Statistic, Row, Col, Space } from 'antd';
 import { getAderenciaEquipe } from '@/lib/actions/turno-realizado/getAderenciaEquipe';
+import { useTablePagination } from '@/lib/hooks/useTablePagination';
 import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
@@ -14,6 +15,11 @@ export default function AderenciaEquipePage() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [dados, setDados] = useState<any>(null);
+
+  // Hook para paginação client-side
+  const { pagination } = useTablePagination({
+    defaultPageSize: 10,
+  });
 
   const handleBuscar = async (values: any) => {
     setLoading(true);
@@ -138,7 +144,7 @@ export default function AderenciaEquipePage() {
               columns={columns}
               dataSource={dados.detalhamento}
               rowKey="data"
-              pagination={{ pageSize: 10 }}
+              pagination={pagination}
             />
           </>
         )}
