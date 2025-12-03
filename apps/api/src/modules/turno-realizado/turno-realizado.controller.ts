@@ -18,6 +18,7 @@ import { FaltaFilterDto } from './dto/falta-filter.dto';
 import { HoraExtraFilterDto } from './dto/hora-extra-filter.dto';
 import { AprovarHoraExtraDto } from './dto/aprovar-hora-extra.dto';
 import { ReconciliarManualDto } from './dto/reconciliar-manual.dto';
+import { ReconciliarForcadoDto } from './dto/reconciliar-forcado.dto';
 import { LocalhostCorsGuard } from './guards/localhost-cors.guard';
 import { TurnoReconciliacaoService } from './turno-reconciliacao.service';
 import { DatabaseService } from '../../database/database.service';
@@ -240,6 +241,162 @@ export class TurnoRealizadoController {
         : `Reconciliação executada para equipe ${dto.equipeId} em ${dto.dataReferencia}`,
       dataReferencia: dto.dataReferencia,
       equipesProcessadas: equipesIds.length,
+      sucessos,
+      erros,
+      resultados,
+    };
+  }
+
+  @Post('reconciliacao/forcado')
+  @UseGuards(LocalhostCorsGuard)
+  @ApiOperation({
+    summary: 'Verificar e reconciliar forçadamente tudo que falta (apenas localhost)',
+    description:
+      'Busca no banco todos os dias/equipes que têm slots de escala publicada mas ainda não foram reconciliados ' +
+      'e executa a reconciliação forçada ignorando a margem de 30 minutos. ' +
+      'Este endpoint só pode ser acessado de localhost por questões de segurança.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Verificação e reconciliação executadas com sucesso',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso negado - apenas localhost permitido',
+  })
+  async reconciliarForcado(@Body() dto: ReconciliarForcadoDto) {
+    const prisma = this.db.getPrisma();
+    const agora = new Date();
+
+    // Calcular período
+    let dataInicio: Date;
+    let dataFim: Date;
+
+    if (dto.dataInicio && dto.dataFim) {
+      dataInicio = new Date(dto.dataInicio);
+      dataFim = new Date(dto.dataFim);
+    } else {
+      const diasHistorico = dto.diasHistorico || 30;
+      dataFim = new Date(agora);
+      dataFim.setHours(23, 59, 59, 999);
+      dataInicio = new Date(agora);
+      dataInicio.setDate(dataInicio.getDate() - diasHistorico);
+      dataInicio.setHours(0, 0, 0, 0);
+    }
+
+    dataInicio.setHours(0, 0, 0, 0);
+    dataFim.setHours(23, 59, 59, 999);
+
+    // Buscar todas as equipes que têm escala publicada no período
+    const equipesComEscala = await prisma.escalaEquipePeriodo.findMany({
+      where: {
+        status: 'PUBLICADA',
+        periodoInicio: { lte: dataFim },
+        periodoFim: { gte: dataInicio },
+      },
+      select: {
+        equipeId: true,
+      },
+      distinct: ['equipeId'],
+    });
+
+    const equipesIds = equipesComEscala.map((e) => e.equipeId);
+
+    if (equipesIds.length === 0) {
+      return {
+        success: false,
+        message: 'Nenhuma equipe com escala publicada encontrada no período especificado',
+        periodo: {
+          dataInicio: dataInicio.toISOString().split('T')[0],
+          dataFim: dataFim.toISOString().split('T')[0],
+        },
+        equipesProcessadas: 0,
+        diasProcessados: 0,
+        resultados: [],
+      };
+    }
+
+    // Coletar todos os dias/equipes que precisam ser reconciliados
+    const pendentes: Array<{ equipeId: number; data: string }> = [];
+
+    for (const equipeId of equipesIds) {
+      const dataAtual = new Date(dataInicio);
+      while (dataAtual <= dataFim) {
+        const dataStr = dataAtual.toISOString().split('T')[0];
+        const dataRefInicio = new Date(dataAtual);
+        dataRefInicio.setHours(0, 0, 0, 0);
+        const dataRefFim = new Date(dataAtual);
+        dataRefFim.setHours(23, 59, 59, 999);
+
+        // Verificar se há slots de escala neste dia para esta equipe
+        const slotsNoDia = await prisma.slotEscala.findFirst({
+          where: {
+            data: {
+              gte: dataRefInicio,
+              lte: dataRefFim,
+            },
+            escalaEquipePeriodo: {
+              equipeId,
+              status: 'PUBLICADA',
+            },
+          },
+          select: { id: true },
+        });
+
+        if (slotsNoDia) {
+          pendentes.push({ equipeId, data: dataStr });
+        }
+
+        // Avançar para próximo dia
+        dataAtual.setDate(dataAtual.getDate() + 1);
+      }
+    }
+
+    // Executar reconciliação forçada para cada dia/equipe pendente
+    const resultados: Array<{
+      equipeId: number;
+      data: string;
+      success: boolean;
+      message?: string;
+      error?: string;
+    }> = [];
+
+    for (const pendente of pendentes) {
+      try {
+        await this.reconciliacaoService.reconciliarDiaEquipe({
+          dataReferencia: pendente.data,
+          equipePrevistaId: pendente.equipeId,
+          executadoPor: 'forced-reconciliation',
+        });
+
+        resultados.push({
+          equipeId: pendente.equipeId,
+          data: pendente.data,
+          success: true,
+          message: 'Reconciliação executada com sucesso',
+        });
+      } catch (error: any) {
+        resultados.push({
+          equipeId: pendente.equipeId,
+          data: pendente.data,
+          success: false,
+          error: error.message || 'Erro desconhecido',
+        });
+      }
+    }
+
+    const sucessos = resultados.filter((r) => r.success).length;
+    const erros = resultados.filter((r) => !r.success).length;
+
+    return {
+      success: erros === 0,
+      message: `Reconciliação forçada executada: ${sucessos} sucesso(s), ${erros} erro(s)`,
+      periodo: {
+        dataInicio: dataInicio.toISOString().split('T')[0],
+        dataFim: dataFim.toISOString().split('T')[0],
+      },
+      equipesProcessadas: equipesIds.length,
+      diasProcessados: pendentes.length,
       sucessos,
       erros,
       resultados,

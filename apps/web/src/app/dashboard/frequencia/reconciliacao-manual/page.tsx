@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, Form, Button, DatePicker, Select, message, Alert, Space, Typography, Checkbox, List } from 'antd';
+import { Card, Form, Button, DatePicker, Select, message, Alert, Space, Typography, Checkbox, List, InputNumber, Table, Tag, Spin } from 'antd';
 import { App } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { listEquipes } from '@/lib/actions/equipe/list';
+import { ReloadOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
 
@@ -17,11 +19,42 @@ const { Title, Text } = Typography;
  *
  * IMPORTANTE: Este endpoint só funciona de localhost por questões de segurança.
  */
+interface PendenteReconciliacao {
+  equipeId: number;
+  data: string;
+  equipeNome?: string;
+}
+
+interface ResultadoForcado {
+  success: boolean;
+  message?: string;
+  periodo?: {
+    dataInicio: string;
+    dataFim: string;
+  };
+  equipesProcessadas?: number;
+  diasProcessados?: number;
+  sucessos?: number;
+  erros?: number;
+  resultados?: Array<{
+    equipeId: number;
+    data: string;
+    success: boolean;
+    message?: string;
+    error?: string;
+  }>;
+}
+
 export default function ReconciliacaoManualPage() {
   const { message: messageApi } = App.useApp();
   const [form] = Form.useForm();
+  const [formForcado] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [loadingForcado, setLoadingForcado] = useState(false);
+  const [loadingPendentes, setLoadingPendentes] = useState(false);
   const [todasEquipes, setTodasEquipes] = useState(false);
+  const [pendentes, setPendentes] = useState<PendenteReconciliacao[]>([]);
+  const [resultadoForcado, setResultadoForcado] = useState<ResultadoForcado | null>(null);
   const [resultado, setResultado] = useState<{
     success: boolean;
     message?: string;
@@ -52,6 +85,147 @@ export default function ReconciliacaoManualPage() {
 
   // Garantir que equipes sempre seja um array
   const equipes = equipesData || [];
+
+  // Buscar pendências de reconciliação usando server action
+  const buscarPendentes = async (diasHistorico: number = 30) => {
+    setLoadingPendentes(true);
+    try {
+      // Usar server action do Next.js ao invés de endpoint REST
+      const { listEscalasEquipePeriodo } = await import('@/lib/actions/escala/escalaEquipePeriodo');
+
+      const agora = new Date();
+      const dataFim = new Date(agora);
+      dataFim.setHours(23, 59, 59, 999);
+      const dataInicio = new Date(agora);
+      dataInicio.setDate(dataInicio.getDate() - diasHistorico);
+      dataInicio.setHours(0, 0, 0, 0);
+
+      // Buscar escalas usando server action
+      const result = await listEscalasEquipePeriodo({
+        page: 1,
+        pageSize: 1000,
+        status: 'PUBLICADA',
+        periodoInicio: dataInicio,
+        periodoFim: dataFim,
+      });
+
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Erro ao buscar escalas');
+      }
+
+      const escalas = Array.isArray(result.data) ? result.data : result.data.data || [];
+
+      // Coletar pendências (dias com slots)
+      const pendentesEncontrados: PendenteReconciliacao[] = [];
+      const equipesMap = new Map<number, string>();
+
+      // Mapear nomes das equipes
+      for (const escala of escalas) {
+        if (escala.equipeId && !equipesMap.has(escala.equipeId)) {
+          equipesMap.set(escala.equipeId, escala.equipe?.nome || `Equipe ${escala.equipeId}`);
+        }
+      }
+
+      // Para cada escala, verificar dias com slots
+      for (const escala of escalas) {
+        const dataAtual = new Date(dataInicio);
+        while (dataAtual <= dataFim) {
+          const dataStr = dataAtual.toISOString().split('T')[0];
+
+          // Verificar se a data está dentro do período da escala
+          const dataRef = new Date(dataStr);
+          const periodoInicio = new Date(escala.periodoInicio);
+          const periodoFim = new Date(escala.periodoFim);
+          if (dataRef >= periodoInicio && dataRef <= periodoFim) {
+            pendentesEncontrados.push({
+              equipeId: escala.equipeId,
+              data: dataStr,
+              equipeNome: equipesMap.get(escala.equipeId) || `Equipe ${escala.equipeId}`,
+            });
+          }
+
+          dataAtual.setDate(dataAtual.getDate() + 1);
+        }
+      }
+
+      // Remover duplicatas
+      const pendentesUnicos = Array.from(
+        new Map(pendentesEncontrados.map(p => [`${p.equipeId}-${p.data}`, p])).values()
+      );
+
+      setPendentes(pendentesUnicos);
+      messageApi.success(`Encontradas ${pendentesUnicos.length} possíveis pendências de reconciliação`);
+    } catch (error: any) {
+      messageApi.error(error.message || 'Erro ao buscar pendências');
+      setPendentes([]);
+    } finally {
+      setLoadingPendentes(false);
+    }
+  };
+
+  // Executar reconciliação forçada
+  const executarReconciliacaoForcada = async (values: {
+    diasHistorico?: number;
+    dataInicio?: Dayjs;
+    dataFim?: Dayjs;
+  }) => {
+    setLoadingForcado(true);
+    setResultadoForcado(null);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+      const body: any = {};
+
+      if (values.dataInicio && values.dataFim) {
+        body.dataInicio = values.dataInicio.format('YYYY-MM-DD');
+        body.dataFim = values.dataFim.format('YYYY-MM-DD');
+      } else {
+        body.diasHistorico = values.diasHistorico || 30;
+      }
+
+      const response = await fetch(`${apiUrl}/api/turnos-realizados/reconciliacao/forcado`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || `Erro ${response.status}: ${response.statusText}`);
+      }
+
+      setResultadoForcado(data);
+
+      if (data.success) {
+        messageApi.success(
+          `Reconciliação forçada executada: ${data.sucessos || 0} sucesso(s), ${data.erros || 0} erro(s)`
+        );
+        // Atualizar lista de pendentes após execução
+        if (values.diasHistorico) {
+          await buscarPendentes(values.diasHistorico);
+        }
+      } else {
+        messageApi.warning(data.message || 'Reconciliação executada com alguns erros');
+      }
+    } catch (error: any) {
+      const errorMessage =
+        error.message ||
+        'Erro ao executar reconciliação forçada. Verifique se está acessando de localhost.';
+
+      setResultadoForcado({
+        success: false,
+        message: errorMessage,
+      });
+
+      messageApi.error(errorMessage);
+    } finally {
+      setLoadingForcado(false);
+    }
+  };
 
   const executarReconciliacao = async (values: {
     dataReferencia: Dayjs;
@@ -288,6 +462,180 @@ export default function ReconciliacaoManualPage() {
               </Text>
             </Space>
           </Card>
+        </Space>
+      </Card>
+
+      {/* Seção de Reconciliação Forçada */}
+      <Card style={{ marginTop: '24px' }}>
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <div>
+            <Title level={3}>Reconciliação Forçada</Title>
+            <Text type="secondary">
+              Verifica e reconcilia forçadamente todos os dias/equipes pendentes no período especificado.
+              Ignora a margem de 30 minutos e processa tudo que encontrar.
+            </Text>
+          </div>
+
+          <Form
+            form={formForcado}
+            layout="vertical"
+            onFinish={executarReconciliacaoForcada}
+            initialValues={{
+              diasHistorico: 30,
+            }}
+          >
+            <Form.Item
+              name="diasHistorico"
+              label="Dias no Histórico"
+              tooltip="Número de dias para buscar no histórico (padrão: 30)"
+            >
+              <InputNumber
+                min={1}
+                max={365}
+                style={{ width: '100%' }}
+                placeholder="30"
+              />
+            </Form.Item>
+
+            <Form.Item label="OU Período Específico">
+              <Space.Compact style={{ width: '100%' }}>
+                <Form.Item
+                  name="dataInicio"
+                  noStyle
+                  tooltip="Data de início (opcional)"
+                >
+                  <DatePicker
+                    style={{ width: '50%' }}
+                    format="DD/MM/YYYY"
+                    placeholder="Data início"
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="dataFim"
+                  noStyle
+                  tooltip="Data de fim (opcional)"
+                >
+                  <DatePicker
+                    style={{ width: '50%' }}
+                    format="DD/MM/YYYY"
+                    placeholder="Data fim"
+                  />
+                </Form.Item>
+              </Space.Compact>
+            </Form.Item>
+
+            <Form.Item>
+              <Space>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={loadingForcado}
+                  icon={<ReloadOutlined />}
+                >
+                  Executar Reconciliação Forçada
+                </Button>
+                <Button
+                  onClick={() => {
+                    const dias = formForcado.getFieldValue('diasHistorico') || 30;
+                    buscarPendentes(dias);
+                  }}
+                  loading={loadingPendentes}
+                >
+                  Verificar Pendências
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+
+          {pendentes.length > 0 && (
+            <Card size="small" title={`Pendências Encontradas (${pendentes.length})`}>
+              <Table
+                dataSource={pendentes}
+                rowKey={(record) => `${record.equipeId}-${record.data}`}
+                pagination={{ pageSize: 10 }}
+                size="small"
+                columns={[
+                  {
+                    title: 'Equipe',
+                    dataIndex: 'equipeNome',
+                    key: 'equipeNome',
+                  },
+                  {
+                    title: 'Equipe ID',
+                    dataIndex: 'equipeId',
+                    key: 'equipeId',
+                  },
+                  {
+                    title: 'Data',
+                    dataIndex: 'data',
+                    key: 'data',
+                    render: (data: string) => dayjs(data).format('DD/MM/YYYY'),
+                  },
+                ]}
+              />
+            </Card>
+          )}
+
+          {resultadoForcado && (
+            <Card size="small">
+              <Alert
+                message={resultadoForcado.success ? 'Sucesso' : 'Atenção'}
+                description={
+                  <div>
+                    <Text strong>{resultadoForcado.message}</Text>
+                    {resultadoForcado.periodo && (
+                      <>
+                        <br />
+                        <Text type="secondary" style={{ fontSize: '12px', marginTop: '8px', display: 'block' }}>
+                          Período: {dayjs(resultadoForcado.periodo.dataInicio).format('DD/MM/YYYY')} até{' '}
+                          {dayjs(resultadoForcado.periodo.dataFim).format('DD/MM/YYYY')}
+                        </Text>
+                      </>
+                    )}
+                    {resultadoForcado.diasProcessados !== undefined && (
+                      <>
+                        <br />
+                        <Text type="secondary" style={{ fontSize: '12px', marginTop: '8px', display: 'block' }}>
+                          Dias processados: {resultadoForcado.diasProcessados} | Equipes: {resultadoForcado.equipesProcessadas || 0} |
+                          Sucessos: <Tag color="success">{resultadoForcado.sucessos || 0}</Tag> |
+                          Erros: <Tag color="error">{resultadoForcado.erros || 0}</Tag>
+                        </Text>
+                      </>
+                    )}
+                  </div>
+                }
+                type={resultadoForcado.success ? 'success' : 'warning'}
+                showIcon
+                style={{ marginBottom: resultadoForcado.resultados && resultadoForcado.resultados.length > 0 ? '16px' : 0 }}
+              />
+
+              {resultadoForcado.resultados && resultadoForcado.resultados.length > 0 && (
+                <div style={{ marginTop: '16px' }}>
+                  <Text strong>Detalhamento:</Text>
+                  <List
+                    size="small"
+                    dataSource={resultadoForcado.resultados}
+                    renderItem={(item) => (
+                      <List.Item>
+                        <Space>
+                          {item.success ? (
+                            <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                          ) : (
+                            <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
+                          )}
+                          <Text>
+                            Equipe {item.equipeId} - {dayjs(item.data).format('DD/MM/YYYY')}:{' '}
+                            {item.success ? item.message : item.error}
+                          </Text>
+                        </Space>
+                      </List.Item>
+                    )}
+                    style={{ marginTop: '8px', maxHeight: '300px', overflowY: 'auto' }}
+                  />
+                </div>
+              )}
+            </Card>
+          )}
         </Space>
       </Card>
     </div>
