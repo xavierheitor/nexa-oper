@@ -252,10 +252,14 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       origem: 'GERACAO';
     }> = [];
 
-    // ✅ CORREÇÃO: Ao prolongar CICLO_DIAS, buscar último slot e dia de folga de referência
+    // ✅ CORREÇÃO: Ao prolongar CICLO_DIAS, buscar último slot e continuar o ciclo a partir dele
     // Para SEMANA_DEPENDENTE, não precisa fazer nada especial (usa semanaIndex baseado em semanas)
-    let ultimoSlotPorEletricista: Map<number, { data: Date; estado: 'TRABALHO' | 'FOLGA' }> = new Map();
-    let diaFolgaReferenciaPorEletricista: Map<number, Date> = new Map();
+    let ultimoSlotPorEletricista: Map<number, { data: Date; estado: 'TRABALHO' | 'FOLGA'; posicaoNoCiclo: number }> = new Map();
+    let posicaoInicialPorEletricista: Map<number, number> = new Map();
+
+    // Definir periodoInicio para uso em todo o método
+    const periodoInicio = new Date(periodo.periodoInicio);
+    periodoInicio.setHours(0, 0, 0, 0);
 
     if (input.mode === 'fromDate' && input.fromDate && tipoEscala.modoRepeticao === 'CICLO_DIAS') {
       // Buscar último slot de cada eletricista (para calcular posição atual no ciclo)
@@ -263,6 +267,9 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       dataAntesNovosSlots.setDate(dataAntesNovosSlots.getDate() - 1);
       dataAntesNovosSlots.setHours(23, 59, 59, 999);
 
+      const cicloDias = tipoEscala.cicloDias || 1;
+
+      // Buscar último slot de cada eletricista
       const ultimosSlots = await prisma.slotEscala.findMany({
         where: {
           escalaEquipePeriodoId: input.escalaEquipePeriodoId,
@@ -276,66 +283,72 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
         ],
       });
 
-      // Agrupar por eletricistaId, pegando o mais recente
-      for (const slot of ultimosSlots) {
-        if (!ultimoSlotPorEletricista.has(slot.eletricistaId)) {
-          ultimoSlotPorEletricista.set(slot.eletricistaId, {
-            data: slot.data,
-            estado: slot.estado as 'TRABALHO' | 'FOLGA',
-          });
-        }
-      }
-
-      // Contar quantos dias de folga existem no ciclo
-      const quantidadeFolgasNoCiclo = tipoEscala.CicloPosicoes.filter(
-        p => p.status === 'FOLGA'
-      ).length;
-
-      // Determinar qual dia de folga usar como referência:
-      // - Se tiver 2 ou mais folgas: usar o penúltimo dia de folga
-      // - Se tiver apenas 1 folga: usar o último dia de folga
-      const indiceFolgaReferencia = quantidadeFolgasNoCiclo >= 2 ? 1 : 0; // 1 = penúltimo, 0 = último
-
-      // Buscar slots de folga de cada eletricista antes da data de início dos novos slots
-      const slotsFolga = await prisma.slotEscala.findMany({
+      // Buscar primeiro slot de folga de cada eletricista para recalcular posicaoInicial
+      const primeirosSlotsFolga = await prisma.slotEscala.findMany({
         where: {
           escalaEquipePeriodoId: input.escalaEquipePeriodoId,
           eletricistaId: { in: eletricistasParaGerar.map(e => e.id) },
-          data: { lte: dataAntesNovosSlots },
           estado: 'FOLGA',
           deletedAt: null,
         },
         orderBy: [
           { eletricistaId: 'asc' },
-          { data: 'desc' },
+          { data: 'asc' },
         ],
       });
 
-      // Agrupar por eletricistaId
-      const slotsFolgaPorEletricista = new Map<number, Date[]>();
-      for (const slot of slotsFolga) {
+      // Encontrar a primeira posição de FOLGA no ciclo
+      const primeiraFolga = tipoEscala.CicloPosicoes
+        .filter(p => p.status === 'FOLGA')
+        .sort((a, b) => a.posicao - b.posicao)[0];
+
+      // Calcular posicaoInicial para cada eletricista baseado no primeiro slot de folga
+      const slotsFolgaPorEletricista = new Map<number, Date>();
+      for (const slot of primeirosSlotsFolga) {
         if (!slotsFolgaPorEletricista.has(slot.eletricistaId)) {
-          slotsFolgaPorEletricista.set(slot.eletricistaId, []);
+          slotsFolgaPorEletricista.set(slot.eletricistaId, slot.data);
         }
-        slotsFolgaPorEletricista.get(slot.eletricistaId)!.push(slot.data);
       }
 
-      // Para cada eletricista, pegar o dia de folga de referência baseado na quantidade de folgas no ciclo
-      for (const [eletricistaId, datasFolga] of slotsFolgaPorEletricista.entries()) {
-        if (datasFolga.length > indiceFolgaReferencia) {
-          // Pegar o dia de folga no índice correto (penúltimo se 2+ folgas, último se 1 folga)
-          diaFolgaReferenciaPorEletricista.set(eletricistaId, datasFolga[indiceFolgaReferencia]);
-        } else if (datasFolga.length > 0) {
-          // Se não tem folgas suficientes, usar a última disponível
-          diaFolgaReferenciaPorEletricista.set(eletricistaId, datasFolga[0]);
+      // Calcular posicaoInicial para cada eletricista
+      for (const eletricistaId of eletricistasParaGerar.map(e => e.id)) {
+        if (slotsFolgaPorEletricista.has(eletricistaId) && primeiraFolga) {
+          const dataPrimeiraFolga = new Date(slotsFolgaPorEletricista.get(eletricistaId)!);
+          dataPrimeiraFolga.setHours(0, 0, 0, 0);
+          const diffMsPrimeiraFolga = dataPrimeiraFolga.getTime() - periodoInicio.getTime();
+          const primeiroDiaFolga = Math.floor(diffMsPrimeiraFolga / (1000 * 60 * 60 * 24));
+
+          // Calcular posicaoInicial como na criação inicial
+          const posicaoInicial = (primeiraFolga.posicao - primeiroDiaFolga + cicloDias) % cicloDias;
+          posicaoInicialPorEletricista.set(eletricistaId, posicaoInicial);
+        }
+      }
+
+      // Agrupar por eletricistaId, pegando o mais recente e calculando sua posição no ciclo
+      for (const slot of ultimosSlots) {
+        if (!ultimoSlotPorEletricista.has(slot.eletricistaId)) {
+          // Calcular qual posição no ciclo esse slot estava
+          const dataSlot = new Date(slot.data);
+          dataSlot.setHours(0, 0, 0, 0);
+          const diffMs = dataSlot.getTime() - periodoInicio.getTime();
+          const diaIndex = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+          // ✅ CORREÇÃO: Usar posicaoInicial calculada a partir do primeiro slot de folga
+          const posicaoInicial = posicaoInicialPorEletricista.get(slot.eletricistaId) || 0;
+          // Posição no ciclo (0-indexed): 0..(cicloDias-1) para corresponder ao banco
+          const posicaoNoCiclo = (posicaoInicial + diaIndex) % cicloDias;
+
+          ultimoSlotPorEletricista.set(slot.eletricistaId, {
+            data: slot.data,
+            estado: slot.estado as 'TRABALHO' | 'FOLGA',
+            posicaoNoCiclo,
+          });
         }
       }
     }
 
     // Pré-calcular posições iniciais no ciclo para cada eletricista
-    const periodoInicio = new Date(periodo.periodoInicio);
-    periodoInicio.setHours(0, 0, 0, 0);
-
+    // periodoInicio já foi definido acima
     const eletricistasComPosicao = eletricistasParaGerar.map(
       eletricistaConfig => {
         let posicaoInicial = 0;
@@ -343,65 +356,25 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
         if (tipoEscala.modoRepeticao === 'CICLO_DIAS') {
           const cicloDias = tipoEscala.cicloDias || 1;
 
-          // ✅ CORREÇÃO: Ao prolongar CICLO_DIAS, calcular posicaoInicial baseado no dia de folga de referência
-          // O dia de folga de referência marca o início do ciclo específico daquela escala
+          // ✅ CORREÇÃO: Ao prolongar CICLO_DIAS, usar posicaoInicial já calculada a partir do primeiro slot de folga
+          // Isso garante que cada eletricista continue seu ciclo individual corretamente
           if (input.mode === 'fromDate') {
-            if (diaFolgaReferenciaPorEletricista.has(eletricistaConfig.id)) {
-              const diaFolgaReferencia = diaFolgaReferenciaPorEletricista.get(eletricistaConfig.id)!;
-
-              // Calcular diaIndex do dia de folga de referência (desde o início do período original)
-              const dataFolgaReferencia = new Date(diaFolgaReferencia);
-              dataFolgaReferencia.setHours(0, 0, 0, 0);
-              const diffMs = dataFolgaReferencia.getTime() - periodoInicio.getTime();
-              const diaIndexFolgaReferencia = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-              // Encontrar a primeira posição de FOLGA no ciclo (menor posição que é FOLGA)
+            // Usar a posicaoInicial que foi calculada a partir do primeiro slot de folga
+            if (posicaoInicialPorEletricista.has(eletricistaConfig.id)) {
+              posicaoInicial = posicaoInicialPorEletricista.get(eletricistaConfig.id)!;
+            } else {
+              // Fallback: se não encontrou primeiro slot de folga, usar cálculo normal baseado em primeiroDiaFolga
               const primeiraFolga = tipoEscala.CicloPosicoes
                 .filter(p => p.status === 'FOLGA')
                 .sort((a, b) => a.posicao - b.posicao)[0];
 
               if (primeiraFolga) {
-                // O dia de folga de referência deve estar na primeira posição de folga do ciclo
-                // Isso marca o início do ciclo específico daquela escala
-                // posicaoAtual = ((posicaoInicial + diaIndex) % cicloDias) + 1
-                // Queremos que: primeiraFolga.posicao = ((posicaoInicial + diaIndexFolgaReferencia) % cicloDias) + 1
-                // Então: primeiraFolga.posicao - 1 = (posicaoInicial + diaIndexFolgaReferencia) % cicloDias
-                // posicaoInicial = (primeiraFolga.posicao - 1 - diaIndexFolgaReferencia + cicloDias) % cicloDias
-
-                const primeiraFolga0Indexed = primeiraFolga.posicao - 1; // Converter para 0-indexed
-                posicaoInicial = (primeiraFolga0Indexed - diaIndexFolgaReferencia + cicloDias) % cicloDias;
-              } else {
-                // Se não há posição de folga configurada, usar 0
-                posicaoInicial = 0;
+                posicaoInicial =
+                  (primeiraFolga.posicao -
+                    eletricistaConfig.primeiroDiaFolga +
+                    cicloDias) %
+                  cicloDias;
               }
-            } else if (ultimoSlotPorEletricista.has(eletricistaConfig.id)) {
-              // Fallback: se não encontrou dia de folga de referência, usar último slot para calcular posição atual
-              const ultimoSlot = ultimoSlotPorEletricista.get(eletricistaConfig.id)!;
-              const ultimaData = new Date(ultimoSlot.data);
-              ultimaData.setHours(0, 0, 0, 0);
-              const diffMs = ultimaData.getTime() - periodoInicio.getTime();
-              const diaIndexUltimoSlot = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-              // Calcular qual posição no ciclo o último slot tinha
-              const posicaoUltimoSlot = ((diaIndexUltimoSlot) % cicloDias) + 1;
-
-              // Encontrar a configuração dessa posição
-              const posicaoConfig = tipoEscala.CicloPosicoes.find(p => p.posicao === posicaoUltimoSlot);
-
-              if (posicaoConfig && posicaoConfig.status === ultimoSlot.estado) {
-                // Se bate, calcular posicaoInicial para que o próximo dia continue corretamente
-                // O próximo dia será diaIndexUltimoSlot + 1
-                // Queremos que: posicaoProximoDia = ((posicaoInicial + diaIndexUltimoSlot + 1) % cicloDias) + 1
-                // Mas como não sabemos qual será a próxima posição, vamos usar posicaoInicial = 0
-                // e confiar que diaIndex já está correto
-                posicaoInicial = 0;
-              } else {
-                // Se não bate, usar 0 como fallback
-                posicaoInicial = 0;
-              }
-            } else {
-              // Se não encontrou nem dia de folga nem último slot, usar 0
-              posicaoInicial = 0;
             }
           } else {
             // Cálculo normal para criação inicial da escala
@@ -436,7 +409,6 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
 
     // ✅ CORREÇÃO: Calcular diaIndex desde o início do período original
     // para manter continuidade do ciclo ao prolongar escala
-    // (periodoInicio já foi calculado acima)
     const diffMs = currentDate.getTime() - periodoInicio.getTime();
     let diaIndex = Math.floor(diffMs / (1000 * 60 * 60 * 24)); // Índice do dia desde o início da escala
 
@@ -460,10 +432,10 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
         if (tipoEscala.modoRepeticao === 'CICLO_DIAS') {
           // Para ciclo de dias, calcula a posição no ciclo
           const cicloDias = tipoEscala.cicloDias || 1;
-          // ✅ CORREÇÃO: posicaoAtual deve ser 1-indexed (1..N) para corresponder ao banco
-          // O cálculo (X % cicloDias) retorna 0..(cicloDias-1), então +1 resulta em 1..cicloDias
+          // ✅ CORREÇÃO: posicaoAtual deve ser 0-indexed (0..N-1) para corresponder ao banco
+          // As posições no banco são armazenadas como 0-indexed (0, 1, 2, 3, 4, 5)
           const posicaoAtual =
-            ((eletricistaConfig.posicaoInicial + diaIndex) % cicloDias) + 1;
+            (eletricistaConfig.posicaoInicial + diaIndex) % cicloDias;
 
           // Busca o status configurado para essa posição
           const posicaoConfig = tipoEscala.CicloPosicoes.find(
