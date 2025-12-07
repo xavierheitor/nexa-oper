@@ -2,7 +2,7 @@
  * Server Action para Estatísticas de Turnos por Base
  *
  * Esta action recupera estatísticas sobre turnos do dia atual,
- * agrupados por base da equipe.
+ * agrupados por base da equipe e tipo de equipe (empilhado).
  */
 
 'use server';
@@ -10,6 +10,7 @@
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
 import { listBases } from '../base/list';
+import { listTiposEquipe } from '../tipoEquipe/list';
 import { getTodayDateRange } from '@/lib/utils/dateHelpers';
 import { DEFAULT_STATS_PAGE_SIZE, MAX_STATS_ITEMS } from '@/lib/constants/statsLimits';
 import { logger } from '@/lib/utils/logger';
@@ -18,9 +19,9 @@ import { z } from 'zod';
 const turnoStatsByBaseSchema = z.object({});
 
 /**
- * Busca estatísticas de turnos do dia por base
+ * Busca estatísticas de turnos do dia por base e tipo de equipe (empilhado)
  *
- * @returns Estatísticas de turnos agrupados por base
+ * @returns Estatísticas de turnos agrupados por base e tipo de equipe
  */
 export const getStatsByBase = async () =>
   handleServerAction(
@@ -49,7 +50,30 @@ export const getStatsByBase = async () =>
         });
       }
 
-      // 2. Buscar turnos do dia com relacionamentos de equipe e base
+      // 2. Buscar todos os tipos de equipe
+      const resultTipos = await listTiposEquipe({
+        page: 1,
+        pageSize: DEFAULT_STATS_PAGE_SIZE,
+        orderBy: 'nome',
+        orderDir: 'asc',
+      });
+
+      if (!resultTipos.success || !resultTipos.data) {
+        throw new Error('Erro ao buscar tipos de equipe');
+      }
+
+      const tiposEquipe = resultTipos.data.data || [];
+
+      // Validação: Verifica se o limite foi atingido
+      if (resultTipos.data.total > MAX_STATS_ITEMS) {
+        logger.warn('Limite de tipos de equipe atingido nas estatísticas', {
+          total: resultTipos.data.total,
+          limite: MAX_STATS_ITEMS,
+          action: 'getStatsByBase',
+        });
+      }
+
+      // 3. Buscar turnos do dia com relacionamentos de equipe, tipo de equipe e base
       const { inicio, fim } = getTodayDateRange();
 
       const turnos = await prisma.turno.findMany({
@@ -63,6 +87,7 @@ export const getStatsByBase = async () =>
         include: {
           equipe: {
             include: {
+              tipoEquipe: true,
               EquipeBaseHistorico: {
                 where: {
                   dataFim: null,
@@ -78,25 +103,36 @@ export const getStatsByBase = async () =>
         },
       });
 
-      // 3. Inicializar contagem para todas as bases com 0
-      const contagem: Record<string, number> = {};
+      // 4. Inicializar contagem: base -> tipo -> quantidade
+      const contagem: Record<string, Record<string, number>> = {};
       bases.forEach((base: any) => {
-        contagem[base.nome] = 0;
+        contagem[base.nome] = {};
+        tiposEquipe.forEach((tipo: any) => {
+          contagem[base.nome][tipo.nome] = 0;
+        });
       });
 
-      // 4. Contar turnos por base
+      // 5. Contar turnos por base e tipo de equipe
       turnos.forEach((turno: any) => {
         const baseNome = turno.equipe?.EquipeBaseHistorico?.[0]?.base?.nome;
-        if (baseNome && contagem[baseNome] !== undefined) {
-          contagem[baseNome]++;
+        const tipoEquipeNome = turno.equipe?.tipoEquipe?.nome;
+
+        if (baseNome && tipoEquipeNome && contagem[baseNome] && contagem[baseNome][tipoEquipeNome] !== undefined) {
+          contagem[baseNome][tipoEquipeNome]++;
         }
       });
 
-      // 5. Converter para array formatado
-      const dados = bases.map((base: any) => ({
-        base: base.nome,
-        quantidade: contagem[base.nome] || 0,
-      }));
+      // 6. Converter para array formatado (empilhado)
+      const dados: Array<{ base: string; tipo: string; quantidade: number }> = [];
+      bases.forEach((base: any) => {
+        tiposEquipe.forEach((tipo: any) => {
+          dados.push({
+            base: base.nome,
+            tipo: tipo.nome,
+            quantidade: contagem[base.nome][tipo.nome] || 0,
+          });
+        });
+      });
 
       return dados;
     },

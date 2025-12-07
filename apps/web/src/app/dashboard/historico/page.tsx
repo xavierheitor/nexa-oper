@@ -43,6 +43,7 @@ interface DadosGraficoHora {
 
 interface DadosGraficoBase {
   base: string;
+  tipo: string;
   quantidade: number;
 }
 
@@ -281,28 +282,43 @@ export default function HistoricoPage() {
         });
         setDadosGraficoHora(dadosHora);
 
-        // Calcular estatísticas por base - sempre mostrar todas as bases
-        const statsPorBase: Record<string, number> = {};
+        // Calcular estatísticas por base e tipo de equipe (empilhado)
+        // Estrutura: base -> tipo -> quantidade
+        const statsPorBase: Record<string, Record<string, number>> = {};
 
         // Primeiro, obter todas as bases únicas do banco de dados
         // Para garantir que mostramos todas as bases, mesmo as sem turnos
         const todasAsBases = [...new Set(turnos.map((turno: any) => turno.baseNome || 'Não identificada'))];
 
-        // Inicializar todas as bases com quantidade 0
+        // Inicializar todas as bases com todos os tipos de equipe com quantidade 0
         todasAsBases.forEach(base => {
-          statsPorBase[base] = 0;
+          statsPorBase[base] = {};
+          todosOsTipos.forEach(tipo => {
+            statsPorBase[base][tipo] = 0;
+          });
         });
 
         // Processar turnos existentes
         turnos.forEach((turno: any) => {
           const base = turno.baseNome || 'Não identificada';
-          statsPorBase[base] = (statsPorBase[base] || 0) + 1;
+          const tipo = turno.tipoEquipeNome || 'Não identificado';
+
+          if (statsPorBase[base] && statsPorBase[base][tipo] !== undefined) {
+            statsPorBase[base][tipo] = (statsPorBase[base][tipo] || 0) + 1;
+          }
         });
 
-        const dadosBase = Object.entries(statsPorBase).map(([base, quantidade]) => ({
-          base,
-          quantidade,
-        }));
+        // Converter para array formatado (empilhado)
+        const dadosBase: Array<{ base: string; tipo: string; quantidade: number }> = [];
+        todasAsBases.forEach(base => {
+          todosOsTipos.forEach(tipo => {
+            dadosBase.push({
+              base,
+              tipo,
+              quantidade: statsPorBase[base][tipo] || 0,
+            });
+          });
+        });
         setDadosGraficoBase(dadosBase);
       }
 
@@ -390,6 +406,26 @@ export default function HistoricoPage() {
     },
     []
   );
+
+  // Gerar array de cores na ordem dos tipos (para usar com colorField e scale)
+  const coresArray = useMemo(() => {
+    const coresDisponiveis = [
+      '#1890ff', // Azul
+      '#52c41a', // Verde
+      '#faad14', // Amarelo/Laranja
+      '#f5222d', // Vermelho
+      '#722ed1', // Roxo
+      '#13c2c2', // Ciano
+      '#eb2f96', // Rosa
+      '#fa8c16', // Laranja
+    ];
+
+    if (dadosGraficoBase && dadosGraficoBase.length > 0) {
+      const tiposUnicos = [...new Set(dadosGraficoBase.map(d => d.tipo).filter(Boolean))].sort();
+      return tiposUnicos.map((_, index) => coresDisponiveis[index % coresDisponiveis.length]);
+    }
+    return [];
+  }, [dadosGraficoBase]);
 
   // Aplicar filtros aos turnos do histórico
   const turnosFiltrados = useMemo(() => {
@@ -705,27 +741,44 @@ export default function HistoricoPage() {
               <Empty description="Nenhum dado disponível" />
             ) : (
               <Column
-                data={dadosGraficoBase}
+                data={dadosGraficoBase.filter(d => d.quantidade > 0)}
                 xField="base"
                 yField="quantidade"
+                seriesField="tipo"
+                isStack={true}
                 height={300}
                 columnWidthRatio={0.3}
-                label={{
-                  text: 'quantidade',
-                  position: 'top',
-                  style: {
-                    fill: '#000',
-                    fontWeight: 'bold',
+                colorField="tipo"
+                scale={{
+                  color: {
+                    range: coresArray.length > 0 ? coresArray : ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
                   },
                 }}
-                style={{
-                  fill: '#52c41a',
+                label={{
+                  text: (d: any) => d.quantidade > 0 ? d.quantidade : '',
+                  position: 'inside',
+                  style: {
+                    fill: '#fff',
+                    fontWeight: 'bold',
+                    fontSize: 10,
+                  },
+                }}
+                legend={{
+                  position: 'top',
+                  itemName: {
+                    formatter: (text: string, item: any) => {
+                      // Não mostrar na legenda tipos que não têm dados
+                      const temDados = dadosGraficoBase.some(d => d.tipo === text && d.quantidade > 0);
+                      return temDados ? text : '';
+                    },
+                  },
                 }}
                 xAxis={{
                   label: {
                     autoRotate: true,
                     autoHide: false,
                   },
+                  type: 'category',
                 }}
                 yAxis={{
                   tickCount: 5,

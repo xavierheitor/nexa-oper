@@ -42,6 +42,7 @@ interface DadosGraficoHora {
 
 interface DadosGraficoBase {
   base: string;
+  tipo: string;
   quantidade: number;
 }
 
@@ -221,6 +222,26 @@ export default function TurnosPage() {
     },
     []
   );
+
+  // Gerar array de cores na ordem dos tipos (para usar com colorField e scale)
+  const coresArray = useMemo(() => {
+    const coresDisponiveis = [
+      '#1890ff', // Azul
+      '#52c41a', // Verde
+      '#faad14', // Amarelo/Laranja
+      '#f5222d', // Vermelho
+      '#722ed1', // Roxo
+      '#13c2c2', // Ciano
+      '#eb2f96', // Rosa
+      '#fa8c16', // Laranja
+    ];
+
+    if (dadosGraficoBase && dadosGraficoBase.length > 0) {
+      const tiposUnicos = [...new Set(dadosGraficoBase.map(d => d.tipo).filter(Boolean))].sort();
+      return tiposUnicos.map((_, index) => coresDisponiveis[index % coresDisponiveis.length]);
+    }
+    return [];
+  }, [dadosGraficoBase]);
 
   // Fetch de bases para o select
   const { data: basesData, loading: loadingBases } = useDataFetch<Array<{ id: number; nome: string }>>(
@@ -552,24 +573,41 @@ export default function TurnosPage() {
                 data={dadosGraficoBase}
                 xField="base"
                 yField="quantidade"
+                seriesField="tipo"
+                isStack={true}
                 height={300}
                 columnWidthRatio={0.3}
                 label={{
-                  text: 'quantidade',
-                  position: 'top',
+                  text: (d: any) => d.quantidade > 0 ? d.quantidade : '',
+                  position: 'inside',
                   style: {
-                    fill: '#000',
+                    fill: '#fff',
                     fontWeight: 'bold',
+                    fontSize: 10,
                   },
                 }}
-                style={{
-                  fill: '#52c41a',
+                colorField="tipo"
+                scale={{
+                  color: {
+                    range: coresArray.length > 0 ? coresArray : ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
+                  },
+                }}
+                legend={{
+                  position: 'top',
+                  itemName: {
+                    formatter: (text: string, item: any) => {
+                      // Não mostrar na legenda tipos que não têm dados
+                      const temDados = dadosGraficoBase?.some(d => d.tipo === text && d.quantidade > 0);
+                      return temDados ? text : '';
+                    },
+                  },
                 }}
                 xAxis={{
                   label: {
                     autoRotate: true,
                     autoHide: false,
                   },
+                  type: 'category',
                 }}
                 yAxis={{
                   tickCount: 5,
