@@ -7,9 +7,9 @@
  * incluindo estatísticas e gráficos relacionados ao dia selecionado.
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, DatePicker, Button, Tooltip } from 'antd';
-import { ClockCircleOutlined, CalendarOutlined, SearchOutlined, CheckOutlined, EnvironmentOutlined, CloseOutlined } from '@ant-design/icons';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, DatePicker, Button, Tooltip, Input, Select } from 'antd';
+import { ClockCircleOutlined, CalendarOutlined, SearchOutlined, CheckOutlined, EnvironmentOutlined, CloseOutlined, CarOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { listTurnos } from '@/lib/actions/turno/list';
 import { Column } from '@ant-design/plots';
@@ -17,11 +17,14 @@ import { getStatsByTipoEquipe } from '@/lib/actions/turno/getStatsByTipoEquipe';
 import { getStatsByHoraETipoEquipe } from '@/lib/actions/turno/getStatsByHoraETipoEquipe';
 import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
+import { listBases } from '@/lib/actions/base/list';
 import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 import TurnoLocationMapModal from '@/ui/components/TurnoLocationMapModal';
 import FecharTurnoModal from '@/ui/components/FecharTurnoModal';
 import { useLoadingStates } from '@/lib/hooks/useLoadingStates';
+import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useTablePagination } from '@/lib/hooks/useTablePagination';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -40,6 +43,7 @@ interface DadosGraficoHora {
 
 interface DadosGraficoBase {
   base: string;
+  tipo: string;
   quantidade: number;
 }
 
@@ -66,10 +70,23 @@ interface TurnoData {
     id: number;
     nome: string;
     matricula: string;
+    motorista?: boolean;
   }>;
 }
 
 export default function HistoricoPage() {
+  // Estados para os filtros
+  const [filtroVeiculo, setFiltroVeiculo] = useState<string>('');
+  const [filtroEquipe, setFiltroEquipe] = useState<string>('');
+  const [filtroEletricista, setFiltroEletricista] = useState<string>('');
+  const [filtroBase, setFiltroBase] = useState<string | undefined>(undefined);
+
+  // Hook para paginação client-side
+  const { pagination } = useTablePagination({
+    defaultPageSize: 10,
+    showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''} em ${dataSelecionada.format('DD/MM/YYYY')}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? ' (filtrado)' : ''}`,
+  });
+
   const [turnosHistorico, setTurnosHistorico] = useState<TurnoData[]>([]);
   const { loading, setLoading } = useLoadingStates({
     main: false,
@@ -266,28 +283,43 @@ export default function HistoricoPage() {
         });
         setDadosGraficoHora(dadosHora);
 
-        // Calcular estatísticas por base - sempre mostrar todas as bases
-        const statsPorBase: Record<string, number> = {};
+        // Calcular estatísticas por base e tipo de equipe (empilhado)
+        // Estrutura: base -> tipo -> quantidade
+        const statsPorBase: Record<string, Record<string, number>> = {};
 
         // Primeiro, obter todas as bases únicas do banco de dados
         // Para garantir que mostramos todas as bases, mesmo as sem turnos
         const todasAsBases = [...new Set(turnos.map((turno: any) => turno.baseNome || 'Não identificada'))];
 
-        // Inicializar todas as bases com quantidade 0
+        // Inicializar todas as bases com todos os tipos de equipe com quantidade 0
         todasAsBases.forEach(base => {
-          statsPorBase[base] = 0;
+          statsPorBase[base] = {};
+          todosOsTipos.forEach(tipo => {
+            statsPorBase[base][tipo] = 0;
+          });
         });
 
         // Processar turnos existentes
         turnos.forEach((turno: any) => {
           const base = turno.baseNome || 'Não identificada';
-          statsPorBase[base] = (statsPorBase[base] || 0) + 1;
+          const tipo = turno.tipoEquipeNome || 'Não identificado';
+
+          if (statsPorBase[base] && statsPorBase[base][tipo] !== undefined) {
+            statsPorBase[base][tipo] = (statsPorBase[base][tipo] || 0) + 1;
+          }
         });
 
-        const dadosBase = Object.entries(statsPorBase).map(([base, quantidade]) => ({
-          base,
-          quantidade,
-        }));
+        // Converter para array formatado (empilhado)
+        const dadosBase: Array<{ base: string; tipo: string; quantidade: number }> = [];
+        todasAsBases.forEach(base => {
+          todosOsTipos.forEach(tipo => {
+            dadosBase.push({
+              base,
+              tipo,
+              quantidade: statsPorBase[base][tipo] || 0,
+            });
+          });
+        });
         setDadosGraficoBase(dadosBase);
       }
 
@@ -364,6 +396,80 @@ export default function HistoricoPage() {
     ]);
   };
 
+  // Fetch de bases para o select
+  const { data: basesData, loading: loadingBases } = useDataFetch<Array<{ id: number; nome: string }>>(
+    async () => {
+      const result = await listBases({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' });
+      if (result.success && result.data) {
+        return result.data.data || [];
+      }
+      throw new Error(result.error || 'Erro ao carregar bases');
+    },
+    []
+  );
+
+  // Gerar array de cores na ordem dos tipos (para usar com colorField e scale)
+  const coresArray = useMemo(() => {
+    const coresDisponiveis = [
+      '#1890ff', // Azul
+      '#52c41a', // Verde
+      '#faad14', // Amarelo/Laranja
+      '#f5222d', // Vermelho
+      '#722ed1', // Roxo
+      '#13c2c2', // Ciano
+      '#eb2f96', // Rosa
+      '#fa8c16', // Laranja
+    ];
+
+    if (dadosGraficoBase && dadosGraficoBase.length > 0) {
+      const tiposUnicos = [...new Set(dadosGraficoBase.map(d => d.tipo).filter(Boolean))].sort();
+      return tiposUnicos.map((_, index) => coresDisponiveis[index % coresDisponiveis.length]);
+    }
+    return [];
+  }, [dadosGraficoBase]);
+
+  // Aplicar filtros aos turnos do histórico
+  const turnosFiltrados = useMemo(() => {
+    let turnos = turnosHistorico;
+
+    // Filtro por veículo (placa ou modelo)
+    if (filtroVeiculo) {
+      const filtroLower = filtroVeiculo.toLowerCase();
+      turnos = turnos.filter((turno: TurnoData) =>
+        turno.veiculoPlaca?.toLowerCase().includes(filtroLower) ||
+        turno.veiculoModelo?.toLowerCase().includes(filtroLower)
+      );
+    }
+
+    // Filtro por equipe
+    if (filtroEquipe) {
+      const filtroLower = filtroEquipe.toLowerCase();
+      turnos = turnos.filter((turno: TurnoData) =>
+        turno.equipeNome?.toLowerCase().includes(filtroLower)
+      );
+    }
+
+    // Filtro por eletricista (nome ou matrícula)
+    if (filtroEletricista) {
+      const filtroLower = filtroEletricista.toLowerCase();
+      turnos = turnos.filter((turno: TurnoData) =>
+        turno.eletricistas?.some((elet) =>
+          elet.nome?.toLowerCase().includes(filtroLower) ||
+          elet.matricula?.toLowerCase().includes(filtroLower)
+        )
+      );
+    }
+
+    // Filtro por base
+    if (filtroBase) {
+      turnos = turnos.filter((turno: TurnoData) =>
+        turno.baseNome === filtroBase
+      );
+    }
+
+    return turnos;
+  }, [turnosHistorico, filtroVeiculo, filtroEquipe, filtroEletricista, filtroBase]);
+
   const columns: ColumnsType<TurnoData> = [
 
     {
@@ -397,8 +503,11 @@ export default function HistoricoPage() {
       render: (_: unknown, record: TurnoData) => (
         <Space direction="vertical" size={0}>
           {record.eletricistas?.map((elet) => (
-            <Tooltip key={elet.id} title={`Matrícula: ${elet.matricula}`}>
-              <span style={{ cursor: 'help' }}>{elet.nome}</span>
+            <Tooltip key={elet.id} title={`Matrícula: ${elet.matricula}${elet.motorista ? ' - Motorista' : ''}`}>
+              <Space size={4} style={{ cursor: 'help' }}>
+                {elet.motorista && <CarOutlined style={{ color: '#1890ff' }} />}
+                <span>{elet.nome}</span>
+              </Space>
             </Tooltip>
           ))}
         </Space>
@@ -636,27 +745,44 @@ export default function HistoricoPage() {
               <Empty description="Nenhum dado disponível" />
             ) : (
               <Column
-                data={dadosGraficoBase}
+                data={dadosGraficoBase.filter(d => d.quantidade > 0)}
                 xField="base"
                 yField="quantidade"
+                seriesField="tipo"
+                isStack={true}
                 height={300}
                 columnWidthRatio={0.3}
-                label={{
-                  text: 'quantidade',
-                  position: 'top',
-                  style: {
-                    fill: '#000',
-                    fontWeight: 'bold',
+                colorField="tipo"
+                scale={{
+                  color: {
+                    range: coresArray.length > 0 ? coresArray : ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
                   },
                 }}
-                style={{
-                  fill: '#52c41a',
+                label={{
+                  text: (d: any) => d.quantidade > 0 ? d.quantidade : '',
+                  position: 'inside',
+                  style: {
+                    fill: '#fff',
+                    fontWeight: 'bold',
+                    fontSize: 10,
+                  },
+                }}
+                legend={{
+                  position: 'top',
+                  itemName: {
+                    formatter: (text: string, item: any) => {
+                      // Não mostrar na legenda tipos que não têm dados
+                      const temDados = dadosGraficoBase.some(d => d.tipo === text && d.quantidade > 0);
+                      return temDados ? text : '';
+                    },
+                  },
                 }}
                 xAxis={{
                   label: {
                     autoRotate: true,
                     autoHide: false,
                   },
+                  type: 'category',
                 }}
                 yAxis={{
                   tickCount: 5,
@@ -675,17 +801,63 @@ export default function HistoricoPage() {
 
       {/* Tabela de Histórico */}
       <Card>
+        {/* Filtros */}
+        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={12} md={6}>
+            <Input
+              placeholder="Filtrar por veículo (placa/modelo)"
+              prefix={<SearchOutlined />}
+              value={filtroVeiculo}
+              onChange={(e) => setFiltroVeiculo(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Input
+              placeholder="Filtrar por equipe"
+              prefix={<SearchOutlined />}
+              value={filtroEquipe}
+              onChange={(e) => setFiltroEquipe(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Input
+              placeholder="Filtrar por eletricista (nome/matrícula)"
+              prefix={<SearchOutlined />}
+              value={filtroEletricista}
+              onChange={(e) => setFiltroEletricista(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Select
+              placeholder="Filtrar por base"
+              style={{ width: '100%' }}
+              value={filtroBase}
+              onChange={setFiltroBase}
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              loading={loadingBases}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              options={basesData?.map((base) => ({
+                label: base.nome,
+                value: base.nome,
+              }))}
+            />
+          </Col>
+        </Row>
+
         <Table
           columns={columns}
-          dataSource={turnosHistorico}
+          dataSource={turnosFiltrados}
           rowKey="id"
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Total de ${total} turnos em ${dataSelecionada.format('DD/MM/YYYY')}`,
-          }}
+          pagination={pagination}
           locale={{
-            emptyText: <Empty description={`Nenhum turno encontrado para ${dataSelecionada.format('DD/MM/YYYY')}`} />,
+            emptyText: <Empty description={filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? 'Nenhum turno encontrado com os filtros aplicados' : `Nenhum turno encontrado para ${dataSelecionada.format('DD/MM/YYYY')}`} />,
           }}
         />
       </Card>

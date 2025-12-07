@@ -35,6 +35,32 @@ export class MobileLocationUploadService {
     const prisma = this.db.getPrisma();
 
     try {
+      // Validar se o turno existe e não está fechado
+      if (payload.turnoId) {
+        const turno = await prisma.turno.findUnique({
+          where: { id: payload.turnoId },
+          select: { id: true, dataFim: true },
+        });
+
+        if (!turno) {
+          this.logger.warn(
+            `Tentativa de salvar localização para turno inexistente - Turno ID: ${payload.turnoId}`
+          );
+          return {
+            status: 'ok',
+            alreadyExisted: false,
+          };
+        }
+
+        // Permitir salvar localizações mesmo para turnos fechados (pode ser localização de fechamento)
+        // Mas logar para monitoramento
+        if (turno.dataFim) {
+          this.logger.debug(
+            `Salvando localização para turno já fechado - Turno ID: ${payload.turnoId}`
+          );
+        }
+      }
+
       // Tentar inserir diretamente - se já existir, será capturado pelo catch
       await prisma.mobileLocation.create({
         data: {
@@ -64,7 +90,7 @@ export class MobileLocationUploadService {
         status: 'ok',
         alreadyExisted: false,
       };
-    } catch (error) {
+    } catch (error: any) {
       // Se for erro de constraint única, significa que já existe
       if (error.code === 'P2002' && error.meta?.target?.includes('signature')) {
         this.logger.debug(
@@ -77,7 +103,23 @@ export class MobileLocationUploadService {
         };
       }
 
-      // Se for outro erro, relançar
+      // Se for erro de foreign key (turno não existe), logar e retornar ok
+      if (error.code === 'P2003' || error.code === 'P2025') {
+        this.logger.warn(
+          `Erro ao salvar localização - Turno não encontrado ou inválido - Turno ID: ${payload.turnoId}, Erro: ${error.message}`
+        );
+
+        return {
+          status: 'ok',
+          alreadyExisted: false,
+        };
+      }
+
+      // Se for outro erro, logar e relançar
+      this.logger.error(
+        `Erro ao salvar localização para turno ${payload.turnoId}:`,
+        error
+      );
       throw error;
     }
   }

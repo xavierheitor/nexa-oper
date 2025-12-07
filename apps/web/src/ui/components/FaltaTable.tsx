@@ -1,13 +1,13 @@
 'use client';
 
-import { Table, Button, Space } from 'antd';
+import { Table, Button, Space, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { TablePaginationConfig } from 'antd/es/table';
 import type { TableFilters, TableSorter } from '@/lib/types/antd';
 import { Falta } from '@/lib/schemas/turnoRealizadoSchema';
 import StatusTag from './StatusTag';
 import dayjs from 'dayjs';
-import { EyeOutlined } from '@ant-design/icons';
+import { EyeOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 
 interface FaltaTableProps {
   faltas: Falta[];
@@ -59,7 +59,24 @@ export default function FaltaTable({
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => <StatusTag status={status} tipo="falta" />,
+      render: (status: string, record: Falta) => {
+        const justificativas = record.justificativas || record.Justificativas || [];
+        const precisaJustificativa =
+          (record.escalaSlotId !== null && record.escalaSlotId !== undefined) &&
+          justificativas.length === 0 &&
+          status === 'pendente';
+
+        return (
+          <Space>
+            <StatusTag status={status} tipo="falta" />
+            {precisaJustificativa && (
+              <Tag color="orange" icon={<ExclamationCircleOutlined />}>
+                Precisa Justificativa
+              </Tag>
+            )}
+          </Space>
+        );
+      },
       filters: [
         { text: 'Pendente', value: 'pendente' },
         { text: 'Justificada', value: 'justificada' },

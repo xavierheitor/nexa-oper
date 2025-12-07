@@ -163,11 +163,17 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
       return;
     }
 
-    // Validar se todos têm dia da primeira folga definido
-    const semPosicao = eletricistasEscala.filter(e => e.primeiroDiaFolga === undefined || e.primeiroDiaFolga === null);
-    if (semPosicao.length > 0) {
-      message.warning('Defina o primeiro dia de folga para todos os eletricistas');
-      return;
+    // ✅ CORREÇÃO: Para escalas SEMANA_DEPENDENTE (espanhola), não precisa validar primeiroDiaFolga
+    // A folga é determinada pela semana e dia da semana (sábado/domingo)
+    const isSemanaDependente = tipoEscalaSelecionado?.modoRepeticao === 'SEMANA_DEPENDENTE';
+
+    if (!isSemanaDependente) {
+      // Validar se todos têm dia da primeira folga definido (apenas para CICLO_DIAS)
+      const semPosicao = eletricistasEscala.filter(e => e.primeiroDiaFolga === undefined || e.primeiroDiaFolga === null);
+      if (semPosicao.length > 0) {
+        message.warning('Defina o primeiro dia de folga para todos os eletricistas');
+        return;
+      }
     }
 
     setCurrentStep(2);
@@ -179,10 +185,16 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
 
     setLoading(true);
     try {
+      // ✅ CORREÇÃO: Garantir que primeiroDiaFolga tenha valor padrão para escalas SEMANA_DEPENDENTE
+      const eletricistasConfigCompleto = eletricistasEscala.map(e => ({
+        ...e,
+        primeiroDiaFolga: e.primeiroDiaFolga ?? 0, // Valor padrão se não definido
+      }));
+
       const result = await gerarSlotsEscala({
         escalaEquipePeriodoId: periodoId,
         mode: 'full',
-        eletricistasConfig: eletricistasEscala,
+        eletricistasConfig: eletricistasConfigCompleto,
       });
 
       if (result.success && result.data) {
@@ -201,12 +213,15 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
   // Handlers para gerenciar eletricistas
   const toggleEletricista = (eletricista: any, checked: boolean) => {
     if (checked) {
+      // ✅ CORREÇÃO: Para escalas SEMANA_DEPENDENTE, primeiroDiaFolga não é necessário
+      // mas definimos como 0 para compatibilidade com o serviço
+      const isSemanaDependente = tipoEscalaSelecionado?.modoRepeticao === 'SEMANA_DEPENDENTE';
       setEletricistasEscala([
         ...eletricistasEscala,
         {
           eletricistaId: eletricista.id,
           eletricistaNome: eletricista.nome,
-          primeiroDiaFolga: 0,
+          primeiroDiaFolga: isSemanaDependente ? 0 : 0, // Sempre 0, mas não usado para SEMANA_DEPENDENTE
         },
       ]);
     } else {
@@ -394,6 +409,17 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
               prefix={<span>🔍</span>}
             />
 
+            {tipoEscalaSelecionado?.modoRepeticao === 'SEMANA_DEPENDENTE' && (
+              <Alert
+                message="Escala Semana Dependente (Espanhola)"
+                description="Para este tipo de escala, a folga é determinada automaticamente pela semana e dia da semana (sábado/domingo). Não é necessário definir o primeiro dia de folga."
+                type="info"
+                showIcon
+                closable
+                style={{ marginBottom: 16 }}
+              />
+            )}
+
             {buscaEletricista && (
               <Alert
                 message={`Mostrando ${eletricistasFilteredForDisplay.length} eletricista(s). Selecionados permanecem visíveis mesmo fora do filtro.`}
@@ -436,28 +462,34 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
                   key: 'matricula',
                   width: 120,
                 },
-                {
-                  title: '1º Dia de Folga',
-                  key: 'primeiroDiaFolga',
-                  width: 150,
-                  render: (_: unknown, record: any) => {
-                    const eletricistaConfig = eletricistasEscala.find(
-                      (e) => e.eletricistaId === record.id
-                    );
-                    if (!eletricistaConfig) return null;
+                // ✅ CORREÇÃO: Mostrar coluna "1º Dia de Folga" apenas para escalas CICLO_DIAS
+                // Para SEMANA_DEPENDENTE (espanhola), a folga é determinada pela semana e dia da semana
+                ...(tipoEscalaSelecionado?.modoRepeticao === 'CICLO_DIAS'
+                  ? [
+                      {
+                        title: '1º Dia de Folga',
+                        key: 'primeiroDiaFolga',
+                        width: 150,
+                        render: (_: unknown, record: any) => {
+                          const eletricistaConfig = eletricistasEscala.find(
+                            (e) => e.eletricistaId === record.id
+                          );
+                          if (!eletricistaConfig) return null;
 
-                    return (
-                      <InputNumber
-                        min={0}
-                        placeholder="Ex: 2"
-                        value={eletricistaConfig.primeiroDiaFolga}
-                        onChange={(value) => updatePrimeiroDiaFolga(record.id, value || 0)}
-                        style={{ width: '100%' }}
-                        addonAfter="dias"
-                      />
-                    );
-                  },
-                },
+                          return (
+                            <InputNumber
+                              min={0}
+                              placeholder="Ex: 2"
+                              value={eletricistaConfig.primeiroDiaFolga}
+                              onChange={(value) => updatePrimeiroDiaFolga(record.id, value || 0)}
+                              style={{ width: '100%' }}
+                              addonAfter="dias"
+                            />
+                          );
+                        },
+                      },
+                    ]
+                  : []),
               ]}
             />
 

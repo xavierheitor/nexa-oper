@@ -183,6 +183,55 @@ export class JustificativasController {
       status,
     });
   }
+
+  // Casos Pendentes de Justificativa de Equipe
+  @Get('justificativas-equipe/casos-pendentes')
+  @ApiOperation({ summary: 'Listar casos pendentes de justificativa de equipe' })
+  async listarCasosPendentes(
+    @Query('equipeId') equipeId?: string,
+    @Query('dataInicio') dataInicio?: string,
+    @Query('dataFim') dataFim?: string,
+    @Query('status') status?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.service.listarCasosPendentes({
+      equipeId: equipeId ? parseInt(equipeId, 10) : undefined,
+      dataInicio: dataInicio ? new Date(dataInicio) : undefined,
+      dataFim: dataFim ? new Date(dataFim) : undefined,
+      status: status as 'pendente' | 'justificado' | 'ignorado' | undefined,
+      page: page ? parseInt(page, 10) : 1,
+      pageSize: pageSize ? parseInt(pageSize, 10) : 20,
+    });
+  }
+
+  @Post('justificativas-equipe/casos/:id/ignorar')
+  @ApiOperation({ summary: 'Marcar caso pendente como ignorado' })
+  async ignorarCaso(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('decididoPor') decididoPor?: string,
+  ) {
+    return this.service.ignorarCasoPendente(id, decididoPor ?? 'system');
+  }
+
+  @Post('justificativas-equipe/casos/:id/justificar')
+  @ApiOperation({ summary: 'Criar justificativa a partir de caso pendente' })
+  async justificarCaso(
+    @Param('id', ParseIntPipe) casoId: number,
+    @Body()
+    body: {
+      tipoJustificativaId: number;
+      descricao?: string;
+      createdBy?: string;
+    },
+  ) {
+    return this.service.criarJustificativaDeCaso({
+      casoId,
+      tipoJustificativaId: body.tipoJustificativaId,
+      descricao: body.descricao,
+      createdBy: body.createdBy ?? 'system',
+    });
+  }
 }
 
 

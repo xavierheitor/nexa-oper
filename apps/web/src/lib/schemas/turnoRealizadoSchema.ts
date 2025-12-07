@@ -100,6 +100,9 @@ export const detalhamentoDiaSchema = z.object({
   faltaId: z.number().optional(),
   horaExtraId: z.number().optional(),
   tipoHoraExtra: HoraExtraTipoEnum.optional(),
+  equipe: equipeBasicaSchema.optional(), // Equipe em que trabalhou (quando tipo = 'trabalho')
+  horaInicio: z.coerce.date().optional(), // Hora de início do turno (quando tipo = 'trabalho')
+  horaFim: z.coerce.date().optional(), // Hora de fim do turno (quando tipo = 'trabalho')
 });
 
 export const consolidadoEletricistaResponseSchema = z.object({
@@ -107,6 +110,7 @@ export const consolidadoEletricistaResponseSchema = z.object({
   periodo: periodoResponseSchema,
   resumo: resumoEletricistaSchema,
   detalhamento: z.array(detalhamentoDiaSchema),
+  diasComEscala: z.array(z.string()).optional(), // Lista de datas (YYYY-MM-DD) que têm escala
 });
 
 export const resumoEletricistaEquipeSchema = z.object({
@@ -148,7 +152,9 @@ export const faltaSchema = z.object({
   equipe: equipeBasicaSchema,
   motivoSistema: z.string(),
   status: FaltaStatusEnum,
-  Justificativas: z.array(faltaJustificativaSchema),
+  escalaSlotId: z.number().nullable().optional(),
+  Justificativas: z.array(faltaJustificativaSchema).optional().default([]),
+  justificativas: z.array(faltaJustificativaSchema).optional().default([]),
   createdAt: z.coerce.date(),
 });
 

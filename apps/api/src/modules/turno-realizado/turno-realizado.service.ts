@@ -20,6 +20,7 @@ export interface AbrirTurnoPayload {
   idempotencyKey?: string;
   deviceMeta?: Record<string, unknown>;
   executadoPor: string; // userId/nome do operador
+  turnoId?: number; // ID do Turno original (quando criado a partir de um Turno)
 }
 
 @Injectable()
@@ -35,16 +36,19 @@ export class TurnoRealizadoService {
     const prisma = this.db.getPrisma();
     const dataRef = new Date(payload.dataReferencia);
     const origem = payload.origem ?? 'mobile';
+    // Garantir que executadoPor seja sempre string (pode vir como número do TurnoService)
+    const executadoPor = String(payload.executadoPor || 'system');
 
     return await prisma.$transaction(async (tx) => {
       const turno = await tx.turnoRealizado.create({
         data: {
           dataReferencia: dataRef,
           equipeId: payload.equipeId,
+          turnoId: payload.turnoId, // Referência opcional ao Turno original
           origem,
           abertoEm: new Date(),
-          abertoPor: payload.executadoPor,
-          createdBy: payload.executadoPor,
+          abertoPor: executadoPor,
+          createdBy: executadoPor,
         },
       });
 
@@ -56,7 +60,7 @@ export class TurnoRealizadoService {
             status: 'aberto',
             abertoEm: e.abertoEm ? new Date(e.abertoEm) : new Date(),
             deviceInfo: e.deviceInfo,
-            createdBy: payload.executadoPor,
+            createdBy: executadoPor,
           })),
           skipDuplicates: true,
         });
@@ -70,7 +74,7 @@ export class TurnoRealizadoService {
       .reconciliarDiaEquipe({
         dataReferencia: payload.dataReferencia,
         equipePrevistaId: payload.equipeId,
-        executadoPor: payload.executadoPor,
+        executadoPor: executadoPor,
       })
       .then(() => {
         this.logger.log(
@@ -91,6 +95,138 @@ export class TurnoRealizadoService {
         fechadoPor: executadoPor,
       },
     });
+  }
+
+  /**
+   * Fecha um TurnoRealizado baseado no turnoId (método preferencial quando turnoId está disponível)
+   * Usado quando um Turno é fechado e precisa fechar o TurnoRealizado correspondente
+   */
+  async fecharTurnoPorTurnoId(
+    turnoId: number,
+    executadoPor: string
+  ) {
+    const prisma = this.db.getPrisma();
+    const executadoPorStr = String(executadoPor || 'system');
+
+    // Validar turnoId
+    if (!turnoId || turnoId <= 0) {
+      this.logger.warn(
+        `TurnoId inválido para fechamento - Turno ID: ${turnoId}`
+      );
+      return null;
+    }
+
+    // Buscar TurnoRealizado pelo turnoId
+    const turnoRealizado = await prisma.turnoRealizado.findFirst({
+      where: {
+        turnoId,
+        fechadoEm: null, // Apenas se ainda não estiver fechado
+      },
+    });
+
+    if (!turnoRealizado) {
+      this.logger.warn(
+        `TurnoRealizado não encontrado para fechamento - Turno ID: ${turnoId}`
+      );
+      return null;
+    }
+
+    // Fechar o TurnoRealizado
+    const turnoFechado = await prisma.turnoRealizado.update({
+      where: { id: turnoRealizado.id },
+      data: {
+        fechadoEm: new Date(),
+        fechadoPor: executadoPorStr,
+      },
+    });
+
+    // Fechar também os TurnoRealizadoEletricista relacionados
+    await prisma.turnoRealizadoEletricista.updateMany({
+      where: {
+        turnoRealizadoId: turnoRealizado.id,
+        status: 'aberto',
+      },
+      data: {
+        status: 'fechado',
+        fechadoEm: new Date(),
+      },
+    });
+
+    this.logger.log(
+      `TurnoRealizado fechado com sucesso - ID: ${turnoFechado.id}, Turno ID: ${turnoId}`
+    );
+
+    return turnoFechado;
+  }
+
+  /**
+   * Fecha um TurnoRealizado baseado na data de referência e equipe
+   * Usado como fallback quando turnoId não está disponível
+   */
+  async fecharTurnoPorDataEquipe(
+    dataReferencia: Date | string,
+    equipeId: number,
+    executadoPor: string
+  ) {
+    const prisma = this.db.getPrisma();
+    const dataRef = typeof dataReferencia === 'string'
+      ? new Date(dataReferencia)
+      : dataReferencia;
+
+    // Normalizar para início do dia para buscar corretamente
+    const dataRefInicio = new Date(dataRef);
+    dataRefInicio.setHours(0, 0, 0, 0);
+    const dataRefFim = new Date(dataRef);
+    dataRefFim.setHours(23, 59, 59, 999);
+
+    // Garantir que executadoPor seja string
+    const executadoPorStr = String(executadoPor || 'system');
+
+    // Buscar TurnoRealizado aberto para esta data e equipe
+    const turnoRealizado = await prisma.turnoRealizado.findFirst({
+      where: {
+        equipeId,
+        dataReferencia: {
+          gte: dataRefInicio,
+          lte: dataRefFim,
+        },
+        fechadoEm: null, // Apenas se ainda não estiver fechado
+      },
+    });
+
+    if (!turnoRealizado) {
+      this.logger.warn(
+        `TurnoRealizado não encontrado para fechamento - Equipe: ${equipeId}, Data: ${dataRef.toISOString()}`
+      );
+      return null;
+    }
+
+    // Fechar o TurnoRealizado
+    const turnoFechado = await prisma.turnoRealizado.update({
+      where: { id: turnoRealizado.id },
+      data: {
+        fechadoEm: new Date(),
+        fechadoPor: executadoPorStr,
+      },
+    });
+
+    // Fechar também os TurnoRealizadoEletricista relacionados
+    await prisma.turnoRealizadoEletricista.updateMany({
+      where: {
+        turnoRealizadoId: turnoRealizado.id,
+        status: 'aberto',
+      },
+      data: {
+        status: 'fechado',
+        fechadoEm: new Date(),
+      },
+    });
+
+    this.logger.log(
+      `TurnoRealizado fechado com sucesso - ID: ${turnoFechado.id}, Equipe: ${equipeId}, Data: ${dataRef.toISOString()}`
+    );
+
+    return turnoFechado;
   }
 
   async resumo(params: { data: string; equipeId: number }) {

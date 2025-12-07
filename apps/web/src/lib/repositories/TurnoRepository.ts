@@ -64,6 +64,7 @@ export class TurnoRepository extends AbstractCrudRepository<Turno, TurnoFilter> 
         data: eletricistaIds.map(eletricistaId => ({
           turnoId: turno.id,
           eletricistaId,
+          motorista: false, // Default false para turnos criados pelo backoffice
           createdAt: new Date(),
           createdBy: userId || '',
         })),
@@ -143,6 +144,7 @@ export class TurnoRepository extends AbstractCrudRepository<Turno, TurnoFilter> 
           data: eletricistaIds.map(eletricistaId => ({
             turnoId: id,
             eletricistaId,
+            motorista: false, // Default false para turnos criados pelo backoffice
             createdAt: new Date(),
             createdBy: userId || '',
           })),
@@ -325,6 +327,7 @@ export class TurnoRepository extends AbstractCrudRepository<Turno, TurnoFilter> 
         id: te.eletricista.id,
         nome: te.eletricista.nome,
         matricula: te.eletricista.matricula,
+        motorista: te.motorista || false,
       })),
     }));
   }

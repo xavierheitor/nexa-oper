@@ -8,6 +8,10 @@ model TurnoRealizado {
   equipeId       Int
   equipe         Equipe   @relation(fields: [equipeId], references: [id])
 
+  // Referência opcional ao Turno original (quando criado a partir de um Turno)
+  turnoId Int?
+  turno   Turno? @relation(fields: [turnoId], references: [id])
+
   origem     String    @db.VarChar(32) // mobile | backoffice
   abertoEm   DateTime
   abertoPor  String    @db.VarChar(255)
@@ -21,6 +25,7 @@ model TurnoRealizado {
 
   @@index([dataReferencia])
   @@index([equipeId, dataReferencia])
+  @@index([turnoId])
 }
 
 model TurnoRealizadoEletricista {
@@ -185,6 +190,7 @@ model JustificativaEquipe {
   // Se aprovada e gera falta, mantém as faltas individuais criadas
 
   Anexos JustificativaEquipeAnexo[]
+  CasosJustificativa CasoJustificativaEquipe[]
 
   @@unique([dataReferencia, equipeId])
   @@index([equipeId, dataReferencia])
@@ -202,6 +208,33 @@ model JustificativaEquipeAnexo {
   uploadedAt DateTime @default(now())
 
   @@index([justificativaEquipeId])
+}
+
+/// =========================
+/// Casos Pendentes de Justificativa de Equipe
+/// =========================
+model CasoJustificativaEquipe {
+  id             Int      @id @default(autoincrement())
+  dataReferencia DateTime
+  equipeId       Int
+  equipe         Equipe   @relation(fields: [equipeId], references: [id])
+
+  // Quantidade de slots de trabalho escalados
+  slotsEscalados Int      @default(0)
+
+  // Status do caso
+  status         String   @db.VarChar(16) // pendente | justificado | ignorado
+
+  // Se foi convertido em JustificativaEquipe
+  justificativaEquipeId Int?
+  justificativaEquipe   JustificativaEquipe? @relation(fields: [justificativaEquipeId], references: [id])
+
+  createdAt DateTime @default(now())
+  createdBy String   @db.VarChar(255) // system
+
+  @@unique([dataReferencia, equipeId])
+  @@index([equipeId, dataReferencia])
+  @@index([status])
 }
 
 /// =========================

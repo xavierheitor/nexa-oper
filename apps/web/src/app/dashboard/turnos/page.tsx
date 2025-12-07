@@ -11,7 +11,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, Button, Tooltip, Input, Select } from 'antd';
-import { ClockCircleOutlined, CalendarOutlined, CheckOutlined, EnvironmentOutlined, CloseOutlined, SearchOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, CalendarOutlined, CheckOutlined, EnvironmentOutlined, CloseOutlined, SearchOutlined, CarOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { listTurnos } from '@/lib/actions/turno/list';
 import { Column } from '@ant-design/plots';
@@ -25,6 +25,7 @@ import TurnoLocationMapModal from '@/ui/components/TurnoLocationMapModal';
 import FecharTurnoModal from '@/ui/components/FecharTurnoModal';
 import type { ChecklistPreenchido } from '@/ui/components/ChecklistSelectorModal';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useTablePagination } from '@/lib/hooks/useTablePagination';
 
 const { Title } = Typography;
 
@@ -41,6 +42,7 @@ interface DadosGraficoHora {
 
 interface DadosGraficoBase {
   base: string;
+  tipo: string;
   quantidade: number;
 }
 
@@ -67,6 +69,7 @@ interface TurnoData {
     id: number;
     nome: string;
     matricula: string;
+    motorista?: boolean;
   }>;
 }
 
@@ -76,6 +79,12 @@ export default function TurnosPage() {
   const [filtroEquipe, setFiltroEquipe] = useState<string>('');
   const [filtroEletricista, setFiltroEletricista] = useState<string>('');
   const [filtroBase, setFiltroBase] = useState<string | undefined>(undefined);
+
+  // Hook para paginação client-side
+  const { pagination } = useTablePagination({
+    defaultPageSize: 10,
+    showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? ' (filtrado)' : ''}`,
+  });
 
   // Estados para os modais de checklist
   const [checklistSelectorVisible, setChecklistSelectorVisible] = useState(false);
@@ -215,6 +224,26 @@ export default function TurnosPage() {
     []
   );
 
+  // Gerar array de cores na ordem dos tipos (para usar com colorField e scale)
+  const coresArray = useMemo(() => {
+    const coresDisponiveis = [
+      '#1890ff', // Azul
+      '#52c41a', // Verde
+      '#faad14', // Amarelo/Laranja
+      '#f5222d', // Vermelho
+      '#722ed1', // Roxo
+      '#13c2c2', // Ciano
+      '#eb2f96', // Rosa
+      '#fa8c16', // Laranja
+    ];
+
+    if (dadosGraficoBase && dadosGraficoBase.length > 0) {
+      const tiposUnicos = [...new Set(dadosGraficoBase.map(d => d.tipo).filter(Boolean))].sort();
+      return tiposUnicos.map((_, index) => coresDisponiveis[index % coresDisponiveis.length]);
+    }
+    return [];
+  }, [dadosGraficoBase]);
+
   // Fetch de bases para o select
   const { data: basesData, loading: loadingBases } = useDataFetch<Array<{ id: number; nome: string }>>(
     async () => {
@@ -318,8 +347,11 @@ export default function TurnosPage() {
       render: (_: unknown, record: TurnoData) => (
         <Space direction="vertical" size={0}>
           {record.eletricistas?.map((elet) => (
-            <Tooltip key={elet.id} title={`Matrícula: ${elet.matricula}`}>
-              <span style={{ cursor: 'help' }}>{elet.nome}</span>
+            <Tooltip key={elet.id} title={`Matrícula: ${elet.matricula}${elet.motorista ? ' - Motorista' : ''}`}>
+              <Space size={4} style={{ cursor: 'help' }}>
+                {elet.motorista && <CarOutlined style={{ color: '#1890ff' }} />}
+                <span>{elet.nome}</span>
+              </Space>
             </Tooltip>
           ))}
         </Space>
@@ -545,24 +577,41 @@ export default function TurnosPage() {
                 data={dadosGraficoBase}
                 xField="base"
                 yField="quantidade"
+                seriesField="tipo"
+                isStack={true}
                 height={300}
                 columnWidthRatio={0.3}
                 label={{
-                  text: 'quantidade',
-                  position: 'top',
+                  text: (d: any) => d.quantidade > 0 ? d.quantidade : '',
+                  position: 'inside',
                   style: {
-                    fill: '#000',
+                    fill: '#fff',
                     fontWeight: 'bold',
+                    fontSize: 10,
                   },
                 }}
-                style={{
-                  fill: '#52c41a',
+                colorField="tipo"
+                scale={{
+                  color: {
+                    range: coresArray.length > 0 ? coresArray : ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
+                  },
+                }}
+                legend={{
+                  position: 'top',
+                  itemName: {
+                    formatter: (text: string, item: any) => {
+                      // Não mostrar na legenda tipos que não têm dados
+                      const temDados = dadosGraficoBase?.some(d => d.tipo === text && d.quantidade > 0);
+                      return temDados ? text : '';
+                    },
+                  },
                 }}
                 xAxis={{
                   label: {
                     autoRotate: true,
                     autoHide: false,
                   },
+                  type: 'category',
                 }}
                 yAxis={{
                   tickCount: 5,
@@ -635,11 +684,7 @@ export default function TurnosPage() {
           columns={columns}
           dataSource={turnosFiltrados}
           rowKey="id"
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? ' (filtrado)' : ''}`,
-          }}
+          pagination={pagination}
           locale={{
             emptyText: <Empty description="Nenhum turno encontrado com os filtros aplicados" />,
           }}

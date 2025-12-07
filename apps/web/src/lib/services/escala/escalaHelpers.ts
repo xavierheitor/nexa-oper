@@ -48,7 +48,8 @@ export function resolveStatusDoDia(
     const cicloDias = tipoEscala.cicloDias || 1;
     const diffMs = data.getTime() - dataInicioPeriodo.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const posicaoCiclo = (diffDays % cicloDias) + 1; // Posição 1..N
+    // ✅ CORREÇÃO: posicaoCiclo deve ser 0-indexed (0..N-1) para corresponder ao banco
+    const posicaoCiclo = diffDays % cicloDias; // Posição 0..(N-1)
 
     const posicao = tipoEscala.CicloPosicoes.find(
       p => p.posicao === posicaoCiclo

@@ -41,6 +41,7 @@ export class TurnoReconciliacaoService {
 
     try {
       // 1. Buscar slots da escala (previstos) com estado e horários
+      // Buscar slots da equipe específica para processar faltas/divergências desta equipe
       const slots = await prisma.slotEscala.findMany({
         where: {
           data: {
@@ -57,6 +58,26 @@ export class TurnoReconciliacaoService {
           },
         },
       });
+
+      // 1b. Buscar TODOS os slots do dia (de todas as equipes) para verificar se eletricista tinha escala
+      // Isso é necessário para detectar corretamente "extrafora" (trabalho sem escala)
+      const todosSlotsDia = await prisma.slotEscala.findMany({
+        where: {
+          data: {
+            gte: dataRefInicio,
+            lte: dataRefFim,
+          },
+          escalaEquipePeriodo: {
+            status: 'PUBLICADA', // Apenas escalas publicadas
+          },
+        },
+        select: {
+          eletricistaId: true,
+        },
+      });
+
+      // Criar Set de eletricistas que têm escala no dia (qualquer equipe)
+      const eletricistasComEscala = new Set(todosSlotsDia.map((s) => s.eletricistaId));
 
       // 2. Buscar turnos realmente abertos no dia (todas as equipes)
       const aberturasDia = await prisma.turnoRealizadoEletricista.findMany({
@@ -154,25 +175,33 @@ export class TurnoReconciliacaoService {
             // Se abriu em outra equipe, criar divergência e NÃO criar falta
             if (aberturasEletricista && aberturasEletricista.equipes.size > 0) {
               const equipeRealId = [...aberturasEletricista.equipes][0];
-              await prisma.divergenciaEscala
-                .create({
-                  data: {
+              // Usar upsert para garantir idempotência
+              await prisma.divergenciaEscala.upsert({
+                where: {
+                  dataReferencia_eletricistaId_equipePrevistaId_equipeRealId: {
                     dataReferencia: dataRef,
+                    eletricistaId: slot.eletricistaId,
                     equipePrevistaId: params.equipePrevistaId,
                     equipeRealId,
-                    eletricistaId: slot.eletricistaId,
-                    tipo: 'equipe_divergente',
-                    detalhe: null,
-                    createdBy: params.executadoPor,
                   },
-                })
-                .catch((err: any) => {
-                  if (err.code !== 'P2002') {
-                    this.logger.warn(
-                      `Erro ao criar divergência para eletricista ${slot.eletricistaId}: ${err.message}`
-                    );
-                  }
-                });
+                },
+                update: {}, // Não atualizar se já existe
+                create: {
+                  dataReferencia: dataRef,
+                  equipePrevistaId: params.equipePrevistaId,
+                  equipeRealId,
+                  eletricistaId: slot.eletricistaId,
+                  tipo: 'equipe_divergente',
+                  detalhe: null,
+                  createdBy: params.executadoPor,
+                },
+              }).catch((err: any) => {
+                if (err.code !== 'P2002') {
+                  this.logger.warn(
+                    `Erro ao criar/atualizar divergência para eletricista ${slot.eletricistaId}: ${err.message}`
+                  );
+                }
+              });
               // Não criar falta pois eletricista trabalhou em outra equipe
               continue;
             }
@@ -206,26 +235,34 @@ export class TurnoReconciliacaoService {
 
             // Não criar falta se status do eletricista justifica ausência
             if (!statusJustificaFalta) {
-              await prisma.falta
-                .create({
-                  data: {
+              // Usar upsert para garantir idempotência
+              await prisma.falta.upsert({
+                where: {
+                  dataReferencia_equipeId_eletricistaId_motivoSistema: {
                     dataReferencia: dataRef,
                     equipeId: params.equipePrevistaId,
                     eletricistaId: slot.eletricistaId,
-                    escalaSlotId: slot.id,
                     motivoSistema: 'falta_abertura',
-                    status: 'pendente',
-                    createdBy: 'system',
                   },
-                })
-                .catch((err: any) => {
-                  // Ignorar erro de duplicata (idempotência)
-                  if (err.code !== 'P2002') {
-                    this.logger.warn(
-                      `Erro ao criar falta para eletricista ${slot.eletricistaId}: ${err.message}`
-                    );
-                  }
-                });
+                },
+                update: {}, // Não atualizar se já existe
+                create: {
+                  dataReferencia: dataRef,
+                  equipeId: params.equipePrevistaId,
+                  eletricistaId: slot.eletricistaId,
+                  escalaSlotId: slot.id,
+                  motivoSistema: 'falta_abertura',
+                  status: 'pendente',
+                  createdBy: 'system',
+                },
+              }).catch((err: any) => {
+                // Log apenas erros não esperados
+                if (err.code !== 'P2002') {
+                  this.logger.warn(
+                    `Erro ao criar/atualizar falta para eletricista ${slot.eletricistaId}: ${err.message}`
+                  );
+                }
+              });
             }
             continue;
           }
@@ -244,33 +281,43 @@ export class TurnoReconciliacaoService {
                 (a) => a.turnoRealizado.equipeId === params.equipePrevistaId
               ) || aberturasEletricista.itens[0];
 
-            const horasRealizadas = this.calcularHorasTrabalhadas(
-              abertura.abertoEm,
-              abertura.fechadoEm
-            );
+            // Verificar se já existe hora extra para este turno (idempotência)
+            const jaExiste = await prisma.horaExtra.findFirst({
+              where: {
+                turnoRealizadoEletricistaId: abertura.id,
+                tipo: 'folga_trabalhada',
+              },
+            });
 
-            await prisma.horaExtra
-              .create({
-                data: {
-                  dataReferencia: dataRef,
-                  eletricistaId: slot.eletricistaId,
-                  turnoRealizadoEletricistaId: abertura.id,
-                  escalaSlotId: slot.id,
-                  tipo: 'folga_trabalhada',
-                  horasPrevistas: new Prisma.Decimal(0),
-                  horasRealizadas: new Prisma.Decimal(horasRealizadas),
-                  diferencaHoras: new Prisma.Decimal(horasRealizadas),
-                  status: 'pendente',
-                  createdBy: params.executadoPor,
-                },
-              })
-              .catch((err: any) => {
-                if (err.code !== 'P2002') {
-                  this.logger.warn(
-                    `Erro ao criar hora extra (folga_trabalhada) para eletricista ${slot.eletricistaId}: ${err.message}`
-                  );
-                }
-              });
+            if (!jaExiste) {
+              const horasRealizadas = this.calcularHorasTrabalhadas(
+                abertura.abertoEm,
+                abertura.fechadoEm
+              );
+
+              await prisma.horaExtra
+                .create({
+                  data: {
+                    dataReferencia: dataRef,
+                    eletricistaId: slot.eletricistaId,
+                    turnoRealizadoEletricistaId: abertura.id,
+                    escalaSlotId: slot.id,
+                    tipo: 'folga_trabalhada',
+                    horasPrevistas: new Prisma.Decimal(0),
+                    horasRealizadas: new Prisma.Decimal(horasRealizadas),
+                    diferencaHoras: new Prisma.Decimal(horasRealizadas),
+                    status: 'pendente',
+                    createdBy: params.executadoPor,
+                  },
+                })
+                .catch((err: any) => {
+                  if (err.code !== 'P2002') {
+                    this.logger.warn(
+                      `Erro ao criar hora extra (folga_trabalhada) para eletricista ${slot.eletricistaId}: ${err.message}`
+                    );
+                  }
+                });
+            }
           }
           // CASO 5: FOLGA + NÃO ABRIU (Normal - sem ação)
         }
@@ -283,19 +330,27 @@ export class TurnoReconciliacaoService {
             aberturasEletricista.equipes.size === 0
           ) {
             if (!statusJustificaFalta) {
-              await prisma.falta
-                .create({
-                  data: {
+              // Usar upsert para garantir idempotência
+              await prisma.falta.upsert({
+                where: {
+                  dataReferencia_equipeId_eletricistaId_motivoSistema: {
                     dataReferencia: dataRef,
                     equipeId: params.equipePrevistaId,
                     eletricistaId: slot.eletricistaId,
-                    escalaSlotId: slot.id,
                     motivoSistema: 'falta_abertura',
-                    status: 'pendente',
-                    createdBy: 'system',
                   },
-                })
-                .catch(() => {});
+                },
+                update: {}, // Não atualizar se já existe
+                create: {
+                  dataReferencia: dataRef,
+                  equipeId: params.equipePrevistaId,
+                  eletricistaId: slot.eletricistaId,
+                  escalaSlotId: slot.id,
+                  motivoSistema: 'falta_abertura',
+                  status: 'pendente',
+                  createdBy: 'system',
+                },
+              }).catch(() => {}); // Ignorar erros silenciosamente
             }
           }
         }
@@ -303,10 +358,9 @@ export class TurnoReconciliacaoService {
 
       // 5. Processar turnos abertos SEM escala (CASO 6: extrafora)
       for (const [eletricistaId, aberturas] of abertosPorEletricista.entries()) {
-        // Verificar se este eletricista tinha algum slot na escala
-        const tinhaSlotNaEscala = slots.some(
-          (s) => s.eletricistaId === eletricistaId
-        );
+        // Verificar se este eletricista tinha algum slot na escala (em QUALQUER equipe)
+        // Usar todosSlotsDia ao invés de slots para verificar todas as equipes
+        const tinhaSlotNaEscala = eletricistasComEscala.has(eletricistaId);
 
         if (!tinhaSlotNaEscala) {
           // Eletricista abriu turno sem estar na escala = trabalho extrafora
@@ -347,6 +401,53 @@ export class TurnoReconciliacaoService {
                   }
                 });
             }
+          }
+        }
+      }
+
+      // 6. Verificar se equipe estava escalada mas não abriu turno
+      const slotsTrabalho = slots.filter(s => s.estado === 'TRABALHO');
+      if (slotsTrabalho.length > 0) {
+        const turnosAbertosEquipe = await prisma.turnoRealizado.findFirst({
+          where: {
+            equipeId: params.equipePrevistaId,
+            dataReferencia: {
+              gte: dataRefInicio,
+              lte: dataRefFim,
+            },
+          },
+        });
+
+        // Se tinha slots de trabalho mas não abriu turno
+        if (!turnosAbertosEquipe) {
+          // Verificar se já existe caso pendente
+          const casoExistente = await prisma.casoJustificativaEquipe.findUnique({
+            where: {
+              dataReferencia_equipeId: {
+                dataReferencia: dataRef,
+                equipeId: params.equipePrevistaId,
+              },
+            },
+          });
+
+          if (!casoExistente) {
+            await prisma.casoJustificativaEquipe
+              .create({
+                data: {
+                  dataReferencia: dataRef,
+                  equipeId: params.equipePrevistaId,
+                  slotsEscalados: slotsTrabalho.length,
+                  status: 'pendente',
+                  createdBy: 'system',
+                },
+              })
+              .catch((err: any) => {
+                if (err.code !== 'P2002') {
+                  this.logger.warn(
+                    `Erro ao criar caso de justificativa de equipe para equipe ${params.equipePrevistaId}: ${err.message}`
+                  );
+                }
+              });
           }
         }
       }
@@ -397,32 +498,42 @@ export class TurnoReconciliacaoService {
       const compensou = diferenca >= 0;
 
       if (compensou) {
-        // Criar hora extra de atraso compensado
-        await prisma.horaExtra
-          .create({
-            data: {
-              dataReferencia: slot.data,
-              eletricistaId: slot.eletricistaId,
-              turnoRealizadoEletricistaId: abertura.id,
-              escalaSlotId: slot.id,
-              tipo: 'atraso_compensado',
-              horasPrevistas: new Prisma.Decimal(horasPrevistas),
-              horasRealizadas: new Prisma.Decimal(horasRealizadas),
-              diferencaHoras: new Prisma.Decimal(diferenca),
-              observacoes: `Atraso de ${Math.round(
-                (abertura.abertoEm.getTime() - dataRef.getTime()) / 1000 / 60
-              )} minutos compensado`,
-              status: 'pendente',
-              createdBy: executadoPor,
-            },
-          })
-          .catch((err: any) => {
-            if (err.code !== 'P2002') {
-              this.logger.warn(
-                `Erro ao criar hora extra (atraso_compensado) para eletricista ${slot.eletricistaId}: ${err.message}`
-              );
-            }
-          });
+        // Verificar se já existe hora extra para este turno (idempotência)
+        const jaExiste = await prisma.horaExtra.findFirst({
+          where: {
+            turnoRealizadoEletricistaId: abertura.id,
+            tipo: 'atraso_compensado',
+          },
+        });
+
+        if (!jaExiste) {
+          // Criar hora extra de atraso compensado
+          await prisma.horaExtra
+            .create({
+              data: {
+                dataReferencia: slot.data,
+                eletricistaId: slot.eletricistaId,
+                turnoRealizadoEletricistaId: abertura.id,
+                escalaSlotId: slot.id,
+                tipo: 'atraso_compensado',
+                horasPrevistas: new Prisma.Decimal(horasPrevistas),
+                horasRealizadas: new Prisma.Decimal(horasRealizadas),
+                diferencaHoras: new Prisma.Decimal(diferenca),
+                observacoes: `Atraso de ${Math.round(
+                  (abertura.abertoEm.getTime() - dataRef.getTime()) / 1000 / 60
+                )} minutos compensado`,
+                status: 'pendente',
+                createdBy: executadoPor,
+              },
+            })
+            .catch((err: any) => {
+              if (err.code !== 'P2002') {
+                this.logger.warn(
+                  `Erro ao criar hora extra (atraso_compensado) para eletricista ${slot.eletricistaId}: ${err.message}`
+                );
+              }
+            });
+        }
       } else {
         // Não compensou - pode criar falta parcial ou apenas logar
         this.logger.warn(

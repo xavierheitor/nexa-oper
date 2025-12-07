@@ -27,6 +27,7 @@ import { SearchOutlined } from '@ant-design/icons';
 import { Column } from '@ant-design/plots';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useEntityData } from '@/lib/hooks/useEntityData';
+import { useTablePagination } from '@/lib/hooks/useTablePagination';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { BarChartOutlined, TeamOutlined, CarOutlined, ClockCircleOutlined, FileExcelOutlined } from '@ant-design/icons';
@@ -44,11 +45,33 @@ interface TurnoData {
   equipeNome: string;
   tipoEquipeNome: string;
   tipoEquipeId: number | null;
+  kmInicio: number | null;
   eletricistas: Array<{
     id: number;
     nome: string;
     matricula: string | null;
+    cargoNome: string | null;
+    motorista: boolean;
   }>;
+}
+
+interface TurnoDataLinha {
+  id: string; // turnoId-eletricistaId para garantir unicidade
+  turnoId: number;
+  dataInicio: Date | string;
+  dataFim: Date | string | null;
+  placa: string;
+  equipeNome: string;
+  tipoEquipeNome: string;
+  tipoEquipeId: number | null;
+  kmInicio: number | null;
+  eletricista: {
+    id: number;
+    nome: string;
+    matricula: string | null;
+    cargoNome: string | null;
+  };
+  isMotorista: boolean;
 }
 
 interface TurnosPorPeriodoProps {
@@ -97,6 +120,12 @@ function formatarHora(data: Date | string): string {
 export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
   const [tipoEquipeFiltro, setTipoEquipeFiltro] = useState<number | undefined>(undefined);
 
+  // Hook para paginação client-side
+  const { pagination } = useTablePagination({
+    defaultPageSize: 20,
+    showTotal: (total) => `Total: ${total} turno(s)`,
+  });
+
   // Buscar tipos de equipe para filtro
   const { data: tiposEquipe, isLoading: loadingTiposEquipe } = useEntityData({
     key: 'turnos-por-periodo-tipos-equipe',
@@ -141,11 +170,67 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
 
   const turnos: TurnoData[] = turnosRaw || [];
 
-  // Filtrar turnos por tipo de equipe se necessário (para matriz e tabela)
+  // Filtrar turnos por tipo de equipe se necessário (para matriz e gráfico)
   const turnosFiltrados = useMemo(() => {
     if (!tipoEquipeFiltro) return turnos;
     return turnos.filter((t) => t.tipoEquipeId === tipoEquipeFiltro);
   }, [turnos, tipoEquipeFiltro]);
+
+  // Transformar turnos em linhas por eletricista (uma linha por eletricista)
+  const linhasTabela = useMemo(() => {
+    const linhas: TurnoDataLinha[] = [];
+
+    turnosFiltrados.forEach((turno) => {
+      // Se o turno não tem eletricistas, criar uma linha sem eletricista
+      if (!turno.eletricistas || turno.eletricistas.length === 0) {
+        linhas.push({
+          id: `${turno.id}-sem-eletricista`,
+          turnoId: turno.id,
+          dataInicio: turno.dataInicio,
+          dataFim: turno.dataFim,
+          placa: turno.placa,
+          equipeNome: turno.equipeNome,
+          tipoEquipeNome: turno.tipoEquipeNome,
+          tipoEquipeId: turno.tipoEquipeId,
+          kmInicio: turno.kmInicio,
+          eletricista: {
+            id: 0,
+            nome: 'Sem eletricista',
+            matricula: null,
+            cargoNome: null,
+          },
+          isMotorista: false,
+        });
+      } else {
+        // Criar uma linha para cada eletricista
+        turno.eletricistas.forEach((eletricista) => {
+          // Usar o campo motorista da tabela TurnoEletricista
+          const isMotorista = eletricista.motorista || false;
+
+          linhas.push({
+            id: `${turno.id}-${eletricista.id}`,
+            turnoId: turno.id,
+            dataInicio: turno.dataInicio,
+            dataFim: turno.dataFim,
+            placa: turno.placa,
+            equipeNome: turno.equipeNome,
+            tipoEquipeNome: turno.tipoEquipeNome,
+            tipoEquipeId: turno.tipoEquipeId,
+            kmInicio: turno.kmInicio,
+            eletricista: {
+              id: eletricista.id,
+              nome: eletricista.nome,
+              matricula: eletricista.matricula,
+              cargoNome: eletricista.cargoNome,
+            },
+            isMotorista,
+          });
+        });
+      }
+    });
+
+    return linhas;
+  }, [turnosFiltrados]);
 
   // Gerar lista de dias do período (deve vir antes de dadosGrafico)
   const diasPeriodo = useMemo(() => {
@@ -327,31 +412,35 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
       'Placa',
       'Equipe',
       'Tipo de Equipe',
-      'Eletricistas',
-      'Data',
-      'Hora Abertura',
-      'Hora Final',
+      'Eletricista',
+      'Matrícula',
+      'KM de Abertura',
+      'Motorista',
+      'Hora Abertura (Data e Hora)',
+      'Hora Final (Data e Hora)',
     ];
 
-    // Converter dados para CSV
+    // Converter dados para CSV (uma linha por eletricista)
     const csvRows = [
       headers.join(';'), // Cabeçalho
-      ...turnosFiltrados.map((turno) => {
-        const eletricistas = turno.eletricistas
-          .map((elet) => `${elet.nome}${elet.matricula ? ` (${elet.matricula})` : ''}`)
-          .join(', ');
-        const dataFormatada = dayjs(turno.dataInicio).format('DD/MM/YYYY');
-        const horaAbertura = formatarHora(turno.dataInicio);
-        const horaFinal = turno.dataFim ? formatarHora(turno.dataFim) : 'Em andamento';
+      ...linhasTabela.map((linha) => {
+        // Formatar data e hora completa para abertura
+        const dataHoraAbertura = dayjs(linha.dataInicio).format('DD/MM/YYYY HH:mm');
+        // Formatar data e hora completa para final (ou "Em andamento" se não tiver)
+        const dataHoraFinal = linha.dataFim
+          ? dayjs(linha.dataFim).format('DD/MM/YYYY HH:mm')
+          : 'Em andamento';
 
         return [
-          turno.placa || '',
-          turno.equipeNome || '',
-          turno.tipoEquipeNome || '',
-          eletricistas,
-          dataFormatada,
-          horaAbertura,
-          horaFinal,
+          linha.placa || '',
+          linha.equipeNome || '',
+          linha.tipoEquipeNome || '',
+          linha.eletricista.nome || '',
+          linha.eletricista.matricula || '',
+          linha.kmInicio !== null && linha.kmInicio !== undefined ? linha.kmInicio.toString() : '',
+          linha.isMotorista ? 'Sim' : 'Não',
+          dataHoraAbertura,
+          dataHoraFinal,
         ].join(';');
       }),
     ];
@@ -383,7 +472,7 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
   };
 
   // Colunas da tabela
-  const colunasTabela: ColumnsType<TurnoData> = [
+  const colunasTabela: ColumnsType<TurnoDataLinha> = [
     {
       title: 'Placa',
       dataIndex: 'placa',
@@ -395,19 +484,19 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
           <Text strong>{placa}</Text>
         </Space>
       ),
-      ...getTextFilter<TurnoData>('placa', 'placa'),
+      ...getTextFilter<TurnoDataLinha>('placa', 'placa'),
     },
     {
       title: 'Equipe',
       dataIndex: 'equipeNome',
       key: 'equipeNome',
       width: 150,
-      render: (equipeNome: string, record: TurnoData) => (
+      render: (equipeNome: string, record: TurnoDataLinha) => (
         <Tag color="blue" icon={<TeamOutlined />}>
           {equipeNome}
         </Tag>
       ),
-      ...getSelectFilter<TurnoData>('equipeNome', opcoesFiltro.equipes),
+      ...getSelectFilter<TurnoDataLinha>('equipeNome', opcoesFiltro.equipes),
     },
     {
       title: 'Tipo de Equipe',
@@ -417,22 +506,18 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
       render: (tipo: string) => (
         <Tag color="purple">{tipo}</Tag>
       ),
-      ...getSelectFilter<TurnoData>('tipoEquipeNome', opcoesFiltro.tiposEquipe),
+      ...getSelectFilter<TurnoDataLinha>('tipoEquipeNome', opcoesFiltro.tiposEquipe),
     },
     {
-      title: 'Eletricistas',
-      dataIndex: 'eletricistas',
-      key: 'eletricistas',
+      title: 'Eletricista',
+      dataIndex: 'eletricista',
+      key: 'eletricista',
       width: 200,
-      render: (eletricistas: TurnoData['eletricistas']) => (
-        <Space direction="vertical" size="small" style={{ width: '100%' }}>
-          {eletricistas.map((elet) => (
-            <Text key={elet.id}>
-              {elet.nome}
-              {elet.matricula && <Text type="secondary"> ({elet.matricula})</Text>}
-            </Text>
-          ))}
-        </Space>
+      render: (eletricista: TurnoDataLinha['eletricista']) => (
+        <Text>
+          {eletricista.nome}
+          {eletricista.matricula && <Text type="secondary"> ({eletricista.matricula})</Text>}
+        </Text>
       ),
       filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => (
         <div style={{ padding: 8 }}>
@@ -470,12 +555,11 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
       filterIcon: (filtered: boolean) => (
         <SearchOutlined style={{ color: filtered ? '#1677ff' : '#8c8c8c' }} />
       ),
-      onFilter: (value: any, record: TurnoData) => {
+      onFilter: (value: any, record: TurnoDataLinha): boolean => {
         const searchText = value.toString().toLowerCase();
-        return record.eletricistas.some(
-          (elet) =>
-            elet.nome.toLowerCase().includes(searchText) ||
-            (elet.matricula && elet.matricula.toLowerCase().includes(searchText))
+        return (
+          record.eletricista.nome.toLowerCase().includes(searchText) ||
+          (record.eletricista.matricula ? record.eletricista.matricula.toLowerCase().includes(searchText) : false)
         );
       },
     },
@@ -495,8 +579,8 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
         const dataB = b.dataInicio instanceof Date ? b.dataInicio : new Date(b.dataInicio);
         return dataA.getTime() - dataB.getTime();
       },
-      ...getTextFilter<TurnoData>('dataInicio', 'hora de abertura'),
-      onFilter: (value: any, record: TurnoData) => {
+      ...getTextFilter<TurnoDataLinha>('dataInicio', 'hora de abertura'),
+      onFilter: (value: any, record: TurnoDataLinha): boolean => {
         const horaFormatada = formatarHora(record.dataInicio);
         return horaFormatada.toLowerCase().includes(value.toString().toLowerCase());
       },
@@ -553,7 +637,7 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
       filterIcon: (filtered: boolean) => (
         <SearchOutlined style={{ color: filtered ? '#1677ff' : '#8c8c8c' }} />
       ),
-      onFilter: (value: any, record: TurnoData) => {
+      onFilter: (value: any, record: TurnoDataLinha): boolean => {
         if (!record.dataFim) {
           return 'em andamento'.includes(value.toString().toLowerCase());
         }
@@ -573,8 +657,8 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
         return dataA.getTime() - dataB.getTime();
       },
       defaultSortOrder: 'ascend' as const,
-      ...getSelectFilter<TurnoData>('dataInicio', opcoesFiltro.datas),
-      onFilter: (value: any, record: TurnoData) => {
+      ...getSelectFilter<TurnoDataLinha>('dataInicio', opcoesFiltro.datas),
+      onFilter: (value: any, record: TurnoDataLinha): boolean => {
         const dataFormatada = dayjs(record.dataInicio).format('DD/MM/YYYY');
         return dataFormatada === value;
       },
@@ -749,25 +833,21 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
               type="default"
               icon={<FileExcelOutlined />}
               onClick={handleExportarExcel}
-              disabled={turnosFiltrados.length === 0}
+              disabled={linhasTabela.length === 0}
             >
               Exportar Excel
             </Button>
             <Text type="secondary">
-              Total: <Text strong>{turnosFiltrados.length}</Text> turno(s)
+              Total: <Text strong>{linhasTabela.length}</Text> linha(s) | <Text strong>{turnosFiltrados.length}</Text> turno(s)
             </Text>
           </Space>
         }
       >
         <Table
-          dataSource={turnosFiltrados}
+          dataSource={linhasTabela}
           columns={colunasTabela}
           rowKey="id"
-          pagination={{
-            pageSize: 20,
-            showSizeChanger: true,
-            showTotal: (total) => `Total: ${total} turno(s)`,
-          }}
+          pagination={pagination}
           scroll={{ x: 'max-content' }}
         />
       </Card>

@@ -7,7 +7,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Table, Button, Space, Modal, Tag, Tooltip, App, Alert } from 'antd';
+import { Table, Button, Space, Modal, Tag, Tooltip, App, Alert, DatePicker, Form } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
@@ -17,7 +17,9 @@ import {
   FileOutlined,
   TeamOutlined,
   EyeOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons';
+import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
@@ -30,10 +32,12 @@ import {
   gerarSlotsEscala,
   publicarEscala,
   arquivarEscala,
+  prolongarEscala,
 } from '@/lib/actions/escala/escalaEquipePeriodo';
 import { publicarEscalasEmLote } from '@/lib/actions/escala/publicarEmLote';
 import EscalaEquipePeriodoForm from './form';
 import EscalaWizard from './wizard';
+import EscalaEditWizard from './edit-wizard';
 import VisualizarEscala from './visualizar';
 import VisualizacaoGeral from './visualizacao-geral';
 
@@ -79,10 +83,14 @@ export default function EscalaEquipePeriodoPage() {
   const { message, modal } = App.useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [isEditWizardOpen, setIsEditWizardOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<EscalaEquipePeriodo | null>(null);
   const [isVisualizarOpen, setIsVisualizarOpen] = useState(false);
   const [visualizarEscalaId, setVisualizarEscalaId] = useState<number | null>(null);
   const [isVisualizacaoGeralOpen, setIsVisualizacaoGeralOpen] = useState(false);
+  const [isProlongarOpen, setIsProlongarOpen] = useState(false);
+  const [escalaParaProlongar, setEscalaParaProlongar] = useState<EscalaEquipePeriodo | null>(null);
+  const [formProlongar] = Form.useForm<{ novoPeriodoFim: dayjs.Dayjs }>();
 
   const crud = useCrudController<EscalaEquipePeriodo>('escalaEquipePeriodo');
 
@@ -196,6 +204,42 @@ export default function EscalaEquipePeriodoPage() {
         }
       },
     });
+  };
+
+  const handleProlongar = (record: EscalaEquipePeriodo) => {
+    setEscalaParaProlongar(record);
+    formProlongar.setFieldsValue({
+      novoPeriodoFim: dayjs(record.periodoFim).add(1, 'month'),
+    });
+    setIsProlongarOpen(true);
+  };
+
+  const handleConfirmarProlongar = async () => {
+    if (!escalaParaProlongar) return;
+
+    try {
+      const values = await formProlongar.validateFields();
+      const result = await prolongarEscala({
+        escalaEquipePeriodoId: escalaParaProlongar.id,
+        novoPeriodoFim: values.novoPeriodoFim.toDate(),
+      });
+
+      if (result.success) {
+        message.success('Escala prolongada com sucesso! A escala voltou para status RASCUNHO e pode ser publicada novamente.');
+        escalas.mutate();
+        setIsProlongarOpen(false);
+        setEscalaParaProlongar(null);
+        formProlongar.resetFields();
+      } else {
+        message.error(result.error || 'Erro ao prolongar escala');
+      }
+    } catch (error) {
+      if (error?.errorFields) {
+        // Erro de validação do formulário
+        return;
+      }
+      message.error('Erro ao prolongar escala');
+    }
   };
 
   const handlePublicarTodas = async () => {
@@ -353,16 +397,26 @@ export default function EscalaEquipePeriodoPage() {
             </>
           )}
           {record.status === 'PUBLICADA' && (
-            <Tooltip title="Arquivar">
-              <Button
-                type="link"
-                size="small"
-                icon={<FileOutlined />}
-                onClick={() => handleArquivar(record)}
-              />
-            </Tooltip>
+            <>
+              <Tooltip title="Prolongar Escala">
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<ClockCircleOutlined />}
+                  onClick={() => handleProlongar(record)}
+                />
+              </Tooltip>
+              <Tooltip title="Arquivar">
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<FileOutlined />}
+                  onClick={() => handleArquivar(record)}
+                />
+              </Tooltip>
+            </>
           )}
-          <Tooltip title="Editar">
+          <Tooltip title={record.status === 'PUBLICADA' ? 'Edição desabilitada após publicação' : 'Editar'}>
             <Button
               type="link"
               size="small"
@@ -396,8 +450,15 @@ export default function EscalaEquipePeriodoPage() {
   };
 
   const handleEdit = (item: EscalaEquipePeriodo) => {
-    setEditingItem(item);
-    setIsModalOpen(true);
+    // Se está em RASCUNHO, usar wizard de edição completa
+    if (item.status === 'RASCUNHO') {
+      setEditingItem(item);
+      setIsEditWizardOpen(true);
+    } else {
+    // Para outros status, usar formulário simples (não deveria acontecer, mas mantém compatibilidade)
+      setEditingItem(item);
+      setIsModalOpen(true);
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -459,7 +520,7 @@ export default function EscalaEquipePeriodoPage() {
             icon={<PlusOutlined />}
             onClick={handleCreate}
           >
-            Novo Período
+            Nova Escala
           </Button>
         </Space>
       </div>
@@ -500,6 +561,37 @@ export default function EscalaEquipePeriodoPage() {
         />
       </Modal>
 
+      {/* Modal Wizard de Edição */}
+      {editingItem && editingItem.status === 'RASCUNHO' && (
+        <Modal
+          title="Editar Escala - Assistente"
+          open={isEditWizardOpen}
+          onCancel={() => {
+            setIsEditWizardOpen(false);
+            setEditingItem(null);
+          }}
+          footer={null}
+          width={800}
+          destroyOnHidden
+          maskClosable={false}
+          keyboard={false}
+          closable={true}
+        >
+          <EscalaEditWizard
+            escalaId={editingItem.id}
+            onFinish={() => {
+              setIsEditWizardOpen(false);
+              setEditingItem(null);
+              escalas.mutate();
+            }}
+            onCancel={() => {
+              setIsEditWizardOpen(false);
+              setEditingItem(null);
+            }}
+          />
+        </Modal>
+      )}
+
       {/* Modal Formulário Simples (Edição) */}
       <Modal
         title={editingItem ? 'Editar Período de Escala' : 'Novo Período de Escala'}
@@ -539,6 +631,73 @@ export default function EscalaEquipePeriodoPage() {
           }}
         />
       )}
+
+      {/* Modal de Prolongar Escala */}
+      <Modal
+        title="Prolongar Escala"
+        open={isProlongarOpen}
+        onOk={handleConfirmarProlongar}
+        onCancel={() => {
+          setIsProlongarOpen(false);
+          setEscalaParaProlongar(null);
+          formProlongar.resetFields();
+        }}
+        okText="Prolongar"
+        cancelText="Cancelar"
+        width={500}
+      >
+        {escalaParaProlongar && (
+          <div>
+            <Alert
+              message="Prolongar Escala"
+              description={
+                <div>
+                  <p>Esta escala será prolongada para um período adicional.</p>
+                  <p style={{ marginTop: 8, fontSize: '12px', color: '#666' }}>
+                    <strong>Equipe:</strong> {escalaParaProlongar.equipe.nome}<br />
+                    <strong>Período atual:</strong> {new Date(escalaParaProlongar.periodoInicio).toLocaleDateString()} até {new Date(escalaParaProlongar.periodoFim).toLocaleDateString()}
+                  </p>
+                  <p style={{ marginTop: 8, fontSize: '12px', color: '#1890ff' }}>
+                    Após prolongar, a escala voltará para status <strong>RASCUNHO</strong> e poderá ser publicada novamente.
+                  </p>
+                </div>
+              }
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+            <Form form={formProlongar} layout="vertical">
+              <Form.Item
+                name="novoPeriodoFim"
+                label="Novo Período Fim"
+                rules={[
+                  { required: true, message: 'Data de fim é obrigatória' },
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+                      const periodoFimAtual = new Date(escalaParaProlongar.periodoFim);
+                      if (value.toDate() <= periodoFimAtual) {
+                        return Promise.reject(new Error('A nova data de fim deve ser maior que a data de fim atual'));
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <DatePicker
+                  style={{ width: '100%' }}
+                  format="DD/MM/YYYY"
+                  placeholder="Selecione a nova data de fim"
+                  disabledDate={(current) => {
+                    const periodoFimAtual = new Date(escalaParaProlongar.periodoFim);
+                    return current && current.isBefore(dayjs(periodoFimAtual).add(1, 'day'), 'day');
+                  }}
+                />
+              </Form.Item>
+            </Form>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useHydrated } from '@/lib/hooks/useHydrated';
+import AuthGuard from '@/lib/components/AuthGuard';
 import SidebarMenu from '@/ui/components/SidebarMenu';
 import SessionRenewer from '@/ui/components/SessionRenewer';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
@@ -28,50 +29,52 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   return (
-    <Layout style={{ minHeight: '100vh', background: token.colorBgLayout }}>
-      {/* Componente invisível que renova a sessão automaticamente */}
-      <SessionRenewer />
+    <AuthGuard>
+      <Layout style={{ minHeight: '100vh', background: token.colorBgLayout }}>
+        {/* Componente invisível que renova a sessão automaticamente */}
+        <SessionRenewer />
 
-      <SidebarMenu collapsed={collapsed} onCollapseChange={setCollapsed} />
+        <SidebarMenu collapsed={collapsed} onCollapseChange={setCollapsed} />
 
-      <Layout>
-        <Header
-          style={{
-            padding: `0 ${token.padding}px`,
-            background: token.colorBgContainer,
-          }}
-        >
-          <Row justify='space-between' align='middle'>
-            <Col>
-              <Button
-                type='text'
-                icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                onClick={() => setCollapsed(!collapsed)}
-                style={{
-                  fontSize: token.fontSizeLG,
-                  color: token.colorText,
-                }}
-              />
-            </Col>
-            <Col>
-              {/* <ThemeToggle /> */}
-            </Col>
-          </Row>
-        </Header>
+        <Layout>
+          <Header
+            style={{
+              padding: `0 ${token.padding}px`,
+              background: token.colorBgContainer,
+            }}
+          >
+            <Row justify='space-between' align='middle'>
+              <Col>
+                <Button
+                  type='text'
+                  icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                  onClick={() => setCollapsed(!collapsed)}
+                  style={{
+                    fontSize: token.fontSizeLG,
+                    color: token.colorText,
+                  }}
+                />
+              </Col>
+              <Col>
+                {/* <ThemeToggle /> */}
+              </Col>
+            </Row>
+          </Header>
 
-        <Content
-          style={{
-            margin: token.margin,
-            padding: token.padding,
-            background: token.colorBgContainer,
-            borderRadius: token.borderRadiusLG,
-            flex: 1,
-          }}
-        >
-          {children}
-        </Content>
+          <Content
+            style={{
+              margin: token.margin,
+              padding: token.padding,
+              background: token.colorBgContainer,
+              borderRadius: token.borderRadiusLG,
+              flex: 1,
+            }}
+          >
+            {children}
+          </Content>
+        </Layout>
       </Layout>
-    </Layout>
+    </AuthGuard>
   );
 };
 

@@ -151,7 +151,7 @@ export default function FaltasPage() {
       // 1. Criar justificativa primeiro
       const resultJustificativa = await criarJustificativa({
         faltaId: data.faltaId,
-        tipoId: data.tipoJustificativaId,
+        tipoJustificativaId: data.tipoJustificativaId,
         descricao: data.descricao,
       });
 

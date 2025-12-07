@@ -9,6 +9,7 @@ import { listEletricistas } from '@/lib/actions/eletricista/list';
 import { ConsolidadoEletricistaResponse } from '@/lib/schemas/turnoRealizadoSchema';
 import ConsolidadoEletricistaCard from '@/ui/components/ConsolidadoEletricistaCard';
 import HistoricoTable from '@/ui/components/HistoricoTable';
+import CalendarioFrequencia from '@/ui/components/CalendarioFrequencia';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import useSWR from 'swr';
 import dayjs, { Dayjs } from 'dayjs';
@@ -380,10 +381,19 @@ export default function FrequenciaVisaoGeralPage() {
             )}
 
             {/* Histórico Detalhado */}
-            <Card title="Histórico Detalhado por Dia">
+            <Card title="Histórico Detalhado por Dia" style={{ marginBottom: 24 }}>
               <HistoricoTable
                 dados={consolidado.detalhamento}
                 loading={loadingConsolidado}
+              />
+            </Card>
+
+            {/* Calendário de Frequência */}
+            <Card title="Calendário de Frequência">
+              <CalendarioFrequencia
+                consolidado={consolidado}
+                dataInicio={dataInicio}
+                dataFim={dataFim}
               />
             </Card>
           </>

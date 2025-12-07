@@ -10,7 +10,7 @@
  * - Estatísticas de recursos por base (eletricistas, veículos, equipes)
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, Col, Row, Statistic, Spin, Empty, Typography } from 'antd';
 import {
   ClockCircleOutlined,
@@ -37,6 +37,7 @@ interface DadosGraficoTipoEquipe {
 
 interface DadosGraficoBase {
   base: string;
+  tipo: string;
   quantidade: number;
 }
 
@@ -114,6 +115,26 @@ export default function DashboardPage() {
     },
     []
   );
+
+  // Gerar array de cores na ordem dos tipos (para usar com colorField e scale)
+  const coresArray = useMemo(() => {
+    const coresDisponiveis = [
+      '#1890ff', // Azul
+      '#52c41a', // Verde
+      '#faad14', // Amarelo/Laranja
+      '#f5222d', // Vermelho
+      '#722ed1', // Roxo
+      '#13c2c2', // Ciano
+      '#eb2f96', // Rosa
+      '#fa8c16', // Laranja
+    ];
+
+    if (dadosGraficoBase && dadosGraficoBase.length > 0) {
+      const tiposUnicos = [...new Set(dadosGraficoBase.map(d => d.tipo).filter(Boolean))].sort();
+      return tiposUnicos.map((_, index) => coresDisponiveis[index % coresDisponiveis.length]);
+    }
+    return [];
+  }, [dadosGraficoBase]);
 
   // Fetch de recursos por base
   const { data: recursosPorBase, loading: loadingRecursos } = useDataFetch<RecursosPorBase[]>(
@@ -245,27 +266,44 @@ export default function DashboardPage() {
               <Empty description="Nenhum dado disponível" />
             ) : (
               <Column
-                data={dadosGraficoBase}
+                data={dadosGraficoBase.filter(d => d.quantidade > 0)}
                 xField="base"
                 yField="quantidade"
+                seriesField="tipo"
+                isStack={true}
                 height={300}
                 columnWidthRatio={0.3}
-                label={{
-                  text: 'quantidade',
-                  position: 'top',
-                  style: {
-                    fill: '#000',
-                    fontWeight: 'bold',
+                colorField="tipo"
+                scale={{
+                  color: {
+                    range: coresArray.length > 0 ? coresArray : ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
                   },
                 }}
-                style={{
-                  fill: '#52c41a',
+                label={{
+                  text: (d: any) => d.quantidade > 0 ? d.quantidade : '',
+                  position: 'inside',
+                  style: {
+                    fill: '#fff',
+                    fontWeight: 'bold',
+                    fontSize: 10,
+                  },
+                }}
+                legend={{
+                  position: 'top',
+                  itemName: {
+                    formatter: (text: string, item: any) => {
+                      // Não mostrar na legenda tipos que não têm dados
+                      const temDados = dadosGraficoBase?.some(d => d.tipo === text && d.quantidade > 0);
+                      return temDados ? text : '';
+                    },
+                  },
                 }}
                 xAxis={{
                   label: {
                     autoRotate: true,
                     autoHide: false,
                   },
+                  type: 'category',
                 }}
                 yAxis={{
                   tickCount: 5,

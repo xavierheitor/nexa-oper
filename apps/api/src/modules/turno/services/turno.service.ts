@@ -74,6 +74,7 @@ import {
   TurnoSyncDto,
 } from '../dto';
 import { ChecklistPreenchidoService } from './checklist-preenchido.service';
+import { TurnoRealizadoService } from '@modules/turno-realizado/turno-realizado.service';
 
 /**
  * Interface de parâmetros para consulta paginada interna
@@ -99,7 +100,8 @@ export class TurnoService {
 
   constructor(
     private readonly db: DatabaseService,
-    private readonly checklistPreenchidoService: ChecklistPreenchidoService
+    private readonly checklistPreenchidoService: ChecklistPreenchidoService,
+    private readonly turnoRealizadoService: TurnoRealizadoService
   ) {}
 
   /**
@@ -256,6 +258,7 @@ export class TurnoService {
             data: abrirDto.eletricistas.map(eletricista => ({
               turnoId: turno.id,
               eletricistaId: eletricista.eletricistaId,
+              motorista: eletricista.motorista || false,
               ...auditData,
             })),
           });
@@ -280,6 +283,37 @@ export class TurnoService {
       const turnoCompleto = await this.buscarTurnoCompleto(resultado.turno.id);
 
       this.logger.log(`Turno aberto com sucesso - ID: ${resultado.turno.id}`);
+
+      // Criar TurnoRealizado e TurnoRealizadoEletricista para reconciliação
+      // Isso permite que a reconciliação funcione mesmo quando turnos são abertos via mobile
+      try {
+        const dataReferencia = new Date(turnoCompleto.dataInicio);
+        // Normalizar para início do dia (00:00:00) para dataReferencia
+        dataReferencia.setHours(0, 0, 0, 0);
+
+        await this.turnoRealizadoService.abrirTurno({
+          equipeId: turnoCompleto.equipeId,
+          dataReferencia: dataReferencia.toISOString().split('T')[0], // YYYY-MM-DD
+          turnoId: resultado.turno.id, // Referência ao Turno original
+          eletricistasAbertos: turnoCompleto.TurnoEletricistas.map((te: any) => ({
+            eletricistaId: te.eletricistaId,
+            abertoEm: turnoCompleto.dataInicio.toISOString(),
+            deviceInfo: turnoCompleto.dispositivo || undefined,
+          })),
+          origem: 'mobile',
+          executadoPor: userId || String(turnoCompleto.createdBy || 'system'),
+        });
+
+        this.logger.log(
+          `TurnoRealizado criado para reconciliação - Turno ID: ${resultado.turno.id}`
+        );
+      } catch (error: any) {
+        // Não bloquear a resposta se falhar criar TurnoRealizado
+        // Mas logar o erro para debug
+        this.logger.warn(
+          `Erro ao criar TurnoRealizado para reconciliação (Turno ID: ${resultado.turno.id}): ${error.message}`
+        );
+      }
 
       // Processar pendências e fotos de forma assíncrona (fora da transação)
       const checklistsParaProcessar =
@@ -400,6 +434,37 @@ export class TurnoService {
       });
 
       this.logger.log(`Turno fechado com sucesso - ID: ${turnoFechado.id}`);
+
+      // Fechar também o TurnoRealizado correspondente para manter sincronização
+      // Primeiro tenta buscar pelo turnoId (método preferencial após migração)
+      // Se não encontrar, usa fallback por data e equipe
+      try {
+        const userContext = getDefaultUserContext();
+        const executadoPor = String(userContext.userId || turnoFechado.updatedBy || 'system');
+
+        // Tentar fechar pelo turnoId primeiro (mais preciso)
+        let turnoRealizadoFechado = await this.turnoRealizadoService.fecharTurnoPorTurnoId(
+          turnoFechado.id,
+          executadoPor
+        );
+
+        // Se não encontrou pelo turnoId, tentar por data e equipe (fallback para turnos antigos)
+        if (!turnoRealizadoFechado) {
+          const dataReferencia = new Date(turnoFechado.dataInicio);
+          turnoRealizadoFechado = await this.turnoRealizadoService.fecharTurnoPorDataEquipe(
+            dataReferencia,
+            turnoFechado.equipeId,
+            executadoPor
+          );
+        }
+      } catch (error: any) {
+        // Não falhar o fechamento do Turno se houver erro ao fechar TurnoRealizado
+        // Apenas logar o erro para debug
+        this.logger.warn(
+          `Erro ao fechar TurnoRealizado correspondente (Turno ID: ${turnoFechado.id}): ${error.message}`
+        );
+      }
+
       return this.formatarTurnoResponse(turnoFechado);
     } catch (error) {
       handleCrudError(error, this.logger, 'update', 'turno');
