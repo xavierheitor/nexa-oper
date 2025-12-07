@@ -46,7 +46,7 @@ export default function CriarJustificativaEquipePage() {
       orderDir: 'asc',
     });
     if (result.success && result.data) {
-      return result.data.data || result.data.items || [];
+      return result.data.data || [];
     }
     return [];
   }, []);

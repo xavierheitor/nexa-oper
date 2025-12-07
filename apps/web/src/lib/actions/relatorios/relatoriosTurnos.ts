@@ -97,10 +97,8 @@ export const getTurnosPorPeriodo = async (rawData?: unknown) =>
             },
             include: {
               eletricista: {
-                select: {
-                  id: true,
-                  nome: true,
-                  matricula: true,
+                include: {
+                  cargo: true,
                 },
               },
             },
@@ -120,10 +118,12 @@ export const getTurnosPorPeriodo = async (rawData?: unknown) =>
         equipeNome: turno.equipe?.nome || 'N/A',
         tipoEquipeNome: turno.equipe?.tipoEquipe?.nome || 'Sem classificação',
         tipoEquipeId: turno.equipe?.tipoEquipe?.id || null,
+        kmInicio: turno.kmInicio || null,
         eletricistas: turno.TurnoEletricistas?.map((te: any) => ({
           id: te.eletricista.id,
           nome: te.eletricista.nome,
           matricula: te.eletricista.matricula,
+          cargoNome: te.eletricista.cargo?.nome || null,
         })) || [],
       }));
     },

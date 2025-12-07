@@ -5,9 +5,9 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
-import { container } from '../services/common/registerServices';
-import type { JustificativaService } from '../services/JustificativaService';
-import { criarJustificativaSchema } from '../schemas/justificativaSchema';
+import { container } from '../../services/common/registerServices';
+import type { JustificativaService } from '../../services/JustificativaService';
+import { criarJustificativaSchema } from '../../schemas/justificativaSchema';
 
 /**
  * Cria uma justificativa para uma falta
