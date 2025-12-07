@@ -11,7 +11,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, Button, Tooltip, Input, Select } from 'antd';
-import { ClockCircleOutlined, CalendarOutlined, CheckOutlined, EnvironmentOutlined, CloseOutlined, SearchOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, CalendarOutlined, CheckOutlined, EnvironmentOutlined, CloseOutlined, SearchOutlined, CarOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { listTurnos } from '@/lib/actions/turno/list';
 import { Column } from '@ant-design/plots';
@@ -69,6 +69,7 @@ interface TurnoData {
     id: number;
     nome: string;
     matricula: string;
+    motorista?: boolean;
   }>;
 }
 
@@ -346,8 +347,11 @@ export default function TurnosPage() {
       render: (_: unknown, record: TurnoData) => (
         <Space direction="vertical" size={0}>
           {record.eletricistas?.map((elet) => (
-            <Tooltip key={elet.id} title={`Matrícula: ${elet.matricula}`}>
-              <span style={{ cursor: 'help' }}>{elet.nome}</span>
+            <Tooltip key={elet.id} title={`Matrícula: ${elet.matricula}${elet.motorista ? ' - Motorista' : ''}`}>
+              <Space size={4} style={{ cursor: 'help' }}>
+                {elet.motorista && <CarOutlined style={{ color: '#1890ff' }} />}
+                <span>{elet.nome}</span>
+              </Space>
             </Tooltip>
           ))}
         </Space>
