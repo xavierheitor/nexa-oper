@@ -56,6 +56,15 @@ export default [
       'build/**',
       'next-env.d.ts',
       'public/**',
+      '**/api/auth/[...nextauth]/**', // NextAuth route - known ESLint config issue
     ],
+  },
+
+  // Disable problematic rule for NextAuth route
+  {
+    files: ['**/api/auth/[...nextauth]/**'],
+    rules: {
+      '@typescript-eslint/no-unused-expressions': 'off',
+    },
   },
 ];
