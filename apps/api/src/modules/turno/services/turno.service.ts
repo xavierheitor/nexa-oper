@@ -258,6 +258,7 @@ export class TurnoService {
             data: abrirDto.eletricistas.map(eletricista => ({
               turnoId: turno.id,
               eletricistaId: eletricista.eletricistaId,
+              motorista: eletricista.motorista || false,
               ...auditData,
             })),
           });

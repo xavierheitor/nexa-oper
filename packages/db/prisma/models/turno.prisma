@@ -38,6 +38,8 @@ model TurnoEletricista {
   eletricistaId Int
   eletricista   Eletricista @relation(fields: [eletricistaId], references: [id])
 
+  motorista Boolean @default(false)
+
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
   updatedAt DateTime? @updatedAt

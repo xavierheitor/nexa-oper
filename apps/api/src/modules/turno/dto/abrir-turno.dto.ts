@@ -18,6 +18,7 @@ import {
   ArrayMinSize,
   IsOptional,
   ValidateNested,
+  IsBoolean,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -39,6 +40,19 @@ export class EletricistaTurnoDto {
   @IsNotEmpty({ message: 'ID do eletricista é obrigatório' })
   @IsInt({ message: 'ID do eletricista deve ser um número inteiro' })
   eletricistaId: number;
+
+  /**
+   * Se o eletricista é o motorista do turno
+   * @example false
+   */
+  @ApiProperty({
+    description: 'Se o eletricista é o motorista do turno',
+    example: false,
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean({ message: 'Motorista deve ser um valor booleano' })
+  motorista?: boolean;
 }
 
 /**

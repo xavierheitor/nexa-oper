@@ -124,6 +124,7 @@ export const getTurnosPorPeriodo = async (rawData?: unknown) =>
           nome: te.eletricista.nome,
           matricula: te.eletricista.matricula,
           cargoNome: te.eletricista.cargo?.nome || null,
+          motorista: te.motorista || false,
         })) || [],
       }));
     },

@@ -51,6 +51,7 @@ interface TurnoData {
     nome: string;
     matricula: string | null;
     cargoNome: string | null;
+    motorista: boolean;
   }>;
 }
 
@@ -203,10 +204,8 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
       } else {
         // Criar uma linha para cada eletricista
         turno.eletricistas.forEach((eletricista) => {
-          // Verificar se é motorista baseado no cargo (se o nome do cargo contém "motorista")
-          const isMotorista = eletricista.cargoNome
-            ? eletricista.cargoNome.toLowerCase().includes('motorista')
-            : false;
+          // Usar o campo motorista da tabela TurnoEletricista
+          const isMotorista = eletricista.motorista || false;
 
           linhas.push({
             id: `${turno.id}-${eletricista.id}`,

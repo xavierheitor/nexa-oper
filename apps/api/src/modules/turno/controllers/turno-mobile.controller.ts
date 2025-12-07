@@ -221,6 +221,7 @@ export class TurnoMobileController {
     const eletricistas: EletricistaTurnoDto[] = mobileDto.eletricistas.map(
       elet => ({
         eletricistaId: elet.remoteId, // remoteId do mobile é o ID real do eletricista
+        motorista: elet.motorista || false, // Mapear campo motorista do mobile
       })
     );
 
