@@ -311,4 +311,148 @@ export class JustificativasService {
       orderBy: { dataReferencia: 'desc' },
     });
   }
+
+  async listarCasosPendentes(params: {
+    equipeId?: number;
+    dataInicio?: Date;
+    dataFim?: Date;
+    status?: 'pendente' | 'justificado' | 'ignorado';
+    page?: number;
+    pageSize?: number;
+  }) {
+    const prisma = this.db.getPrisma();
+    const where: any = {};
+
+    if (params.status) {
+      where.status = params.status;
+    }
+
+    if (params.equipeId) {
+      where.equipeId = params.equipeId;
+    }
+
+    if (params.dataInicio || params.dataFim) {
+      where.dataReferencia = {};
+      if (params.dataInicio) {
+        where.dataReferencia.gte = params.dataInicio;
+      }
+      if (params.dataFim) {
+        const dataFim = new Date(params.dataFim);
+        dataFim.setHours(23, 59, 59, 999);
+        where.dataReferencia.lte = dataFim;
+      }
+    }
+
+    const page = params.page || 1;
+    const pageSize = params.pageSize || 20;
+
+    const [casos, total] = await Promise.all([
+      prisma.casoJustificativaEquipe.findMany({
+        where,
+        include: {
+          equipe: {
+            select: {
+              id: true,
+              nome: true,
+            },
+          },
+          justificativaEquipe: {
+            select: {
+              id: true,
+              status: true,
+              tipoJustificativa: {
+                select: {
+                  nome: true,
+                  geraFalta: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { dataReferencia: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.casoJustificativaEquipe.count({ where }),
+    ]);
+
+    // Para cada caso, contar quantas faltas individuais foram geradas
+    const casosComFaltas = await Promise.all(
+      casos.map(async (caso) => {
+        const faltasCount = await prisma.falta.count({
+          where: {
+            equipeId: caso.equipeId,
+            dataReferencia: caso.dataReferencia,
+            motivoSistema: 'falta_abertura',
+          },
+        });
+
+        return {
+          ...caso,
+          faltasGeradas: faltasCount,
+        };
+      })
+    );
+
+    return {
+      items: casosComFaltas,
+      total,
+      page,
+      pageSize,
+    };
+  }
+
+  async ignorarCasoPendente(casoId: number, decididoPor: string) {
+    const prisma = this.db.getPrisma();
+    return await prisma.casoJustificativaEquipe.update({
+      where: { id: casoId },
+      data: {
+        status: 'ignorado',
+        createdBy: decididoPor,
+      },
+    });
+  }
+
+  async criarJustificativaDeCaso(params: {
+    casoId: number;
+    tipoJustificativaId: number;
+    descricao?: string;
+    createdBy: string;
+  }) {
+    const prisma = this.db.getPrisma();
+
+    return await prisma.$transaction(async (tx) => {
+      // Buscar o caso
+      const caso = await tx.casoJustificativaEquipe.findUnique({
+        where: { id: params.casoId },
+      });
+
+      if (!caso) {
+        throw new Error('Caso não encontrado');
+      }
+
+      // Criar justificativa de equipe
+      const justificativa = await tx.justificativaEquipe.create({
+        data: {
+          dataReferencia: caso.dataReferencia,
+          equipeId: caso.equipeId,
+          tipoJustificativaId: params.tipoJustificativaId,
+          descricao: params.descricao,
+          status: 'pendente',
+          createdBy: params.createdBy,
+        },
+      });
+
+      // Atualizar caso para vincular à justificativa e marcar como justificado
+      await tx.casoJustificativaEquipe.update({
+        where: { id: params.casoId },
+        data: {
+          status: 'justificado',
+          justificativaEquipeId: justificativa.id,
+        },
+      });
+
+      return justificativa;
+    });
+  }
 }

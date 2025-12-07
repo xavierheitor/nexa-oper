@@ -152,7 +152,9 @@ export const faltaSchema = z.object({
   equipe: equipeBasicaSchema,
   motivoSistema: z.string(),
   status: FaltaStatusEnum,
-  Justificativas: z.array(faltaJustificativaSchema),
+  escalaSlotId: z.number().nullable().optional(),
+  Justificativas: z.array(faltaJustificativaSchema).optional().default([]),
+  justificativas: z.array(faltaJustificativaSchema).optional().default([]),
   createdAt: z.coerce.date(),
 });
 

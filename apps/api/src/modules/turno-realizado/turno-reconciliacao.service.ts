@@ -178,7 +178,7 @@ export class TurnoReconciliacaoService {
               // Usar upsert para garantir idempotência
               await prisma.divergenciaEscala.upsert({
                 where: {
-                  DivergenciaEscala_dataReferencia_eletricistaId_equipePrevistaId_equipeRealId_key: {
+                  dataReferencia_eletricistaId_equipePrevistaId_equipeRealId: {
                     dataReferencia: dataRef,
                     eletricistaId: slot.eletricistaId,
                     equipePrevistaId: params.equipePrevistaId,
@@ -238,7 +238,7 @@ export class TurnoReconciliacaoService {
               // Usar upsert para garantir idempotência
               await prisma.falta.upsert({
                 where: {
-                  Falta_dataReferencia_equipeId_eletricistaId_motivoSistema_key: {
+                  dataReferencia_equipeId_eletricistaId_motivoSistema: {
                     dataReferencia: dataRef,
                     equipeId: params.equipePrevistaId,
                     eletricistaId: slot.eletricistaId,
@@ -333,7 +333,7 @@ export class TurnoReconciliacaoService {
               // Usar upsert para garantir idempotência
               await prisma.falta.upsert({
                 where: {
-                  Falta_dataReferencia_equipeId_eletricistaId_motivoSistema_key: {
+                  dataReferencia_equipeId_eletricistaId_motivoSistema: {
                     dataReferencia: dataRef,
                     equipeId: params.equipePrevistaId,
                     eletricistaId: slot.eletricistaId,
@@ -401,6 +401,53 @@ export class TurnoReconciliacaoService {
                   }
                 });
             }
+          }
+        }
+      }
+
+      // 6. Verificar se equipe estava escalada mas não abriu turno
+      const slotsTrabalho = slots.filter(s => s.estado === 'TRABALHO');
+      if (slotsTrabalho.length > 0) {
+        const turnosAbertosEquipe = await prisma.turnoRealizado.findFirst({
+          where: {
+            equipeId: params.equipePrevistaId,
+            dataReferencia: {
+              gte: dataRefInicio,
+              lte: dataRefFim,
+            },
+          },
+        });
+
+        // Se tinha slots de trabalho mas não abriu turno
+        if (!turnosAbertosEquipe) {
+          // Verificar se já existe caso pendente
+          const casoExistente = await prisma.casoJustificativaEquipe.findUnique({
+            where: {
+              dataReferencia_equipeId: {
+                dataReferencia: dataRef,
+                equipeId: params.equipePrevistaId,
+              },
+            },
+          });
+
+          if (!casoExistente) {
+            await prisma.casoJustificativaEquipe
+              .create({
+                data: {
+                  dataReferencia: dataRef,
+                  equipeId: params.equipePrevistaId,
+                  slotsEscalados: slotsTrabalho.length,
+                  status: 'pendente',
+                  createdBy: 'system',
+                },
+              })
+              .catch((err: any) => {
+                if (err.code !== 'P2002') {
+                  this.logger.warn(
+                    `Erro ao criar caso de justificativa de equipe para equipe ${params.equipePrevistaId}: ${err.message}`
+                  );
+                }
+              });
           }
         }
       }

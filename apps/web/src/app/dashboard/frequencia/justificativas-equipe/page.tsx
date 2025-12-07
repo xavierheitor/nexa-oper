@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, Table, Button, Space, Tag, DatePicker, Select, message } from 'antd';
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { Card, Table, Button, Space, Tag, DatePicker, Select, message, Tabs } from 'antd';
+import { CheckOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import { useRouter } from 'next/navigation';
 import { listJustificativasEquipe } from '@/lib/actions/justificativa-equipe/list';
+import { listCasosJustificativaEquipe } from '@/lib/actions/justificativa-equipe/listCasosPendentes';
 import { aprovarJustificativaEquipe } from '@/lib/actions/justificativa-equipe/aprovar';
 import { rejeitarJustificativaEquipe } from '@/lib/actions/justificativa-equipe/rejeitar';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
@@ -15,8 +17,17 @@ const { RangePicker } = DatePicker;
  * Página de lista de justificativas de equipe pendentes para aprovar
  */
 export default function JustificativasEquipePage() {
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState('casos-pendentes');
+
   const [filtros, setFiltros] = useState({
     status: 'pendente' as 'pendente' | 'aprovada' | 'rejeitada' | undefined,
+    page: 1,
+    pageSize: 20,
+  });
+
+  const [filtrosCasos, setFiltrosCasos] = useState({
+    status: 'pendente' as 'pendente' | 'justificado' | 'ignorado' | undefined,
     page: 1,
     pageSize: 20,
   });
@@ -30,6 +41,14 @@ export default function JustificativasEquipePage() {
     }
     throw new Error(result.error || 'Erro ao carregar justificativas');
   }, [filtros]);
+
+  const { data: casosData, refetch: refetchCasos } = useDataFetch(async () => {
+    const result = await listCasosJustificativaEquipe(filtrosCasos);
+    if (result.success) {
+      return result.data;
+    }
+    throw new Error(result.error || 'Erro ao carregar casos pendentes');
+  }, [filtrosCasos]);
 
   const handleAprovar = async (id: number) => {
     setLoading(true);
@@ -132,36 +151,129 @@ export default function JustificativasEquipePage() {
     },
   ];
 
+  const casosColumns = [
+    {
+      title: 'Data',
+      dataIndex: 'dataReferencia',
+      key: 'dataReferencia',
+      render: (date: string) => dayjs(date).format('DD/MM/YYYY'),
+    },
+    {
+      title: 'Equipe',
+      dataIndex: ['equipe', 'nome'],
+      key: 'equipe',
+    },
+    {
+      title: 'Slots Escalados',
+      dataIndex: 'slotsEscalados',
+      key: 'slotsEscalados',
+    },
+    {
+      title: 'Faltas Geradas',
+      dataIndex: 'faltasGeradas',
+      key: 'faltasGeradas',
+      render: (count: number) => (
+        <Tag color={count > 0 ? 'red' : 'green'}>{count}</Tag>
+      ),
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => {
+        const colors = {
+          pendente: 'warning',
+          justificado: 'success',
+          ignorado: 'default',
+        };
+        return <Tag color={colors[status as keyof typeof colors]}>{status.toUpperCase()}</Tag>;
+      },
+    },
+    {
+      title: 'Ações',
+      key: 'actions',
+      render: (_: any, record: any) => {
+        if (record.status !== 'pendente') return null;
+        return (
+          <Space>
+            <Button
+              type="primary"
+              size="small"
+              icon={<PlusOutlined />}
+              onClick={() => router.push(`/dashboard/frequencia/justificativas-equipe/criar?casoId=${record.id}&equipeId=${record.equipeId}&dataReferencia=${record.dataReferencia}`)}
+            >
+              Criar Justificativa
+            </Button>
+          </Space>
+        );
+      },
+    },
+  ];
+
   return (
     <Card title="Justificativas de Equipe">
-      <Space direction="vertical" style={{ width: '100%' }} size="large">
-        <Space>
-          <Select
-            style={{ width: 200 }}
-            placeholder="Status"
-            value={filtros.status}
-            onChange={(value) => setFiltros({ ...filtros, status: value, page: 1 })}
-            allowClear
-          >
-            <Select.Option value="pendente">Pendente</Select.Option>
-            <Select.Option value="aprovada">Aprovada</Select.Option>
-            <Select.Option value="rejeitada">Rejeitada</Select.Option>
-          </Select>
-        </Space>
+      <Tabs activeKey={activeTab} onChange={setActiveTab}>
+        <Tabs.TabPane tab="Casos Pendentes" key="casos-pendentes">
+          <Space direction="vertical" style={{ width: '100%' }} size="large">
+            <Space>
+              <Select
+                style={{ width: 200 }}
+                placeholder="Status"
+                value={filtrosCasos.status}
+                onChange={(value) => setFiltrosCasos({ ...filtrosCasos, status: value, page: 1 })}
+                allowClear
+              >
+                <Select.Option value="pendente">Pendente</Select.Option>
+                <Select.Option value="justificado">Justificado</Select.Option>
+                <Select.Option value="ignorado">Ignorado</Select.Option>
+              </Select>
+            </Space>
 
-        <Table
-          columns={columns}
-          dataSource={data?.items || []}
-          loading={!data}
-          rowKey="id"
-          pagination={{
-            current: filtros.page,
-            pageSize: filtros.pageSize,
-            total: data?.total || 0,
-            onChange: (page, pageSize) => setFiltros({ ...filtros, page, pageSize }),
-          }}
-        />
-      </Space>
+            <Table
+              columns={casosColumns}
+              dataSource={casosData?.items || []}
+              loading={!casosData}
+              rowKey="id"
+              pagination={{
+                current: filtrosCasos.page,
+                pageSize: filtrosCasos.pageSize,
+                total: casosData?.total || 0,
+                onChange: (page, pageSize) => setFiltrosCasos({ ...filtrosCasos, page, pageSize }),
+              }}
+            />
+          </Space>
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="Justificativas Criadas" key="justificativas">
+          <Space direction="vertical" style={{ width: '100%' }} size="large">
+            <Space>
+              <Select
+                style={{ width: 200 }}
+                placeholder="Status"
+                value={filtros.status}
+                onChange={(value) => setFiltros({ ...filtros, status: value, page: 1 })}
+                allowClear
+              >
+                <Select.Option value="pendente">Pendente</Select.Option>
+                <Select.Option value="aprovada">Aprovada</Select.Option>
+                <Select.Option value="rejeitada">Rejeitada</Select.Option>
+              </Select>
+            </Space>
+
+            <Table
+              columns={columns}
+              dataSource={data?.items || []}
+              loading={!data}
+              rowKey="id"
+              pagination={{
+                current: filtros.page,
+                pageSize: filtros.pageSize,
+                total: data?.total || 0,
+                onChange: (page, pageSize) => setFiltros({ ...filtros, page, pageSize }),
+              }}
+            />
+          </Space>
+        </Tabs.TabPane>
+      </Tabs>
     </Card>
   );
 }
