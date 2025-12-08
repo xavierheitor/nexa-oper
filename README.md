@@ -940,6 +940,7 @@ npm run status
 - **SCRIPTS.md** - Documentação completa dos scripts
 - **apps/web/README.md** - Documentação da aplicação web
 - **apps/api/README.md** - Documentação da API
+- **apps/api/docs/MANUAL_INICIANTE.md** - Manual passo a passo da API para quem está aprendendo NestJS
 - **packages/db/README.md** - Documentação do pacote DB
 - **apps/api/src/modules/escala/README.md** - Manual completo do módulo de escalas (padrões como escala espanhola e 4x2)
 
