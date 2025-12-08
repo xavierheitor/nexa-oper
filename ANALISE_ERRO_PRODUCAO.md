@@ -12,7 +12,7 @@ O app mobile tentou fechar um turno que **já estava fechado** (Turno ID: 950, f
 ### Comportamento do Sistema
 O sistema detectou que o turno já estava fechado e retornou:
 - **Status HTTP**: `409 Conflict` (correto para indicar conflito de estado)
-- **Response**: 
+- **Response**:
   ```json
   {
     "status": "already_closed",

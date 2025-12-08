@@ -171,11 +171,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
       this.logger.error(`[500] ${request.method} ${request.url} - ${errorMessage}`, errorStack);
     } else if (status >= 400) {
       // Casos especiais que são comportamentos esperados, não erros
-      const isExpectedBehavior = 
-        status === HttpStatus.CONFLICT && 
-        typeof responseBody === 'object' && 
+      // HTTP 409 com status 'already_closed' é comportamento esperado para sincronização mobile
+      const isExpectedBehavior =
+        status === HttpStatus.CONFLICT &&
+        typeof responseBody === 'object' &&
+        responseBody !== null &&
         responseBody.status === 'already_closed';
-      
+
       if (isExpectedBehavior) {
         // Logar como debug - é comportamento esperado para sincronização mobile
         this.logger.debug(
