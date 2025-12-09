@@ -170,7 +170,22 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const errorStack = exception instanceof Error ? exception.stack : undefined;
       this.logger.error(`[500] ${request.method} ${request.url} - ${errorMessage}`, errorStack);
     } else if (status >= 400) {
-      this.logger.warn(`[${status}] ${request.method} ${request.url} - ${JSON.stringify(safeMessage)}`);
+      // Casos especiais que são comportamentos esperados, não erros
+      // HTTP 409 com status 'already_closed' é comportamento esperado para sincronização mobile
+      const isExpectedBehavior =
+        status === HttpStatus.CONFLICT &&
+        typeof responseBody === 'object' &&
+        responseBody !== null &&
+        responseBody.status === 'already_closed';
+
+      if (isExpectedBehavior) {
+        // Logar como debug - é comportamento esperado para sincronização mobile
+        this.logger.debug(
+          `[409] Sincronização mobile - turno já fechado: ${responseBody.remoteId || 'N/A'}`
+        );
+      } else {
+        this.logger.warn(`[${status}] ${request.method} ${request.url} - ${JSON.stringify(safeMessage)}`);
+      }
     }
 
     // Envia resposta HTTP padronizada ao cliente (preservando campos adicionais quando for objeto)

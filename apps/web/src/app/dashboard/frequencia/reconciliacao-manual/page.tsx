@@ -6,6 +6,7 @@ import { App } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { listEquipes } from '@/lib/actions/equipe/list';
+import { reconciliarManual } from '@/lib/actions/turno-realizado/reconciliarManual';
 import { ReloadOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -17,7 +18,9 @@ const { Title, Text } = Typography;
  * Esta página permite executar a reconciliação manualmente para debug,
  * comparando turnos executados com a escala planejada.
  *
- * IMPORTANTE: Este endpoint só funciona de localhost por questões de segurança.
+ * A reconciliação é executada através de uma Server Action, que faz a requisição
+ * do servidor Next.js (visto como localhost pela API), permitindo funcionar
+ * tanto em desenvolvimento quanto em produção.
  */
 interface PendenteReconciliacao {
   equipeId: number;
@@ -235,36 +238,29 @@ export default function ReconciliacaoManualPage() {
     setResultado(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      // Validação no cliente antes de chamar a Server Action
+      if (!todasEquipes && !values.equipeId) {
+        messageApi.error('Selecione uma equipe ou marque "Todas as equipes"');
+        setLoading(false);
+        return;
+      }
+
       const dataReferencia = values.dataReferencia.format('YYYY-MM-DD');
 
-      const body: any = {
+      // Usar Server Action em vez de fetch direto
+      const result = await reconciliarManual({
         dataReferencia,
         todasEquipes,
-      };
-
-      if (!todasEquipes) {
-        if (!values.equipeId) {
-          messageApi.error('Selecione uma equipe ou marque "Todas as equipes"');
-          setLoading(false);
-          return;
-        }
-        body.equipeId = values.equipeId;
-      }
-
-      const response = await fetch(`${apiUrl}/api/turnos-realizados/reconciliacao/manual`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
+        equipeId: todasEquipes ? undefined : values.equipeId,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || `Erro ${response.status}: ${response.statusText}`);
+      // Verificar se houve erro na Server Action
+      if (!result.success) {
+        throw new Error(result.error || 'Erro ao executar reconciliação');
       }
+
+      // Se chegou aqui, result.data contém os dados da API
+      const data = result.data;
 
       setResultado(data);
 
@@ -287,7 +283,7 @@ export default function ReconciliacaoManualPage() {
     } catch (error: any) {
       const errorMessage =
         error.message ||
-        'Erro ao executar reconciliação. Verifique se está acessando de localhost.';
+        'Erro ao executar reconciliação.';
 
       setResultado({
         success: false,
@@ -308,14 +304,14 @@ export default function ReconciliacaoManualPage() {
             <Title level={2}>Reconciliação Manual de Turnos</Title>
             <Text type="secondary">
               Execute a reconciliação manualmente para comparar turnos executados com a escala
-              planejada. Este endpoint só funciona de localhost por questões de segurança.
+              planejada. A reconciliação é executada de forma segura através de uma Server Action.
             </Text>
           </div>
 
           <Alert
             message="Atenção"
-            description="Este endpoint só pode ser acessado de localhost. Se você estiver vendo este erro, certifique-se de estar acessando a aplicação através de localhost ou 127.0.0.1."
-            type="warning"
+            description="A reconciliação manual é executada através de uma Server Action, garantindo acesso seguro mesmo em produção."
+            type="info"
             showIcon
             style={{ marginBottom: '16px' }}
           />
