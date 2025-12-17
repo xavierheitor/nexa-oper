@@ -78,6 +78,40 @@ interface LogPayload {
 }
 
 /**
+ * Função para serializar objetos com suporte a BigInt
+ *
+ * Converte BigInt para string antes de serializar em JSON
+ *
+ * @param obj - Objeto a ser serializado
+ * @returns Objeto com BigInt convertido para string
+ */
+function serializeForLogging(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (typeof obj === 'bigint') {
+    return obj.toString();
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(serializeForLogging);
+  }
+
+  if (typeof obj === 'object') {
+    const serialized: any = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        serialized[key] = serializeForLogging(obj[key]);
+      }
+    }
+    return serialized;
+  }
+
+  return obj;
+}
+
+/**
  * Função para formatar logs
  *
  * Cria uma string padronizada com timestamp, nível e contexto
@@ -87,7 +121,10 @@ interface LogPayload {
  */
 function formatLog({ level = 'info', message, context }: LogPayload): string {
   const timestamp = new Date().toISOString(); // Timestamp ISO
-  const ctx = context ? ` | ${JSON.stringify(context)}` : ''; // Contexto JSON
+  const serializedContext = context ? serializeForLogging(context) : null;
+  const ctx = serializedContext
+    ? ` | ${JSON.stringify(serializedContext)}`
+    : ''; // Contexto JSON
   return `[${timestamp}] [${level.toUpperCase()}] ${message}${ctx}`;
 }
 

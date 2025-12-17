@@ -324,16 +324,49 @@ export class MobilePhotoUploadService {
         let pendencia = resposta.ChecklistPendencia;
         if (!pendencia) {
           this.logger.debug(`[PENDENCIA-SEM-UUID] Criando nova pendência para resposta ${resposta.id}`);
-          pendencia = await this.db.getPrisma().checklistPendencia.create({
-            data: {
-              checklistRespostaId: resposta.id,
-              checklistPreenchidoId: resposta.checklistPreenchidoId,
-              turnoId: turnoId,
-              status: 'AGUARDANDO_TRATAMENTO',
-              createdAt: new Date(),
-              createdBy: 'system',
-            },
-          });
+
+          try {
+            pendencia = await this.db.getPrisma().checklistPendencia.create({
+              data: {
+                checklistRespostaId: resposta.id,
+                checklistPreenchidoId: resposta.checklistPreenchidoId,
+                turnoId: turnoId,
+                status: 'AGUARDANDO_TRATAMENTO',
+                createdAt: new Date(),
+                createdBy: 'system',
+              },
+            });
+          } catch (error: any) {
+            // Tratar race condition: se outra requisição criou a pendência simultaneamente
+            if (error?.code === 'P2002' && error?.meta?.target?.includes('checklistRespostaId')) {
+              this.logger.debug(
+                `[PENDENCIA-SEM-UUID] Pendência já existe (race condition), buscando novamente: checklistRespostaId=${resposta.id}`
+              );
+
+              // Buscar a pendência que foi criada pela outra requisição
+              pendencia = await this.db.getPrisma().checklistPendencia.findUnique({
+                where: { checklistRespostaId: resposta.id },
+              });
+
+              if (!pendencia) {
+                this.logger.error(
+                  `[PENDENCIA-SEM-UUID] Erro ao buscar pendência após race condition: checklistRespostaId=${resposta.id}`
+                );
+                continue; // Pular para próxima resposta
+              }
+
+              this.logger.debug(
+                `[PENDENCIA-SEM-UUID] Pendência encontrada após race condition: ID=${pendencia.id}`
+              );
+            } else {
+              // Re-lançar erro se não for race condition
+              this.logger.error(
+                `[PENDENCIA-SEM-UUID] Erro ao criar pendência: ${error}`,
+                error
+              );
+              throw error;
+            }
+          }
         }
 
         // Criar registro na tabela ChecklistRespostaFoto
@@ -466,16 +499,64 @@ export class MobilePhotoUploadService {
 
       this.logger.debug(`[PENDENCIA-UUID] Resposta encontrada: ID=${resposta.id}`);
 
-      // Buscar a pendência relacionada à resposta
-      const pendencia = resposta.ChecklistPendencia;
+      // Buscar ou criar pendência relacionada à resposta
+      let pendencia = resposta.ChecklistPendencia;
       if (!pendencia) {
-        this.logger.warn(
-          `[PENDENCIA-UUID] Pendência não encontrada para resposta: checklistRespostaId=${resposta.id}`
+        this.logger.debug(
+          `[PENDENCIA-UUID] Pendência não encontrada, criando nova para resposta: checklistRespostaId=${resposta.id}`
         );
-        return;
-      }
 
-      this.logger.debug(`[PENDENCIA-UUID] Pendência encontrada: ID=${pendencia.id}`);
+        try {
+          // Criar pendência para reprovação
+          pendencia = await this.db.getPrisma().checklistPendencia.create({
+            data: {
+              checklistRespostaId: resposta.id,
+              checklistPreenchidoId: resposta.checklistPreenchidoId,
+              turnoId: checklistPreenchido.turnoId,
+              status: 'AGUARDANDO_TRATAMENTO',
+              observacaoProblema: 'Pendência criada a partir de foto de reprovação',
+              createdAt: new Date(),
+              createdBy: 'system',
+            },
+          });
+
+          this.logger.debug(
+            `[PENDENCIA-UUID] Pendência criada: ID=${pendencia.id}, checklistRespostaId=${resposta.id}`
+          );
+        } catch (error: any) {
+          // Tratar race condition: se outra requisição criou a pendência simultaneamente
+          if (error?.code === 'P2002' && error?.meta?.target?.includes('checklistRespostaId')) {
+            this.logger.debug(
+              `[PENDENCIA-UUID] Pendência já existe (race condition), buscando novamente: checklistRespostaId=${resposta.id}`
+            );
+
+            // Buscar a pendência que foi criada pela outra requisição
+            pendencia = await this.db.getPrisma().checklistPendencia.findUnique({
+              where: { checklistRespostaId: resposta.id },
+            });
+
+            if (!pendencia) {
+              this.logger.error(
+                `[PENDENCIA-UUID] Erro ao buscar pendência após race condition: checklistRespostaId=${resposta.id}`
+              );
+              return;
+            }
+
+            this.logger.debug(
+              `[PENDENCIA-UUID] Pendência encontrada após race condition: ID=${pendencia.id}`
+            );
+          } else {
+            // Re-lançar erro se não for race condition
+            this.logger.error(
+              `[PENDENCIA-UUID] Erro ao criar pendência: ${error}`,
+              error
+            );
+            throw error;
+          }
+        }
+      } else {
+        this.logger.debug(`[PENDENCIA-UUID] Pendência encontrada: ID=${pendencia.id}`);
+      }
 
       // Buscar a foto mobile salva
       const mobilePhoto = await this.db.getPrisma().mobilePhoto.findUnique({
