@@ -479,7 +479,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       children: [
         {
           key: '/dashboard/seguranca/checklists-pendentes',
-          label: <Link href='/dashboard/seguranca/checklists-pendentes'>Checklists Pendentes</Link>,
+          label: <Link href='/dashboard/seguranca/checklists-pendentes'>Tratamento de Pendências</Link>,
         },
         {
           key: '/dashboard/seguranca/relatorio',

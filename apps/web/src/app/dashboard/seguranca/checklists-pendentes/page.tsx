@@ -186,7 +186,7 @@ export default function ChecklistPendenciasPage() {
   return (
     <>
       <Card
-        title="Checklists Pendentes"
+        title="Tratamento de Pendências"
         extra={
           <Button type="primary" onClick={() => pendencias.mutate()}>
             Atualizar
