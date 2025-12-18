@@ -112,8 +112,8 @@ export const getChecklistPreenchidoById = async (rawData: unknown) =>
         checklistId: checklist.checklistId,
         eletricistaId: checklist.eletricistaId,
         dataPreenchimento: checklist.dataPreenchimento,
-        latitude: checklist.latitude,
-        longitude: checklist.longitude,
+        latitude: checklist.latitude ?? undefined,
+        longitude: checklist.longitude ?? undefined,
         checklist: {
           id: checklist.checklist.id,
           nome: checklist.checklist.nome,
@@ -139,7 +139,19 @@ export const getChecklistPreenchidoById = async (rawData: unknown) =>
           },
           veiculo: checklist.turno.veiculo,
         },
-        ChecklistResposta: checklist.ChecklistResposta,
+        ChecklistResposta: checklist.ChecklistResposta.map((resposta) => ({
+          ...resposta,
+          dataResposta: resposta.dataResposta,
+          ChecklistRespostaFoto: resposta.ChecklistRespostaFoto.map((foto) => ({
+            id: foto.id,
+            caminhoArquivo: foto.caminhoArquivo,
+            urlPublica: foto.urlPublica ?? undefined,
+            tamanhoBytes: foto.tamanhoBytes,
+            mimeType: foto.mimeType,
+            sincronizadoEm: foto.sincronizadoEm.toISOString(),
+            createdAt: foto.createdAt.toISOString(),
+          })),
+        })),
       };
     },
     rawData,

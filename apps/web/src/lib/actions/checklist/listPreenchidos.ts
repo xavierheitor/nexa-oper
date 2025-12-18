@@ -206,8 +206,8 @@ export const listChecklistsPreenchidos = async (rawData: unknown) =>
         checklistId: checklist.checklistId,
         eletricistaId: checklist.eletricistaId,
         dataPreenchimento: checklist.dataPreenchimento,
-        latitude: checklist.latitude,
-        longitude: checklist.longitude,
+        latitude: checklist.latitude ?? undefined,
+        longitude: checklist.longitude ?? undefined,
         checklist: {
           id: checklist.checklist.id,
           nome: checklist.checklist.nome,
