@@ -193,6 +193,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       // Submenus de Segurança
       '/dashboard/seguranca/checklists-pendentes': 'seguranca-menu',
       '/dashboard/seguranca/relatorio': 'seguranca-menu',
+      '/dashboard/seguranca/consulta-checklists': 'seguranca-menu',
 
       // Tipo Justificativa
       '/dashboard/cadastro/tipo-justificativa': 'cadastro',
@@ -477,6 +478,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       icon: <SafetyOutlined />,
       label: 'Segurança',
       children: [
+        {
+          key: '/dashboard/seguranca/consulta-checklists',
+          label: <Link href='/dashboard/seguranca/consulta-checklists'>Consulta Checklists</Link>,
+        },
         {
           key: '/dashboard/seguranca/checklists-pendentes',
           label: <Link href='/dashboard/seguranca/checklists-pendentes'>Tratamento de Pendências</Link>,
