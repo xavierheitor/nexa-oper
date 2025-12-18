@@ -58,6 +58,7 @@ import {
   FileTextOutlined,
   FormOutlined,
   LogoutOutlined,
+  SafetyOutlined,
   TeamOutlined,
   UserOutlined
 } from '@ant-design/icons';
@@ -188,6 +189,11 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       '/dashboard/relatorios/escalas': 'relatorios',
       '/dashboard/relatorios/aderencia-equipe': 'relatorios',
       '/dashboard/relatorios/turnos-por-periodo': 'relatorios',
+
+      // Submenus de Segurança
+      '/dashboard/seguranca/checklists-pendentes': 'seguranca-menu',
+      '/dashboard/seguranca/relatorio': 'seguranca-menu',
+      '/dashboard/seguranca/consulta-checklists': 'seguranca-menu',
 
       // Tipo Justificativa
       '/dashboard/cadastro/tipo-justificativa': 'cadastro',
@@ -464,6 +470,25 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
         {
           key: '/dashboard/escalas/edicao-em-curso',
           label: <Link href='/dashboard/escalas/edicao-em-curso'>Edição em Curso</Link>,
+        },
+      ],
+    },
+    {
+      key: 'seguranca-menu',
+      icon: <SafetyOutlined />,
+      label: 'Segurança',
+      children: [
+        {
+          key: '/dashboard/seguranca/consulta-checklists',
+          label: <Link href='/dashboard/seguranca/consulta-checklists'>Consulta Checklists</Link>,
+        },
+        {
+          key: '/dashboard/seguranca/checklists-pendentes',
+          label: <Link href='/dashboard/seguranca/checklists-pendentes'>Tratamento de Pendências</Link>,
+        },
+        {
+          key: '/dashboard/seguranca/relatorio',
+          label: <Link href='/dashboard/seguranca/relatorio'>Relatório</Link>,
         },
       ],
     },

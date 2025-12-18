@@ -30,6 +30,7 @@ import { ChecklistPerguntaService } from '../ChecklistPerguntaService';
 import { ChecklistService } from '../ChecklistService';
 import { ChecklistTipoEquipeVinculoService } from '../ChecklistTipoEquipeVinculoService';
 import { ChecklistTipoVeiculoVinculoService } from '../ChecklistTipoVeiculoVinculoService';
+import { ChecklistPendenciaService } from '../ChecklistPendenciaService';
 import { ContratoService } from '../ContratoService';
 import { EletricistaService } from '../EletricistaService';
 // import { EscalaService } from '../EscalaService'; // COMENTADO - Substituído pelo novo módulo de Escalas
@@ -110,6 +111,10 @@ export function registerServices(): void {
     'checklistTipoEquipeVinculoService',
     () => new ChecklistTipoEquipeVinculoService()
   );
+  container.register(
+    'checklistPendenciaService',
+    () => new ChecklistPendenciaService()
+  );
   container.register('userService', () => new UserService());
   container.register('mobileUserService', () => new MobileUserService());
 
@@ -134,9 +139,15 @@ export function registerServices(): void {
   container.register('turnoService', () => new TurnoService());
 
   // Justificativas
-  container.register('justificativaEquipeService', () => new JustificativaEquipeService());
+  container.register(
+    'justificativaEquipeService',
+    () => new JustificativaEquipeService()
+  );
   container.register('justificativaService', () => new JustificativaService());
-  container.register('tipoJustificativaService', () => new TipoJustificativaService());
+  container.register(
+    'tipoJustificativaService',
+    () => new TipoJustificativaService()
+  );
 
   // Faltas e Horas Extras
   container.register('faltaService', () => new FaltaService());
