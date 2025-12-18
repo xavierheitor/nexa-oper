@@ -10,6 +10,7 @@ import { getReprovasPorEquipe } from '@/lib/actions/seguranca/getReprovasPorEqui
 import { getReprovasPorTipoChecklist } from '@/lib/actions/seguranca/getReprovasPorTipoChecklist';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
+import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -42,13 +43,23 @@ export default function RelatorioSegurancaPage() {
   // Estado para a base selecionada
   const [baseId, setBaseId] = useState<number | undefined>(undefined);
 
+  // Estado para o tipo de equipe selecionado
+  const [tipoEquipeId, setTipoEquipeId] = useState<number | undefined>(undefined);
+
   // Buscar lista de bases
   const { data: basesData } = useDataFetch(
     () => unwrapFetcher(listBases)({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' }),
     []
   );
 
+  // Buscar lista de tipos de equipe
+  const { data: tiposEquipeData } = useDataFetch(
+    () => unwrapFetcher(listTiposEquipe)({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' }),
+    []
+  );
+
   const bases = basesData || [];
+  const tiposEquipe = tiposEquipeData || [];
 
   // Buscar dados de reprovas por pergunta
   const { data, loading, refetch } = useDataFetch<ReprovaPorPergunta[]>(
@@ -57,8 +68,9 @@ export default function RelatorioSegurancaPage() {
         dataInicio: periodo[0].toDate(),
         dataFim: periodo[1].toDate(),
         ...(baseId && { baseId }),
+        ...(tipoEquipeId && { tipoEquipeId }),
       }),
-    [periodo, baseId]
+    [periodo, baseId, tipoEquipeId]
   );
 
   // Buscar dados de reprovas por equipe
@@ -71,8 +83,9 @@ export default function RelatorioSegurancaPage() {
         dataInicio: periodo[0].toDate(),
         dataFim: periodo[1].toDate(),
         ...(baseId && { baseId }),
+        ...(tipoEquipeId && { tipoEquipeId }),
       }),
-    [periodo, baseId]
+    [periodo, baseId, tipoEquipeId]
   );
 
   // Buscar dados de reprovas por tipo de checklist
@@ -85,8 +98,9 @@ export default function RelatorioSegurancaPage() {
         dataInicio: periodo[0].toDate(),
         dataFim: periodo[1].toDate(),
         ...(baseId && { baseId }),
+        ...(tipoEquipeId && { tipoEquipeId }),
       }),
-    [periodo, baseId]
+    [periodo, baseId, tipoEquipeId]
   );
 
   // Configuração do gráfico de perguntas
@@ -241,6 +255,21 @@ export default function RelatorioSegurancaPage() {
             options={bases.map((base: any) => ({
               value: base.id,
               label: base.nome,
+            }))}
+          />
+          <Select
+            placeholder="Todos os tipos de equipe"
+            allowClear
+            style={{ width: 200 }}
+            value={tipoEquipeId}
+            onChange={setTipoEquipeId}
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            options={tiposEquipe.map((tipo: any) => ({
+              value: tipo.id,
+              label: tipo.nome,
             }))}
           />
           <RangePicker

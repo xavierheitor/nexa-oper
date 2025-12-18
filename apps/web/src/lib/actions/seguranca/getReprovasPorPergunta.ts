@@ -13,6 +13,7 @@ const getReprovasPorPerguntaSchema = z.object({
   dataInicio: z.union([z.date(), z.string()]),
   dataFim: z.union([z.date(), z.string()]),
   baseId: z.number().int().positive().optional(),
+  tipoEquipeId: z.number().int().positive().optional(),
 });
 
 export const getReprovasPorPergunta = async (rawData: unknown) =>
@@ -30,18 +31,28 @@ export const getReprovasPorPergunta = async (rawData: unknown) =>
       // Ajustar dataFim para o final do dia
       const dataFimAjustada = dayjs(dataFim).endOf('day').toDate();
 
-      // Construir filtro de base da equipe se baseId for fornecido
-      const whereBase = data.baseId
+      // Construir filtro de base e tipo de equipe
+      const whereEquipe: any = {};
+
+      if (data.baseId) {
+        whereEquipe.EquipeBaseHistorico = {
+          some: {
+            baseId: data.baseId,
+            dataFim: null, // Base ativa (sem dataFim)
+          },
+        };
+        whereEquipe.deletedAt = null;
+      }
+
+      if (data.tipoEquipeId) {
+        whereEquipe.tipoEquipeId = data.tipoEquipeId;
+        whereEquipe.deletedAt = null;
+      }
+
+      const whereTurnoEquipe = Object.keys(whereEquipe).length > 0
         ? {
             turno: {
-              equipe: {
-                EquipeBaseHistorico: {
-                  some: {
-                    baseId: data.baseId,
-                    dataFim: null, // Base ativa (sem dataFim)
-                  },
-                },
-              },
+              equipe: whereEquipe,
             },
           }
         : {};
@@ -57,7 +68,7 @@ export const getReprovasPorPergunta = async (rawData: unknown) =>
               lte: dataFimAjustada,
             },
           },
-          ...whereBase,
+          ...whereTurnoEquipe,
         },
         include: {
           checklistResposta: {
