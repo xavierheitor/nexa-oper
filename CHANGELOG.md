@@ -18,7 +18,7 @@ Adicionada nova página **"Consulta Checklists"** no menu Segurança, permitindo
   - Base
   - Tipo de checklist
   - Checklist específico (filtrado por tipo de checklist selecionado)
-  
+
 - **Listagem com informações resumidas:**
   - ID do checklist
   - Data e hora do preenchimento
@@ -27,7 +27,7 @@ Adicionada nova página **"Consulta Checklists"** no menu Segurança, permitindo
   - Informações da equipe e tipo
   - Dados do veículo (placa e modelo)
   - Quantidade de respostas
-  
+
 - **Recursos:**
   - Paginação funcional
   - Botão "Limpar Filtros" para reset rápido
@@ -46,7 +46,7 @@ Adicionada nova página **"Consulta Checklists"** no menu Segurança, permitindo
   - Status de cada resposta (respondido, com foto, aguardando foto)
   - Indicação de respostas que geram pendência
   - Data e hora de cada resposta
-  
+
 - **Gerenciamento de fotos:**
   - Visualização de todas as fotos associadas às respostas
   - Preview com zoom

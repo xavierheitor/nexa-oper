@@ -462,34 +462,50 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
                   key: 'matricula',
                   width: 120,
                 },
-                // ✅ CORREÇÃO: Mostrar coluna "1º Dia de Folga" apenas para escalas CICLO_DIAS
+                // ✅ Mostrar coluna "1º Dia de Folga" para escalas CICLO_DIAS
                 // Para SEMANA_DEPENDENTE (espanhola), a folga é determinada pela semana e dia da semana
-                ...(tipoEscalaSelecionado?.modoRepeticao === 'CICLO_DIAS'
-                  ? [
-                      {
-                        title: '1º Dia de Folga',
-                        key: 'primeiroDiaFolga',
-                        width: 150,
-                        render: (_: unknown, record: any) => {
-                          const eletricistaConfig = eletricistasEscala.find(
-                            (e) => e.eletricistaId === record.id
-                          );
-                          if (!eletricistaConfig) return null;
+                {
+                  title: '1º Dia de Folga',
+                  key: 'primeiroDiaFolga',
+                  width: 150,
+                  render: (_: unknown, record: any) => {
+                    const eletricistaConfig = eletricistasEscala.find(
+                      (e) => e.eletricistaId === record.id
+                    );
 
-                          return (
-                            <InputNumber
-                              min={0}
-                              placeholder="Ex: 2"
-                              value={eletricistaConfig.primeiroDiaFolga}
-                              onChange={(value) => updatePrimeiroDiaFolga(record.id, value || 0)}
-                              style={{ width: '100%' }}
-                              addonAfter="dias"
-                            />
-                          );
-                        },
-                      },
-                    ]
-                  : []),
+                    // Se não está selecionado, não mostra nada
+                    if (!eletricistaConfig) return null;
+
+                    // Se é escala SEMANA_DEPENDENTE, mostra como desabilitado com tooltip
+                    const isSemanaDependente = tipoEscalaSelecionado?.modoRepeticao === 'SEMANA_DEPENDENTE';
+
+                    if (isSemanaDependente) {
+                      return (
+                        <InputNumber
+                          min={0}
+                          placeholder="N/A"
+                          value={0}
+                          disabled
+                          style={{ width: '100%' }}
+                          addonAfter="dias"
+                          title="Para escalas semana dependente, a folga é determinada automaticamente pela semana e dia da semana"
+                        />
+                      );
+                    }
+
+                    // Para CICLO_DIAS, permite edição
+                    return (
+                      <InputNumber
+                        min={0}
+                        placeholder="Ex: 2"
+                        value={eletricistaConfig.primeiroDiaFolga}
+                        onChange={(value) => updatePrimeiroDiaFolga(record.id, value || 0)}
+                        style={{ width: '100%' }}
+                        addonAfter="dias"
+                      />
+                    );
+                  },
+                },
               ]}
             />
 
