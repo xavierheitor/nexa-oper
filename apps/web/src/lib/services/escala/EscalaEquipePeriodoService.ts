@@ -209,13 +209,23 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       throw new Error('Nenhum eletricista selecionado para a escala');
     }
 
+    // ✅ CORREÇÃO: Permitir flexibilidade na quantidade de eletricistas
+    // O eletricistasPorTurma do tipo de escala é apenas uma referência,
+    // mas permite usar menos eletricistas se necessário (ex: 4x2 com 2 ao invés de 3)
     const eletricistasPorTurma =
       tipoEscala.eletricistasPorTurma || eletricistasParaGerar.length;
 
-    // Validar se há eletricistas suficientes
-    if (eletricistasParaGerar.length < eletricistasPorTurma) {
-      throw new Error(
-        `Foram selecionados apenas ${eletricistasParaGerar.length} eletricista(s), mas o tipo de escala requer ${eletricistasPorTurma} por turma`
+    // Validar apenas se não houver nenhum eletricista selecionado
+    // A quantidade mínima será determinada pela quantidade selecionada
+    if (eletricistasParaGerar.length === 0) {
+      throw new Error('Nenhum eletricista selecionado para a escala');
+    }
+
+    // Aviso (não erro) se usar menos eletricistas que o recomendado
+    if (tipoEscala.eletricistasPorTurma && eletricistasParaGerar.length < tipoEscala.eletricistasPorTurma) {
+      // Apenas log, não bloqueia - permite flexibilidade
+      console.warn(
+        `Aviso: Tipo de escala "${tipoEscala.nome}" recomenda ${tipoEscala.eletricistasPorTurma} eletricista(s), mas foram selecionados ${eletricistasParaGerar.length}. A escala será gerada com a quantidade selecionada.`
       );
     }
 
