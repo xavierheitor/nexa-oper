@@ -2,6 +2,7 @@
 
 import { Table, Card, Empty, Spin, Tag, Typography } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useTablePagination } from '@/lib/hooks/useTablePagination';
 import type { EquipeLocalizacaoStats } from '@/lib/actions/relatorios/relatoriosLocalizacao';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -14,6 +15,12 @@ interface EquipesMenosLocalizacoesProps {
 export default function EquipesMenosLocalizacoes({
   filtros,
 }: EquipesMenosLocalizacoesProps) {
+  // Hook para paginação client-side
+  const { pagination } = useTablePagination({
+    defaultPageSize: 10,
+    showTotal: (total) => `Total de ${total} equipe${total !== 1 ? 's' : ''}`,
+  });
+
   const { data: dados = [], loading } = useDataFetch<EquipeLocalizacaoStats[]>(
     async () => {
       const { getEquipesMenosLocalizacoes } = await import(
@@ -159,11 +166,7 @@ export default function EquipesMenosLocalizacoes({
         columns={columns}
         dataSource={dados}
         rowKey="equipeId"
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total) => `Total de ${total} equipe${total !== 1 ? 's' : ''}`,
-        }}
+        pagination={pagination}
         scroll={{ x: 'max-content' }}
       />
     </Card>

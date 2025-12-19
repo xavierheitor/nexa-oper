@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import EquipesMenosLocalizacoes from './components/EquipesMenosLocalizacoes';
 import EquipesMaiorTempoSemCaptura from './components/EquipesMaiorTempoSemCaptura';
 
@@ -17,13 +17,13 @@ export default function RelatoriosLocalizacaoPage() {
   const [filtros, setFiltros] = useState({
     periodoInicio: dayjs().subtract(1, 'month').startOf('day').toDate(),
     periodoFim: dayjs().endOf('day').toDate(),
-    contratoId: undefined as number | undefined,
+    tipoEquipeId: undefined as number | undefined,
     baseId: undefined as number | undefined,
   });
 
-  const { data: contratos, isLoading: loadingContratos } = useEntityData({
-    key: 'relatorios-localizacao-contratos',
-    fetcherAction: unwrapFetcher(listContratos),
+  const { data: tiposEquipe, isLoading: loadingTiposEquipe } = useEntityData({
+    key: 'relatorios-localizacao-tipos-equipe',
+    fetcherAction: unwrapFetcher(listTiposEquipe),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
@@ -60,15 +60,15 @@ export default function RelatoriosLocalizacaoPage() {
     setFiltros({
       periodoInicio: dayjs().subtract(1, 'month').startOf('day').toDate(),
       periodoFim: dayjs().endOf('day').toDate(),
-      contratoId: undefined,
+      tipoEquipeId: undefined,
       baseId: undefined,
     });
   };
 
   // Memoiza as opções dos Selects para evitar recriações desnecessárias
-  const contratosOptions = useMemo(
-    () => contratos?.map((c: any) => ({ label: c.nome, value: c.id })) || [],
-    [contratos]
+  const tiposEquipeOptions = useMemo(
+    () => tiposEquipe?.map((t: any) => ({ label: t.nome, value: t.id })) || [],
+    [tiposEquipe]
   );
 
   const basesOptions = useMemo(
@@ -96,13 +96,13 @@ export default function RelatoriosLocalizacaoPage() {
             placeholder={['Data Início', 'Data Fim']}
           />
           <Select
-            placeholder="Filtrar por Contrato (Processo)"
+            placeholder="Filtrar por Tipo de Equipe"
             style={{ width: 250 }}
             allowClear
-            loading={loadingContratos}
-            value={filtros.contratoId}
-            onChange={(value) => handleFilterChange('contratoId', value)}
-            options={contratosOptions}
+            loading={loadingTiposEquipe}
+            value={filtros.tipoEquipeId}
+            onChange={(value) => handleFilterChange('tipoEquipeId', value)}
+            options={tiposEquipeOptions}
           />
           <Select
             placeholder="Filtrar por Base"
