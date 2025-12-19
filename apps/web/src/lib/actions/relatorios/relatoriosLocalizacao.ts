@@ -15,7 +15,7 @@ const relatorioLocalizacaoFiltroSchema = z.object({
   periodoInicio: z.date().optional(),
   periodoFim: z.date().optional(),
   baseId: z.number().int().positive().optional(),
-  contratoId: z.number().int().positive().optional(),
+  tipoEquipeId: z.number().int().positive().optional(),
 });
 
 /**
@@ -48,9 +48,9 @@ export const getEquipesMenosLocalizacoes = async (rawData?: unknown) =>
         deletedAt: null,
       };
 
-      // Filtro por contrato
-      if (filtros.contratoId) {
-        whereEquipe.contratoId = filtros.contratoId;
+      // Filtro por tipo de equipe
+      if (filtros.tipoEquipeId) {
+        whereEquipe.tipoEquipeId = filtros.tipoEquipeId;
       }
 
       // Filtro por base
@@ -141,6 +141,11 @@ export const getEquipesMenosLocalizacoes = async (rawData?: unknown) =>
           },
         });
 
+        // Se não tem turnos, retornar null para filtrar depois
+        if (turnos.length === 0) {
+          return null;
+        }
+
         const turnoIds = turnos.map((t) => t.id);
 
         // Contar localizações
@@ -189,8 +194,14 @@ export const getEquipesMenosLocalizacoes = async (rawData?: unknown) =>
 
       const stats = await Promise.all(statsPromises);
 
+      // Filtrar apenas equipes que têm turnos (remover nulls)
+      const statsComTurnos = stats.filter((s): s is EquipeLocalizacaoStats => s !== null);
+
+      // Filtrar apenas equipes que têm pelo menos uma localização
+      const statsComLocalizacoes = statsComTurnos.filter((s) => s.totalLocalizacoes > 0);
+
       // Ordenar por menor número de localizações
-      return stats.sort((a, b) => a.totalLocalizacoes - b.totalLocalizacoes);
+      return statsComLocalizacoes.sort((a, b) => a.totalLocalizacoes - b.totalLocalizacoes);
     },
     rawData,
     { entityName: 'RelatorioLocalizacao', actionType: 'read' }
@@ -211,9 +222,9 @@ export const getEquipesMaiorTempoSemCaptura = async (rawData?: unknown) =>
         deletedAt: null,
       };
 
-      // Filtro por contrato
-      if (filtros.contratoId) {
-        whereEquipe.contratoId = filtros.contratoId;
+      // Filtro por tipo de equipe
+      if (filtros.tipoEquipeId) {
+        whereEquipe.tipoEquipeId = filtros.tipoEquipeId;
       }
 
       // Filtro por base
@@ -304,6 +315,11 @@ export const getEquipesMaiorTempoSemCaptura = async (rawData?: unknown) =>
           },
         });
 
+        // Se não tem turnos, retornar null para filtrar depois
+        if (turnos.length === 0) {
+          return null;
+        }
+
         const turnoIds = turnos.map((t) => t.id);
 
         // Contar localizações
@@ -352,8 +368,11 @@ export const getEquipesMaiorTempoSemCaptura = async (rawData?: unknown) =>
 
       const stats = await Promise.all(statsPromises);
 
+      // Filtrar apenas equipes que têm turnos (remover nulls)
+      const statsComTurnos = stats.filter((s): s is EquipeLocalizacaoStats => s !== null);
+
       // Filtrar apenas equipes que têm turnos mas sem localizações, ou ordenar por maior tempo sem captura
-      const statsComTempo = stats
+      const statsComTempo = statsComTurnos
         .filter((s) => s.tempoSemCaptura !== null || s.totalLocalizacoes === 0)
         .sort((a, b) => {
           // Priorizar equipes sem localizações
