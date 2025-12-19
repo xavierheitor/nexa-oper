@@ -37,6 +37,7 @@ interface Localizacao {
   capturedAt: Date;
   tagType: string | null;
   tagDetail: string | null;
+  batteryLevel: number | null;
 }
 
 interface TurnoLocationMapModalProps {
@@ -148,6 +149,62 @@ export default function TurnoLocationMapModal({
     }).format(date);
   };
 
+  // Obter cor do nível de bateria
+  const getBatteryColor = (level: number | null): string => {
+    if (level === null) return 'default';
+    if (level >= 50) return 'green';
+    if (level >= 20) return 'orange';
+    return 'red';
+  };
+
+  // Calcular intervalo em minutos entre duas datas
+  const getIntervalMinutes = (date1: Date, date2: Date): number => {
+    return (date2.getTime() - date1.getTime()) / (1000 * 60);
+  };
+
+  // Formatar intervalo em texto legível
+  const formatInterval = (minutes: number): string => {
+    if (minutes < 60) {
+      return `${Math.round(minutes)} min`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.round(minutes % 60);
+    return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+  };
+
+  // Processar localizações e inserir indicadores de gap
+  const processLocalizacoesWithGaps = () => {
+    const items: Array<{ type: 'location' | 'gap'; data: any; index?: number }> = [];
+
+    localizacoes.forEach((loc, index) => {
+      // Verificar gap antes desta localização (exceto a primeira)
+      if (index > 0) {
+        const previousLoc = localizacoes[index - 1];
+        const intervalMinutes = getIntervalMinutes(previousLoc.capturedAt, loc.capturedAt);
+
+        if (intervalMinutes > 30) {
+          items.push({
+            type: 'gap',
+            data: {
+              startTime: previousLoc.capturedAt,
+              endTime: loc.capturedAt,
+              intervalMinutes,
+            },
+          });
+        }
+      }
+
+      // Adicionar a localização
+      items.push({
+        type: 'location',
+        data: loc,
+        index: index + 1,
+      });
+    });
+
+    return items;
+  };
+
   return (
     <Modal
       title={
@@ -241,40 +298,78 @@ export default function TurnoLocationMapModal({
           <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
             <Title level={5}>Ordem das Localizações:</Title>
             <Space direction="vertical" style={{ width: '100%' }} size="small">
-              {localizacoes.map((loc, index) => (
-                <div
-                  key={loc.id}
-                  style={{
-                    padding: '8px 12px',
-                    border: '1px solid #d9d9d9',
-                    borderRadius: '4px',
-                    backgroundColor: index === 0 ? '#e6f7ff' : index === localizacoes.length - 1 ? '#fff7e6' : '#fafafa',
-                  }}
-                >
-                  <Space>
-                    <Tag color={index === 0 ? 'green' : index === localizacoes.length - 1 ? 'orange' : 'blue'}>
-                      {index + 1}
-                    </Tag>
-                    <Text strong>{formatDateTime(loc.capturedAt)}</Text>
-                    <Text type="secondary">
-                      ({loc.latitude.toFixed(6)}, {loc.longitude.toFixed(6)})
-                    </Text>
-                    {loc.accuracy && (
-                      <Text type="secondary">Precisão: {loc.accuracy.toFixed(0)}m</Text>
-                    )}
-                    {loc.tagType && (
-                      <Tag>{loc.tagType}</Tag>
-                    )}
-                  </Space>
-                  {loc.tagDetail && (
-                    <div style={{ marginTop: 4, marginLeft: 32 }}>
-                      <Text type="secondary" style={{ fontSize: '12px' }}>
-                        {loc.tagDetail}
-                      </Text>
+              {processLocalizacoesWithGaps().map((item, itemIndex) => {
+                if (item.type === 'gap') {
+                  const { startTime, endTime, intervalMinutes } = item.data;
+                  return (
+                    <div
+                      key={`gap-${itemIndex}`}
+                      style={{
+                        padding: '8px 12px',
+                        border: '2px solid #ff4d4f',
+                        borderRadius: '4px',
+                        backgroundColor: '#fff1f0',
+                        boxShadow: '0 2px 8px rgba(255, 77, 79, 0.3)',
+                      }}
+                    >
+                      <Space>
+                        <Tag color="red">⚠️</Tag>
+                        <Text strong type="danger">
+                          Sem captura por {formatInterval(intervalMinutes)}
+                        </Text>
+                        <Text type="secondary">
+                          ({formatDateTime(startTime)} → {formatDateTime(endTime)})
+                        </Text>
+                      </Space>
                     </div>
-                  )}
-                </div>
-              ))}
+                  );
+                }
+
+                const loc = item.data;
+                const index = item.index! - 1;
+                const isFirst = index === 0;
+                const isLast = index === localizacoes.length - 1;
+
+                return (
+                  <div
+                    key={loc.id}
+                    style={{
+                      padding: '8px 12px',
+                      border: '1px solid #d9d9d9',
+                      borderRadius: '4px',
+                      backgroundColor: isFirst ? '#e6f7ff' : isLast ? '#fff7e6' : '#fafafa',
+                    }}
+                  >
+                    <Space>
+                      <Tag color={isFirst ? 'green' : isLast ? 'orange' : 'blue'}>
+                        {item.index}
+                      </Tag>
+                      <Text strong>{formatDateTime(loc.capturedAt)}</Text>
+                      <Text type="secondary">
+                        ({loc.latitude.toFixed(6)}, {loc.longitude.toFixed(6)})
+                      </Text>
+                      {loc.accuracy && (
+                        <Text type="secondary">Precisão: {loc.accuracy.toFixed(0)}m</Text>
+                      )}
+                      {loc.batteryLevel !== null && (
+                        <Tag color={getBatteryColor(loc.batteryLevel)}>
+                          🔋 {loc.batteryLevel}%
+                        </Tag>
+                      )}
+                      {loc.tagType && (
+                        <Tag>{loc.tagType}</Tag>
+                      )}
+                    </Space>
+                    {loc.tagDetail && (
+                      <div style={{ marginTop: 4, marginLeft: 32 }}>
+                        <Text type="secondary" style={{ fontSize: '12px' }}>
+                          {loc.tagDetail}
+                        </Text>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </Space>
           </div>
         </div>
