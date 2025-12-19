@@ -410,6 +410,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           key: '/dashboard/relatorios/aderencia-equipe',
           label: <Link href='/dashboard/relatorios/aderencia-equipe'>Aderência de Equipes</Link>,
         },
+        {
+          key: '/dashboard/relatorios/localizacao',
+          label: <Link href='/dashboard/relatorios/localizacao'>Localização</Link>,
+        },
       ],
     },
     {
