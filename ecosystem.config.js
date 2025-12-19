@@ -28,7 +28,7 @@ function loadEnvFile(filePath) {
 
 // Carregar variáveis de ambiente dos arquivos .env
 const apiEnv = loadEnvFile('/var/www/nexa-oper/apps/api/.env');
-const webEnv = loadEnvFile('/var/www/nexa-oper/apps/web/.env');
+const webEnv = loadEnvFile('/var/www/nexa-oper/apps/web/.env.local');
 
 module.exports = {
   apps: [
@@ -41,10 +41,7 @@ module.exports = {
       instances: 2,
       // Interpreter & Node flags
       interpreter: 'node',
-      node_args: [
-        '--unhandled-rejections=strict',
-        '--trace-warnings',
-      ],
+      node_args: ['--unhandled-rejections=strict', '--trace-warnings'],
       // Health & lifecycle
       listen_timeout: 10000,
       kill_timeout: 30000,
@@ -59,6 +56,7 @@ module.exports = {
       max_memory_restart: '1G',
       // Env - mesclar variáveis do .env com as padrões
       env: {
+        ...apiEnv,
         NODE_ENV: 'production',
         PORT: 3001,
         LOG_PATH: '/var/www/nexa-oper/logs',
@@ -99,6 +97,7 @@ module.exports = {
       max_memory_restart: '1G',
       // Env - mesclar variáveis do .env com as padrões
       env: {
+        ...webEnv,
         NODE_ENV: 'production',
         PORT: 3000,
         LOG_PATH: '/var/www/nexa-oper/logs',

@@ -1,4 +1,35 @@
 /** PM2 ecosystem for Nexa Oper (API + Web) */
+const path = require('path');
+const fs = require('fs');
+
+// Função para carregar variáveis de ambiente de um arquivo .env
+function loadEnvFile(filePath) {
+  const env = {};
+  if (fs.existsSync(filePath)) {
+    const content = fs.readFileSync(filePath, 'utf8');
+    content.split('\n').forEach((line) => {
+      const trimmedLine = line.trim();
+      if (trimmedLine && !trimmedLine.startsWith('#')) {
+        const [key, ...valueParts] = trimmedLine.split('=');
+        if (key && valueParts.length > 0) {
+          // Remove aspas do início e fim se existirem
+          let value = valueParts.join('=');
+          if ((value.startsWith('"') && value.endsWith('"')) ||
+              (value.startsWith("'") && value.endsWith("'"))) {
+            value = value.slice(1, -1);
+          }
+          env[key.trim()] = value.trim();
+        }
+      }
+    });
+  }
+  return env;
+}
+
+// Carregar variáveis de ambiente dos arquivos .env
+const apiEnv = loadEnvFile('/var/www/nexa-oper/apps/api/.env');
+const webEnv = loadEnvFile('/var/www/nexa-oper/apps/web/.env.local');
+
 module.exports = {
   apps: [
     // ===================== API =====================
@@ -7,7 +38,7 @@ module.exports = {
       cwd: '/var/www/nexa-oper',
       script: './apps/api/dist/main.js',
       exec_mode: 'cluster',
-      instances: 2,                 // pode virar 'max' depois
+      instances: 2,
       // Interpreter & Node flags
       interpreter: 'node',
       node_args: [
@@ -15,10 +46,10 @@ module.exports = {
         '--trace-warnings',
       ],
       // Health & lifecycle
-      listen_timeout: 10000,        // tempo p/ app subir
-      kill_timeout: 30000,          // graceful shutdown
-      wait_ready: false,            // usamos sinais, não ready msg
-      shutdown_with_message: false, // desligamos via SIGINT/SIGTERM
+      listen_timeout: 10000,
+      kill_timeout: 30000,
+      wait_ready: false,
+      shutdown_with_message: false,
       // Restart policy
       autorestart: true,
       min_uptime: '10s',
@@ -26,14 +57,18 @@ module.exports = {
       restart_delay: 4000,
       exp_backoff_restart_delay: 2000,
       max_memory_restart: '1G',
-      // Env
+      // Env - mesclar variáveis do .env com as padrões
       env: {
+	...apiEnv,
         NODE_ENV: 'production',
         PORT: 3001,
         LOG_PATH: '/var/www/nexa-oper/logs',
-        TRUST_PROXY: 'true',        // habilita trust proxy no main
-        HAS_HTTPS: 'false',         // ajuste p/ 'true' se atrás de HTTPS real (HSTS)
-        // CORS_ORIGINS: 'https://app.seudominio.com,https://outro.com',
+        TRUST_PROXY: 'true',
+        HAS_HTTPS: 'false',
+        // Especificar caminho do .env para o NestJS encontrar o arquivo
+        ENV_FILE_PATH: '/var/www/nexa-oper/apps/api/.env',
+        // Carregar todas as variáveis do arquivo .env
+        ...apiEnv,
       },
       // Logs
       merge_logs: true,
@@ -47,7 +82,6 @@ module.exports = {
     {
       name: 'nexa-web',
       cwd: '/var/www/nexa-oper/apps/web',
-      // Dica: manter o start do Next explícito pra evitar confusão com workspaces
       script: './node_modules/.bin/next',
       args: 'start -p 3000',
       exec_mode: 'cluster',
@@ -64,12 +98,14 @@ module.exports = {
       restart_delay: 4000,
       exp_backoff_restart_delay: 2000,
       max_memory_restart: '1G',
+      // Env - mesclar variáveis do .env com as padrões
       env: {
+	...webEnv,
         NODE_ENV: 'production',
         PORT: 3000,
         LOG_PATH: '/var/www/nexa-oper/logs',
-        // Se o Next estiver atrás de proxy/HTTPS:
-        // TRUST_PROXY: 'true',
+        // Carregar todas as variáveis do arquivo .env
+        ...webEnv,
       },
       merge_logs: true,
       time: true,
@@ -79,3 +115,4 @@ module.exports = {
     },
   ],
 };
+
