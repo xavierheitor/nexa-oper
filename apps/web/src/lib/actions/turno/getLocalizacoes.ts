@@ -69,6 +69,7 @@ export const getLocalizacoesTurno = async (rawData: unknown) =>
           capturedAt: true,
           tagType: true,
           tagDetail: true,
+          batteryLevel: true,
         },
       });
 
