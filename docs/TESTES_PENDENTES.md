@@ -1,6 +1,7 @@
 # Testes Pendentes - Módulos de Turnos e Justificativas
 
 ## 📋 Status do Commit
+
 - ✅ Commit realizado: `ee543e8`
 - ✅ Push para origin/main concluído
 - ✅ Banco de dados: `nexa_oper_template` sincronizado
@@ -10,6 +11,7 @@
 ### Módulo: Turno Realizado (`/api/turnos`)
 
 #### 1. Abrir Turno
+
 ```
 POST /api/turnos/aberturas
 Content-Type: application/json
@@ -30,6 +32,7 @@ Content-Type: application/json
 ```
 
 #### 2. Fechar Turno
+
 ```
 POST /api/turnos/:turnoId/fechamento
 Content-Type: application/json
@@ -40,6 +43,7 @@ Content-Type: application/json
 ```
 
 #### 3. Resumo de Turnos
+
 ```
 GET /api/turnos/resumo?data=2024-10-30&equipe=1
 ```
@@ -51,11 +55,13 @@ GET /api/turnos/resumo?data=2024-10-30&equipe=1
 #### 1. Tipos de Justificativa
 
 ##### Listar Tipos
+
 ```
 GET /api/tipos-justificativa
 ```
 
 ##### Criar Tipo
+
 ```
 POST /api/tipos-justificativa
 Content-Type: application/json
@@ -69,6 +75,7 @@ Content-Type: application/json
 ```
 
 ##### Atualizar Tipo
+
 ```
 PATCH /api/tipos-justificativa/:id
 Content-Type: application/json
@@ -83,6 +90,7 @@ Content-Type: application/json
 #### 2. Justificativas
 
 ##### Criar Justificativa
+
 ```
 POST /api/faltas/:faltaId/justificativas
 Content-Type: application/json
@@ -95,6 +103,7 @@ Content-Type: application/json
 ```
 
 ##### Aprovar Justificativa
+
 ```
 POST /api/justificativas/:id/aprovar
 Content-Type: application/json
@@ -105,6 +114,7 @@ Content-Type: application/json
 ```
 
 ##### Rejeitar Justificativa
+
 ```
 POST /api/justificativas/:id/rejeitar
 Content-Type: application/json
@@ -119,6 +129,7 @@ Content-Type: application/json
 ## 🧪 Cenários de Teste
 
 ### Fluxo Completo: Abertura e Fechamento de Turno
+
 1. Criar equipe (se não existir)
 2. Criar eletricistas (se não existirem)
 3. **POST** `/api/turnos/aberturas` - Abrir turno para equipe
@@ -126,6 +137,7 @@ Content-Type: application/json
 5. **POST** `/api/turnos/:turnoId/fechamento` - Fechar turno
 
 ### Fluxo Completo: Justificativas
+
 1. Criar tipo de justificativa: **POST** `/api/tipos-justificativa`
 2. Verificar tipos criados: **GET** `/api/tipos-justificativa`
 3. Criar falta manualmente no banco (ou via endpoint futuro)
@@ -138,7 +150,9 @@ Content-Type: application/json
 ## ✅ Funcionalidades Automáticas
 
 ### Reconciliação Automática de Turnos
+
 Ao abrir um turno via **POST** `/api/turnos/aberturas`, o sistema:
+
 1. Cria o turno e registra os eletricistas que abriram
 2. Executa reconciliação automática assíncrona que:
    - Compara escala prevista vs turnos realmente abertos
@@ -146,12 +160,14 @@ Ao abrir um turno via **POST** `/api/turnos/aberturas`, o sistema:
    - Cria registros de **DivergenciaEscala** quando eletricista abriu em equipe diferente da escala
 
 **Tabelas atualizadas automaticamente:**
+
 - `Falta`: quando eletricista escalado não abriu turno
 - `DivergenciaEscala`: quando eletricista abriu em equipe diferente da escala
 
 ---
 
 ## ⚠️ Validações Pendentes
+
 - [ ] DTOs com class-validator não foram implementados
 - [ ] Validação de ids e referências no banco
 - [ ] Testes unitários dos services
@@ -162,8 +178,8 @@ Ao abrir um turno via **POST** `/api/turnos/aberturas`, o sistema:
 ---
 
 ## 📝 Observações
+
 - Endpoints estão sem autenticação por enquanto
 - Dados de `executadoPor` e `createdBy` aceitam qualquer string
 - Falta implementar endpoints para criação de faltas manualmente
 - Swagger disponível em `/api/docs` para documentação interativa
-
