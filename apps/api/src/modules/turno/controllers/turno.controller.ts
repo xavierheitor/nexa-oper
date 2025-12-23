@@ -62,10 +62,10 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
 import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
-import { TurnoService } from '../services/turno.service';
 import {
   AbrirTurnoDto,
   FecharTurnoDto,
@@ -73,9 +73,23 @@ import {
   TurnoListResponseDto,
   TurnoQueryDto,
 } from '../dto';
+// CQRS Commands
+import { CreateTurnoCommand } from '../cqrs/commands/create-turno.command';
+import { CloseTurnoCommand } from '../cqrs/commands/close-turno.command';
+import { DeleteTurnoCommand } from '../cqrs/commands/delete-turno.command';
+// CQRS Queries
+import { GetTurnosQuery } from '../cqrs/queries/get-turnos.query';
+import { GetTurnoByIdQuery } from '../cqrs/queries/get-turno-by-id.query';
 
 /**
  * Controlador responsável pelas operações de turnos
+ *
+ * ARQUITETURA:
+ * - Utiliza padrão CQRS para separar Commands (escrita) e Queries (leitura)
+ * - Commands são usados para operações de escrita (criar, fechar, deletar)
+ * - Queries são usados para operações de leitura (listar, buscar)
+ * - Event Sourcing captura todos os eventos para auditoria completa
+ * - Circuit Breaker protege chamadas externas contra falhas em cascata
  *
  * SEGURANÇA:
  * - Todas as rotas requerem autenticação JWT
@@ -88,6 +102,7 @@ import {
  * - Ordenação otimizada (data de solicitação em desc)
  * - Filtros de busca para facilitar localização
  * - Validação de parâmetros para prevenir consultas inválidas
+ * - Queries podem ser otimizadas com cache
  */
 @ApiTags('turnos')
 @ApiBearerAuth()
@@ -96,7 +111,10 @@ import {
 export class TurnoController {
   private readonly logger = new Logger(TurnoController.name);
 
-  constructor(private readonly turnoService: TurnoService) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus
+  ) {}
 
   /**
    * Abre um novo turno
@@ -146,9 +164,13 @@ export class TurnoController {
     @GetUserContracts() allowedContracts: ContractPermission[]
   ): Promise<TurnoResponseDto> {
     this.logger.log(
-      `Abrindo turno - Veículo: ${abrirDto.veiculoId}, Equipe: ${abrirDto.equipeId}`
+      `Abrindo turno via CQRS - Veículo: ${abrirDto.veiculoId}, Equipe: ${abrirDto.equipeId}`
     );
-    return this.turnoService.abrirTurno(abrirDto, allowedContracts);
+
+    // Usa Command Bus para executar comando de criação
+    // O handler emitirá eventos automaticamente para Event Sourcing
+    const command = new CreateTurnoCommand(abrirDto, allowedContracts);
+    return this.commandBus.execute(command);
   }
 
   /**
@@ -196,8 +218,12 @@ export class TurnoController {
     @Body() fecharDto: FecharTurnoDto,
     @GetUserContracts() allowedContracts: ContractPermission[]
   ): Promise<TurnoResponseDto> {
-    this.logger.log(`Fechando turno - ID: ${fecharDto.turnoId}`);
-    return this.turnoService.fecharTurno(fecharDto, allowedContracts);
+    this.logger.log(`Fechando turno via CQRS - ID: ${fecharDto.turnoId}`);
+
+    // Usa Command Bus para executar comando de fechamento
+    // O handler emitirá eventos automaticamente para Event Sourcing
+    const command = new CloseTurnoCommand(fecharDto, allowedContracts);
+    return this.commandBus.execute(command);
   }
 
   /**
@@ -288,8 +314,11 @@ export class TurnoController {
     @Query() query: TurnoQueryDto,
     @GetUserContracts() allowedContracts: ContractPermission[]
   ): Promise<TurnoListResponseDto> {
-    this.logger.log('Listando turnos');
-    return this.turnoService.findAll(
+    this.logger.log('Listando turnos via CQRS');
+
+    // Usa Query Bus para executar query de listagem
+    // Queries podem ser otimizadas com cache
+    const getTurnosQuery = new GetTurnosQuery(
       {
         page: query.page || 1,
         limit: query.limit || 10,
@@ -303,6 +332,7 @@ export class TurnoController {
       },
       allowedContracts
     );
+    return this.queryBus.execute(getTurnosQuery);
   }
 
   /**
@@ -347,8 +377,12 @@ export class TurnoController {
     @Param('id', ParseIntPipe) id: number,
     @GetUserContracts() allowedContracts: ContractPermission[]
   ): Promise<TurnoResponseDto> {
-    this.logger.log(`Buscando turno com ID: ${id}`);
-    return this.turnoService.findOne(id, allowedContracts);
+    this.logger.log(`Buscando turno via CQRS - ID: ${id}`);
+
+    // Usa Query Bus para executar query de busca por ID
+    // Queries podem ser otimizadas com cache
+    const query = new GetTurnoByIdQuery(id, allowedContracts);
+    return this.queryBus.execute(query);
   }
 
   /**
@@ -397,7 +431,11 @@ export class TurnoController {
     @Param('id', ParseIntPipe) id: number,
     @GetUserContracts() allowedContracts: ContractPermission[]
   ): Promise<TurnoResponseDto> {
-    this.logger.log(`Removendo turno com ID: ${id}`);
-    return this.turnoService.remove(id, allowedContracts);
+    this.logger.log(`Removendo turno via CQRS - ID: ${id}`);
+
+    // Usa Command Bus para executar comando de exclusão
+    // O handler emitirá eventos automaticamente para Event Sourcing
+    const command = new DeleteTurnoCommand(id, allowedContracts);
+    return this.commandBus.execute(command);
   }
 }

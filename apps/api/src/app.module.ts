@@ -43,6 +43,7 @@ import {
 } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -100,6 +101,18 @@ import { WebLogsModule } from './modules/web-logs/web-logs.module';
 
     // Módulo de agendamento de jobs
     ScheduleModule.forRoot(),
+
+    // Módulo de Event Emitter para Event Sourcing
+    EventEmitterModule.forRoot({
+      // Configuração global do Event Emitter
+      wildcard: false,
+      delimiter: '.',
+      newListener: false,
+      removeListener: false,
+      maxListeners: 10,
+      verboseMemoryLeak: false,
+      ignoreErrors: false,
+    }),
 
     // Módulo de banco de dados - deve ser importado primeiro
     DatabaseModule,
