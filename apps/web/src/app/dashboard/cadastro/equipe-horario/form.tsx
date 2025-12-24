@@ -32,12 +32,14 @@ interface EquipeTurnoHistoricoFormProps {
   };
   onSubmit: (values: unknown) => Promise<void>;
   onCancel: () => void;
+  disableEquipeSelect?: boolean; // Nova prop para desabilitar o select de equipe
 }
 
 export default function EquipeTurnoHistoricoForm({
   initialValues,
   onSubmit,
   onCancel,
+  disableEquipeSelect = false,
 }: EquipeTurnoHistoricoFormProps) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -156,6 +158,7 @@ export default function EquipeTurnoHistoricoForm({
           placeholder="Selecione uma equipe"
           loading={equipesLoading}
           showSearch
+          disabled={disableEquipeSelect}
           filterOption={(input, option) =>
             (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
           }

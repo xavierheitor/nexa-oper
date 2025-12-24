@@ -209,7 +209,7 @@ export default function ChecklistPendenciasPage() {
         open={controller.isOpen}
         onCancel={controller.close}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         width={800}
       >
         {controller.editingItem && (

@@ -25,12 +25,15 @@ import {
   Form,
   App,
 } from 'antd';
-import { CalendarOutlined, SearchOutlined, SwapOutlined } from '@ant-design/icons';
+import { CalendarOutlined, SearchOutlined, SwapOutlined, EditOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { getEscalasPublicadas } from '@/lib/actions/escala/edicaoEmCurso';
 import { transferirEscala } from '@/lib/actions/escala/escalaEquipePeriodo';
 import { listEletricistas } from '@/lib/actions/eletricista/list';
+import { createEquipeTurnoHistorico } from '@/lib/actions/escala/equipeTurnoHistorico';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useCrudController } from '@/lib/hooks/useCrudController';
+import EquipeTurnoHistoricoForm from '@/app/dashboard/cadastro/equipe-horario/form';
 import type { ColumnsType } from 'antd/es/table';
 
 const { RangePicker } = DatePicker;
@@ -72,6 +75,11 @@ export default function EdicaoEmCursoPage() {
   } | null>(null);
   const [formTransferencia] = Form.useForm();
   const [loadingTransferencia, setLoadingTransferencia] = useState(false);
+
+  // Estados para modal de horário
+  const [modalHorarioOpen, setModalHorarioOpen] = useState(false);
+  const [equipeIdParaHorario, setEquipeIdParaHorario] = useState<number | null>(null);
+  const crudHorario = useCrudController<any>('equipeTurnoHistorico');
 
   // Buscar eletricistas para o select
   const { data: eletricistasData } = useDataFetch(
@@ -181,10 +189,12 @@ export default function EdicaoEmCursoPage() {
         const row: any = {
           key: `${escala.id}-${eletricistaId}`,
           escalaId: escala.id,
+          equipeId: escala.equipe.id,
           eletricistaId,
           base: escala.base?.nome || '-',
           prefixo: escala.equipe.nome.substring(0, 10) || '-', // Usa parte do nome como prefixo
           horario: horarioStr,
+          temHorario: !!escala.horario,
           eletricista: eletricista.nome,
           matricula: eletricista.matricula,
           // Primeira linha da escala terá rowSpan igual ao número de eletricistas
@@ -264,10 +274,28 @@ export default function EdicaoEmCursoPage() {
         title: 'Horário',
         dataIndex: 'horario',
         key: 'horario',
-        width: 150,
+        width: 200,
         onCell: (record: any) => ({
           rowSpan: record.rowSpan,
         }),
+        render: (horario: string, record: any) => (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>{horario}</span>
+            {!record.temHorario && (
+              <Button
+                type="link"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setEquipeIdParaHorario(record.equipeId);
+                  setModalHorarioOpen(true);
+                }}
+                title="Definir horário da equipe"
+                style={{ padding: 0, height: 'auto', minWidth: 'auto' }}
+              />
+            )}
+          </div>
+        ),
       },
       {
         title: 'Eletricista',
@@ -639,6 +667,64 @@ export default function EdicaoEmCursoPage() {
             />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* Modal para definir/alterar horário da equipe */}
+      <Modal
+        title="Definir Horário da Equipe"
+        open={modalHorarioOpen}
+        onCancel={() => {
+          setModalHorarioOpen(false);
+          setEquipeIdParaHorario(null);
+        }}
+        footer={null}
+        width={700}
+        destroyOnHidden={true}
+      >
+        {equipeIdParaHorario && (
+          <EquipeTurnoHistoricoForm
+            key={`horario-form-${equipeIdParaHorario}`}
+            initialValues={{
+              equipeId: equipeIdParaHorario,
+              dataInicio: new Date(),
+              dataFim: null,
+            }}
+            disableEquipeSelect={true}
+            onSubmit={async (values: unknown) => {
+              await crudHorario.exec(
+                () => createEquipeTurnoHistorico(values),
+                'Horário definido com sucesso!',
+                () => {
+                  setModalHorarioOpen(false);
+                  setEquipeIdParaHorario(null);
+                  // Recarregar escalas para atualizar os horários
+                  const carregarEscalas = async () => {
+                    if (!periodo[0] || !periodo[1]) return;
+                    setLoading(true);
+                    try {
+                      const result = await getEscalasPublicadas({
+                        periodoInicio: periodo[0].toDate(),
+                        periodoFim: periodo[1].toDate(),
+                      });
+                      if (result.success && result.data) {
+                        setEscalas(result.data as any);
+                      }
+                    } catch (error) {
+                      console.error('Erro ao carregar escalas:', error);
+                    } finally {
+                      setLoading(false);
+                    }
+                  };
+                  carregarEscalas();
+                }
+              );
+            }}
+            onCancel={() => {
+              setModalHorarioOpen(false);
+              setEquipeIdParaHorario(null);
+            }}
+          />
+        )}
       </Modal>
     </div>
   );
