@@ -19,6 +19,10 @@ import { getStatsByTipoEquipe } from '@/lib/actions/turno/getStatsByTipoEquipe';
 import { getStatsByHoraETipoEquipe } from '@/lib/actions/turno/getStatsByHoraETipoEquipe';
 import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
 import { listBases } from '@/lib/actions/base/list';
+import { getTurnosPrevistosHoje } from '@/lib/actions/turno/getTurnosPrevistos';
+import { getEstatisticasTurnosPrevistos } from '@/lib/actions/turno/getEstatisticasTurnosPrevistos';
+import type { TurnoPrevisto, EstatisticasTurnosPrevistos } from '@/lib/types/turnoPrevisto';
+import { formatTime } from '@/lib/utils/turnoPrevistoHelpers';
 import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 import TurnoLocationMapModal from '@/ui/components/TurnoLocationMapModal';
@@ -256,6 +260,30 @@ export default function TurnosPage() {
     []
   );
 
+  // Fetch de turnos previstos
+  const { data: turnosPrevistosResult, loading: loadingTurnosPrevistos, refetch: refetchTurnosPrevistos } = useDataFetch<TurnoPrevisto[]>(
+    async () => {
+      const result = await getTurnosPrevistosHoje();
+      if (result.success && result.data) {
+        return result.data;
+      }
+      throw new Error(result.error || 'Erro ao carregar turnos previstos');
+    },
+    []
+  );
+
+  // Fetch de estatísticas de turnos previstos
+  const { data: statsPrevistosResult, loading: loadingStatsPrevistos, refetch: refetchStatsPrevistos } = useDataFetch<EstatisticasTurnosPrevistos>(
+    async () => {
+      const result = await getEstatisticasTurnosPrevistos();
+      if (result.success && result.data) {
+        return result.data;
+      }
+      throw new Error(result.error || 'Erro ao carregar estatísticas de turnos previstos');
+    },
+    []
+  );
+
   // Loading geral (qualquer um dos fetches)
   const loading = loadingTurnos || loadingGrafico || loadingGraficoHora || loadingGraficoBase;
 
@@ -306,6 +334,8 @@ export default function TurnosPage() {
       refetchGrafico(),
       refetchGraficoHora(),
       refetchGraficoBase(),
+      refetchTurnosPrevistos(),
+      refetchStatsPrevistos(),
     ]);
   };
 
@@ -690,6 +720,229 @@ export default function TurnosPage() {
           }}
         />
       </Card>
+
+      {/* Seção de Turnos Previstos */}
+      {loadingStatsPrevistos ? (
+        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+          <Col xs={24}>
+            <Card>
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <Spin size="large" />
+              </div>
+            </Card>
+          </Col>
+        </Row>
+      ) : statsPrevistosResult ? (
+        <>
+          {/* Cards de Estatísticas de Turnos Previstos */}
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            <Col xs={24}>
+              <Title level={3}>Turnos Previstos (Baseado em Escala)</Title>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={3}>
+              <Card>
+                <Statistic
+                  title="Turnos Previstos Hoje"
+                  value={statsPrevistosResult.totalPrevistosHoje}
+                  valueStyle={{ color: '#1890ff' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={3}>
+              <Card>
+                <Statistic
+                  title="Já Abertos"
+                  value={statsPrevistosResult.totalAbertos}
+                  valueStyle={{ color: '#52c41a' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={3}>
+              <Card>
+                <Statistic
+                  title="Não Abertos"
+                  value={statsPrevistosResult.totalNaoAbertos}
+                  valueStyle={{ color: '#f5222d' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={3}>
+              <Card>
+                <Statistic
+                  title="Aderentes"
+                  value={statsPrevistosResult.totalAderentes}
+                  valueStyle={{ color: '#52c41a' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={3}>
+              <Card>
+                <Statistic
+                  title="Não Aderentes"
+                  value={statsPrevistosResult.totalNaoAderentes}
+                  valueStyle={{ color: '#faad14' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={3}>
+              <Card>
+                <Statistic
+                  title="Turnos Extras"
+                  value={statsPrevistosResult.totalTurnosExtras}
+                  valueStyle={{ color: '#1890ff' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={3}>
+              <Card>
+                <Statistic
+                  title="Previstos até Agora"
+                  value={statsPrevistosResult.previstosAteAgora}
+                  valueStyle={{ color: '#13c2c2' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={3}>
+              <Card>
+                <Statistic
+                  title="Abertos até Agora"
+                  value={statsPrevistosResult.abertosAteAgora}
+                  valueStyle={{ color: '#52c41a' }}
+                />
+              </Card>
+            </Col>
+          </Row>
+
+          {/* Resumo por Tipo de Equipe */}
+          {statsPrevistosResult.porTipoEquipe.length > 0 && (
+            <Card title="Turnos Previstos por Tipo de Equipe" style={{ marginBottom: 24 }}>
+              <Table
+                dataSource={statsPrevistosResult.porTipoEquipe}
+                rowKey="tipoEquipeId"
+                pagination={false}
+                columns={[
+                  {
+                    title: 'Tipo de Equipe',
+                    dataIndex: 'tipoEquipeNome',
+                    key: 'tipoEquipeNome',
+                  },
+                  {
+                    title: 'Previstos',
+                    dataIndex: 'previstos',
+                    key: 'previstos',
+                    align: 'center',
+                  },
+                  {
+                    title: 'Abertos',
+                    dataIndex: 'abertos',
+                    key: 'abertos',
+                    align: 'center',
+                    render: (value: number) => (
+                      <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{value}</span>
+                    ),
+                  },
+                  {
+                    title: 'Não Abertos',
+                    dataIndex: 'naoAbertos',
+                    key: 'naoAbertos',
+                    align: 'center',
+                    render: (value: number) => (
+                      <span style={{ color: '#f5222d', fontWeight: 'bold' }}>{value}</span>
+                    ),
+                  },
+                ]}
+              />
+            </Card>
+          )}
+
+          {/* Tabela Detalhada de Turnos Previstos */}
+          {turnosPrevistosResult && turnosPrevistosResult.length > 0 && (
+            <Card title="Detalhamento de Turnos Previstos" style={{ marginBottom: 24 }}>
+              <Table
+                dataSource={turnosPrevistosResult}
+                rowKey={(record) => `${record.equipeId}-${record.status}-${record.turnoId || 'no-turno'}`}
+                pagination={{ pageSize: 20 }}
+                columns={[
+                  {
+                    title: 'Equipe',
+                    dataIndex: 'equipeNome',
+                    key: 'equipeNome',
+                  },
+                  {
+                    title: 'Tipo',
+                    dataIndex: 'tipoEquipeNome',
+                    key: 'tipoEquipeNome',
+                  },
+                  {
+                    title: 'Horário Previsto',
+                    dataIndex: 'horarioPrevisto',
+                    key: 'horarioPrevisto',
+                    render: (horario: string | null) => formatTime(horario),
+                  },
+                  {
+                    title: 'Eletricistas',
+                    key: 'eletricistas',
+                    render: (_: unknown, record: TurnoPrevisto) => (
+                      <Space direction="vertical" size={0}>
+                        {record.eletricistas.map((el) => (
+                          <span key={el.id}>
+                            {el.nome} ({el.matricula})
+                          </span>
+                        ))}
+                      </Space>
+                    ),
+                  },
+                  {
+                    title: 'Status',
+                    dataIndex: 'status',
+                    key: 'status',
+                    render: (status: TurnoPrevisto['status'], record: TurnoPrevisto) => {
+                      let color: string;
+                      let text: string;
+                      switch (status) {
+                        case 'ADERENTE':
+                          color = 'success';
+                          text = 'Aderente';
+                          break;
+                        case 'NAO_ADERENTE':
+                          color = 'warning';
+                          text = record.diferencaMinutos
+                            ? `Não Aderente (+${Math.round(record.diferencaMinutos)}min)`
+                            : 'Não Aderente';
+                          break;
+                        case 'NAO_ABERTO':
+                          color = 'error';
+                          text = 'Não Aberto';
+                          break;
+                        case 'TURNO_EXTRA':
+                          color = 'processing';
+                          text = 'Turno Extra';
+                          break;
+                        default:
+                          color = 'default';
+                          text = status;
+                      }
+                      return <Tag color={color}>{text}</Tag>;
+                    },
+                  },
+                  {
+                    title: 'Horário Abertura',
+                    key: 'dataAbertura',
+                    render: (_: unknown, record: TurnoPrevisto) => {
+                      if (!record.dataAbertura) return '-';
+                      const data = new Date(record.dataAbertura);
+                      return data.toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      });
+                    },
+                  },
+                ]}
+              />
+            </Card>
+          )}
+        </>
+      ) : null}
 
       {/* Modal de Localização */}
       <TurnoLocationMapModal
