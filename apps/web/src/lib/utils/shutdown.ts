@@ -60,6 +60,15 @@ async function gracefulShutdown(signal: string): Promise<void> {
       process.exit(1);
     }, 30000);
 
+    // Parar scheduler de tarefas agendadas
+    try {
+      const { schedulerService } = await import('../services/scheduler.service');
+      schedulerService.stop();
+      console.log('✅ Scheduler parado com sucesso');
+    } catch (error) {
+      console.warn('⚠️  Erro ao parar scheduler:', error);
+    }
+
     // Desconectar do banco de dados
     console.log('🔄 Desconectando do banco de dados...');
     await dbService.disconnect();

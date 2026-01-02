@@ -53,6 +53,8 @@ model Equipe {
   JustificativasEquipe JustificativaEquipe[]
   CasosJustificativaEquipe CasoJustificativaEquipe[]
 
+  AderenciaEscalaSnapshot AderenciaEscalaSnapshot[]
+
   @@unique([nome])
   @@index([nome])
 }

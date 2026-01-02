@@ -28,6 +28,10 @@ export async function register() {
   if (typeof window === 'undefined') {
     const { setupGracefulShutdown } = await import('./src/lib/utils/shutdown');
     setupGracefulShutdown();
+
+    // Inicializar scheduler de tarefas agendadas
+    const { schedulerService } = await import('./src/lib/services/scheduler.service');
+    schedulerService.initialize();
   }
 }
 
