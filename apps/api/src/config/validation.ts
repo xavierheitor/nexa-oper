@@ -29,6 +29,12 @@ export const envValidationSchema = Joi.object({
   // Uploads
   UPLOAD_ROOT: Joi.string().optional().description('Caminho absoluto para pasta de uploads (padrão: ./uploads)'),
   UPLOAD_BASE_URL: Joi.string().uri().optional().description('URL base pública para acesso aos uploads (ex: https://storage.seudominio.com)'),
+
+  // Reconciliação interna
+  INTERNAL_KEY: Joi.string().min(16).optional().description('Chave interna para autenticação de endpoints internos'),
+  RECONCILE_CRON: Joi.string().optional().description('Expressão cron para execução automática de reconciliação (padrão: "0 23 * * *")'),
+  RECONCILE_LOCK_TTL_MS: Joi.number().min(60000).optional().default(900000).description('TTL do lock de reconciliação em ms (padrão: 15min)'),
+  RECONCILIACAO_DIAS_HISTORICO: Joi.number().min(1).optional().default(30).description('Número de dias de histórico para reconciliação (padrão: 30)'),
 });
 
 

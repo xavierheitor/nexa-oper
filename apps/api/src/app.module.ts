@@ -70,6 +70,7 @@ import { MetricsModule } from './metrics/metrics.module';
 import { TurnoRealizadoModule } from './modules/turno-realizado/turno-realizado.module';
 import { JustificativasModule } from './modules/justificativas/justificativas.module';
 import { WebLogsModule } from './modules/web-logs/web-logs.module';
+import { InternalReconciliacaoModule } from './modules/internal-reconciliacao/internal-reconciliacao.module';
 
 /**
  * Módulo raiz da aplicação
@@ -138,6 +139,7 @@ import { WebLogsModule } from './modules/web-logs/web-logs.module';
     TurnoRealizadoModule,
     JustificativasModule,
     WebLogsModule,
+    InternalReconciliacaoModule,
 
     // TODO: Adicionar outros módulos conforme necessário
     // UserModule,
