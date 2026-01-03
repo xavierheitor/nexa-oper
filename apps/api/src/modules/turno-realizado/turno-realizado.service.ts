@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
-import { TurnoReconciliacaoService } from './turno-reconciliacao.service';
 import { ConsolidadoEletricistaQueryDto, PeriodoTipo } from './dto/consolidado-eletricista-query.dto';
 import { ConsolidadoEquipeQueryDto } from './dto/consolidado-equipe-query.dto';
 import { FaltaFilterDto } from './dto/falta-filter.dto';
@@ -29,7 +28,6 @@ export class TurnoRealizadoService {
 
   constructor(
     private readonly db: DatabaseService,
-    private readonly turnoReconciliacaoService: TurnoReconciliacaoService,
   ) {}
 
   async abrirTurno(payload: AbrirTurnoPayload) {
@@ -68,22 +66,6 @@ export class TurnoRealizadoService {
 
       return turno;
     });
-
-    // Executar reconciliação assíncrona (fora da transação para não bloquear)
-    this.turnoReconciliacaoService
-      .reconciliarDiaEquipe({
-        dataReferencia: payload.dataReferencia,
-        equipePrevistaId: payload.equipeId,
-        executadoPor: executadoPor,
-      })
-      .then(() => {
-        this.logger.log(
-          `Reconciliação concluída para equipe ${payload.equipeId} em ${payload.dataReferencia}`
-        );
-      })
-      .catch((error) => {
-        this.logger.error('Erro na reconciliação:', error);
-      });
   }
 
   async fecharTurno(turnoId: number, executadoPor: string) {

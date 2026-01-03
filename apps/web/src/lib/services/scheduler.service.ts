@@ -7,6 +7,7 @@
 
 import * as cron from 'node-cron';
 import { gerarSnapshotAderencia } from '../actions/turno/gerarSnapshotAderencia';
+import { executarReconciliacaoDiaria } from '../actions/turno/executarReconciliacaoDiaria';
 
 class SchedulerService {
   private jobs: cron.ScheduledTask[] = [];
@@ -73,7 +74,26 @@ class SchedulerService {
       }
     );
 
-    this.jobs.push(jobMeioDia, jobFinalDia);
+    // Job às 23h: Reconciliação diária de turnos
+    const jobReconciliacao = cron.schedule(
+      '0 23 * * *', // 23:00 todos os dias
+      async () => {
+        console.log('[Scheduler] Executando reconciliação diária de turnos...');
+        try {
+          const resultado = await executarReconciliacaoDiaria();
+          console.log(
+            `[Scheduler] Reconciliação diária concluída - ${resultado.diasProcessados} dias processados, ${resultado.equipesProcessadas} equipes, ${resultado.erros.length} erros`
+          );
+        } catch (error) {
+          console.error('[Scheduler] Erro ao executar reconciliação diária:', error);
+        }
+      },
+      {
+        timezone: 'America/Sao_Paulo',
+      }
+    );
+
+    this.jobs.push(jobMeioDia, jobFinalDia, jobReconciliacao);
     this.initialized = true;
 
     console.log(`[Scheduler] ${this.jobs.length} jobs agendados e ativos`);

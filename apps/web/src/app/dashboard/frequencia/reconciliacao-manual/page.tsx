@@ -7,6 +7,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { listEquipes } from '@/lib/actions/equipe/list';
 import { reconciliarManual } from '@/lib/actions/turno-realizado/reconciliarManual';
+import { reconciliarForcado } from '@/lib/actions/turno-realizado/reconciliarForcado';
 import { ReloadOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -110,6 +111,8 @@ export default function ReconciliacaoManualPage() {
         status: 'PUBLICADA',
         periodoInicio: dataInicio,
         periodoFim: dataFim,
+        orderBy: 'periodoInicio',
+        orderDir: 'desc',
       });
 
       if (!result.success || !result.data) {
@@ -176,8 +179,6 @@ export default function ReconciliacaoManualPage() {
     setResultadoForcado(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
       const body: any = {};
 
       if (values.dataInicio && values.dataFim) {
@@ -187,18 +188,19 @@ export default function ReconciliacaoManualPage() {
         body.diasHistorico = values.diasHistorico || 30;
       }
 
-      const response = await fetch(`${apiUrl}/api/turnos-realizados/reconciliacao/forcado`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
+      // Usar Server Action em vez de fetch direto
+      const result = await reconciliarForcado(body);
 
-      const data = await response.json();
+      // Verificar se houve erro na Server Action
+      if (!result.success) {
+        throw new Error(result.error || 'Erro ao executar reconciliação forçada');
+      }
 
-      if (!response.ok) {
-        throw new Error(data.message || `Erro ${response.status}: ${response.statusText}`);
+      // Se chegou aqui, result.data contém os dados
+      const data = result.data;
+
+      if (!data) {
+        throw new Error('Dados não retornados pela reconciliação forçada');
       }
 
       setResultadoForcado(data);
@@ -217,7 +219,7 @@ export default function ReconciliacaoManualPage() {
     } catch (error: any) {
       const errorMessage =
         error.message ||
-        'Erro ao executar reconciliação forçada. Verifique se está acessando de localhost.';
+        'Erro ao executar reconciliação forçada.';
 
       setResultadoForcado({
         success: false,
@@ -261,6 +263,10 @@ export default function ReconciliacaoManualPage() {
 
       // Se chegou aqui, result.data contém os dados da API
       const data = result.data;
+
+      if (!data) {
+        throw new Error('Dados não retornados pela reconciliação');
+      }
 
       setResultado(data);
 

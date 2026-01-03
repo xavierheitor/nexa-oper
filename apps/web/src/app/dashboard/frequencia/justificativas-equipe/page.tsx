@@ -210,70 +210,80 @@ export default function JustificativasEquipePage() {
     },
   ];
 
+  const tabItems = [
+    {
+      key: 'casos-pendentes',
+      label: 'Casos Pendentes',
+      children: (
+        <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <Space>
+            <Select
+              style={{ width: 200 }}
+              placeholder="Status"
+              value={filtrosCasos.status}
+              onChange={(value) => setFiltrosCasos({ ...filtrosCasos, status: value, page: 1 })}
+              allowClear
+            >
+              <Select.Option value="pendente">Pendente</Select.Option>
+              <Select.Option value="justificado">Justificado</Select.Option>
+              <Select.Option value="ignorado">Ignorado</Select.Option>
+            </Select>
+          </Space>
+
+          <Table
+            columns={casosColumns}
+            dataSource={casosData?.items || []}
+            loading={!casosData}
+            rowKey="id"
+            pagination={{
+              current: filtrosCasos.page,
+              pageSize: filtrosCasos.pageSize,
+              total: casosData?.total || 0,
+              onChange: (page, pageSize) => setFiltrosCasos({ ...filtrosCasos, page, pageSize }),
+            }}
+          />
+        </Space>
+      ),
+    },
+    {
+      key: 'justificativas',
+      label: 'Justificativas Criadas',
+      children: (
+        <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <Space>
+            <Select
+              style={{ width: 200 }}
+              placeholder="Status"
+              value={filtros.status}
+              onChange={(value) => setFiltros({ ...filtros, status: value, page: 1 })}
+              allowClear
+            >
+              <Select.Option value="pendente">Pendente</Select.Option>
+              <Select.Option value="aprovada">Aprovada</Select.Option>
+              <Select.Option value="rejeitada">Rejeitada</Select.Option>
+            </Select>
+          </Space>
+
+          <Table
+            columns={columns}
+            dataSource={data?.items || []}
+            loading={!data}
+            rowKey="id"
+            pagination={{
+              current: filtros.page,
+              pageSize: filtros.pageSize,
+              total: data?.total || 0,
+              onChange: (page, pageSize) => setFiltros({ ...filtros, page, pageSize }),
+            }}
+          />
+        </Space>
+      ),
+    },
+  ];
+
   return (
     <Card title="Justificativas de Equipe">
-      <Tabs activeKey={activeTab} onChange={setActiveTab}>
-        <Tabs.TabPane tab="Casos Pendentes" key="casos-pendentes">
-          <Space direction="vertical" style={{ width: '100%' }} size="large">
-            <Space>
-              <Select
-                style={{ width: 200 }}
-                placeholder="Status"
-                value={filtrosCasos.status}
-                onChange={(value) => setFiltrosCasos({ ...filtrosCasos, status: value, page: 1 })}
-                allowClear
-              >
-                <Select.Option value="pendente">Pendente</Select.Option>
-                <Select.Option value="justificado">Justificado</Select.Option>
-                <Select.Option value="ignorado">Ignorado</Select.Option>
-              </Select>
-            </Space>
-
-            <Table
-              columns={casosColumns}
-              dataSource={casosData?.items || []}
-              loading={!casosData}
-              rowKey="id"
-              pagination={{
-                current: filtrosCasos.page,
-                pageSize: filtrosCasos.pageSize,
-                total: casosData?.total || 0,
-                onChange: (page, pageSize) => setFiltrosCasos({ ...filtrosCasos, page, pageSize }),
-              }}
-            />
-          </Space>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Justificativas Criadas" key="justificativas">
-          <Space direction="vertical" style={{ width: '100%' }} size="large">
-            <Space>
-              <Select
-                style={{ width: 200 }}
-                placeholder="Status"
-                value={filtros.status}
-                onChange={(value) => setFiltros({ ...filtros, status: value, page: 1 })}
-                allowClear
-              >
-                <Select.Option value="pendente">Pendente</Select.Option>
-                <Select.Option value="aprovada">Aprovada</Select.Option>
-                <Select.Option value="rejeitada">Rejeitada</Select.Option>
-              </Select>
-            </Space>
-
-            <Table
-              columns={columns}
-              dataSource={data?.items || []}
-              loading={!data}
-              rowKey="id"
-              pagination={{
-                current: filtros.page,
-                pageSize: filtros.pageSize,
-                total: data?.total || 0,
-                onChange: (page, pageSize) => setFiltros({ ...filtros, page, pageSize }),
-              }}
-            />
-          </Space>
-        </Tabs.TabPane>
-      </Tabs>
+      <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
     </Card>
   );
 }

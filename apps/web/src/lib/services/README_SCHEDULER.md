@@ -92,7 +92,7 @@ timezone: 'America/Sao_Paulo', // Altere aqui
 
 Os logs do scheduler aparecem no console do servidor:
 
-```
+```bash
 [Scheduler] Inicializando jobs agendados...
 [Scheduler] 2 jobs agendados e ativos
 [Scheduler] Executando snapshot parcial (meio-dia)...
@@ -132,4 +132,3 @@ await gerarSnapshotAderencia({
   geradoPor: 'teste',
 });
 ```
-
