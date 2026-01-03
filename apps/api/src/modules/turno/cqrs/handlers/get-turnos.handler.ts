@@ -19,11 +19,12 @@
  * ```
  */
 
-import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
-import { GetTurnosQuery } from '../queries/get-turnos.query';
-import { TurnoService } from '../../services/turno.service';
+import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
+
 import { TurnoListResponseDto } from '../../dto/turno-list-response.dto';
+import { TurnoService } from '../../services/turno.service';
+import { GetTurnosQuery } from '../queries/get-turnos.query';
 
 /**
  * Handler responsável por processar a query de listagem de turnos
@@ -59,4 +60,3 @@ export class GetTurnosHandler implements IQueryHandler<GetTurnosQuery> {
     return result;
   }
 }
-

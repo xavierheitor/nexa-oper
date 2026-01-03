@@ -25,11 +25,14 @@ export class LocalhostCorsGuard implements CanActivate {
     // Se não tem origin (curl, Postman, etc), permite apenas se vier de localhost
     if (!origin) {
       const host = request.headers.host || '';
-      const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
+      const isLocalhost =
+        host.includes('localhost') || host.includes('127.0.0.1');
 
       if (!isLocalhost) {
         this.logger.warn(`Acesso negado: requisição sem origin de ${host}`);
-        throw new ForbiddenException('Este endpoint só pode ser acessado de localhost');
+        throw new ForbiddenException(
+          'Este endpoint só pode ser acessado de localhost'
+        );
       }
 
       return true;
@@ -48,7 +51,9 @@ export class LocalhostCorsGuard implements CanActivate {
 
       if (!isLocalhost) {
         this.logger.warn(`Acesso negado: origin ${origin} não é localhost`);
-        throw new ForbiddenException('Este endpoint só pode ser acessado de localhost');
+        throw new ForbiddenException(
+          'Este endpoint só pode ser acessado de localhost'
+        );
       }
 
       this.logger.debug(`Acesso permitido: origin ${origin} é localhost`);
@@ -63,4 +68,3 @@ export class LocalhostCorsGuard implements CanActivate {
     }
   }
 }
-

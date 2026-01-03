@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { Test, TestingModule } from '@nestjs/testing';
-import { JwtService } from '@nestjs/jwt';
-import { UnauthorizedException, ForbiddenException } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { MobileUsersService } from '@modules/engine/mobile-users/services/mobile-users.service';
+import { UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
+
+import { AuthService } from './auth.service';
 
 // Mock bcrypt
 jest.mock('bcrypt');

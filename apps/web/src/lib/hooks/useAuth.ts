@@ -95,8 +95,6 @@ export function useAuth(options?: {
 
     // TODO: Implementar verificação de permissões quando o sistema estiver pronto
     // Por enquanto, todos os usuários autenticados têm todas as permissões
-    // const userPermissions = session?.user?.permissions || [];
-    // return userPermissions.includes(permission);
 
     return true; // Temporário: permite tudo se autenticado
   };
@@ -106,8 +104,6 @@ export function useAuth(options?: {
     if (!isAuthenticated) return false;
 
     // TODO: Implementar verificação de roles quando o sistema estiver pronto
-    // const userRoles = session?.user?.roles || [];
-    // return userRoles.includes(role);
 
     return true; // Temporário: permite tudo se autenticado
   };
@@ -149,4 +145,3 @@ export function useAuth(options?: {
     logout,
   };
 }
-

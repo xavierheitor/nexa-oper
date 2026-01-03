@@ -146,7 +146,7 @@ export default function EdicaoEmCursoPage() {
     const fim = periodo[1].toDate();
     const listaDias: Date[] = [];
 
-    let currentDate = new Date(inicio);
+    const currentDate = new Date(inicio);
     while (currentDate <= fim) {
       listaDias.push(new Date(currentDate));
       currentDate.setDate(currentDate.getDate() + 1);

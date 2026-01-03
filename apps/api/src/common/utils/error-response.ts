@@ -33,7 +33,7 @@ export function formatValidationErrors(
   if (!validationErrors || validationErrors.length === 0) {
     return {
       message: defaultMessage,
-      details: []
+      details: [],
     };
   }
 
@@ -41,14 +41,14 @@ export function formatValidationErrors(
   if (validationErrors.length === 1) {
     return {
       message: validationErrors[0],
-      details: []
+      details: [],
     };
   }
 
   // Se há múltiplos erros, usar mensagem genérica e detalhes
   return {
     message: defaultMessage,
-    details: validationErrors
+    details: validationErrors,
   };
 }
 
@@ -65,7 +65,10 @@ export function createValidationErrorResponse(
   path: string,
   defaultMessage: string = 'Dados inválidos fornecidos'
 ): HttpException {
-  const { message, details } = formatValidationErrors(validationErrors, defaultMessage);
+  const { message, details } = formatValidationErrors(
+    validationErrors,
+    defaultMessage
+  );
 
   const errorResponse: StandardErrorResponse = {
     statusCode: HttpStatus.BAD_REQUEST,
@@ -73,7 +76,7 @@ export function createValidationErrorResponse(
     path,
     message,
     details: details.length > 0 ? details : undefined,
-    error: 'Bad Request'
+    error: 'Bad Request',
   };
 
   return new HttpException(errorResponse, HttpStatus.BAD_REQUEST);
@@ -100,7 +103,7 @@ export function createStandardErrorResponse(
     path,
     message,
     details: details && details.length > 0 ? details : undefined,
-    error: getErrorName(statusCode)
+    error: getErrorName(statusCode),
   };
 
   return new HttpException(errorResponse, statusCode);
@@ -147,15 +150,27 @@ export function handleValidationError(error: any, path: string): HttpException {
   }
 
   // Se é um erro de validação com formato específico
-  if (error.response && error.response.message && Array.isArray(error.response.message)) {
+  if (
+    error.response &&
+    error.response.message &&
+    Array.isArray(error.response.message)
+  ) {
     return createValidationErrorResponse(error.response.message, path);
   }
 
   // Se é um erro genérico
   if (error.message && typeof error.message === 'string') {
-    return createStandardErrorResponse(error.message, path, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
+    return createStandardErrorResponse(
+      error.message,
+      path,
+      error.status || HttpStatus.INTERNAL_SERVER_ERROR
+    );
   }
 
   // Erro desconhecido
-  return createStandardErrorResponse('Erro interno do servidor', path, HttpStatus.INTERNAL_SERVER_ERROR);
+  return createStandardErrorResponse(
+    'Erro interno do servidor',
+    path,
+    HttpStatus.INTERNAL_SERVER_ERROR
+  );
 }

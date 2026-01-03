@@ -13,7 +13,7 @@ export {
   VeiculoMobileDto,
   EquipeMobileDto,
   EletricistaMobileDto,
-  ChecklistMobileDto
+  ChecklistMobileDto,
 } from './mobile-abrir-turno.dto';
 
 export {
@@ -22,7 +22,10 @@ export {
 } from './mobile-fechar-turno.dto';
 
 // DTOs de resposta
-export { TurnoResponseDto, EletricistaTurnoResponseDto } from './turno-response.dto';
+export {
+  TurnoResponseDto,
+  EletricistaTurnoResponseDto,
+} from './turno-response.dto';
 export { TurnoListResponseDto } from './turno-list-response.dto';
 export { TurnoQueryDto } from './turno-query.dto';
 

@@ -5,9 +5,11 @@
  * facilitar análise e debugging.
  */
 
-import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { Injectable } from '@nestjs/common';
+
 import { WebLogDto } from './dto/web-log.dto';
 import { StandardLogger } from '../../common/utils/logger';
 
@@ -42,7 +44,9 @@ export class WebLogsService {
       const timestamp = new Date().toISOString();
       const context = logDto.context || 'Unknown';
       const actionType = logDto.actionType ? ` - ${logDto.actionType}` : '';
-      const metadata = logDto.metadata ? `\n  Metadata: ${JSON.stringify(logDto.metadata, null, 2)}` : '';
+      const metadata = logDto.metadata
+        ? `\n  Metadata: ${JSON.stringify(logDto.metadata, null, 2)}`
+        : '';
 
       const logLine = `[${timestamp}] [WEB-ERROR] [${context}]${actionType} ${logDto.message}${metadata}\n`;
 
@@ -53,8 +57,10 @@ export class WebLogsService {
       this.logger.error(`[WEB] ${logDto.message}`, undefined, context);
     } catch (error) {
       // Em caso de erro ao salvar, loga mas não quebra a aplicação
-      this.logger.error('Erro ao salvar log do web', error instanceof Error ? error.stack : undefined);
+      this.logger.error(
+        'Erro ao salvar log do web',
+        error instanceof Error ? error.stack : undefined
+      );
     }
   }
 }
-

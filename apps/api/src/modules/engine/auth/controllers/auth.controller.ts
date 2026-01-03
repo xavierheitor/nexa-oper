@@ -20,11 +20,12 @@
  * @author Nexa Oper Team
  */
 
+import { LogOperation } from '@common/decorators/log-operation.decorator';
 import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
-import { AuthService } from '../services/auth.service';
+
 import { LoginDto } from '../dto/login.dto';
 import { RefreshDto } from '../dto/refresh.dto';
-import { LogOperation } from '@common/decorators/log-operation.decorator';
+import { AuthService } from '../services/auth.service';
 
 /**
  * Controlador de Autenticação Mobile

@@ -16,9 +16,10 @@
  * ```
  */
 
-import { ICommand } from '@nestjs/cqrs';
-import { AbrirTurnoDto } from '../../dto/abrir-turno.dto';
 import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import { ICommand } from '@nestjs/cqrs';
+
+import { AbrirTurnoDto } from '../../dto/abrir-turno.dto';
 
 /**
  * Command para criar um novo turno
@@ -30,4 +31,3 @@ export class CreateTurnoCommand implements ICommand {
     public readonly userId?: string
   ) {}
 }
-

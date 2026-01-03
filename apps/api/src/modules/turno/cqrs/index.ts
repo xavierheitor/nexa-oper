@@ -22,4 +22,3 @@ export * from './handlers/delete-turno.handler';
 export * from './handlers/get-turnos.handler';
 export * from './handlers/get-turno-by-id.handler';
 export * from './handlers/get-turnos-for-sync.handler';
-

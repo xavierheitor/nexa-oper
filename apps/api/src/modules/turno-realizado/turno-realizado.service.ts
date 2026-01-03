@@ -1,11 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DatabaseService } from '../../database/database.service';
-import { ConsolidadoEletricistaQueryDto, PeriodoTipo } from './dto/consolidado-eletricista-query.dto';
+import { Prisma } from '@nexa-oper/db';
+
+import {
+  AprovarHoraExtraDto,
+  AcaoAprovacao,
+} from './dto/aprovar-hora-extra.dto';
+import {
+  ConsolidadoEletricistaQueryDto,
+  PeriodoTipo,
+} from './dto/consolidado-eletricista-query.dto';
 import { ConsolidadoEquipeQueryDto } from './dto/consolidado-equipe-query.dto';
 import { FaltaFilterDto } from './dto/falta-filter.dto';
 import { HoraExtraFilterDto } from './dto/hora-extra-filter.dto';
-import { AprovarHoraExtraDto, AcaoAprovacao } from './dto/aprovar-hora-extra.dto';
-import { Prisma } from '@nexa-oper/db';
+import { DatabaseService } from '../../database/database.service';
 
 export interface AbrirTurnoPayload {
   equipeId: number;
@@ -26,9 +33,7 @@ export interface AbrirTurnoPayload {
 export class TurnoRealizadoService {
   private readonly logger = new Logger(TurnoRealizadoService.name);
 
-  constructor(
-    private readonly db: DatabaseService,
-  ) {}
+  constructor(private readonly db: DatabaseService) {}
 
   async abrirTurno(payload: AbrirTurnoPayload) {
     const prisma = this.db.getPrisma();
@@ -37,7 +42,7 @@ export class TurnoRealizadoService {
     // Garantir que executadoPor seja sempre string (pode vir como número do TurnoService)
     const executadoPor = String(payload.executadoPor || 'system');
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async tx => {
       const turno = await tx.turnoRealizado.create({
         data: {
           dataReferencia: dataRef,
@@ -52,7 +57,7 @@ export class TurnoRealizadoService {
 
       if (payload.eletricistasAbertos?.length) {
         await tx.turnoRealizadoEletricista.createMany({
-          data: payload.eletricistasAbertos.map((e) => ({
+          data: payload.eletricistasAbertos.map(e => ({
             turnoRealizadoId: turno.id,
             eletricistaId: e.eletricistaId,
             status: 'aberto',
@@ -83,10 +88,7 @@ export class TurnoRealizadoService {
    * Fecha um TurnoRealizado baseado no turnoId (método preferencial quando turnoId está disponível)
    * Usado quando um Turno é fechado e precisa fechar o TurnoRealizado correspondente
    */
-  async fecharTurnoPorTurnoId(
-    turnoId: number,
-    executadoPor: string
-  ) {
+  async fecharTurnoPorTurnoId(turnoId: number, executadoPor: string) {
     const prisma = this.db.getPrisma();
     const executadoPorStr = String(executadoPor || 'system');
 
@@ -151,9 +153,10 @@ export class TurnoRealizadoService {
     executadoPor: string
   ) {
     const prisma = this.db.getPrisma();
-    const dataRef = typeof dataReferencia === 'string'
-      ? new Date(dataReferencia)
-      : dataReferencia;
+    const dataRef =
+      typeof dataReferencia === 'string'
+        ? new Date(dataReferencia)
+        : dataReferencia;
 
     // Normalizar para início do dia para buscar corretamente
     const dataRefInicio = new Date(dataRef);
@@ -224,7 +227,12 @@ export class TurnoRealizadoService {
         select: { eletricistaId: true },
       }),
       prisma.turnoRealizadoEletricista.findMany({
-        where: { turnoRealizado: { dataReferencia: dataRef, equipeId: params.equipeId } },
+        where: {
+          turnoRealizado: {
+            dataReferencia: dataRef,
+            equipeId: params.equipeId,
+          },
+        },
         select: { eletricistaId: true },
       }),
       prisma.falta.findMany({
@@ -235,11 +243,11 @@ export class TurnoRealizadoService {
       }),
     ]);
 
-    const escalados = new Set(slots.map((s) => s.eletricistaId));
-    const abriram = new Set(aberturas.map((a) => a.eletricistaId));
+    const escalados = new Set(slots.map(s => s.eletricistaId));
+    const abriram = new Set(aberturas.map(a => a.eletricistaId));
 
     const presentes = [...abriram];
-    const ausentes = [...escalados].filter((id) => !abriram.has(id));
+    const ausentes = [...escalados].filter(id => !abriram.has(id));
 
     return {
       data: params.data,
@@ -282,100 +290,110 @@ export class TurnoRealizadoService {
     if (query.periodo === PeriodoTipo.MES) {
       const agora = new Date();
       dataInicio = new Date(agora.getFullYear(), agora.getMonth(), 1);
-      dataFim = new Date(agora.getFullYear(), agora.getMonth() + 1, 0, 23, 59, 59, 999);
+      dataFim = new Date(
+        agora.getFullYear(),
+        agora.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999
+      );
     } else if (query.periodo === PeriodoTipo.TRIMESTRE) {
       const agora = new Date();
       const trimestre = Math.floor(agora.getMonth() / 3);
       dataInicio = new Date(agora.getFullYear(), trimestre * 3, 1);
-      dataFim = new Date(agora.getFullYear(), (trimestre + 1) * 3, 0, 23, 59, 59, 999);
+      dataFim = new Date(
+        agora.getFullYear(),
+        (trimestre + 1) * 3,
+        0,
+        23,
+        59,
+        59,
+        999
+      );
     } else {
       dataInicio = query.dataInicio ? new Date(query.dataInicio) : new Date();
       dataFim = query.dataFim ? new Date(query.dataFim) : new Date();
     }
 
     // Buscar dados agregados
-    const [
-      turnosRealizados,
-      faltas,
-      horasExtras,
-      slotsEscala,
-    ] = await Promise.all([
-      // Turnos realmente abertos
-      prisma.turnoRealizadoEletricista.findMany({
-        where: {
-          eletricistaId,
-          abertoEm: { gte: dataInicio, lte: dataFim },
-        },
-        include: {
-          turnoRealizado: {
-            select: {
-              equipeId: true,
-              equipe: {
-                select: { id: true, nome: true },
+    const [turnosRealizados, faltas, horasExtras, slotsEscala] =
+      await Promise.all([
+        // Turnos realmente abertos
+        prisma.turnoRealizadoEletricista.findMany({
+          where: {
+            eletricistaId,
+            abertoEm: { gte: dataInicio, lte: dataFim },
+          },
+          include: {
+            turnoRealizado: {
+              select: {
+                equipeId: true,
+                equipe: {
+                  select: { id: true, nome: true },
+                },
               },
             },
           },
-        },
-      }),
+        }),
 
-      // Faltas
-      prisma.falta.findMany({
-        where: {
-          eletricistaId,
-          dataReferencia: { gte: dataInicio, lte: dataFim },
-        },
-        include: {
-          Justificativas: {
-            include: {
-              justificativa: {
-                select: { status: true },
+        // Faltas
+        prisma.falta.findMany({
+          where: {
+            eletricistaId,
+            dataReferencia: { gte: dataInicio, lte: dataFim },
+          },
+          include: {
+            Justificativas: {
+              include: {
+                justificativa: {
+                  select: { status: true },
+                },
               },
             },
           },
-        },
-      }),
+        }),
 
-      // Horas extras
-      prisma.horaExtra.findMany({
-        where: {
-          eletricistaId,
-          dataReferencia: { gte: dataInicio, lte: dataFim },
-        },
-      }),
+        // Horas extras
+        prisma.horaExtra.findMany({
+          where: {
+            eletricistaId,
+            dataReferencia: { gte: dataInicio, lte: dataFim },
+          },
+        }),
 
-      // Slots de escala (para calcular dias escalados)
-      prisma.slotEscala.findMany({
-        where: {
-          eletricistaId,
-          data: { gte: dataInicio, lte: dataFim },
-          estado: 'TRABALHO',
-        },
-      }),
-    ]);
+        // Slots de escala (para calcular dias escalados)
+        prisma.slotEscala.findMany({
+          where: {
+            eletricistaId,
+            data: { gte: dataInicio, lte: dataFim },
+            estado: 'TRABALHO',
+          },
+        }),
+      ]);
 
     // Calcular resumo
     const diasTrabalhados = new Set(
-      turnosRealizados.map((t) => t.abertoEm.toISOString().split('T')[0])
+      turnosRealizados.map(t => t.abertoEm.toISOString().split('T')[0])
     ).size;
 
     const diasEscalados = slotsEscala.length;
     const faltasTotal = faltas.length;
     const faltasJustificadas = faltas.filter(
-      (f) => f.status === 'justificada'
+      f => f.status === 'justificada'
     ).length;
-    const faltasPendentes = faltas.filter(
-      (f) => f.status === 'pendente'
-    ).length;
+    const faltasPendentes = faltas.filter(f => f.status === 'pendente').length;
 
     const horasExtrasTotal = horasExtras.reduce(
       (sum, he) => sum + Number(he.horasRealizadas),
       0
     );
     const horasExtrasAprovadas = horasExtras
-      .filter((he) => he.status === 'aprovada')
+      .filter(he => he.status === 'aprovada')
       .reduce((sum, he) => sum + Number(he.horasRealizadas), 0);
     const horasExtrasPendentes = horasExtras
-      .filter((he) => he.status === 'pendente')
+      .filter(he => he.status === 'pendente')
       .reduce((sum, he) => sum + Number(he.horasRealizadas), 0);
 
     // Detalhamento por dia
@@ -388,7 +406,8 @@ export class TurnoRealizadoService {
       if (!diasProcessados.has(dataStr)) {
         diasProcessados.add(dataStr);
         const horasRealizadas = turno.fechadoEm
-          ? (turno.fechadoEm.getTime() - turno.abertoEm.getTime()) / (1000 * 60 * 60)
+          ? (turno.fechadoEm.getTime() - turno.abertoEm.getTime()) /
+            (1000 * 60 * 60)
           : 0;
 
         detalhamento.push({
@@ -421,7 +440,7 @@ export class TurnoRealizadoService {
     for (const horaExtra of horasExtras) {
       const dataStr = horaExtra.dataReferencia.toISOString().split('T')[0];
       const existing = detalhamento.find(
-        (d) => d.data.toISOString().split('T')[0] === dataStr
+        d => d.data.toISOString().split('T')[0] === dataStr
       );
       if (existing) {
         existing.tipo = 'hora_extra';
@@ -471,7 +490,10 @@ export class TurnoRealizadoService {
   /**
    * Retorna dados consolidados de frequência de todos os eletricistas de uma equipe
    */
-  async getConsolidadoEquipe(equipeId: number, query: ConsolidadoEquipeQueryDto) {
+  async getConsolidadoEquipe(
+    equipeId: number,
+    query: ConsolidadoEquipeQueryDto
+  ) {
     const prisma = this.db.getPrisma();
 
     // Verificar se equipe existe
@@ -502,7 +524,7 @@ export class TurnoRealizadoService {
       distinct: ['eletricistaId'],
     });
 
-    const eletricistasIds = slotsEscala.map((s) => s.eletricistaId);
+    const eletricistasIds = slotsEscala.map(s => s.eletricistaId);
 
     // Buscar dados agregados para cada eletricista
     const [turnos, faltas, horasExtras] = await Promise.all([
@@ -527,16 +549,20 @@ export class TurnoRealizadoService {
     ]);
 
     // Agrupar por eletricista
-    const eletricistas = slotsEscala.map((slot) => {
+    const eletricistas = slotsEscala.map(slot => {
       const eletricistaId = slot.eletricistaId;
-      const turnosEletricista = turnos.filter((t) => t.eletricistaId === eletricistaId);
-      const faltasEletricista = faltas.filter((f) => f.eletricistaId === eletricistaId);
+      const turnosEletricista = turnos.filter(
+        t => t.eletricistaId === eletricistaId
+      );
+      const faltasEletricista = faltas.filter(
+        f => f.eletricistaId === eletricistaId
+      );
       const horasExtrasEletricista = horasExtras.filter(
-        (he) => he.eletricistaId === eletricistaId
+        he => he.eletricistaId === eletricistaId
       );
 
       const diasTrabalhados = new Set(
-        turnosEletricista.map((t) => t.abertoEm.toISOString().split('T')[0])
+        turnosEletricista.map(t => t.abertoEm.toISOString().split('T')[0])
       ).size;
 
       const horasExtrasTotal = horasExtrasEletricista.reduce(
@@ -574,10 +600,7 @@ export class TurnoRealizadoService {
   /**
    * Retorna aderência de equipe (percentual de execução da escala)
    */
-  async getAderenciaEquipe(
-    equipeId: number,
-    query: ConsolidadoEquipeQueryDto
-  ) {
+  async getAderenciaEquipe(equipeId: number, query: ConsolidadoEquipeQueryDto) {
     const prisma = this.db.getPrisma();
 
     // Verificar se equipe existe
@@ -657,7 +680,10 @@ export class TurnoRealizadoService {
     }
 
     // Agrupar justificativas por data (apenas uma por data devido ao unique constraint)
-    const justificativasPorData = new Map<string, typeof justificativasEquipe[0]>();
+    const justificativasPorData = new Map<
+      string,
+      (typeof justificativasEquipe)[0]
+    >();
     for (const just of justificativasEquipe) {
       const dataStr = just.dataReferencia.toISOString().split('T')[0];
       justificativasPorData.set(dataStr, just);
@@ -667,7 +693,7 @@ export class TurnoRealizadoService {
     let diasEscalados = 0;
     let diasAbertos = 0;
     let diasJustificadosSemFalta = 0;
-    let totalEletricistasEscalados = 0;
+    const totalEletricistasEscalados = 0;
     let totalEletricistasQueTrabalharam = 0;
     let totalEletricistasPrevistos = 0;
 
@@ -696,10 +722,10 @@ export class TurnoRealizadoService {
         totalEletricistasPrevistos += slotsDoDia.length;
 
         const eletricistasEscalados = new Set(
-          slotsDoDia.map((s) => s.eletricistaId)
+          slotsDoDia.map(s => s.eletricistaId)
         );
         const eletricistasQueTrabalharam = new Set(
-          turnosDoDia.flatMap((t) => t.Itens.map((i) => i.eletricistaId))
+          turnosDoDia.flatMap(t => t.Itens.map(i => i.eletricistaId))
         );
 
         // Se há justificativa aprovada que não gera falta, contar como trabalhado
@@ -747,8 +773,7 @@ export class TurnoRealizadoService {
       diasEscalados > 0 ? (diasAbertos / diasEscalados) * 100 : 0;
     const aderenciaEletricistas =
       totalEletricistasPrevistos > 0
-        ? (totalEletricistasQueTrabalharam / totalEletricistasPrevistos) *
-          100
+        ? (totalEletricistasQueTrabalharam / totalEletricistasPrevistos) * 100
         : 0;
 
     return {
@@ -893,7 +918,7 @@ export class TurnoRealizadoService {
     ]);
 
     return {
-      data: horasExtras.map((he) => ({
+      data: horasExtras.map(he => ({
         ...he,
         horasPrevistas: Number(he.horasPrevistas || 0),
         horasRealizadas: Number(he.horasRealizadas),
@@ -948,5 +973,3 @@ export class TurnoRealizadoService {
     };
   }
 }
-
-

@@ -33,6 +33,10 @@
 
 import type { ActionResult } from '../types/common';
 
+let serverLoggerPromise:
+  | Promise<{ logger: { error: (message: string, meta?: unknown) => void } }>
+  | null = null;
+
 /**
  * Logger client-safe que funciona tanto no servidor quanto no cliente
  * No servidor, usa o logger completo; no cliente, usa console
@@ -40,18 +44,18 @@ import type { ActionResult } from '../types/common';
 const getLogger = () => {
   // No servidor, importa dinamicamente o logger completo
   if (typeof window === 'undefined') {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { logger } = require('./logger');
-      return logger;
-    } catch {
-      // Se falhar, usa console como fallback
-      return {
-        error: (message: string, meta?: any) => {
-          console.error(`[Server] ${message}`, meta);
-        },
-      };
-    }
+    return {
+      error: (message: string, meta?: unknown) => {
+        if (!serverLoggerPromise) {
+          serverLoggerPromise = import('./logger');
+        }
+        serverLoggerPromise
+          .then(({ logger }) => logger.error(message, meta))
+          .catch(() => {
+            console.error(`[Server] ${message}`, meta);
+          });
+      },
+    };
   }
 
   // No cliente, usa apenas console
@@ -338,4 +342,3 @@ export const errorHandler = ErrorHandler;
  * Exporta classe para casos especiais
  */
 export { ErrorHandler };
-

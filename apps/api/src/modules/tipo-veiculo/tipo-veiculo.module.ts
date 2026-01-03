@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
 import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@modules/engine/auth/auth.module';
-import { TipoVeiculoController } from './controllers/tipo-veiculo.controller';
+import { Module } from '@nestjs/common';
+
 import { TipoVeiculoSyncController } from './controllers/tipo-veiculo-sync.controller';
+import { TipoVeiculoController } from './controllers/tipo-veiculo.controller';
 import { TipoVeiculoService } from './services/tipo-veiculo.service';
 
 /**

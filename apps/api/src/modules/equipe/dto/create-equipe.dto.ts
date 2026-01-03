@@ -5,8 +5,15 @@
  * para criar uma nova equipe no sistema.
  */
 
-import { IsNotEmpty, IsString, IsNumber, MinLength, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
+
 import { EQUIPE_VALIDATION_CONFIG } from '../constants/equipe.constants';
 
 /**

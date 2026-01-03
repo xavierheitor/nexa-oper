@@ -1,6 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
-import { DatabaseService } from '@database/database.service';
 import { Public } from '@common/decorators/public.decorator';
+import { DatabaseService } from '@database/database.service';
+import { Controller, Get } from '@nestjs/common';
 
 @Controller('health')
 export class HealthController {
@@ -24,7 +24,8 @@ export class HealthController {
     // Health check com timeout para não travar a requisição
     // Se o banco demorar mais de 2s, considera como erro mas retorna resposta
     try {
-      const dbCheckPromise = this.databaseService.getPrisma().$queryRaw`SELECT 1`;
+      const dbCheckPromise = this.databaseService.getPrisma()
+        .$queryRaw`SELECT 1`;
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Database check timeout')), 2000);
       });
@@ -40,5 +41,3 @@ export class HealthController {
     return checks;
   }
 }
-
-

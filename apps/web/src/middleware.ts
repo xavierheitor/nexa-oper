@@ -31,13 +31,7 @@ export default withAuth(
   function middleware(req: NextRequest & { nextauth?: { token?: any } }) {
     // Aqui podemos adicionar verificações de permissões no futuro
     // Por enquanto, apenas verifica autenticação
-
-    // Exemplo de estrutura futura para permissões:
-    // const userRole = req.nextauth?.token?.role;
-    // const requiredPermission = getRequiredPermission(req.nextUrl.pathname);
-    // if (!hasPermission(userRole, requiredPermission)) {
-    //   return NextResponse.redirect(new URL('/unauthorized', req.url));
-    // }
+    // TODO: adicionar verificação de permissões por rota quando disponível
 
     return NextResponse.next();
   },
@@ -60,4 +54,3 @@ export const config = {
     '/dashboard/:path*', // Protege todas as rotas /dashboard/*
   ],
 };
-

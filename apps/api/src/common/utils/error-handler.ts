@@ -18,6 +18,7 @@
  * ```
  */
 
+import { ERROR_MESSAGES } from '@common/constants/errors';
 import {
   BadRequestException,
   ConflictException,
@@ -27,7 +28,6 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { ERROR_MESSAGES } from '@common/constants/errors';
 
 /**
  * Verifica se um erro do Prisma é um erro de constraint única (P2002)
@@ -219,7 +219,14 @@ export function handleServiceError(
 export function handleCrudError(
   error: unknown,
   logger: Logger,
-  operation: 'create' | 'update' | 'delete' | 'find' | 'list' | 'sync' | 'count',
+  operation:
+    | 'create'
+    | 'update'
+    | 'delete'
+    | 'find'
+    | 'list'
+    | 'sync'
+    | 'count',
   entityName: string,
   options: Omit<HandleServiceErrorOptions, 'operation' | 'clientMessage'> = {}
 ): never {
@@ -266,4 +273,3 @@ export function handleCrudError(
     clientMessage: messages.client,
   });
 }
-

@@ -62,7 +62,8 @@ export const ERROR_MESSAGES = {
   ELETRICISTA_NOT_FOUND: 'Eletricista não encontrado',
   TURNO_JA_ABERTO: 'Já existe um turno aberto para este veículo',
   TURNO_JA_ABERTO_EQUIPE: 'Já existe um turno aberto para esta equipe',
-  TURNO_JA_ABERTO_ELETRICISTA: 'Já existe um turno aberto para este eletricista',
+  TURNO_JA_ABERTO_ELETRICISTA:
+    'Já existe um turno aberto para este eletricista',
   TURNO_JA_FECHADO: 'Turno já está fechado',
   TURNO_NAO_ABERTO: 'Turno não está aberto',
   KM_INVALIDO: 'Quilometragem inválida',

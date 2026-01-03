@@ -18,20 +18,26 @@ import {
   ExecutionContext,
   CallHandler,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import { Reflector } from '@nestjs/core';
-import { LOG_OPERATION_KEY, LogOperationOptions } from '../decorators/log-operation.decorator';
+
+import {
+  LOG_OPERATION_KEY,
+  LogOperationOptions,
+} from '../decorators/log-operation.decorator';
 import {
   logOperationWithContext,
   logErrorStructured,
   LogContext,
-  StandardLogger
+  StandardLogger,
 } from '../utils/logger';
 
 @Injectable()
 export class OperationLoggingInterceptor implements NestInterceptor {
-  private readonly logger = new StandardLogger(OperationLoggingInterceptor.name);
+  private readonly logger = new StandardLogger(
+    OperationLoggingInterceptor.name
+  );
 
   constructor(private readonly reflector: Reflector) {}
 
@@ -87,7 +93,7 @@ export class OperationLoggingInterceptor implements NestInterceptor {
     const startTime = logOptions.measureTime ? Date.now() : undefined;
 
     return next.handle().pipe(
-      tap((data) => {
+      tap(data => {
         // Log de saída
         if (logOptions.logOutput) {
           const outputData = this.sanitizeOutputData(data);
@@ -109,7 +115,7 @@ export class OperationLoggingInterceptor implements NestInterceptor {
           );
         }
       }),
-      catchError((error) => {
+      catchError(error => {
         // Log de erro
         logErrorStructured(
           this.logger,
@@ -167,14 +173,23 @@ export class OperationLoggingInterceptor implements NestInterceptor {
       return data;
     }
 
-    const sensitiveFields = ['password', 'senha', 'token', 'secret', 'authorization'];
+    const sensitiveFields = [
+      'password',
+      'senha',
+      'token',
+      'secret',
+      'authorization',
+    ];
     const sanitized = { ...data };
 
-    Object.keys(sanitized).forEach((key) => {
+    Object.keys(sanitized).forEach(key => {
       const lowerKey = key.toLowerCase();
-      if (sensitiveFields.some((field) => lowerKey.includes(field))) {
+      if (sensitiveFields.some(field => lowerKey.includes(field))) {
         sanitized[key] = '****';
-      } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
+      } else if (
+        typeof sanitized[key] === 'object' &&
+        sanitized[key] !== null
+      ) {
         sanitized[key] = this.sanitizeData(sanitized[key]);
       }
     });

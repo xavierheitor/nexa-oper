@@ -13,9 +13,10 @@
  * - Persistência em arquivos (app.log e error.log) em produção e desenvolvimento
  */
 
-import { Logger, HttpException, HttpStatus } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { Logger, HttpException, HttpStatus } from '@nestjs/common';
 
 /**
  * Configuração de caminhos de log
@@ -69,7 +70,10 @@ function writeLogToFile(line: string, level: string): void {
     }
 
     // Debug e verbose apenas em desenvolvimento
-    if (['debug', 'verbose'].includes(levelLower) && process.env.NODE_ENV !== 'production') {
+    if (
+      ['debug', 'verbose'].includes(levelLower) &&
+      process.env.NODE_ENV !== 'production'
+    ) {
       fs.appendFileSync(LOG_FILE, line + '\n', 'utf8');
     }
   } catch (err) {
@@ -218,7 +222,10 @@ export class StandardLogger extends Logger {
    * Log de operação (CRUD, sync, etc.)
    */
   operation(message: string, context?: string): void {
-    this.log(`${LOG_CONFIG.PREFIXES.OPERATION} ${message}`, context || this.context);
+    this.log(
+      `${LOG_CONFIG.PREFIXES.OPERATION} ${message}`,
+      context || this.context
+    );
   }
 
   /**
@@ -226,7 +233,10 @@ export class StandardLogger extends Logger {
    */
   validation(message: string, context?: string): void {
     if (shouldLogDebug()) {
-      this.debug(`${LOG_CONFIG.PREFIXES.VALIDATION} ${message}`, context || this.context);
+      this.debug(
+        `${LOG_CONFIG.PREFIXES.VALIDATION} ${message}`,
+        context || this.context
+      );
     }
   }
 
@@ -235,7 +245,10 @@ export class StandardLogger extends Logger {
    */
   database(message: string, context?: string): void {
     if (shouldLogDebug()) {
-      this.debug(`${LOG_CONFIG.PREFIXES.DATABASE} ${message}`, context || this.context);
+      this.debug(
+        `${LOG_CONFIG.PREFIXES.DATABASE} ${message}`,
+        context || this.context
+      );
     }
   }
 
@@ -244,7 +257,10 @@ export class StandardLogger extends Logger {
    */
   auth(message: string, context?: string): void {
     if (shouldLogDebug()) {
-      this.debug(`${LOG_CONFIG.PREFIXES.AUTH} ${message}`, context || this.context);
+      this.debug(
+        `${LOG_CONFIG.PREFIXES.AUTH} ${message}`,
+        context || this.context
+      );
     }
   }
 
@@ -276,7 +292,11 @@ export class StandardLogger extends Logger {
   /**
    * Log de erro com contexto completo
    */
-  errorWithContext(message: string, error: Error | unknown, context?: string): void {
+  errorWithContext(
+    message: string,
+    error: Error | unknown,
+    context?: string
+  ): void {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
     const fullContext = context || this.context;
@@ -291,7 +311,12 @@ export class StandardLogger extends Logger {
   /**
    * Log de erro HTTP (status 4xx)
    */
-  httpError(status: number, message: string, path: string, context?: string): void {
+  httpError(
+    status: number,
+    message: string,
+    path: string,
+    context?: string
+  ): void {
     this.warn(
       `[HTTP ${status}] ${message} - Path: ${path}`,
       context || this.context
@@ -301,7 +326,12 @@ export class StandardLogger extends Logger {
   /**
    * Log de erro crítico de servidor (status 5xx)
    */
-  serverError(message: string, error: Error | unknown, path: string, context?: string): void {
+  serverError(
+    message: string,
+    error: Error | unknown,
+    path: string,
+    context?: string
+  ): void {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
     const fullContext = context || this.context;
@@ -420,7 +450,9 @@ export function logOperationWithContext(
   const logMessage = `${LOG_CONFIG.PREFIXES.OPERATION} ${message}`;
 
   if (sanitizedData) {
-    logger.log(`${logMessage} - Context: ${JSON.stringify(context)} - Data: ${JSON.stringify(sanitizedData)}`);
+    logger.log(
+      `${logMessage} - Context: ${JSON.stringify(context)} - Data: ${JSON.stringify(sanitizedData)}`
+    );
   } else {
     logger.log(`${logMessage} - Context: ${JSON.stringify(context)}`);
   }
@@ -435,11 +467,15 @@ export function logValidationWithContext(
   context: LogContext,
   validationData?: any
 ): void {
-  const sanitizedData = validationData ? sanitizeData(validationData) : undefined;
+  const sanitizedData = validationData
+    ? sanitizeData(validationData)
+    : undefined;
   const logMessage = `${LOG_CONFIG.PREFIXES.VALIDATION} ${message}`;
 
   if (sanitizedData) {
-    logger.debug(`${logMessage} - Context: ${JSON.stringify(context)} - Validation: ${JSON.stringify(sanitizedData)}`);
+    logger.debug(
+      `${logMessage} - Context: ${JSON.stringify(context)} - Validation: ${JSON.stringify(sanitizedData)}`
+    );
   } else {
     logger.debug(`${logMessage} - Context: ${JSON.stringify(context)}`);
   }
@@ -458,7 +494,9 @@ export function logDatabaseWithContext(
   const logMessage = `${LOG_CONFIG.PREFIXES.DATABASE} ${message}`;
 
   if (sanitizedData) {
-    logger.debug(`${logMessage} - Context: ${JSON.stringify(context)} - Query: ${JSON.stringify(sanitizedData)}`);
+    logger.debug(
+      `${logMessage} - Context: ${JSON.stringify(context)} - Query: ${JSON.stringify(sanitizedData)}`
+    );
   } else {
     logger.debug(`${logMessage} - Context: ${JSON.stringify(context)}`);
   }
@@ -477,7 +515,9 @@ export function logAuthWithContext(
   const logMessage = `${LOG_CONFIG.PREFIXES.AUTH} ${message}`;
 
   if (sanitizedData) {
-    logger.debug(`${logMessage} - Context: ${JSON.stringify(context)} - Auth: ${JSON.stringify(sanitizedData)}`);
+    logger.debug(
+      `${logMessage} - Context: ${JSON.stringify(context)} - Auth: ${JSON.stringify(sanitizedData)}`
+    );
   } else {
     logger.debug(`${logMessage} - Context: ${JSON.stringify(context)}`);
   }
@@ -496,15 +536,17 @@ function createStructuredError(
   return {
     message,
     code: isHttpException ? error.name : error.constructor.name,
-    statusCode: isHttpException ? error.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR,
+    statusCode: isHttpException
+      ? error.getStatus()
+      : HttpStatus.INTERNAL_SERVER_ERROR,
     context,
     stack: error.stack,
     timestamp: new Date().toISOString(),
     metadata: {
       errorName: error.name,
       errorMessage: error.message,
-      ...(isHttpException && { response: error.getResponse() })
-    }
+      ...(isHttpException && { response: error.getResponse() }),
+    },
   };
 }
 
@@ -555,12 +597,14 @@ const SENSITIVE_FIELDS = [
  * // Retorna: { authorization: '****', 'content-type': 'application/json' }
  * ```
  */
-export function sanitizeHeaders(headers: Record<string, any>): Record<string, any> {
+export function sanitizeHeaders(
+  headers: Record<string, any>
+): Record<string, any> {
   const sanitized = { ...headers };
 
-  Object.keys(sanitized).forEach((key) => {
+  Object.keys(sanitized).forEach(key => {
     const lowerKey = key.toLowerCase();
-    if (SENSITIVE_HEADERS.some((sensitive) => lowerKey.includes(sensitive))) {
+    if (SENSITIVE_HEADERS.some(sensitive => lowerKey.includes(sensitive))) {
       sanitized[key] = '****';
     }
   });
@@ -596,17 +640,17 @@ export function sanitizeData(data: any): any {
 
   // Se for array, sanitiza cada elemento
   if (Array.isArray(data)) {
-    return data.map((item) => sanitizeData(item));
+    return data.map(item => sanitizeData(item));
   }
 
   // Se for objeto, sanitiza cada propriedade
   const sanitized: Record<string, any> = {};
 
-  Object.keys(data).forEach((key) => {
+  Object.keys(data).forEach(key => {
     const lowerKey = key.toLowerCase();
 
     // Verifica se o campo é sensível
-    if (SENSITIVE_FIELDS.some((sensitive) => lowerKey.includes(sensitive))) {
+    if (SENSITIVE_FIELDS.some(sensitive => lowerKey.includes(sensitive))) {
       sanitized[key] = '****';
     } else {
       // Recursivamente sanitiza valores aninhados

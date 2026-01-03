@@ -96,7 +96,6 @@ export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: Escal
           if (!isMounted) return;
 
           if (tipos.success && tipos.data) {
-            // @ts-ignore - tipos.data.data existe e é um array no runtime
             const tipo = tipos.data.data?.find((t: any) => t.id === dados.tipoEscalaId);
             if (tipo) {
               setTipoEscalaSelecionado(tipo);
@@ -725,4 +724,3 @@ export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: Escal
     </div>
   );
 }
-

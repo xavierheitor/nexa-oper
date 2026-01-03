@@ -40,6 +40,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+
 import { ContractPermissionsService } from '../services/contract-permissions.service';
 
 export interface ContractPermissionOptions {

@@ -7,8 +7,9 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { InternalReconciliacaoService } from './internal-reconciliacao.service';
+
 import { ForceReconcileDto } from './dto/force-reconcile.dto';
+import { InternalReconciliacaoService } from './internal-reconciliacao.service';
 
 @Injectable()
 export class ReconciliacaoScheduler {
@@ -61,8 +62,13 @@ export class ReconciliacaoScheduler {
       }
     } catch (error) {
       // Se o erro for de lock (ConflictException), apenas logar (outra instância já está executando)
-      if (error instanceof Error && error.message.includes('já está em execução')) {
-        this.logger.debug('Reconciliação já está em execução em outra instância');
+      if (
+        error instanceof Error &&
+        error.message.includes('já está em execução')
+      ) {
+        this.logger.debug(
+          'Reconciliação já está em execução em outra instância'
+        );
         return;
       }
 

@@ -16,9 +16,10 @@
  * ```
  */
 
-import { ICommand } from '@nestjs/cqrs';
-import { FecharTurnoDto } from '../../dto/fechar-turno.dto';
 import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import { ICommand } from '@nestjs/cqrs';
+
+import { FecharTurnoDto } from '../../dto/fechar-turno.dto';
 
 /**
  * Command para fechar um turno existente
@@ -29,4 +30,3 @@ export class CloseTurnoCommand implements ICommand {
     public readonly allowedContracts: ContractPermission[]
   ) {}
 }
-

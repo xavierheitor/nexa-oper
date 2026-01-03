@@ -19,11 +19,12 @@
  * ```
  */
 
-import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
-import { GetTurnosForSyncQuery } from '../queries/get-turnos-for-sync.query';
-import { TurnoService } from '../../services/turno.service';
+import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
+
 import { TurnoSyncDto } from '../../dto/turno-sync.dto';
+import { TurnoService } from '../../services/turno.service';
+import { GetTurnosForSyncQuery } from '../queries/get-turnos-for-sync.query';
 
 /**
  * Handler responsável por processar a query de sincronização de turnos
@@ -58,4 +59,3 @@ export class GetTurnosForSyncHandler
     return result;
   }
 }
-

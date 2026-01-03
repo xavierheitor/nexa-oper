@@ -36,6 +36,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
+
 import { VEICULO_VALIDATION_CONFIG } from '../constants/veiculo.constants';
 
 /**

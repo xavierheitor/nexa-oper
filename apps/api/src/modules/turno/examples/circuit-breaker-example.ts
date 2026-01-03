@@ -27,17 +27,15 @@
  * ```
  */
 
-import { Injectable } from '@nestjs/common';
 import { CircuitBreakerService } from '@common/circuit-breaker';
+import { Injectable } from '@nestjs/common';
 
 /**
  * Exemplo de serviço usando Circuit Breaker
  */
 @Injectable()
 export class ExampleServiceWithCircuitBreaker {
-  constructor(
-    private readonly circuitBreakerService: CircuitBreakerService
-  ) {}
+  constructor(private readonly circuitBreakerService: CircuitBreakerService) {}
 
   /**
    * Exemplo: Chamada externa protegida por Circuit Breaker
@@ -95,4 +93,3 @@ export class ExampleServiceWithCircuitBreaker {
     );
   }
 }
-

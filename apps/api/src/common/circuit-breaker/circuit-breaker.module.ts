@@ -20,6 +20,7 @@
  */
 
 import { Module, Global } from '@nestjs/common';
+
 import { CircuitBreakerService } from './circuit-breaker.service';
 
 /**
@@ -34,4 +35,3 @@ import { CircuitBreakerService } from './circuit-breaker.service';
   exports: [CircuitBreakerService],
 })
 export class CircuitBreakerModule {}
-

@@ -16,8 +16,8 @@
  * ```
  */
 
-import { IQuery } from '@nestjs/cqrs';
 import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import { IQuery } from '@nestjs/cqrs';
 
 /**
  * Parâmetros para consulta de turnos
@@ -43,4 +43,3 @@ export class GetTurnosQuery implements IQuery {
     public readonly allowedContracts: ContractPermission[]
   ) {}
 }
-

@@ -55,9 +55,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   }}
                 />
               </Col>
-              <Col>
-                {/* <ThemeToggle /> */}
-              </Col>
             </Row>
           </Header>
 

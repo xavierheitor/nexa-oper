@@ -39,7 +39,6 @@ export class EquipeHorarioVigenciaService extends AbstractCrudService<
 
   constructor() {
     const repo = new EquipeHorarioVigenciaRepository();
-    // @ts-ignore - Compatibilidade de tipos do repositório
     super(repo);
     this.horarioRepo = repo;
   }
@@ -95,7 +94,6 @@ export class EquipeHorarioVigenciaService extends AbstractCrudService<
       );
     }
 
-    // @ts-ignore - Compatibilidade de tipos do repositório
     const updateInput: EquipeHorarioVigenciaUpdateInput = {
       equipeId: data.equipeId,
       inicioTurnoHora: data.inicioTurnoHora,
@@ -146,4 +144,3 @@ export class EquipeHorarioVigenciaService extends AbstractCrudService<
     return `${String(horasFim).padStart(2, '0')}:${String(minutosFim).padStart(2, '0')}:${String(segundos || 0).padStart(2, '0')}`;
   }
 }
-

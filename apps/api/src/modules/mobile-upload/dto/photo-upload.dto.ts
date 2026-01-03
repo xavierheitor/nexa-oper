@@ -3,6 +3,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type, Transform } from 'class-transformer';
 import {
   IsInt,
   IsNotEmpty,
@@ -11,7 +12,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
+
 import { SUPPORTED_MOBILE_PHOTO_TYPES } from '../constants/mobile-upload.constants';
 
 export class PhotoUploadDto {

@@ -6,6 +6,10 @@
  * do usuário autenticado.
  */
 
+import { SyncAuditRemoverInterceptor } from '@common/interceptors';
+import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
 import {
   Controller,
   Get,
@@ -20,12 +24,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import { SyncAuditRemoverInterceptor } from '@common/interceptors';
-import { EletricistaService } from '../services/eletricista.service';
+
 import { EletricistaSyncDto } from '../dto';
+import { EletricistaService } from '../services/eletricista.service';
 
 @ApiTags('eletricistas-sync')
 @ApiBearerAuth()

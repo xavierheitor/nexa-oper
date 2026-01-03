@@ -16,6 +16,19 @@ export default [
   // Project specific rules
   {
     rules: {
+      '@typescript-eslint/no-unused-expressions': [
+        'error',
+        {
+          allowShortCircuit: false,
+          allowTernary: false,
+          allowTaggedTemplates: false,
+          enforceForJSX: false,
+          ignoreDirectives: false,
+        },
+      ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      'react-hooks/exhaustive-deps': 'warn',
       // React specific rules
       'react/jsx-uses-react': 'off',
       'react/react-in-jsx-scope': 'off',

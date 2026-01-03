@@ -19,11 +19,12 @@
  * ```
  */
 
-import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
-import { GetTurnoByIdQuery } from '../queries/get-turno-by-id.query';
-import { TurnoService } from '../../services/turno.service';
+import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
+
 import { TurnoResponseDto } from '../../dto/turno-response.dto';
+import { TurnoService } from '../../services/turno.service';
+import { GetTurnoByIdQuery } from '../queries/get-turno-by-id.query';
 
 /**
  * Handler responsável por processar a query de busca de turno por ID
@@ -41,9 +42,7 @@ export class GetTurnoByIdHandler implements IQueryHandler<GetTurnoByIdQuery> {
    * @returns Turno encontrado
    */
   async execute(query: GetTurnoByIdQuery): Promise<TurnoResponseDto> {
-    this.logger.log(
-      `Executando query GetTurnoByIdQuery - ID: ${query.id}`
-    );
+    this.logger.log(`Executando query GetTurnoByIdQuery - ID: ${query.id}`);
 
     // Executa a lógica de leitura através do serviço
     // Esta operação pode ser otimizada com cache
@@ -59,4 +58,3 @@ export class GetTurnoByIdHandler implements IQueryHandler<GetTurnoByIdQuery> {
     return result;
   }
 }
-

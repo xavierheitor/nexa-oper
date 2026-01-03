@@ -16,15 +16,12 @@
  * ```
  */
 
-import { IQuery } from '@nestjs/cqrs';
 import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import { IQuery } from '@nestjs/cqrs';
 
 /**
  * Query para buscar todos os turnos para sincronização mobile
  */
 export class GetTurnosForSyncQuery implements IQuery {
-  constructor(
-    public readonly allowedContracts: ContractPermission[]
-  ) {}
+  constructor(public readonly allowedContracts: ContractPermission[]) {}
 }
-

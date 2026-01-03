@@ -4,9 +4,9 @@
  * Centraliza a configuração da documentação da API usando Swagger.
  */
 
+import { StandardLogger } from '@common/utils/logger';
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { StandardLogger } from '@common/utils/logger';
 
 /**
  * Configura e registra o Swagger na aplicação
@@ -40,4 +40,3 @@ export function configureSwagger(
 
   logger.log('Documentação Swagger disponível em /api/docs');
 }
-

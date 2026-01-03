@@ -46,8 +46,8 @@
  * @author Nexa Oper Team
  */
 
-import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '@database/database.service';
+import { Injectable, Logger } from '@nestjs/common';
 
 /**
  * Interface para permissão de contrato
@@ -211,19 +211,21 @@ export class ContractPermissionsService {
         `Verificando permissão: usuário ${userId} -> contrato ${contractId}`
       );
 
-      const permission = await this.databaseService.getPrisma().mobileContratoPermissao.findFirst({
-        where: {
-          mobileUserId: userId,
-          contratoId: contractId,
-          deletedAt: null,
-          contrato: {
-            deletedAt: null, // Filtrar contratos deletados também
+      const permission = await this.databaseService
+        .getPrisma()
+        .mobileContratoPermissao.findFirst({
+          where: {
+            mobileUserId: userId,
+            contratoId: contractId,
+            deletedAt: null,
+            contrato: {
+              deletedAt: null, // Filtrar contratos deletados também
+            },
           },
-        },
-        select: {
-          id: true,
-        },
-      });
+          select: {
+            id: true,
+          },
+        });
 
       const hasPermission = !!permission;
 
@@ -268,29 +270,31 @@ export class ContractPermissionsService {
     try {
       this.logger.log(`Listando contratos permitidos para usuário ${userId}`);
 
-      const permissions = await this.databaseService.getPrisma().mobileContratoPermissao.findMany({
-        where: {
-          mobileUserId: userId,
-          deletedAt: null,
-          contrato: {
-            deletedAt: null, // Filtrar contratos deletados também
-          },
-        },
-        include: {
-          contrato: {
-            select: {
-              id: true,
-              nome: true,
-              numero: true,
+      const permissions = await this.databaseService
+        .getPrisma()
+        .mobileContratoPermissao.findMany({
+          where: {
+            mobileUserId: userId,
+            deletedAt: null,
+            contrato: {
+              deletedAt: null, // Filtrar contratos deletados também
             },
           },
-        },
-        orderBy: {
-          contrato: {
-            nome: 'asc',
+          include: {
+            contrato: {
+              select: {
+                id: true,
+                nome: true,
+                numero: true,
+              },
+            },
           },
-        },
-      });
+          orderBy: {
+            contrato: {
+              nome: 'asc',
+            },
+          },
+        });
 
       const result: UserContractsResponse = {
         userId,
@@ -345,19 +349,21 @@ export class ContractPermissionsService {
         `Verificando permissão múltipla: usuário ${userId} -> contratos [${contractIds.join(', ')}]`
       );
 
-      const permission = await this.databaseService.getPrisma().mobileContratoPermissao.findFirst({
-        where: {
-          mobileUserId: userId,
-          contratoId: { in: contractIds },
-          deletedAt: null,
-          contrato: {
-            deletedAt: null, // Filtrar contratos deletados também
+      const permission = await this.databaseService
+        .getPrisma()
+        .mobileContratoPermissao.findFirst({
+          where: {
+            mobileUserId: userId,
+            contratoId: { in: contractIds },
+            deletedAt: null,
+            contrato: {
+              deletedAt: null, // Filtrar contratos deletados também
+            },
           },
-        },
-        select: {
-          id: true,
-        },
-      });
+          select: {
+            id: true,
+          },
+        });
 
       const hasPermission = !!permission;
       this.logger.log(

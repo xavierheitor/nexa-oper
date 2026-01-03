@@ -1,17 +1,13 @@
+import { ERROR_MESSAGES } from '@common/constants/errors';
+import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
 import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
-import { DatabaseService } from '@database/database.service';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import {
-  extractAllowedContractIds,
-  ensureContractPermission,
-} from '@modules/engine/auth/utils/contract-helpers';
+  getDefaultUserContext,
+  createAuditData,
+  updateAuditData,
+  deleteAuditData,
+} from '@common/utils/audit';
+import { handleCrudError } from '@common/utils/error-handler';
+import { handlePrismaUniqueError } from '@common/utils/error-handler';
 import {
   buildPaginationMeta,
   validatePaginationParams,
@@ -27,15 +23,21 @@ import {
   buildContractFilter,
   buildBaseWhereClause,
 } from '@common/utils/where-clause';
+import { DatabaseService } from '@database/database.service';
+import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
 import {
-  getDefaultUserContext,
-  createAuditData,
-  updateAuditData,
-  deleteAuditData,
-} from '@common/utils/audit';
-import { handleCrudError } from '@common/utils/error-handler';
-import { handlePrismaUniqueError } from '@common/utils/error-handler';
-import { ERROR_MESSAGES } from '@common/constants/errors';
+  extractAllowedContractIds,
+  ensureContractPermission,
+} from '@modules/engine/auth/utils/contract-helpers';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+
 import {
   ORDER_CONFIG,
   PAGINATION_CONFIG,
@@ -48,7 +50,6 @@ import {
   EletricistaSyncDto,
   UpdateEletricistaDto,
 } from '../dto';
-import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
 
 interface FindAllParams {
   page: number;
@@ -69,7 +70,6 @@ export class EletricistaService {
   private readonly logger = new Logger(EletricistaService.name);
 
   constructor(private readonly db: DatabaseService) {}
-
 
   private buildWhereClause(
     search: string | undefined,
@@ -410,10 +410,10 @@ export class EletricistaService {
 
       if (contratoId && contratoId !== existingEletricista.contratoId) {
         ensureContractPermission(
-        contratoId,
-        allowedContractIds,
-        ERROR_MESSAGES.FORBIDDEN_CONTRACT
-      );
+          contratoId,
+          allowedContractIds,
+          ERROR_MESSAGES.FORBIDDEN_CONTRACT
+        );
         await ensureContratoExists(this.db.getPrisma(), contratoId);
       }
 

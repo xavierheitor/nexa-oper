@@ -25,4 +25,3 @@ export class AprovarHoraExtraDto {
   @MaxLength(1000)
   observacoes?: string;
 }
-

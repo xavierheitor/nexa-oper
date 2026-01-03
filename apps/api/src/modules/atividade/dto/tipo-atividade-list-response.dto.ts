@@ -5,9 +5,10 @@
  * quando uma lista de tipos de atividade é consultada no sistema.
  */
 
-import { ApiProperty } from '@nestjs/swagger';
-import { TipoAtividadeResponseDto } from './tipo-atividade-response.dto';
 import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
+import { ApiProperty } from '@nestjs/swagger';
+
+import { TipoAtividadeResponseDto } from './tipo-atividade-response.dto';
 
 /**
  * DTO para resposta de listagem de tipos de atividade

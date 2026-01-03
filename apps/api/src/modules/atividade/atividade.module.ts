@@ -23,11 +23,15 @@
  * - AuthModule: Autenticação e permissões
  */
 
-import { Module } from '@nestjs/common';
 import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@modules/engine/auth/auth.module';
+import { Module } from '@nestjs/common';
+
+import {
+  TipoAtividadeController,
+  TipoAtividadeSyncController,
+} from './controllers';
 import { TipoAtividadeService } from './services/tipo-atividade.service';
-import { TipoAtividadeController, TipoAtividadeSyncController } from './controllers';
 
 /**
  * Módulo responsável pelas operações de tipos de atividade

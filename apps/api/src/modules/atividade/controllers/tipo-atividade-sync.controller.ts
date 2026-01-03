@@ -29,6 +29,10 @@
  * ```
  */
 
+import { SyncAuditRemoverInterceptor } from '@common/interceptors';
+import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
 import {
   Controller,
   Get,
@@ -43,12 +47,9 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
-import { SyncAuditRemoverInterceptor } from '@common/interceptors';
-import { TipoAtividadeService } from '../services/tipo-atividade.service';
+
 import { TipoAtividadeSyncDto } from '../dto';
+import { TipoAtividadeService } from '../services/tipo-atividade.service';
 
 /**
  * Controlador de Sincronização de Tipos de Atividade
@@ -106,7 +107,7 @@ export class TipoAtividadeSyncController {
     description: 'Erro interno do servidor',
   })
   async syncTipos(
-    @GetUserContracts() allowedContracts: ContractPermission[],
+    @GetUserContracts() allowedContracts: ContractPermission[]
   ): Promise<TipoAtividadeSyncDto[]> {
     this.logger.log('Iniciando sincronização de tipos de atividade');
     return this.tipoAtividadeService.findAllForSync(allowedContracts);

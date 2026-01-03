@@ -150,7 +150,7 @@ export default function HoraExtraTable({
             }
           : false
       }
-      // @ts-expect-error - TableFilters e TableSorter são tipos customizados compatíveis com o Ant Design
+      // @ts-ignore - TableFilters e TableSorter são tipos customizados compatíveis com o Ant Design
       onChange={onTableChange}
     />
   );

@@ -32,7 +32,7 @@ export const ModoRepeticaoEnum = z.enum(['CICLO_DIAS', 'SEMANA_DEPENDENTE']);
 export const DiaSemanaEnum = z.enum(['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO', 'DOMINGO']);
 export const StatusTrabalhoEnum = z.enum(['TRABALHO', 'FOLGA']);
 export const StatusEscalaEquipePeriodoEnum = z.enum(['RASCUNHO', 'EM_APROVACAO', 'PUBLICADA', 'ARQUIVADA']);
-export const EstadoSlotEnum = z.enum(['TRABALHO', 'FOLGA', 'BLOQUEADO_CALENDARIO', 'EXCECAO']);
+export const EstadoSlotEnum = z.enum(['TRABALHO', 'FOLGA', 'FALTA', 'EXCECAO']);
 export const OrigemAtribuicaoEnum = z.enum(['GERACAO', 'MANUAL', 'REMANEJAMENTO']);
 export const StatusAtribuicaoPlanejadaEnum = z.enum(['ATIVO', 'REMOVIDO']);
 export const TipoIndisponibilidadeEnum = z.enum(['FERIAS', 'LICENCA', 'SUSPENSAO', 'MEDICO', 'TREINAMENTO', 'OUTRO']);
@@ -763,4 +763,3 @@ export type AtribuirEletricistasInput = z.infer<
 export type ValidarComposicaoInput = z.infer<typeof validarComposicaoSchema>;
 export type MarcarFaltaInput = z.infer<typeof marcarFaltaSchema>;
 export type RegistrarTrocaInput = z.infer<typeof registrarTrocaSchema>;
-

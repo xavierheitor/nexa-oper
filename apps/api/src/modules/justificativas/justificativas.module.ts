@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from '../../database/database.module';
-import { TiposJustificativaController } from './tipos-justificativa.controller';
+
 import { JustificativasController } from './justificativas.controller';
 import { JustificativasService } from './justificativas.service';
+import { TiposJustificativaController } from './tipos-justificativa.controller';
+import { DatabaseModule } from '../../database/database.module';
 
 @Module({
   imports: [DatabaseModule],
@@ -11,5 +12,3 @@ import { JustificativasService } from './justificativas.service';
   exports: [JustificativasService],
 })
 export class JustificativasModule {}
-
-

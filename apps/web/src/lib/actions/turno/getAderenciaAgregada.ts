@@ -270,7 +270,9 @@ export const getAderenciaAgregada = async (rawData: unknown) =>
           slots.map((s) => s.eletricistaId)
         );
         const eletricistasQueTrabalharam = new Set(
-          turnosDoDia.flatMap((t) => t.Itens.map((i) => i.eletricistaId))
+          turnosDoDia.flatMap((t) =>
+            t.Itens.map((item: { eletricistaId: number }) => item.eletricistaId)
+          )
         );
 
         if (turnosDoDia.length === 0) {
@@ -390,4 +392,3 @@ export const getAderenciaAgregada = async (rawData: unknown) =>
     rawData,
     { entityName: 'AderenciaAgregada', actionType: 'get' }
   );
-

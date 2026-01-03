@@ -29,7 +29,7 @@ export default function MobileUserPage() {
   // Estados para modal de permissões
   const [permissoesModalOpen, setPermissoesModalOpen] = React.useState(false);
   const [selectedUserForPermissoes, setSelectedUserForPermissoes] = React.useState<MobileUser | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const permissoesController = useCrudController<unknown>('permissoes');
 
   // Hook para busca de dados com paginação

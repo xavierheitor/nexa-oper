@@ -13,6 +13,7 @@
  * - GET /api/tipo-veiculo/count - Conta tipos de veículo ativos
  */
 
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import {
   Body,
   Controller,
@@ -35,8 +36,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { TipoVeiculoService } from '../services/tipo-veiculo.service';
+
 import {
   CreateTipoVeiculoDto,
   UpdateTipoVeiculoDto,
@@ -44,6 +44,7 @@ import {
   TipoVeiculoQueryDto,
   TipoVeiculoResponseDto,
 } from '../dto';
+import { TipoVeiculoService } from '../services/tipo-veiculo.service';
 
 @ApiTags('tipo-veiculo')
 @ApiBearerAuth()
@@ -60,7 +61,8 @@ export class TipoVeiculoController {
   @Get()
   @ApiOperation({
     summary: 'Listar tipos de veículo',
-    description: 'Retorna lista paginada de tipos de veículo com filtros opcionais',
+    description:
+      'Retorna lista paginada de tipos de veículo com filtros opcionais',
   })
   @ApiQuery({
     name: 'page',
@@ -105,7 +107,9 @@ export class TipoVeiculoController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Parâmetros de consulta inválidos',
   })
-  async findAll(@Query() query: TipoVeiculoQueryDto): Promise<TipoVeiculoListResponseDto> {
+  async findAll(
+    @Query() query: TipoVeiculoQueryDto
+  ): Promise<TipoVeiculoListResponseDto> {
     this.logger.log('Listando tipos de veículo', { query });
     return this.tipoVeiculoService.findAll(query);
   }
@@ -173,7 +177,9 @@ export class TipoVeiculoController {
     status: HttpStatus.CONFLICT,
     description: 'Já existe um tipo de veículo com este nome',
   })
-  async create(@Body() createDto: CreateTipoVeiculoDto): Promise<TipoVeiculoResponseDto> {
+  async create(
+    @Body() createDto: CreateTipoVeiculoDto
+  ): Promise<TipoVeiculoResponseDto> {
     this.logger.log('Criando tipo de veículo', { nome: createDto.nome });
     return this.tipoVeiculoService.create(createDto);
   }
@@ -209,7 +215,9 @@ export class TipoVeiculoController {
     status: HttpStatus.BAD_REQUEST,
     description: 'ID inválido fornecido',
   })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<TipoVeiculoResponseDto> {
+  async findOne(
+    @Param('id', ParseIntPipe) id: number
+  ): Promise<TipoVeiculoResponseDto> {
     this.logger.log(`Buscando tipo de veículo por ID: ${id}`);
     return this.tipoVeiculoService.findById(id);
   }
@@ -251,7 +259,7 @@ export class TipoVeiculoController {
   })
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateDto: UpdateTipoVeiculoDto,
+    @Body() updateDto: UpdateTipoVeiculoDto
   ): Promise<TipoVeiculoResponseDto> {
     this.logger.log(`Atualizando tipo de veículo: ${id}`, updateDto);
     return this.tipoVeiculoService.update(id, updateDto);

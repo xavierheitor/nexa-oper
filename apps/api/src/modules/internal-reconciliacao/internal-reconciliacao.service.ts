@@ -7,13 +7,18 @@
  * A reconciliação é executada via endpoint interno ou via cron job agendado.
  */
 
-import { Injectable, Logger, ConflictException } from '@nestjs/common';
-import { DatabaseService } from '../../database/database.service';
-import { acquireLock, releaseLock } from '../../common/utils/job-lock';
-import { ForceReconcileDto } from './dto/force-reconcile.dto';
-import { ReconcileResponseDto, ReconcileStatsDto } from './dto/reconcile-response.dto';
-import { Prisma } from '@nexa-oper/db';
 import * as crypto from 'crypto';
+
+import { Injectable, Logger, ConflictException } from '@nestjs/common';
+import { Prisma } from '@nexa-oper/db';
+
+import { ForceReconcileDto } from './dto/force-reconcile.dto';
+import {
+  ReconcileResponseDto,
+  ReconcileStatsDto,
+} from './dto/reconcile-response.dto';
+import { acquireLock, releaseLock } from '../../common/utils/job-lock';
+import { DatabaseService } from '../../database/database.service';
 
 const JOB_NAME = 'reconciliacao_turnos';
 
@@ -52,9 +57,16 @@ export class InternalReconciliacaoService {
     );
 
     // Tentar adquirir lock
-    const lockAcquired = await acquireLock(prisma, JOB_NAME, this.lockTtlMs, lockedBy);
+    const lockAcquired = await acquireLock(
+      prisma,
+      JOB_NAME,
+      this.lockTtlMs,
+      lockedBy
+    );
     if (!lockAcquired) {
-      this.logger.warn(`[${runId}] Não foi possível adquirir lock - reconciliação já em execução`);
+      this.logger.warn(
+        `[${runId}] Não foi possível adquirir lock - reconciliação já em execução`
+      );
       throw new ConflictException('Reconciliação já está em execução');
     }
 
@@ -180,7 +192,9 @@ export class InternalReconciliacaoService {
       distinct: ['equipeId'],
     });
 
-    this.logger.log(`[${runId}] Encontradas ${equipesComEscala.length} equipes com escala`);
+    this.logger.log(
+      `[${runId}] Encontradas ${equipesComEscala.length} equipes com escala`
+    );
 
     // Processar cada equipe para cada dia
     for (const escala of equipesComEscala) {
@@ -203,9 +217,15 @@ export class InternalReconciliacaoService {
           stats.skipped += resultado.skipped;
           warnings.push(...resultado.warnings);
         } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
-          warnings.push(`Erro ao reconciliar equipe ${escala.equipeId} em ${dataAtual.toISOString().split('T')[0]}: ${errorMsg}`);
-          this.logger.warn(`[${runId}] Erro ao reconciliar equipe ${escala.equipeId}:`, error);
+          const errorMsg =
+            error instanceof Error ? error.message : String(error);
+          warnings.push(
+            `Erro ao reconciliar equipe ${escala.equipeId} em ${dataAtual.toISOString().split('T')[0]}: ${errorMsg}`
+          );
+          this.logger.warn(
+            `[${runId}] Erro ao reconciliar equipe ${escala.equipeId}:`,
+            error
+          );
         }
       }
     }

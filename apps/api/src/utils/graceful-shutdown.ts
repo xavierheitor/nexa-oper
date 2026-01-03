@@ -6,8 +6,8 @@
  * de encerrar o processo.
  */
 
-import { INestApplication } from '@nestjs/common';
 import { StandardLogger } from '@common/utils/logger';
+import { INestApplication } from '@nestjs/common';
 
 /**
  * Configura graceful shutdown para a aplicação
@@ -47,4 +47,3 @@ export function setupGracefulShutdown(
   process.on('SIGINT', () => void gracefulShutdown('SIGINT'));
   process.on('SIGHUP', () => void gracefulShutdown('SIGHUP'));
 }
-

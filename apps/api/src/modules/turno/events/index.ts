@@ -9,4 +9,3 @@ export * from './turno-created.event';
 export * from './turno-closed.event';
 export * from './turno-updated.event';
 export * from './turno-deleted.event';
-

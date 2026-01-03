@@ -19,12 +19,13 @@
  * ```
  */
 
-import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
-import { CloseTurnoCommand } from '../commands/close-turno.command';
-import { TurnoService } from '../../services/turno.service';
-import { TurnoClosedEvent } from '../../events/turno-closed.event';
+import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
+
 import { TurnoResponseDto } from '../../dto/turno-response.dto';
+import { TurnoClosedEvent } from '../../events/turno-closed.event';
+import { TurnoService } from '../../services/turno.service';
+import { CloseTurnoCommand } from '../commands/close-turno.command';
 
 /**
  * Handler responsável por processar o comando de fechamento de turno
@@ -71,4 +72,3 @@ export class CloseTurnoHandler implements ICommandHandler<CloseTurnoCommand> {
     return turno;
   }
 }
-

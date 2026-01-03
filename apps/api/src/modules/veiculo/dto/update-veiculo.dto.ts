@@ -15,6 +15,7 @@
 import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsPositive } from 'class-validator';
+
 import { CreateVeiculoDto } from './create-veiculo.dto';
 
 /**

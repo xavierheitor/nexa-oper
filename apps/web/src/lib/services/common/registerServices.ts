@@ -33,7 +33,6 @@ import { ChecklistTipoVeiculoVinculoService } from '../ChecklistTipoVeiculoVincu
 import { ChecklistPendenciaService } from '../ChecklistPendenciaService';
 import { ContratoService } from '../ContratoService';
 import { EletricistaService } from '../EletricistaService';
-// import { EscalaService } from '../EscalaService'; // COMENTADO - Substituído pelo novo módulo de Escalas
 import { EquipeService } from '../EquipeService';
 import { EquipeSupervisorService } from '../EquipeSupervisorService';
 import { MobileUserService } from '../MobileUserService';
@@ -76,7 +75,6 @@ export function registerServices(): void {
   container.register('tipoVeiculoService', () => new TipoVeiculoService());
   container.register('veiculoService', () => new VeiculoService());
   container.register('eletricistaService', () => new EletricistaService());
-  // container.register('escalaService', () => new EscalaService()); // COMENTADO - Substituído pelo novo módulo
   container.register('supervisorService', () => new SupervisorService());
   container.register(
     'equipeSupervisorService',

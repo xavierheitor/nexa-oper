@@ -15,6 +15,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+
 import { ELETRICISTA_VALIDATION_CONFIG } from '../constants/eletricista.constants';
 
 export class CreateEletricistaDto {

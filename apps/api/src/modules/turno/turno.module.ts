@@ -25,24 +25,21 @@
  * - AuthModule: Autenticação e permissões
  */
 
+import { CircuitBreakerModule } from '@common/circuit-breaker';
+import { DatabaseModule } from '@database/database.module';
+import { AuthModule } from '@modules/engine/auth/auth.module';
+import { TurnoRealizadoModule } from '@modules/turno-realizado/turno-realizado.module';
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MulterModule } from '@nestjs/platform-express';
-import { DatabaseModule } from '@database/database.module';
-import { AuthModule } from '@modules/engine/auth/auth.module';
-import { TurnoRealizadoModule } from '@modules/turno-realizado/turno-realizado.module';
-import { CircuitBreakerModule } from '@common/circuit-breaker';
-import { TurnoService } from './services/turno.service';
-import { ChecklistPreenchidoService } from './services/checklist-preenchido.service';
-import { ChecklistFotoService } from './services/checklist-foto.service';
+
 import {
   TurnoController,
   TurnoSyncController,
   TurnoMobileController,
   ChecklistFotoController,
 } from './controllers';
-// CQRS Handlers
 import {
   CreateTurnoHandler,
   CloseTurnoHandler,
@@ -51,8 +48,12 @@ import {
   GetTurnoByIdHandler,
   GetTurnosForSyncHandler,
 } from './cqrs';
-// Event Handlers
 import { TurnoEventHandler } from './events/handlers/turno-event.handler';
+import { ChecklistFotoService } from './services/checklist-foto.service';
+import { ChecklistPreenchidoService } from './services/checklist-preenchido.service';
+import { TurnoService } from './services/turno.service';
+// CQRS Handlers
+// Event Handlers
 
 /**
  * Módulo responsável pelas operações de turnos

@@ -1,12 +1,20 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsInt, Min, IsOptional, IsBoolean, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsInt,
+  Min,
+  IsOptional,
+  IsBoolean,
+  IsDateString,
+} from 'class-validator';
 
 /**
  * DTO para forçar execução de reconciliação de turnos
  */
 export class ForceReconcileDto {
   @ApiPropertyOptional({
-    description: 'Data de referência para reconciliação (formato: YYYY-MM-DD). Se não informado, usa hoje',
+    description:
+      'Data de referência para reconciliação (formato: YYYY-MM-DD). Se não informado, usa hoje',
     example: '2024-01-15',
   })
   @IsOptional()
@@ -14,7 +22,8 @@ export class ForceReconcileDto {
   dataReferencia?: string;
 
   @ApiPropertyOptional({
-    description: 'ID da equipe para reconciliar (opcional, se não informado processa todas as equipes)',
+    description:
+      'ID da equipe para reconciliar (opcional, se não informado processa todas as equipes)',
     example: 1,
   })
   @IsOptional()
@@ -33,7 +42,8 @@ export class ForceReconcileDto {
   intervaloDias?: number;
 
   @ApiPropertyOptional({
-    description: 'Se true, executa sem fazer alterações no banco (modo de teste)',
+    description:
+      'Se true, executa sem fazer alterações no banco (modo de teste)',
     example: false,
     default: false,
   })

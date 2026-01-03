@@ -44,7 +44,8 @@ export const ERROR_MESSAGES = {
   NOME_REQUIRED: 'Nome do tipo de veículo é obrigatório',
   NOME_TOO_LONG: 'Nome do tipo de veículo deve ter no máximo 255 caracteres',
   NOME_TOO_SHORT: 'Nome do tipo de veículo deve ter pelo menos 2 caracteres',
-  CANNOT_DELETE_TIPO_VEICULO_IN_USE: 'Não é possível excluir tipo de veículo que está sendo utilizado',
+  CANNOT_DELETE_TIPO_VEICULO_IN_USE:
+    'Não é possível excluir tipo de veículo que está sendo utilizado',
 } as const;
 
 /**

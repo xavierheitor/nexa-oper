@@ -1,8 +1,10 @@
+import { DatabaseModule } from '@database/database.module';
+import { AuthModule } from '@modules/engine/auth/auth.module';
 import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { DatabaseModule } from '@database/database.module';
-import { AuthModule } from '@modules/engine/auth/auth.module';
+
+import { MAX_MOBILE_PHOTO_FILE_SIZE } from './constants/mobile-upload.constants';
 import {
   MobilePhotoUploadController,
   MobileLocationUploadController,
@@ -11,7 +13,6 @@ import {
   MobilePhotoUploadService,
   MobileLocationUploadService,
 } from './services';
-import { MAX_MOBILE_PHOTO_FILE_SIZE } from './constants/mobile-upload.constants';
 
 /**
  * Módulo responsável pelos endpoints de upload do aplicativo mobile.

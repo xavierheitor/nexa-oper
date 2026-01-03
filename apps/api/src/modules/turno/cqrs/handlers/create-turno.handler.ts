@@ -19,12 +19,13 @@
  * ```
  */
 
-import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
-import { CreateTurnoCommand } from '../commands/create-turno.command';
-import { TurnoService } from '../../services/turno.service';
-import { TurnoCreatedEvent } from '../../events/turno-created.event';
+import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
+
 import { TurnoResponseDto } from '../../dto/turno-response.dto';
+import { TurnoCreatedEvent } from '../../events/turno-created.event';
+import { TurnoService } from '../../services/turno.service';
+import { CreateTurnoCommand } from '../commands/create-turno.command';
 
 /**
  * Handler responsável por processar o comando de criação de turno
@@ -72,4 +73,3 @@ export class CreateTurnoHandler implements ICommandHandler<CreateTurnoCommand> {
     return turno;
   }
 }
-

@@ -7,8 +7,9 @@
 
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { WebLogsService } from './web-logs.service';
+
 import { WebLogDto } from './dto/web-log.dto';
+import { WebLogsService } from './web-logs.service';
 
 @ApiTags('web-logs')
 @Controller('web-logs')
@@ -34,9 +35,10 @@ export class WebLogsController {
     status: 400,
     description: 'Dados inválidos',
   })
-  async receiveErrorLog(@Body() logDto: WebLogDto): Promise<{ success: boolean }> {
+  async receiveErrorLog(
+    @Body() logDto: WebLogDto
+  ): Promise<{ success: boolean }> {
     await this.webLogsService.saveErrorLog(logDto);
     return { success: true };
   }
 }
-

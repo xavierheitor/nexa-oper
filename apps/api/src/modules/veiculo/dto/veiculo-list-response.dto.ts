@@ -5,11 +5,12 @@
  * que contêm listas paginadas de veículos.
  */
 
+import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsDate, IsOptional, IsString } from 'class-validator';
+
 import { VeiculoResponseDto } from './veiculo-response.dto';
-import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
 
 /**
  * DTO para resposta de lista paginada de veículos

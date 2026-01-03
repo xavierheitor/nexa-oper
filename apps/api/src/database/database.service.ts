@@ -54,10 +54,12 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       await this.prisma.$executeRaw`SET time_zone = '-03:00'`;
 
       // Verificar se o timezone foi configurado corretamente
-      const timezoneResult = await this.prisma.$queryRaw`SELECT @@session.time_zone as timezone`;
+      const timezoneResult = await this.prisma
+        .$queryRaw`SELECT @@session.time_zone as timezone`;
       this.logger.log('Conectado ao banco de dados com sucesso!');
-      this.logger.debug(`Timezone configurado: ${JSON.stringify(timezoneResult)}`);
-
+      this.logger.debug(
+        `Timezone configurado: ${JSON.stringify(timezoneResult)}`
+      );
     } catch (error: unknown) {
       this.logger.error('Erro ao conectar ao banco:', error);
       throw error;

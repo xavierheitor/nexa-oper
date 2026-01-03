@@ -1,4 +1,4 @@
-// @ts-nocheck
+// NOTE: Tipos podem exigir ajustes finos, mas a implementação está correta.
 /**
  * Repository para Cargo
  *
@@ -23,7 +23,10 @@ export type CargoUpdateInput = Partial<CargoCreateInput> & {
   id: number;
 };
 
-export class CargoRepository extends AbstractCrudRepository<Cargo, CargoFilter> {
+export class CargoRepository extends AbstractCrudRepository<
+  Cargo,
+  CargoFilter
+> {
   protected getSearchFields(): string[] {
     return ['nome'];
   }
@@ -73,9 +76,11 @@ export class CargoRepository extends AbstractCrudRepository<Cargo, CargoFilter> 
   }
 
   // Override do método update com assinatura correta
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore - A assinatura está correta, mas TypeScript não reconhece devido ao cache
-  override async update(id: string | number, data: unknown, userId?: string): Promise<Cargo> {
+  override async update(
+    id: string | number,
+    data: unknown,
+    userId?: string
+  ): Promise<Cargo> {
     const updateData = data as CargoUpdateInput;
     const { id: _, ...updateFields } = updateData;
     return prisma.cargo.update({
@@ -149,4 +154,3 @@ export class CargoRepository extends AbstractCrudRepository<Cargo, CargoFilter> 
     });
   }
 }
-

@@ -6,6 +6,7 @@
  */
 
 import { PartialType } from '@nestjs/swagger';
+
 import { CreateTipoVeiculoDto } from './create-tipo-veiculo.dto';
 
 /**

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Página de Gerenciamento de Períodos de Escala
  *
@@ -264,8 +263,7 @@ export default function EscalaEquipePeriodoPage() {
   };
 
   const handlePublicarTodas = async () => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-ignore - escalas.data não possui tipagem completa no runtime
     const escalasRascunho: EscalaEquipePeriodo[] = (escalas.data as unknown as EscalaEquipePeriodo[]).filter(
       e => e.status === 'RASCUNHO'
     );
@@ -541,8 +539,7 @@ export default function EscalaEquipePeriodoPage() {
             onClick={handlePublicarTodas}
             disabled={
               !escalas.data ||
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
+              // @ts-ignore - escalas.data não possui tipagem completa no runtime
               ((escalas.data as unknown as EscalaEquipePeriodo[]).filter(e => e.status === 'RASCUNHO').length === 0)
             }
           >
@@ -558,14 +555,10 @@ export default function EscalaEquipePeriodoPage() {
         </Space>
       </div>
 
-      {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-      {/* @ts-ignore */}
       <Table
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-ignore - tipagem do Table não cobre o formato de columns usado
         columns={columns}
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-ignore - tipagem do Table não cobre o formato de dataSource usado
         dataSource={escalas.data as unknown as EscalaEquipePeriodo[]}
         loading={escalas.isLoading}
         rowKey="id"
@@ -734,4 +727,3 @@ export default function EscalaEquipePeriodoPage() {
     </div>
   );
 }
-

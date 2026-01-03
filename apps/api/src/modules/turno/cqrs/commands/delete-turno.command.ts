@@ -16,8 +16,8 @@
  * ```
  */
 
-import { ICommand } from '@nestjs/cqrs';
 import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import { ICommand } from '@nestjs/cqrs';
 
 /**
  * Command para deletar um turno
@@ -28,5 +28,3 @@ export class DeleteTurnoCommand implements ICommand {
     public readonly allowedContracts: ContractPermission[]
   ) {}
 }
-
-

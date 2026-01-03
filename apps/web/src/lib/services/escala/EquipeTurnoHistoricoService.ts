@@ -39,7 +39,6 @@ export class EquipeTurnoHistoricoService extends AbstractCrudService<
 
   constructor() {
     const repo = new EquipeTurnoHistoricoRepository();
-    // @ts-ignore - Compatibilidade de tipos do repositório
     super(repo);
     this.turnoRepo = repo;
   }
@@ -99,7 +98,6 @@ export class EquipeTurnoHistoricoService extends AbstractCrudService<
       );
     }
 
-    // @ts-ignore - Compatibilidade de tipos
     const updateInput: EquipeTurnoHistoricoUpdateInput = {
       id: data.id,
       equipeId: data.equipeId,
@@ -139,4 +137,3 @@ export class EquipeTurnoHistoricoService extends AbstractCrudService<
     return this.turnoRepo.findVigenteByEquipeAndData(equipeId, data);
   }
 }
-

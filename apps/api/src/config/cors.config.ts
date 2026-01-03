@@ -5,9 +5,9 @@
  * da aplicação, utilizando a função getCorsOrigins() do módulo comum.
  */
 
-import { INestApplication } from '@nestjs/common';
-import { StandardLogger } from '@common/utils/logger';
 import { getCorsOrigins } from '@common/utils/cors';
+import { StandardLogger } from '@common/utils/logger';
+import { INestApplication } from '@nestjs/common';
 
 /**
  * Configura CORS na aplicação
@@ -33,7 +33,10 @@ export function configureCors(
       // Se for função, usa a função diretamente
       if (typeof allowed === 'function') {
         const result = allowed(origin);
-        return callback(result ? null : new Error('CORS: Origin not allowed'), result);
+        return callback(
+          result ? null : new Error('CORS: Origin not allowed'),
+          result
+        );
       }
 
       // Se for array, verifica se está na lista
@@ -70,4 +73,3 @@ export function configureCors(
     );
   }
 }
-

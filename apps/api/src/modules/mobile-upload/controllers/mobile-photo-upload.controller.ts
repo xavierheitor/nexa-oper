@@ -2,6 +2,7 @@
  * Controller responsável pelos uploads de fotos enviados pelo aplicativo mobile.
  */
 
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import {
   Body,
   Controller,
@@ -13,6 +14,7 @@ import {
   UseInterceptors,
   Res,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -21,19 +23,16 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import type { Response } from 'express';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+
 import {
   MAX_MOBILE_PHOTO_FILE_SIZE,
   SUPPORTED_MOBILE_PHOTO_TYPES,
 } from '../constants/mobile-upload.constants';
-import {
-  PhotoUploadDto,
-  PhotoUploadResponseDto,
-} from '../dto';
+import { PhotoUploadDto, PhotoUploadResponseDto } from '../dto';
 import { MobilePhotoUploadService } from '../services';
+
+import type { Response } from 'express';
 
 /**
  * Controller para upload de fotos mobile.

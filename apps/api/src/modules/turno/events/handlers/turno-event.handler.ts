@@ -19,13 +19,14 @@
  * ```
  */
 
-import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { Logger } from '@nestjs/common';
 import { DatabaseService } from '@database/database.service';
-import { TurnoCreatedEvent } from '../turno-created.event';
+import { Logger } from '@nestjs/common';
+import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
+
 import { TurnoClosedEvent } from '../turno-closed.event';
-import { TurnoUpdatedEvent } from '../turno-updated.event';
+import { TurnoCreatedEvent } from '../turno-created.event';
 import { TurnoDeletedEvent } from '../turno-deleted.event';
+import { TurnoUpdatedEvent } from '../turno-updated.event';
 
 /**
  * Handler responsável por processar eventos de turnos para Event Sourcing
@@ -39,7 +40,10 @@ import { TurnoDeletedEvent } from '../turno-deleted.event';
 export class TurnoEventHandler
   implements
     IEventHandler<
-      TurnoCreatedEvent | TurnoClosedEvent | TurnoUpdatedEvent | TurnoDeletedEvent
+      | TurnoCreatedEvent
+      | TurnoClosedEvent
+      | TurnoUpdatedEvent
+      | TurnoDeletedEvent
     >
 {
   private readonly logger = new Logger(TurnoEventHandler.name);
@@ -166,15 +170,5 @@ export class TurnoEventHandler
     );
 
     // TODO: Implementar armazenamento em tabela de eventos quando necessário
-    // await this.db.getPrisma().turnoEvent.create({
-    //   data: {
-    //     turnoId: event.id,
-    //     eventType,
-    //     eventData,
-    //     occurredAt: event.dataHora,
-    //     userId: String(event.userId),
-    //   },
-    // });
   }
 }
-

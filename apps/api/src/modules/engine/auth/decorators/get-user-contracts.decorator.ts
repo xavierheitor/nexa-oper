@@ -20,12 +20,13 @@
  * ```
  */
 
+import { sanitizeData } from '@common/utils/logger';
 import { createParamDecorator, ExecutionContext, Logger } from '@nestjs/common';
+
 import {
   ContractPermission,
   ContractPermissionsService,
 } from '../services/contract-permissions.service';
-import { sanitizeData } from '@common/utils/logger';
 
 export const GetUserContracts = createParamDecorator(
   async (
@@ -78,10 +79,14 @@ export const GetUserContracts = createParamDecorator(
       logger.verbose('=== BUSCANDO SERVIÇO ===');
       // Obter serviço de permissões via injeção de dependência
       logger.verbose('Buscando ContractPermissionsService...');
-      let contractPermissionsService = request.app.get?.(ContractPermissionsService);
+      let contractPermissionsService = request.app.get?.(
+        ContractPermissionsService
+      );
       if (!contractPermissionsService) {
         const appCtx = (global as any).NEST_APP;
-        contractPermissionsService = appCtx?.get?.(ContractPermissionsService, { strict: false });
+        contractPermissionsService = appCtx?.get?.(ContractPermissionsService, {
+          strict: false,
+        });
       }
 
       if (!contractPermissionsService) {
@@ -113,12 +118,14 @@ export const GetUserContracts = createParamDecorator(
 
       if (result?.contracts && result.contracts.length > 0) {
         logger.debug('=== DETALHES DOS CONTRATOS ===');
-        result.contracts.forEach((contract: ContractPermission, index: number) => {
-          // Sanitiza contrato para evitar exposição de informações sensíveis
-          logger.debug(
-            `Contrato ${index + 1}: ${JSON.stringify(sanitizeData(contract))}`
-          );
-        });
+        result.contracts.forEach(
+          (contract: ContractPermission, index: number) => {
+            // Sanitiza contrato para evitar exposição de informações sensíveis
+            logger.debug(
+              `Contrato ${index + 1}: ${JSON.stringify(sanitizeData(contract))}`
+            );
+          }
+        );
       }
 
       // Cache no contexto da requisição
@@ -175,7 +182,9 @@ export const GetUserContractsInfo = createParamDecorator(
       }
 
       // Obter serviço de permissões via injeção de dependência
-      const contractPermissionsService = request.app.get(ContractPermissionsService);
+      const contractPermissionsService = request.app.get(
+        ContractPermissionsService
+      );
 
       if (!contractPermissionsService) {
         logger.warn(

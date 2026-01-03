@@ -1,4 +1,4 @@
-// @ts-nocheck - Erros de tipo devido ao cache do TypeScript, mas a implementação está correta
+// NOTE: Tipos podem exigir ajustes finos, mas a implementação está correta.
 /**
  * Repository para EquipeHorarioVigencia
  *
@@ -6,7 +6,6 @@
  */
 
 import { EquipeHorarioVigencia, Prisma } from '@nexa-oper/db';
-// @ts-nocheck
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
@@ -28,7 +27,6 @@ export type EquipeHorarioVigenciaUpdateInput = Partial<EquipeHorarioVigenciaCrea
   id: number;
 };
 
-// @ts-ignore
 export class EquipeHorarioVigenciaRepository extends AbstractCrudRepository<
   EquipeHorarioVigencia,
   EquipeHorarioVigenciaFilter
@@ -96,8 +94,6 @@ export class EquipeHorarioVigenciaRepository extends AbstractCrudRepository<
     });
   }
   // Override do método update com assinatura correta
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore - A assinatura está correta, mas TypeScript não reconhece devido ao cache
   override async update(
     id: string | number,
     data: unknown,
@@ -276,4 +272,3 @@ export class EquipeHorarioVigenciaRepository extends AbstractCrudRepository<
     return count > 0;
   }
 }
-

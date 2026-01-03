@@ -33,7 +33,6 @@ export class CargoService extends AbstractCrudService<
 
   constructor() {
     const repo = new CargoRepository();
-    // @ts-ignore - Compatibilidade de tipos do repositório
     super(repo);
     this.cargoRepo = repo;
   }
@@ -73,4 +72,3 @@ export class CargoService extends AbstractCrudService<
     };
   }
 }
-

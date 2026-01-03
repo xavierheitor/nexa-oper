@@ -22,6 +22,7 @@
  * @author Nexa Oper Team
  */
 
+import { sanitizeHeaders, sanitizeData } from '@common/utils/logger';
 import {
   Injectable,
   ExecutionContext,
@@ -29,7 +30,6 @@ import {
   Logger,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { sanitizeHeaders, sanitizeData } from '@common/utils/logger';
 
 /**
  * Guard de Autenticação JWT

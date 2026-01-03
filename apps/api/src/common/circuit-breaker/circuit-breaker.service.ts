@@ -191,9 +191,7 @@ export class CircuitBreakerService {
 
     // Event listeners
     functionBreaker.on('open', () => {
-      this.logger.warn(
-        `Circuit Breaker "${name}" ABERTO - Usando fallback`
-      );
+      this.logger.warn(`Circuit Breaker "${name}" ABERTO - Usando fallback`);
     });
 
     try {
@@ -252,4 +250,3 @@ export class CircuitBreakerService {
     this.logger.log('Todos os Circuit Breakers foram removidos');
   }
 }
-

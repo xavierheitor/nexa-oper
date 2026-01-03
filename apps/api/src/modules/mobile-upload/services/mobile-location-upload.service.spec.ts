@@ -1,5 +1,6 @@
-import { MobileLocationUploadService } from './mobile-location-upload.service';
 import { DatabaseService } from '@database/database.service';
+
+import { MobileLocationUploadService } from './mobile-location-upload.service';
 import { LocationUploadDto } from '../dto';
 
 describe('MobileLocationUploadService', () => {

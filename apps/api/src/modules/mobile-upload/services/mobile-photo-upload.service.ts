@@ -2,12 +2,15 @@
  * Serviço responsável por processar uploads de fotos enviados pelo aplicativo mobile.
  */
 
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { DatabaseService } from '@database/database.service';
 import { randomUUID, createHash } from 'crypto';
-import { dirname, extname, join, sep } from 'path';
 import { mkdir, writeFile } from 'fs/promises';
+import { dirname, extname, join, sep } from 'path';
+
+import { createAuditData, getDefaultUserContext } from '@common/utils/audit';
 import { sanitizeData } from '@common/utils/logger';
+import { DatabaseService } from '@database/database.service';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+
 import {
   ALLOWED_MOBILE_PHOTO_MIME_TYPES,
   MAX_MOBILE_PHOTO_FILE_SIZE,
@@ -16,10 +19,6 @@ import {
   SUPPORTED_MOBILE_PHOTO_TYPES,
 } from '../constants/mobile-upload.constants';
 import { PhotoUploadDto, PhotoUploadResponseDto } from '../dto';
-import {
-  createAuditData,
-  getDefaultUserContext,
-} from '@common/utils/audit';
 
 type MulterFile = Express.Multer.File;
 
@@ -183,7 +182,9 @@ export class MobilePhotoUploadService {
    */
   private validateFile(file: MulterFile): void {
     if (file.size > MAX_MOBILE_PHOTO_FILE_SIZE) {
-      throw new BadRequestException('Arquivo excede o tamanho máximo permitido');
+      throw new BadRequestException(
+        'Arquivo excede o tamanho máximo permitido'
+      );
     }
 
     if (!ALLOWED_MOBILE_PHOTO_MIME_TYPES.includes(file.mimetype as any)) {
@@ -231,7 +232,10 @@ export class MobilePhotoUploadService {
   /**
    * Monta o caminho relativo onde a foto será armazenada.
    */
-  private buildRelativePath(turnoId: number, extension: string): {
+  private buildRelativePath(
+    turnoId: number,
+    extension: string
+  ): {
     parts: string[];
     fileName: string;
     urlPath: string;
@@ -290,7 +294,9 @@ export class MobilePhotoUploadService {
       });
 
       if (!mobilePhoto) {
-        this.logger.error(`[PENDENCIA-SEM-UUID] Foto mobile não encontrada: ${mobilePhotoId}`);
+        this.logger.error(
+          `[PENDENCIA-SEM-UUID] Foto mobile não encontrada: ${mobilePhotoId}`
+        );
         return;
       }
 
@@ -309,21 +315,29 @@ export class MobilePhotoUploadService {
         },
       });
 
-      this.logger.debug(`[PENDENCIA-SEM-UUID] Encontradas ${respostas.length} respostas para perguntaId=${perguntaId} no turnoId=${turnoId}`);
+      this.logger.debug(
+        `[PENDENCIA-SEM-UUID] Encontradas ${respostas.length} respostas para perguntaId=${perguntaId} no turnoId=${turnoId}`
+      );
 
       if (respostas.length === 0) {
-        this.logger.warn(`[PENDENCIA-SEM-UUID] Nenhuma resposta encontrada para perguntaId=${perguntaId} no turnoId=${turnoId}`);
+        this.logger.warn(
+          `[PENDENCIA-SEM-UUID] Nenhuma resposta encontrada para perguntaId=${perguntaId} no turnoId=${turnoId}`
+        );
         return;
       }
 
       // Processar cada resposta encontrada
       for (const resposta of respostas) {
-        this.logger.debug(`[PENDENCIA-SEM-UUID] Processando resposta ID: ${resposta.id}`);
+        this.logger.debug(
+          `[PENDENCIA-SEM-UUID] Processando resposta ID: ${resposta.id}`
+        );
 
         // Buscar ou criar pendência
         let pendencia = resposta.ChecklistPendencia;
         if (!pendencia) {
-          this.logger.debug(`[PENDENCIA-SEM-UUID] Criando nova pendência para resposta ${resposta.id}`);
+          this.logger.debug(
+            `[PENDENCIA-SEM-UUID] Criando nova pendência para resposta ${resposta.id}`
+          );
 
           try {
             pendencia = await this.db.getPrisma().checklistPendencia.create({
@@ -338,15 +352,20 @@ export class MobilePhotoUploadService {
             });
           } catch (error: any) {
             // Tratar race condition: se outra requisição criou a pendência simultaneamente
-            if (error?.code === 'P2002' && error?.meta?.target?.includes('checklistRespostaId')) {
+            if (
+              error?.code === 'P2002' &&
+              error?.meta?.target?.includes('checklistRespostaId')
+            ) {
               this.logger.debug(
                 `[PENDENCIA-SEM-UUID] Pendência já existe (race condition), buscando novamente: checklistRespostaId=${resposta.id}`
               );
 
               // Buscar a pendência que foi criada pela outra requisição
-              pendencia = await this.db.getPrisma().checklistPendencia.findUnique({
-                where: { checklistRespostaId: resposta.id },
-              });
+              pendencia = await this.db
+                .getPrisma()
+                .checklistPendencia.findUnique({
+                  where: { checklistRespostaId: resposta.id },
+                });
 
               if (!pendencia) {
                 this.logger.error(
@@ -370,27 +389,29 @@ export class MobilePhotoUploadService {
         }
 
         // Criar registro na tabela ChecklistRespostaFoto
-        const checklistRespostaFoto = await this.db.getPrisma().checklistRespostaFoto.create({
-          data: {
-            checklistRespostaId: resposta.id,
-            checklistPendenciaId: pendencia.id,
-            caminhoArquivo: mobilePhoto.storagePath,
-            urlPublica: mobilePhoto.url,
-            tamanhoBytes: BigInt(mobilePhoto.fileSize),
-            mimeType: mobilePhoto.mimeType,
-            sincronizadoEm: new Date(),
-            metadados: {
-              mobilePhotoId: mobilePhoto.id,
-              tipo: mobilePhoto.tipo,
-              capturedAt: mobilePhoto.capturedAt,
-              turnoId,
-              perguntaId,
-              metodoVinculacao: 'sem-uuid-fallback',
+        const checklistRespostaFoto = await this.db
+          .getPrisma()
+          .checklistRespostaFoto.create({
+            data: {
+              checklistRespostaId: resposta.id,
+              checklistPendenciaId: pendencia.id,
+              caminhoArquivo: mobilePhoto.storagePath,
+              urlPublica: mobilePhoto.url,
+              tamanhoBytes: BigInt(mobilePhoto.fileSize),
+              mimeType: mobilePhoto.mimeType,
+              sincronizadoEm: new Date(),
+              metadados: {
+                mobilePhotoId: mobilePhoto.id,
+                tipo: mobilePhoto.tipo,
+                capturedAt: mobilePhoto.capturedAt,
+                turnoId,
+                perguntaId,
+                metodoVinculacao: 'sem-uuid-fallback',
+              },
+              createdAt: new Date(),
+              createdBy: 'system',
             },
-            createdAt: new Date(),
-            createdBy: 'system',
-          },
-        });
+          });
 
         this.logger.debug(
           `[PENDENCIA-SEM-UUID] Foto vinculada com sucesso - RespostaFoto ID: ${checklistRespostaFoto.id}, Resposta ID: ${resposta.id}, Pendência ID: ${pendencia.id}`
@@ -409,10 +430,14 @@ export class MobilePhotoUploadService {
           },
         });
 
-        this.logger.debug(`[PENDENCIA-SEM-UUID] Contador de fotos atualizado para resposta ${resposta.id}`);
+        this.logger.debug(
+          `[PENDENCIA-SEM-UUID] Contador de fotos atualizado para resposta ${resposta.id}`
+        );
       }
 
-      this.logger.debug(`[PENDENCIA-SEM-UUID] Processamento concluído para ${respostas.length} resposta(s)`);
+      this.logger.debug(
+        `[PENDENCIA-SEM-UUID] Processamento concluído para ${respostas.length} resposta(s)`
+      );
     } catch (error) {
       this.logger.error(
         `[PENDENCIA-SEM-UUID] Erro ao processar foto de pendência: ${error}`,
@@ -443,42 +468,56 @@ export class MobilePhotoUploadService {
       // Primeiro, verificar se o turno existe
       const turno = await this.db.getPrisma().turno.findUnique({
         where: { id: turnoId },
-        select: { id: true, dataInicio: true }
+        select: { id: true, dataInicio: true },
       });
 
       if (!turno) {
-        this.logger.error(`[PENDENCIA-UUID] Turno não encontrado: turnoId=${turnoId}`);
+        this.logger.error(
+          `[PENDENCIA-UUID] Turno não encontrado: turnoId=${turnoId}`
+        );
         return;
       }
 
-      this.logger.debug(`[PENDENCIA-UUID] Turno encontrado: ${turno.id}, dataInicio: ${turno.dataInicio}`);
+      this.logger.debug(
+        `[PENDENCIA-UUID] Turno encontrado: ${turno.id}, dataInicio: ${turno.dataInicio}`
+      );
 
       // Buscar o checklist preenchido pelo UUID
-      const checklistPreenchido = await this.db.getPrisma().checklistPreenchido.findFirst({
-        where: {
-          uuid: checklistUuid,
-          turnoId: turnoId,
-        },
-        include: {
-          ChecklistResposta: {
-            where: {
-              perguntaId: perguntaId,
-            },
-            include: {
-              ChecklistPendencia: true,
+      const checklistPreenchido = await this.db
+        .getPrisma()
+        .checklistPreenchido.findFirst({
+          where: {
+            uuid: checklistUuid,
+            turnoId: turnoId,
+          },
+          include: {
+            ChecklistResposta: {
+              where: {
+                perguntaId: perguntaId,
+              },
+              include: {
+                ChecklistPendencia: true,
+              },
             },
           },
-        },
-      });
+        });
 
-      this.logger.debug(`[PENDENCIA-UUID] Checklist encontrado pelo UUID: ${checklistPreenchido ? 'SIM' : 'NÃO'}`);
+      this.logger.debug(
+        `[PENDENCIA-UUID] Checklist encontrado pelo UUID: ${checklistPreenchido ? 'SIM' : 'NÃO'}`
+      );
 
       if (checklistPreenchido) {
-        this.logger.debug(`[PENDENCIA-UUID] Checklist ID: ${checklistPreenchido.id}, checklistId: ${checklistPreenchido.checklistId}`);
-        this.logger.debug(`[PENDENCIA-UUID] Total respostas encontradas: ${checklistPreenchido.ChecklistResposta.length}`);
+        this.logger.debug(
+          `[PENDENCIA-UUID] Checklist ID: ${checklistPreenchido.id}, checklistId: ${checklistPreenchido.checklistId}`
+        );
+        this.logger.debug(
+          `[PENDENCIA-UUID] Total respostas encontradas: ${checklistPreenchido.ChecklistResposta.length}`
+        );
 
         checklistPreenchido.ChecklistResposta.forEach((resp, idx) => {
-          this.logger.debug(`[PENDENCIA-UUID] Resposta ${idx + 1} - ID: ${resp.id}, perguntaId: ${resp.perguntaId}, opcaoRespostaId: ${resp.opcaoRespostaId}, temPendencia: ${!!resp.ChecklistPendencia}`);
+          this.logger.debug(
+            `[PENDENCIA-UUID] Resposta ${idx + 1} - ID: ${resp.id}, perguntaId: ${resp.perguntaId}, opcaoRespostaId: ${resp.opcaoRespostaId}, temPendencia: ${!!resp.ChecklistPendencia}`
+          );
         });
       }
 
@@ -497,7 +536,9 @@ export class MobilePhotoUploadService {
         return;
       }
 
-      this.logger.debug(`[PENDENCIA-UUID] Resposta encontrada: ID=${resposta.id}`);
+      this.logger.debug(
+        `[PENDENCIA-UUID] Resposta encontrada: ID=${resposta.id}`
+      );
 
       // Buscar ou criar pendência relacionada à resposta
       let pendencia = resposta.ChecklistPendencia;
@@ -514,7 +555,8 @@ export class MobilePhotoUploadService {
               checklistPreenchidoId: resposta.checklistPreenchidoId,
               turnoId: checklistPreenchido.turnoId,
               status: 'AGUARDANDO_TRATAMENTO',
-              observacaoProblema: 'Pendência criada a partir de foto de reprovação',
+              observacaoProblema:
+                'Pendência criada a partir de foto de reprovação',
               createdAt: new Date(),
               createdBy: 'system',
             },
@@ -525,15 +567,20 @@ export class MobilePhotoUploadService {
           );
         } catch (error: any) {
           // Tratar race condition: se outra requisição criou a pendência simultaneamente
-          if (error?.code === 'P2002' && error?.meta?.target?.includes('checklistRespostaId')) {
+          if (
+            error?.code === 'P2002' &&
+            error?.meta?.target?.includes('checklistRespostaId')
+          ) {
             this.logger.debug(
               `[PENDENCIA-UUID] Pendência já existe (race condition), buscando novamente: checklistRespostaId=${resposta.id}`
             );
 
             // Buscar a pendência que foi criada pela outra requisição
-            pendencia = await this.db.getPrisma().checklistPendencia.findUnique({
-              where: { checklistRespostaId: resposta.id },
-            });
+            pendencia = await this.db
+              .getPrisma()
+              .checklistPendencia.findUnique({
+                where: { checklistRespostaId: resposta.id },
+              });
 
             if (!pendencia) {
               this.logger.error(
@@ -555,7 +602,9 @@ export class MobilePhotoUploadService {
           }
         }
       } else {
-        this.logger.debug(`[PENDENCIA-UUID] Pendência encontrada: ID=${pendencia.id}`);
+        this.logger.debug(
+          `[PENDENCIA-UUID] Pendência encontrada: ID=${pendencia.id}`
+        );
       }
 
       // Buscar a foto mobile salva
@@ -564,36 +613,44 @@ export class MobilePhotoUploadService {
       });
 
       if (!mobilePhoto) {
-        this.logger.error(`[PENDENCIA-UUID] Foto mobile não encontrada: id=${mobilePhotoId}`);
+        this.logger.error(
+          `[PENDENCIA-UUID] Foto mobile não encontrada: id=${mobilePhotoId}`
+        );
         return;
       }
 
-      this.logger.debug(`[PENDENCIA-UUID] Foto mobile encontrada: ID=${mobilePhoto.id}, URL=${mobilePhoto.url}`);
+      this.logger.debug(
+        `[PENDENCIA-UUID] Foto mobile encontrada: ID=${mobilePhoto.id}, URL=${mobilePhoto.url}`
+      );
 
       // Criar registro na tabela ChecklistRespostaFoto
-      const checklistRespostaFoto = await this.db.getPrisma().checklistRespostaFoto.create({
-        data: {
-          checklistRespostaId: resposta.id,
-          checklistPendenciaId: pendencia.id,
-          caminhoArquivo: mobilePhoto.storagePath,
-          urlPublica: mobilePhoto.url,
-          tamanhoBytes: BigInt(mobilePhoto.fileSize),
-          mimeType: mobilePhoto.mimeType,
-          sincronizadoEm: new Date(),
-          metadados: {
-            mobilePhotoId: mobilePhoto.id,
-            tipo: mobilePhoto.tipo,
-            capturedAt: mobilePhoto.capturedAt,
-            turnoId,
-            checklistUuid,
-            perguntaId,
+      const checklistRespostaFoto = await this.db
+        .getPrisma()
+        .checklistRespostaFoto.create({
+          data: {
+            checklistRespostaId: resposta.id,
+            checklistPendenciaId: pendencia.id,
+            caminhoArquivo: mobilePhoto.storagePath,
+            urlPublica: mobilePhoto.url,
+            tamanhoBytes: BigInt(mobilePhoto.fileSize),
+            mimeType: mobilePhoto.mimeType,
+            sincronizadoEm: new Date(),
+            metadados: {
+              mobilePhotoId: mobilePhoto.id,
+              tipo: mobilePhoto.tipo,
+              capturedAt: mobilePhoto.capturedAt,
+              turnoId,
+              checklistUuid,
+              perguntaId,
+            },
+            createdAt: new Date(),
+            createdBy: 'system',
           },
-          createdAt: new Date(),
-          createdBy: 'system',
-        },
-      });
+        });
 
-      this.logger.debug(`[PENDENCIA-UUID] ChecklistRespostaFoto criada: ID=${checklistRespostaFoto.id}`);
+      this.logger.debug(
+        `[PENDENCIA-UUID] ChecklistRespostaFoto criada: ID=${checklistRespostaFoto.id}`
+      );
 
       // Incrementar contador de fotos na resposta e marcar como não aguardando mais foto
       await this.db.getPrisma().checklistResposta.update({
@@ -613,13 +670,17 @@ export class MobilePhotoUploadService {
       );
 
       // Debug: Verificar se a foto foi salva
-      const fotoVerificacao = await this.db.getPrisma().checklistRespostaFoto.findFirst({
-        where: { checklistRespostaId: resposta.id },
-        orderBy: { createdAt: 'desc' }
-      });
+      const fotoVerificacao = await this.db
+        .getPrisma()
+        .checklistRespostaFoto.findFirst({
+          where: { checklistRespostaId: resposta.id },
+          orderBy: { createdAt: 'desc' },
+        });
 
       if (fotoVerificacao) {
-        this.logger.debug(`[PENDENCIA-UUID] Foto confirmada salva - ID: ${fotoVerificacao.id}, checklistRespostaId: ${fotoVerificacao.checklistRespostaId}`);
+        this.logger.debug(
+          `[PENDENCIA-UUID] Foto confirmada salva - ID: ${fotoVerificacao.id}, checklistRespostaId: ${fotoVerificacao.checklistRespostaId}`
+        );
       } else {
         this.logger.error(`[PENDENCIA-UUID] Foto NÃO encontrada após salvar!`);
       }
@@ -650,64 +711,88 @@ export class MobilePhotoUploadService {
       // Primeiro, verificar se o turno existe
       const turno = await this.db.getPrisma().turno.findUnique({
         where: { id: turnoId },
-        select: { id: true, dataInicio: true }
+        select: { id: true, dataInicio: true },
       });
 
       if (!turno) {
-        this.logger.error(`[PENDENCIA] Turno não encontrado: turnoId=${turnoId}`);
+        this.logger.error(
+          `[PENDENCIA] Turno não encontrado: turnoId=${turnoId}`
+        );
         return;
       }
 
-      this.logger.debug(`[PENDENCIA] Turno encontrado: ${turno.id}, dataInicio: ${turno.dataInicio}`);
+      this.logger.debug(
+        `[PENDENCIA] Turno encontrado: ${turno.id}, dataInicio: ${turno.dataInicio}`
+      );
 
       // Buscar checklist preenchido no turno
       // Primeiro, buscar todos os checklists do turno para debug
-      const todosChecklists = await this.db.getPrisma().checklistPreenchido.findMany({
-        where: { turnoId },
-        include: {
-          ChecklistResposta: {
-            include: { ChecklistPendencia: true }
-          }
-        }
-      });
+      const todosChecklists = await this.db
+        .getPrisma()
+        .checklistPreenchido.findMany({
+          where: { turnoId },
+          include: {
+            ChecklistResposta: {
+              include: { ChecklistPendencia: true },
+            },
+          },
+        });
 
-      this.logger.debug(`[PENDENCIA] Total checklists no turno ${turnoId}: ${todosChecklists.length}`);
+      this.logger.debug(
+        `[PENDENCIA] Total checklists no turno ${turnoId}: ${todosChecklists.length}`
+      );
 
       todosChecklists.forEach((checklist, idx) => {
-        this.logger.debug(`[PENDENCIA] Checklist ${idx + 1} - ID: ${checklist.id}, checklistId: ${checklist.checklistId}, respostas: ${checklist.ChecklistResposta.length}`);
+        this.logger.debug(
+          `[PENDENCIA] Checklist ${idx + 1} - ID: ${checklist.id}, checklistId: ${checklist.checklistId}, respostas: ${checklist.ChecklistResposta.length}`
+        );
         checklist.ChecklistResposta.forEach((resp, respIdx) => {
-          this.logger.debug(`[PENDENCIA]   Resposta ${respIdx + 1} - ID: ${resp.id}, perguntaId: ${resp.perguntaId}, opcaoRespostaId: ${resp.opcaoRespostaId}, temPendencia: ${!!resp.ChecklistPendencia}`);
+          this.logger.debug(
+            `[PENDENCIA]   Resposta ${respIdx + 1} - ID: ${resp.id}, perguntaId: ${resp.perguntaId}, opcaoRespostaId: ${resp.opcaoRespostaId}, temPendencia: ${!!resp.ChecklistPendencia}`
+          );
         });
       });
 
       // Buscar especificamente pela resposta com os IDs fornecidos
-      this.logger.debug(`[PENDENCIA] Buscando resposta específica: perguntaId=${perguntaId}, opcaoRespostaId=${opcaoRespostaId}`);
+      this.logger.debug(
+        `[PENDENCIA] Buscando resposta específica: perguntaId=${perguntaId}, opcaoRespostaId=${opcaoRespostaId}`
+      );
 
-      const checklistPreenchido = await this.db.getPrisma().checklistPreenchido.findFirst({
-        where: {
-          turnoId,
-        },
-        include: {
-          ChecklistResposta: {
-            where: {
-              perguntaId,
-              opcaoRespostaId
-            },
-            include: {
-              ChecklistPendencia: true,
+      const checklistPreenchido = await this.db
+        .getPrisma()
+        .checklistPreenchido.findFirst({
+          where: {
+            turnoId,
+          },
+          include: {
+            ChecklistResposta: {
+              where: {
+                perguntaId,
+                opcaoRespostaId,
+              },
+              include: {
+                ChecklistPendencia: true,
+              },
             },
           },
-        },
-      });
+        });
 
-      this.logger.debug(`[PENDENCIA] Checklist específico encontrado: ${checklistPreenchido ? 'SIM' : 'NÃO'}`);
+      this.logger.debug(
+        `[PENDENCIA] Checklist específico encontrado: ${checklistPreenchido ? 'SIM' : 'NÃO'}`
+      );
 
       if (checklistPreenchido) {
-        this.logger.debug(`[PENDENCIA] Checklist ID: ${checklistPreenchido.id}, checklistId: ${checklistPreenchido.checklistId}`);
-        this.logger.debug(`[PENDENCIA] Total respostas específicas encontradas: ${checklistPreenchido.ChecklistResposta.length}`);
+        this.logger.debug(
+          `[PENDENCIA] Checklist ID: ${checklistPreenchido.id}, checklistId: ${checklistPreenchido.checklistId}`
+        );
+        this.logger.debug(
+          `[PENDENCIA] Total respostas específicas encontradas: ${checklistPreenchido.ChecklistResposta.length}`
+        );
 
         checklistPreenchido.ChecklistResposta.forEach((resp, idx) => {
-          this.logger.debug(`[PENDENCIA] Resposta específica ${idx + 1} - ID: ${resp.id}, perguntaId: ${resp.perguntaId}, opcaoRespostaId: ${resp.opcaoRespostaId}, temPendencia: ${!!resp.ChecklistPendencia}`);
+          this.logger.debug(
+            `[PENDENCIA] Resposta específica ${idx + 1} - ID: ${resp.id}, perguntaId: ${resp.perguntaId}, opcaoRespostaId: ${resp.opcaoRespostaId}, temPendencia: ${!!resp.ChecklistPendencia}`
+          );
         });
       }
 
@@ -745,11 +830,15 @@ export class MobilePhotoUploadService {
       });
 
       if (!mobilePhoto) {
-        this.logger.error(`[PENDENCIA] Foto mobile não encontrada: id=${mobilePhotoId}`);
+        this.logger.error(
+          `[PENDENCIA] Foto mobile não encontrada: id=${mobilePhotoId}`
+        );
         return;
       }
 
-      this.logger.debug(`[PENDENCIA] Foto mobile encontrada: ID=${mobilePhoto.id}, URL=${mobilePhoto.url}`);
+      this.logger.debug(
+        `[PENDENCIA] Foto mobile encontrada: ID=${mobilePhoto.id}, URL=${mobilePhoto.url}`
+      );
 
       // Criar registro na tabela ChecklistRespostaFoto
       await this.db.getPrisma().checklistRespostaFoto.create({
@@ -793,13 +882,17 @@ export class MobilePhotoUploadService {
       );
 
       // Debug: Verificar se a foto foi salva
-      const fotoVerificacao = await this.db.getPrisma().checklistRespostaFoto.findFirst({
-        where: { checklistRespostaId: resposta.id },
-        orderBy: { createdAt: 'desc' }
-      });
+      const fotoVerificacao = await this.db
+        .getPrisma()
+        .checklistRespostaFoto.findFirst({
+          where: { checklistRespostaId: resposta.id },
+          orderBy: { createdAt: 'desc' },
+        });
 
       if (fotoVerificacao) {
-        this.logger.debug(`[PENDENCIA] Foto confirmada salva - ID: ${fotoVerificacao.id}, checklistRespostaId: ${fotoVerificacao.checklistRespostaId}`);
+        this.logger.debug(
+          `[PENDENCIA] Foto confirmada salva - ID: ${fotoVerificacao.id}, checklistRespostaId: ${fotoVerificacao.checklistRespostaId}`
+        );
       } else {
         this.logger.error(`[PENDENCIA] Foto NÃO encontrada após salvar!`);
       }

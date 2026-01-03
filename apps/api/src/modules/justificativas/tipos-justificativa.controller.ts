@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
+
 import { JustificativasService } from './justificativas.service';
 
 @Controller('tipos-justificativa')
@@ -11,7 +20,15 @@ export class TiposJustificativaController {
   }
 
   @Post()
-  async criar(@Body() body: { nome: string; descricao?: string; ativo?: boolean; createdBy?: string }) {
+  async criar(
+    @Body()
+    body: {
+      nome: string;
+      descricao?: string;
+      ativo?: boolean;
+      createdBy?: string;
+    }
+  ) {
     return this.service.criarTipo({
       nome: body.nome,
       descricao: body.descricao,
@@ -23,7 +40,13 @@ export class TiposJustificativaController {
   @Patch(':id')
   async atualizar(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: { nome?: string; descricao?: string; ativo?: boolean; updatedBy?: string },
+    @Body()
+    body: {
+      nome?: string;
+      descricao?: string;
+      ativo?: boolean;
+      updatedBy?: string;
+    }
   ) {
     return this.service.atualizarTipo(id, {
       nome: body.nome,
@@ -33,5 +56,3 @@ export class TiposJustificativaController {
     });
   }
 }
-
-

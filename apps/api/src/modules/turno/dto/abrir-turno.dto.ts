@@ -5,6 +5,8 @@
  * para abrir um novo turno no sistema.
  */
 
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsString,
@@ -20,10 +22,9 @@ import {
   ValidateNested,
   IsBoolean,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { TURNO_VALIDATION_CONFIG } from '../constants/turno.constants';
+
 import { SalvarChecklistPreenchidoDto } from './checklist-preenchido.dto';
+import { TURNO_VALIDATION_CONFIG } from '../constants/turno.constants';
 
 /**
  * DTO para eletricista no turno

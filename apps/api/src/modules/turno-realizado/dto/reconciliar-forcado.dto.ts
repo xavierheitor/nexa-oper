@@ -13,7 +13,8 @@ export class ReconciliarForcadoDto {
   diasHistorico?: number;
 
   @ApiProperty({
-    description: 'Data de início (formato: YYYY-MM-DD). Se não informado, usa diasHistorico a partir de hoje',
+    description:
+      'Data de início (formato: YYYY-MM-DD). Se não informado, usa diasHistorico a partir de hoje',
     example: '2024-01-01',
     required: false,
   })
@@ -22,7 +23,8 @@ export class ReconciliarForcadoDto {
   dataInicio?: string;
 
   @ApiProperty({
-    description: 'Data de fim (formato: YYYY-MM-DD). Se não informado, usa hoje',
+    description:
+      'Data de fim (formato: YYYY-MM-DD). Se não informado, usa hoje',
     example: '2024-01-31',
     required: false,
   })
@@ -30,4 +32,3 @@ export class ReconciliarForcadoDto {
   @IsOptional()
   dataFim?: string;
 }
-

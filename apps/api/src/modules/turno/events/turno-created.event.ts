@@ -28,4 +28,3 @@ export class TurnoCreatedEvent {
     public readonly equipeId: number
   ) {}
 }
-

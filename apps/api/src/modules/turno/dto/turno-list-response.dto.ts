@@ -5,9 +5,10 @@
  * quando uma lista de turnos é consultada no sistema.
  */
 
-import { ApiProperty } from '@nestjs/swagger';
-import { TurnoResponseDto } from './turno-response.dto';
 import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
+import { ApiProperty } from '@nestjs/swagger';
+
+import { TurnoResponseDto } from './turno-response.dto';
 
 /**
  * DTO para resposta de listagem de turnos

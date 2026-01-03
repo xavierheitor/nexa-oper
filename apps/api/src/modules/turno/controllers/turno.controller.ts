@@ -41,6 +41,9 @@
  * ```
  */
 
+import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
 import {
   Controller,
   Get,
@@ -54,6 +57,7 @@ import {
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiOperation,
   ApiResponse,
@@ -62,10 +66,14 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
+
+// CQRS Commands
+import { CloseTurnoCommand } from '../cqrs/commands/close-turno.command';
+import { CreateTurnoCommand } from '../cqrs/commands/create-turno.command';
+import { DeleteTurnoCommand } from '../cqrs/commands/delete-turno.command';
+// CQRS Queries
+import { GetTurnoByIdQuery } from '../cqrs/queries/get-turno-by-id.query';
+import { GetTurnosQuery } from '../cqrs/queries/get-turnos.query';
 import {
   AbrirTurnoDto,
   FecharTurnoDto,
@@ -73,13 +81,6 @@ import {
   TurnoListResponseDto,
   TurnoQueryDto,
 } from '../dto';
-// CQRS Commands
-import { CreateTurnoCommand } from '../cqrs/commands/create-turno.command';
-import { CloseTurnoCommand } from '../cqrs/commands/close-turno.command';
-import { DeleteTurnoCommand } from '../cqrs/commands/delete-turno.command';
-// CQRS Queries
-import { GetTurnosQuery } from '../cqrs/queries/get-turnos.query';
-import { GetTurnoByIdQuery } from '../cqrs/queries/get-turno-by-id.query';
 
 /**
  * Controlador responsável pelas operações de turnos

@@ -21,24 +21,46 @@ export class ReconcileStatsDto {
  * Resposta de uma execução de reconciliação
  */
 export class ReconcileResponseDto {
-  @ApiProperty({ description: 'Indica se a execução foi bem-sucedida', example: true })
+  @ApiProperty({
+    description: 'Indica se a execução foi bem-sucedida',
+    example: true,
+  })
   success: boolean;
 
-  @ApiProperty({ description: 'ID único da execução', example: 'run-1234567890' })
+  @ApiProperty({
+    description: 'ID único da execução',
+    example: 'run-1234567890',
+  })
   runId: string;
 
-  @ApiProperty({ description: 'Data/hora de início da execução (ISO string)', example: '2024-01-15T10:00:00Z' })
+  @ApiProperty({
+    description: 'Data/hora de início da execução (ISO string)',
+    example: '2024-01-15T10:00:00Z',
+  })
   startedAt: string;
 
-  @ApiProperty({ description: 'Data/hora de fim da execução (ISO string)', example: '2024-01-15T10:05:30Z' })
+  @ApiProperty({
+    description: 'Data/hora de fim da execução (ISO string)',
+    example: '2024-01-15T10:05:30Z',
+  })
   finishedAt: string;
 
-  @ApiProperty({ description: 'Duração da execução em milissegundos', example: 330000 })
+  @ApiProperty({
+    description: 'Duração da execução em milissegundos',
+    example: 330000,
+  })
   durationMs: number;
 
-  @ApiProperty({ description: 'Estatísticas da execução', type: ReconcileStatsDto })
+  @ApiProperty({
+    description: 'Estatísticas da execução',
+    type: ReconcileStatsDto,
+  })
   stats: ReconcileStatsDto;
 
-  @ApiProperty({ description: 'Lista de avisos gerados durante a execução', type: [String], example: [] })
+  @ApiProperty({
+    description: 'Lista de avisos gerados durante a execução',
+    type: [String],
+    example: [],
+  })
   warnings: string[];
 }

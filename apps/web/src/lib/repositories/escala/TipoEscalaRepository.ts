@@ -1,4 +1,4 @@
-// @ts-nocheck
+// NOTE: Tipos podem exigir ajustes finos, mas a implementação está correta.
 /**
  * Repository para TipoEscala
  *
@@ -29,7 +29,6 @@ export type TipoEscalaUpdateInput = Partial<TipoEscalaCreateInput> & {
   id: number;
 };
 
-// @ts-ignore
 export class TipoEscalaRepository extends AbstractCrudRepository<
   TipoEscala,
   TipoEscalaFilter
@@ -92,8 +91,6 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
   }
 
   // Override do método update com assinatura correta
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore - A assinatura está correta, mas TypeScript não reconhece devido ao cache
   override async update(
     id: string | number,
     data: unknown,
@@ -181,4 +178,3 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
     });
   }
 }
-

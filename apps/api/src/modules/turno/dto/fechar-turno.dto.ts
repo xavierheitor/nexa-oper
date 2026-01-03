@@ -5,8 +5,9 @@
  * para fechar um turno existente no sistema.
  */
 
-import { IsNotEmpty, IsInt, Min, Max, IsDateString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsInt, Min, Max, IsDateString } from 'class-validator';
+
 import { TURNO_VALIDATION_CONFIG } from '../constants/turno.constants';
 
 /**

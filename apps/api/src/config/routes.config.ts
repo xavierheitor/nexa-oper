@@ -18,4 +18,3 @@ export function configureSpecialRoutes(expressApp: Express): void {
     res.status(200).send('ok')
   );
 }
-

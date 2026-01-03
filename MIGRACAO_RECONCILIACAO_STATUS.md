@@ -133,10 +133,9 @@ curl -X POST http://localhost:3001/api/internal/reconciliacao/turnos \
 ## 🔧 PRÓXIMOS PASSOS
 
 1. **CRÍTICO**: Portar lógica completa de reconciliação do WEB para API
-2. Criar UI de teste no WEB
-3. Executar migration do Prisma
-4. Configurar variáveis de ambiente
-5. Testar end-to-end
+2. Criar UI de teste no WEB (opcional - pode testar via curl primeiro)
+3. Configurar variáveis de ambiente
+4. Testar end-to-end
 
 ## 📝 NOTAS
 

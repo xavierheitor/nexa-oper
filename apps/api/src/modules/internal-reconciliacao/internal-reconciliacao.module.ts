@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
+
+import { InternalKeyGuard } from './guards/internal-key.guard';
 import { InternalReconciliacaoController } from './internal-reconciliacao.controller';
 import { InternalReconciliacaoService } from './internal-reconciliacao.service';
-import { InternalKeyGuard } from './guards/internal-key.guard';
-import { DatabaseModule } from '../../database/database.module';
 import { ReconciliacaoScheduler } from './reconciliacao.scheduler';
+import { DatabaseModule } from '../../database/database.module';
 
 @Module({
   imports: [DatabaseModule],

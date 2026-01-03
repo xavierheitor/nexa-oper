@@ -43,4 +43,3 @@ export class WebLogDto {
   @IsOptional()
   metadata?: Record<string, any>;
 }
-

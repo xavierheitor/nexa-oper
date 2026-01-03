@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
+import { PrismaClient } from '@nexa-oper/db';
+
 import { DatabaseController } from './database.controller';
 import { DatabaseService } from './database.service';
-import { PrismaClient } from '@nexa-oper/db';
 
 @Module({
   controllers: [DatabaseController],

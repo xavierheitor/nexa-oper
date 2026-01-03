@@ -1,5 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { collectDefaultMetrics, Counter, Histogram, Registry } from 'prom-client';
+import {
+  collectDefaultMetrics,
+  Counter,
+  Histogram,
+  Registry,
+} from 'prom-client';
 
 @Injectable()
 export class MetricsService {
@@ -46,7 +51,12 @@ export class MetricsService {
     return this.registry;
   }
 
-  observeRequest(method: string, route: string, statusCode: number, seconds: number) {
+  observeRequest(
+    method: string,
+    route: string,
+    statusCode: number,
+    seconds: number
+  ) {
     try {
       const labels = { method, route, status_code: String(statusCode) } as any;
       this.httpRequestsTotal.inc(labels, 1);
@@ -57,5 +67,3 @@ export class MetricsService {
     }
   }
 }
-
-

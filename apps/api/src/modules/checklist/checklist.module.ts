@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
 import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@modules/engine/auth/auth.module';
-import { ChecklistController } from './controllers/checklist.controller';
+import { Module } from '@nestjs/common';
+
 import { ChecklistSyncController } from './controllers/checklist-sync.controller';
+import { ChecklistController } from './controllers/checklist.controller';
 import { ChecklistService } from './services/checklist.service';
 
 /**

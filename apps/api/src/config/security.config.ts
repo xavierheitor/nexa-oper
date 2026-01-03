@@ -5,9 +5,9 @@
  * HSTS, e outras políticas de segurança.
  */
 
+import { StandardLogger } from '@common/utils/logger';
 import { INestApplication } from '@nestjs/common';
 import helmet from 'helmet';
-import { StandardLogger } from '@common/utils/logger';
 
 /**
  * Interface para configuração de segurança
@@ -52,4 +52,3 @@ export function configureSecurity(
     logger.log('HSTS habilitado (produção + HTTPS verdadeiro)');
   }
 }
-

@@ -19,20 +19,19 @@
  * ```
  */
 
-import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
-import { DeleteTurnoCommand } from '../commands/delete-turno.command';
-import { TurnoService } from '../../services/turno.service';
-import { TurnoDeletedEvent } from '../../events/turno-deleted.event';
+import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
+
 import { TurnoResponseDto } from '../../dto/turno-response.dto';
+import { TurnoDeletedEvent } from '../../events/turno-deleted.event';
+import { TurnoService } from '../../services/turno.service';
+import { DeleteTurnoCommand } from '../commands/delete-turno.command';
 
 /**
  * Handler responsável por processar o comando de exclusão de turno
  */
 @CommandHandler(DeleteTurnoCommand)
-export class DeleteTurnoHandler
-  implements ICommandHandler<DeleteTurnoCommand>
-{
+export class DeleteTurnoHandler implements ICommandHandler<DeleteTurnoCommand> {
   private readonly logger = new Logger(DeleteTurnoHandler.name);
 
   constructor(
@@ -71,5 +70,3 @@ export class DeleteTurnoHandler
     return turno;
   }
 }
-
-

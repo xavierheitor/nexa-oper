@@ -41,4 +41,3 @@ export const IS_PUBLIC_KEY = 'isPublic';
  * @returns Decorator que marca a rota como pública
  */
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
-

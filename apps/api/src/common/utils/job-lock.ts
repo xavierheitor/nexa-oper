@@ -51,7 +51,11 @@ export async function acquireLock(
     }
 
     // Se existe, verificar se está expirado ou livre
-    if (!existingLock.lockedAt || !existingLock.expiresAt || existingLock.expiresAt < now) {
+    if (
+      !existingLock.lockedAt ||
+      !existingLock.expiresAt ||
+      existingLock.expiresAt < now
+    ) {
       // Lock expirado ou livre, podemos adquirir
       await prisma.jobLock.update({
         where: { jobName },

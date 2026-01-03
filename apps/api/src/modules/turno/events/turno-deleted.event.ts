@@ -26,4 +26,3 @@ export class TurnoDeletedEvent {
     public readonly userId: number | string
   ) {}
 }
-

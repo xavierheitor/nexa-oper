@@ -21,6 +21,8 @@
  * - GET /api/checklist/sync/tipos-equipe/relacoes - Sincronizar relações Checklist-TipoEquipe
  */
 
+import { SyncAuditRemoverInterceptor } from '@common/interceptors';
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import {
   Controller,
   Get,
@@ -35,9 +37,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { SyncAuditRemoverInterceptor } from '@common/interceptors';
-import { ChecklistService } from '../services/checklist.service';
+
 import {
   ChecklistOpcaoRespostaRelacaoSyncDto,
   ChecklistOpcaoRespostaSyncDto,
@@ -47,6 +47,7 @@ import {
   ChecklistTipoEquipeRelacaoSyncDto,
   ChecklistTipoVeiculoRelacaoSyncDto,
 } from '../dto';
+import { ChecklistService } from '../services/checklist.service';
 
 /**
  * Controlador de Sincronização de Checklists

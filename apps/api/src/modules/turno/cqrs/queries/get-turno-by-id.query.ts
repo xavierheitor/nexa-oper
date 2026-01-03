@@ -16,8 +16,8 @@
  * ```
  */
 
-import { IQuery } from '@nestjs/cqrs';
 import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import { IQuery } from '@nestjs/cqrs';
 
 /**
  * Query para buscar um turno por ID
@@ -28,4 +28,3 @@ export class GetTurnoByIdQuery implements IQuery {
     public readonly allowedContracts: ContractPermission[]
   ) {}
 }
-

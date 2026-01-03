@@ -27,4 +27,3 @@ export class TurnoUpdatedEvent {
     public readonly changes: Record<string, any>
   ) {}
 }
-

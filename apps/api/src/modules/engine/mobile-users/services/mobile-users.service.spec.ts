@@ -1,6 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { MobileUsersService } from './mobile-users.service';
 import { DatabaseService } from '@database/database.service';
+import { Test, TestingModule } from '@nestjs/testing';
+
+import { MobileUsersService } from './mobile-users.service';
 
 describe('MobileUsersService', () => {
   let service: MobileUsersService;

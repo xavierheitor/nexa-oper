@@ -131,7 +131,7 @@ export default function VisualizarEscala({ escalaId, open, onClose }: Visualizar
   const fim = new Date(dados.periodoFim);
   const dias: Date[] = [];
 
-  let currentDate = new Date(inicio);
+  const currentDate = new Date(inicio);
   while (currentDate <= fim) {
     dias.push(new Date(currentDate));
     currentDate.setDate(currentDate.getDate() + 1);

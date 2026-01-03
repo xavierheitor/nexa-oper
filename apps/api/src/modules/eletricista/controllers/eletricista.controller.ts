@@ -1,4 +1,11 @@
 import {
+  OptionalContractPermission,
+  RequireContractPermission,
+} from '@modules/engine/auth/decorators/contract-permission.decorator';
+import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import {
   Body,
   Controller,
   Delete,
@@ -20,14 +27,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import {
-  OptionalContractPermission,
-  RequireContractPermission,
-} from '@modules/engine/auth/decorators/contract-permission.decorator';
-import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import { EletricistaService } from '../services/eletricista.service';
+
 import {
   CreateEletricistaDto,
   EletricistaListResponseDto,
@@ -35,6 +35,7 @@ import {
   EletricistaResponseDto,
   UpdateEletricistaDto,
 } from '../dto';
+import { EletricistaService } from '../services/eletricista.service';
 
 @ApiTags('eletricistas')
 @ApiBearerAuth()

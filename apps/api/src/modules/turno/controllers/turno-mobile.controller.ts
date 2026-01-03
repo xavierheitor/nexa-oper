@@ -5,6 +5,16 @@
  * incluindo abertura de turno no formato específico enviado pelo mobile.
  */
 
+import { ValidationErrorInterceptor } from '@common/interceptors/validation-error.interceptor';
+import { parseMobileDate } from '@common/utils/date-timezone';
+import {
+  createStandardErrorResponse,
+  handleValidationError,
+} from '@common/utils/error-response';
+import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
+import { GetUsuarioMobileId } from '@modules/engine/auth/decorators/get-user-id-decorator';
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
 import {
   Controller,
   Post,
@@ -22,23 +32,14 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
-import { GetUsuarioMobileId } from '@modules/engine/auth/decorators/get-user-id-decorator';
+
 import {
   MobileAbrirTurnoDto,
   MobileFecharTurnoDto,
   MobileFecharTurnoResponseDto,
 } from '../dto';
-import { TurnoService } from '../services/turno.service';
 import { AbrirTurnoDto, EletricistaTurnoDto, FecharTurnoDto } from '../dto';
-import { parseMobileDate } from '@common/utils/date-timezone';
-import {
-  createStandardErrorResponse,
-  handleValidationError,
-} from '@common/utils/error-response';
-import { ValidationErrorInterceptor } from '@common/interceptors/validation-error.interceptor';
+import { TurnoService } from '../services/turno.service';
 
 /**
  * Controlador responsável pelas operações de turnos para mobile
@@ -241,7 +242,9 @@ export class TurnoMobileController {
           checklist.respostas && checklist.respostas.length > 0
             ? checklist.respostas.map(resposta => ({
                 ...resposta,
-                dataResposta: parseMobileDate(resposta.dataResposta).toISOString(),
+                dataResposta: parseMobileDate(
+                  resposta.dataResposta
+                ).toISOString(),
               }))
             : [],
       })) || [];
@@ -348,7 +351,8 @@ export class TurnoMobileController {
           {
             status: 'already_closed',
             remoteId: turnoResult.id,
-            closedAt: turnoResult.dataFim?.toISOString() || new Date().toISOString(),
+            closedAt:
+              turnoResult.dataFim?.toISOString() || new Date().toISOString(),
             kmFinal: (turnoResult as any).KmFim || null,
           },
           HttpStatus.CONFLICT
@@ -388,7 +392,10 @@ export class TurnoMobileController {
     } catch (error) {
       // Se for HttpException com status 409 (Conflict), re-lançar diretamente
       // Isso permite que o app receba o formato JSON específico para sincronização
-      if (error instanceof HttpException && error.getStatus() === HttpStatus.CONFLICT) {
+      if (
+        error instanceof HttpException &&
+        error.getStatus() === HttpStatus.CONFLICT
+      ) {
         throw error;
       }
 
