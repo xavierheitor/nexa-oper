@@ -33,9 +33,7 @@
 
 import type { ActionResult } from '../types/common';
 
-let serverLoggerPromise:
-  | Promise<{ logger: { error: (message: string, meta?: unknown) => void } }>
-  | null = null;
+let serverLoggerPromise: Promise<typeof import('./logger')> | null = null;
 
 /**
  * Logger client-safe que funciona tanto no servidor quanto no cliente
@@ -50,7 +48,13 @@ const getLogger = () => {
           serverLoggerPromise = import('./logger');
         }
         serverLoggerPromise
-          .then(({ logger }) => logger.error(message, meta))
+          .then((module) => {
+            if (module.logger && module.logger.error) {
+              // logger.error aceita (message, context) onde context é Record<string, any>
+              const context = meta && typeof meta === 'object' ? (meta as Record<string, any>) : undefined;
+              module.logger.error(message, context);
+            }
+          })
           .catch(() => {
             console.error(`[Server] ${message}`, meta);
           });

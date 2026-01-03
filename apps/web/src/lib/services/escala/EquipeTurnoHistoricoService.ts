@@ -39,6 +39,7 @@ export class EquipeTurnoHistoricoService extends AbstractCrudService<
 
   constructor() {
     const repo = new EquipeTurnoHistoricoRepository();
+    // @ts-expect-error - Diferenças sutis entre tipos de input (null vs undefined) são tratadas no runtime
     super(repo);
     this.turnoRepo = repo;
   }

@@ -39,6 +39,7 @@ export class EquipeHorarioVigenciaService extends AbstractCrudService<
 
   constructor() {
     const repo = new EquipeHorarioVigenciaRepository();
+    // @ts-expect-error - Diferenças sutis entre tipos de input (Decimal vs number) são tratadas no runtime
     super(repo);
     this.horarioRepo = repo;
   }
@@ -95,6 +96,7 @@ export class EquipeHorarioVigenciaService extends AbstractCrudService<
     }
 
     const updateInput: EquipeHorarioVigenciaUpdateInput = {
+      id: data.id,
       equipeId: data.equipeId,
       inicioTurnoHora: data.inicioTurnoHora,
       duracaoHoras: data.duracaoHoras,

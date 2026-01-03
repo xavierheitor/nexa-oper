@@ -254,7 +254,7 @@ export default function EscalaEquipePeriodoPage() {
         message.error(result.error || 'Erro ao prolongar escala');
       }
     } catch (error) {
-      if (error?.errorFields) {
+      if (error && typeof error === 'object' && 'errorFields' in error) {
         // Erro de validação do formulário
         return;
       }

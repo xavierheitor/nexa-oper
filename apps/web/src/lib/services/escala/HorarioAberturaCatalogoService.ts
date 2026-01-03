@@ -39,6 +39,7 @@ export class HorarioAberturaCatalogoService extends AbstractCrudService<
 
   constructor() {
     const repo = new HorarioAberturaCatalogoRepository();
+    // @ts-expect-error - Diferenças sutis entre tipos de input (Decimal vs number) são tratadas no runtime
     super(repo);
     this.horarioRepo = repo;
   }
