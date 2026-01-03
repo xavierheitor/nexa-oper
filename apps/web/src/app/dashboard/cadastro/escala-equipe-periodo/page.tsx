@@ -6,7 +6,7 @@
  */
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Table, Button, Space, Modal, Tag, Tooltip, App, Alert, DatePicker, Form } from 'antd';
 import {
   PlusOutlined,
@@ -20,6 +20,7 @@ import {
   ClockCircleOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
@@ -92,6 +93,16 @@ export default function EscalaEquipePeriodoPage() {
   const [escalaParaProlongar, setEscalaParaProlongar] = useState<EscalaEquipePeriodo | null>(null);
   const [formProlongar] = Form.useForm<{ novoPeriodoFim: dayjs.Dayjs }>();
 
+  // Estado para filtro de período (mês atual por padrão)
+  const [mesFiltro, setMesFiltro] = useState<Dayjs>(dayjs());
+
+  // Calcular período de início e fim do mês selecionado
+  const periodoFiltro = useMemo(() => {
+    const inicioMes = mesFiltro.startOf('month').toDate();
+    const fimMes = mesFiltro.endOf('month').toDate();
+    return { periodoInicio: inicioMes, periodoFim: fimMes };
+  }, [mesFiltro]);
+
   const crud = useCrudController<EscalaEquipePeriodo>('escalaEquipePeriodo');
 
   const escalas = useEntityData({
@@ -103,8 +114,18 @@ export default function EscalaEquipePeriodoPage() {
       pageSize: 10,
       orderBy: 'periodoInicio',
       orderDir: 'desc',
+      ...periodoFiltro,
     },
   });
+
+  // Atualizar parâmetros quando o período mudar
+  React.useEffect(() => {
+    escalas.setParams((prev: any) => ({
+      ...prev,
+      page: 1, // Resetar para primeira página ao mudar filtro
+      ...periodoFiltro,
+    }));
+  }, [periodoFiltro]);
 
   const handleGerarSlots = async (record: EscalaEquipePeriodo) => {
     const isPublicada = record.status === 'PUBLICADA';
@@ -494,9 +515,21 @@ export default function EscalaEquipePeriodoPage() {
 
   return (
     <div style={{ padding: '24px' }}>
-      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1>Períodos de Escala</h1>
         <Space>
+          <DatePicker
+            picker="month"
+            format="MM/YYYY"
+            value={mesFiltro}
+            onChange={(date) => {
+              if (date) {
+                setMesFiltro(date);
+              }
+            }}
+            placeholder="Selecione o mês"
+            style={{ width: 150 }}
+          />
           <Button
             icon={<EyeOutlined />}
             onClick={() => setIsVisualizacaoGeralOpen(true)}

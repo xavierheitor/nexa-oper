@@ -54,7 +54,14 @@ export const getEscalasPublicadas = async (rawData: unknown) =>
                 lte: data.periodoFim,
               },
             },
-            include: {
+            select: {
+              id: true,
+              data: true,
+              estado: true,
+              eletricistaId: true,
+              inicioPrevisto: true,
+              fimPrevisto: true,
+              anotacoesDia: true,
               eletricista: {
                 select: {
                   id: true,

@@ -35,7 +35,6 @@
  */
 
 // Importações necessárias para configuração do NextAuth
-import { PrismaAdapter } from '@next-auth/prisma-adapter'; // Adapter para Prisma
 import bcrypt from 'bcrypt'; // Biblioteca para criptografia de senhas
 import { type NextAuthOptions } from 'next-auth'; // Tipos do NextAuth
 import CredentialsProvider from 'next-auth/providers/credentials'; // Provedor de credenciais
@@ -48,9 +47,9 @@ import { prisma } from '../db/db.service'; // Serviço de banco de dados
  * adapters, sessões e callbacks personalizados.
  */
 export const authOptions: NextAuthOptions = {
-  // Adapter para integração com Prisma
-  // Permite que o NextAuth use o banco de dados para persistir sessões
-  adapter: PrismaAdapter(prisma),
+  // NOTA: Não usamos PrismaAdapter quando strategy é 'jwt'
+  // O PrismaAdapter é usado apenas com strategy 'database'
+  // Com JWT, as sessões são armazenadas em cookies, não no banco
 
   // Provedores de autenticação disponíveis
   providers: [

@@ -187,10 +187,19 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
       ...(equipeId && { equipeId }),
       ...(tipoEscalaId && { tipoEscalaId }),
       ...(status && { status }),
-      ...(periodoInicio && {
+      // Filtro por período: busca escalas que intersectam com o período especificado
+      ...(periodoInicio && periodoFim && {
+        AND: [
+          { periodoInicio: { lte: periodoFim } },
+          { periodoFim: { gte: periodoInicio } },
+        ],
+      }),
+      // Se apenas periodoInicio for fornecido, busca escalas que começam nesse dia ou depois
+      ...(periodoInicio && !periodoFim && {
         periodoInicio: { gte: periodoInicio },
       }),
-      ...(periodoFim && {
+      // Se apenas periodoFim for fornecido, busca escalas que terminam nesse dia ou antes
+      ...(!periodoInicio && periodoFim && {
         periodoFim: { lte: periodoFim },
       }),
       ...(search && {
