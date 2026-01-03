@@ -164,17 +164,14 @@ export default function JustificativasEquipePage() {
       key: 'equipe',
     },
     {
-      title: 'Slots Escalados',
-      dataIndex: 'slotsEscalados',
-      key: 'slotsEscalados',
-    },
-    {
-      title: 'Faltas Geradas',
-      dataIndex: 'faltasGeradas',
-      key: 'faltasGeradas',
-      render: (count: number) => (
-        <Tag color={count > 0 ? 'red' : 'green'}>{count}</Tag>
-      ),
+      title: 'Justificado',
+      key: 'justificado',
+      render: (_: any, record: any) => {
+        if (record.justificativaEquipe && record.justificativaEquipe.status === 'aprovada') {
+          return <Tag color="success">Sim</Tag>;
+        }
+        return <Tag color="default">Não</Tag>;
+      },
     },
     {
       title: 'Status',

@@ -380,20 +380,20 @@ export default function FrequenciaVisaoGeralPage() {
               </Card>
             )}
 
-            {/* Histórico Detalhado */}
-            <Card title="Histórico Detalhado por Dia" style={{ marginBottom: 24 }}>
-              <HistoricoTable
-                dados={consolidado.detalhamento}
-                loading={loadingConsolidado}
-              />
-            </Card>
-
             {/* Calendário de Frequência */}
-            <Card title="Calendário de Frequência">
+            <Card title="Calendário de Frequência" style={{ marginBottom: 24 }}>
               <CalendarioFrequencia
                 consolidado={consolidado}
                 dataInicio={dataInicio}
                 dataFim={dataFim}
+              />
+            </Card>
+
+            {/* Histórico Detalhado */}
+            <Card title="Histórico Detalhado por Dia">
+              <HistoricoTable
+                dados={consolidado.detalhamento}
+                loading={loadingConsolidado}
               />
             </Card>
           </>

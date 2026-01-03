@@ -78,26 +78,8 @@ export const listCasosJustificativaEquipe = async (rawData: unknown) =>
         prisma.casoJustificativaEquipe.count({ where }),
       ]);
 
-      // Para cada caso, contar quantas faltas individuais foram geradas
-      const casosComFaltas = await Promise.all(
-        casos.map(async (caso) => {
-          const faltasCount = await prisma.falta.count({
-            where: {
-              equipeId: caso.equipeId,
-              dataReferencia: caso.dataReferencia,
-              motivoSistema: 'falta_abertura',
-            },
-          });
-
-          return {
-            ...caso,
-            faltasGeradas: faltasCount,
-          };
-        })
-      );
-
       return {
-        items: casosComFaltas,
+        items: casos,
         total,
         page: data.page,
         pageSize: data.pageSize,

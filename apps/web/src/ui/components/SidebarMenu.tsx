@@ -177,7 +177,6 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       '/dashboard/frequencia/eletricista': 'frequencia-menu',
       '/dashboard/frequencia/equipe': 'frequencia-menu',
       '/dashboard/frequencia/faltas': 'frequencia-menu',
-      '/dashboard/frequencia/horas-extras': 'frequencia-menu',
       '/dashboard/frequencia/justificativas-equipe': 'frequencia-menu',
       '/dashboard/frequencia/reconciliacao-manual': 'frequencia-menu',
 
@@ -443,10 +442,6 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
         {
           key: '/dashboard/frequencia/faltas',
           label: <Link href='/dashboard/frequencia/faltas'>Faltas</Link>,
-        },
-        {
-          key: '/dashboard/frequencia/horas-extras',
-          label: <Link href='/dashboard/frequencia/horas-extras'>Horas Extras</Link>,
         },
         {
           key: '/dashboard/frequencia/justificativas-equipe',
