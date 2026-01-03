@@ -413,6 +413,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           key: '/dashboard/frequencia/reconciliacao-manual',
           label: <Link href='/dashboard/frequencia/reconciliacao-manual'>Reconciliação Manual</Link>,
         },
+        {
+          key: '/dashboard/frequencia/aderencia-escala',
+          label: <Link href='/dashboard/frequencia/aderencia-escala'>Aderência de Escala</Link>,
+        },
       ],
     },
     {
