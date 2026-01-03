@@ -316,20 +316,24 @@ export class TurnoRepository extends AbstractCrudRepository<Turno, TurnoFilter> 
     });
 
     // Formatar dados para facilitar o uso no frontend
-    return turnos.map((turno: any) => ({
-      ...turno,
-      veiculoPlaca: turno.veiculo?.placa,
-      veiculoModelo: turno.veiculo?.modelo,
-      equipeNome: turno.equipe?.nome,
-      tipoEquipeNome: turno.equipe?.tipoEquipe?.nome,
-      baseNome: turno.equipe?.EquipeBaseHistorico?.[0]?.base?.nome || 'Sem base',
-      eletricistas: turno.TurnoEletricistas?.map((te: any) => ({
-        id: te.eletricista.id,
-        nome: te.eletricista.nome,
-        matricula: te.eletricista.matricula,
-        motorista: te.motorista || false,
-      })),
-    }));
+    return turnos.map((turno: any) => {
+      const { KmFim, ...restTurno } = turno;
+      return {
+        ...restTurno,
+        kmFim: KmFim, // Mapear KmFim (do Prisma) para kmFim (interface)
+        veiculoPlaca: turno.veiculo?.placa,
+        veiculoModelo: turno.veiculo?.modelo,
+        equipeNome: turno.equipe?.nome,
+        tipoEquipeNome: turno.equipe?.tipoEquipe?.nome,
+        baseNome: turno.equipe?.EquipeBaseHistorico?.[0]?.base?.nome || 'Sem base',
+        eletricistas: turno.TurnoEletricistas?.map((te: any) => ({
+          id: te.eletricista.id,
+          nome: te.eletricista.nome,
+          matricula: te.eletricista.matricula,
+          motorista: te.motorista || false,
+        })),
+      };
+    });
   }
 
   /**

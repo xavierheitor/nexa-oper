@@ -421,6 +421,15 @@ export default function TurnosPage() {
       },
     },
     {
+      title: 'KM Inicial',
+      key: 'kmInicio',
+      width: 120,
+      align: 'right',
+      render: (_: unknown, record: TurnoData) => (
+        <span>{record.kmInicio?.toLocaleString('pt-BR') || '-'}</span>
+      ),
+    },
+    {
       title: 'Status',
       key: 'status',
       width: 100,
