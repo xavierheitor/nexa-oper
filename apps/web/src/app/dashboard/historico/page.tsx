@@ -802,28 +802,28 @@ export default function HistoricoPage() {
       {/* Tabela de Histórico */}
       <Card>
         {/* Filtros */}
-        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-          <Col xs={24} sm={12} md={6}>
+        <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Filtrar por veículo (placa/modelo)"
+              placeholder="Veículo"
               prefix={<SearchOutlined />}
               value={filtroVeiculo}
               onChange={(e) => setFiltroVeiculo(e.target.value)}
               allowClear
             />
           </Col>
-          <Col xs={24} sm={12} md={6}>
+          <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Filtrar por equipe"
+              placeholder="Equipe"
               prefix={<SearchOutlined />}
               value={filtroEquipe}
               onChange={(e) => setFiltroEquipe(e.target.value)}
               allowClear
             />
           </Col>
-          <Col xs={24} sm={12} md={6}>
+          <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Filtrar por eletricista (nome/matrícula)"
+              placeholder="Eletricista"
               prefix={<SearchOutlined />}
               value={filtroEletricista}
               onChange={(e) => setFiltroEletricista(e.target.value)}
@@ -832,7 +832,7 @@ export default function HistoricoPage() {
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Select
-              placeholder="Filtrar por base"
+              placeholder="Base"
               style={{ width: '100%' }}
               value={filtroBase}
               onChange={setFiltroBase}

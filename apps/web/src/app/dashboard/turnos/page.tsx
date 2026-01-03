@@ -19,6 +19,7 @@ import { getStatsByTipoEquipe } from '@/lib/actions/turno/getStatsByTipoEquipe';
 import { getStatsByHoraETipoEquipe } from '@/lib/actions/turno/getStatsByHoraETipoEquipe';
 import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
 import { listBases } from '@/lib/actions/base/list';
+import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { getTurnosPrevistosHoje } from '@/lib/actions/turno/getTurnosPrevistos';
 import { getEstatisticasTurnosPrevistos } from '@/lib/actions/turno/getEstatisticasTurnosPrevistos';
 import type { TurnoPrevisto, EstatisticasTurnosPrevistos } from '@/lib/types/turnoPrevisto';
@@ -83,11 +84,12 @@ export default function TurnosPage() {
   const [filtroEquipe, setFiltroEquipe] = useState<string>('');
   const [filtroEletricista, setFiltroEletricista] = useState<string>('');
   const [filtroBase, setFiltroBase] = useState<string | undefined>(undefined);
+  const [filtroTipoEquipe, setFiltroTipoEquipe] = useState<string | undefined>(undefined);
 
   // Hook para paginação client-side
   const { pagination } = useTablePagination({
     defaultPageSize: 10,
-    showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? ' (filtrado)' : ''}`,
+    showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase || filtroTipoEquipe ? ' (filtrado)' : ''}`,
   });
 
   // Estados para os modais de checklist
@@ -110,9 +112,9 @@ export default function TurnosPage() {
     totalDiarios: number;
   }>(
     async () => {
-      const hoje = new Date();
-      const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0);
-      const fimHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 23, 59, 59);
+      // Usar getTodayDateRange para garantir timezone correto (São Paulo)
+      const { getTodayDateRange } = await import('@/lib/utils/dateHelpers');
+      const { inicio: inicioHoje, fim: fimHoje } = getTodayDateRange();
 
       const [resultAbertos, resultTodos] = await Promise.all([
         listTurnos({ page: 1, pageSize: 1000, status: 'ABERTO' }),
@@ -174,6 +176,13 @@ export default function TurnosPage() {
       );
     }
 
+    // Filtro por tipo de equipe
+    if (filtroTipoEquipe) {
+      turnosFiltrados = turnosFiltrados.filter((turno: TurnoData) =>
+        turno.tipoEquipeNome === filtroTipoEquipe
+      );
+    }
+
     // Calcular estatísticas por base (dos turnos originais, não filtrados)
     const porBase: Record<string, number> = {};
     turnos.forEach((turno: TurnoData) => {
@@ -190,7 +199,7 @@ export default function TurnosPage() {
         porBase,
       },
     };
-  }, [turnosAbertosResult, filtroVeiculo, filtroEquipe, filtroEletricista, filtroBase]);
+  }, [turnosAbertosResult, filtroVeiculo, filtroEquipe, filtroEletricista, filtroBase, filtroTipoEquipe]);
 
   // Fetch de gráfico por tipo de equipe
   const { data: dadosGrafico, loading: loadingGrafico, refetch: refetchGrafico } = useDataFetch<DadosGraficoTipoEquipe[]>(
@@ -256,6 +265,18 @@ export default function TurnosPage() {
         return result.data.data || [];
       }
       throw new Error(result.error || 'Erro ao carregar bases');
+    },
+    []
+  );
+
+  // Fetch de tipos de equipe para o select
+  const { data: tiposEquipeData, loading: loadingTiposEquipe } = useDataFetch<Array<{ id: number; nome: string }>>(
+    async () => {
+      const result = await listTiposEquipe({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' });
+      if (result.success && result.data) {
+        return result.data.data || [];
+      }
+      throw new Error(result.error || 'Erro ao carregar tipos de equipe');
     },
     []
   );
@@ -661,28 +682,28 @@ export default function TurnosPage() {
       {/* Tabela de Turnos */}
       <Card>
         {/* Filtros */}
-        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-          <Col xs={24} sm={12} md={6}>
+        <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Filtrar por veículo (placa/modelo)"
+              placeholder="Veículo"
               prefix={<SearchOutlined />}
               value={filtroVeiculo}
               onChange={(e) => setFiltroVeiculo(e.target.value)}
               allowClear
             />
           </Col>
-          <Col xs={24} sm={12} md={6}>
+          <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Filtrar por equipe"
+              placeholder="Equipe"
               prefix={<SearchOutlined />}
               value={filtroEquipe}
               onChange={(e) => setFiltroEquipe(e.target.value)}
               allowClear
             />
           </Col>
-          <Col xs={24} sm={12} md={6}>
+          <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Filtrar por eletricista (nome/matrícula)"
+              placeholder="Eletricista"
               prefix={<SearchOutlined />}
               value={filtroEletricista}
               onChange={(e) => setFiltroEletricista(e.target.value)}
@@ -691,7 +712,7 @@ export default function TurnosPage() {
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Select
-              placeholder="Filtrar por base"
+              placeholder="Base"
               style={{ width: '100%' }}
               value={filtroBase}
               onChange={setFiltroBase}
@@ -705,6 +726,25 @@ export default function TurnosPage() {
               options={basesData?.map((base) => ({
                 label: base.nome,
                 value: base.nome,
+              }))}
+            />
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Select
+              placeholder="Tipo de Equipe"
+              style={{ width: '100%' }}
+              value={filtroTipoEquipe}
+              onChange={setFiltroTipoEquipe}
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              loading={loadingTiposEquipe}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              options={tiposEquipeData?.map((tipo) => ({
+                label: tipo.nome,
+                value: tipo.nome,
               }))}
             />
           </Col>

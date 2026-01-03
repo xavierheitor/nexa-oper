@@ -9,7 +9,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
-import { getTodayDateRange } from '@/lib/utils/dateHelpers';
+import { getTodayDateRange, getHoursInSaoPaulo, getMinutesInSaoPaulo } from '@/lib/utils/dateHelpers';
 import { z } from 'zod';
 
 const turnoStatsByHoraSchema = z.object({});
@@ -49,8 +49,9 @@ export const getStatsByHora = async () =>
       // Contar turnos por hora com tolerância de 15 minutos
       turnos.forEach((turno) => {
         const dataInicio = new Date(turno.dataInicio);
-        const hora = dataInicio.getHours();
-        const minutos = dataInicio.getMinutes();
+        // Usar timezone de São Paulo para extrair hora e minutos
+        const hora = getHoursInSaoPaulo(dataInicio);
+        const minutos = getMinutesInSaoPaulo(dataInicio);
 
         // Se minutos >= 45, arredonda para próxima hora
         // Se minutos < 15, considera a hora atual

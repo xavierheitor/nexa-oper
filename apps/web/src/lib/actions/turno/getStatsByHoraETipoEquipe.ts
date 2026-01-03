@@ -10,7 +10,7 @@
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
 import { listTiposEquipe } from '../tipoEquipe/list';
-import { getTodayDateRange } from '@/lib/utils/dateHelpers';
+import { getTodayDateRange, getHoursInSaoPaulo, getMinutesInSaoPaulo } from '@/lib/utils/dateHelpers';
 import { DEFAULT_STATS_PAGE_SIZE, MAX_STATS_ITEMS } from '@/lib/constants/statsLimits';
 import { logger } from '@/lib/utils/logger';
 import { z } from 'zod';
@@ -81,8 +81,9 @@ export const getStatsByHoraETipoEquipe = async () =>
       // 4. Contar turnos por hora e tipo de equipe
       turnos.forEach((turno: any) => {
         const dataInicio = new Date(turno.dataInicio);
-        const hora = dataInicio.getHours();
-        const minutos = dataInicio.getMinutes();
+        // Usar timezone de São Paulo para extrair hora e minutos
+        const hora = getHoursInSaoPaulo(dataInicio);
+        const minutos = getMinutesInSaoPaulo(dataInicio);
 
         // Arredondar com tolerância de 15 minutos
         let horaFinal = hora;
