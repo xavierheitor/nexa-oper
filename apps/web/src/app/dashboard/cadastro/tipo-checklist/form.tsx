@@ -25,9 +25,12 @@ export default function TipoChecklistForm({ onSubmit, initialValues, loading = f
       <Form.Item
         name="nome"
         label="Tipo de Checklist"
-        rules={[{ required: true, message: 'Nome é obrigatório' }, { min: 1, max: 255 }]}
+        rules={[
+          { required: true, message: 'Nome é obrigatório' },
+          { min: 1, max: 255, message: 'Nome deve ter entre 1 e 255 caracteres' }
+        ]}
       >
-        <Input autoFocus placeholder="Digite o nome do tipo" />
+        <Input autoFocus placeholder="Digite o nome do tipo" maxLength={255} />
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit" block loading={loading}>Salvar</Button>

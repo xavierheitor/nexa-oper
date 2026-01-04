@@ -234,6 +234,9 @@ export default function EquipeTurnoHistoricoForm({
         name="motivo"
         label="Motivo da Mudança"
         tooltip="Opcional: descreva o motivo desta configuração (ex: 'Horário de verão')"
+        rules={[
+          { max: 500, message: 'Motivo deve ter no máximo 500 caracteres' }
+        ]}
       >
         <Input placeholder="Ex: Mudança de turno, Horário de verão..." maxLength={500} />
       </Form.Item>
@@ -241,6 +244,9 @@ export default function EquipeTurnoHistoricoForm({
       <Form.Item
         name="observacoes"
         label="Observações"
+        rules={[
+          { max: 1000, message: 'Observações deve ter no máximo 1000 caracteres' }
+        ]}
       >
         <Input.TextArea
           rows={2}

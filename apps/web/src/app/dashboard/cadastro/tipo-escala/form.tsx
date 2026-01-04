@@ -82,10 +82,10 @@ export default function TipoEscalaForm({
         label="Nome do Tipo"
         rules={[
           { required: true, message: 'Nome é obrigatório' },
-          { max: 255, message: 'Máximo 255 caracteres' },
+          { min: 1, max: 255, message: 'Nome deve ter entre 1 e 255 caracteres' },
         ]}
       >
-        <Input placeholder="Ex: 4x2, 5x1, Espanhola" />
+        <Input placeholder="Ex: 4x2, 5x1, Espanhola" maxLength={255} />
       </Form.Item>
 
       <Form.Item
@@ -159,6 +159,9 @@ export default function TipoEscalaForm({
       <Form.Item
         name="observacoes"
         label="Observações"
+        rules={[
+          { max: 1000, message: 'Observações deve ter no máximo 1000 caracteres' }
+        ]}
       >
         <Input.TextArea
           rows={3}

@@ -156,11 +156,11 @@ export default function HorarioAberturaCatalogoForm({
         label="Nome do Horário"
         rules={[
           { required: true, message: 'Nome é obrigatório' },
-          { max: 255, message: 'Máximo 255 caracteres' },
+          { min: 1, max: 255, message: 'Nome deve ter entre 1 e 255 caracteres' },
         ]}
         tooltip="Dê um nome descritivo. Ex: '08h • 8h + 1h int.', 'Manhã 6h', etc"
       >
-        <Input placeholder="Ex: 08h • 8h + 1h int." />
+        <Input placeholder="Ex: 08h • 8h + 1h int." maxLength={255} />
       </Form.Item>
 
       <Card size="small" style={{ marginBottom: 16, background: '#f0f5ff' }}>
@@ -246,6 +246,9 @@ export default function HorarioAberturaCatalogoForm({
       <Form.Item
         name="observacoes"
         label="Observações"
+        rules={[
+          { max: 1000, message: 'Observações deve ter no máximo 1000 caracteres' }
+        ]}
       >
         <Input.TextArea
           rows={3}
