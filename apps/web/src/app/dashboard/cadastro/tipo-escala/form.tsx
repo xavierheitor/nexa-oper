@@ -20,27 +20,36 @@ interface TipoEscalaFormProps {
     observacoes?: string;
   };
   onSubmit: (values: unknown) => Promise<void>;
-  onCancel: () => void;
+  onCancel?: () => void; // Opcional, CrudPage gerencia o fechamento do modal
+  loading?: boolean;
 }
 
 export default function TipoEscalaForm({
   initialValues,
   onSubmit,
   onCancel,
+  loading: propLoading,
 }: TipoEscalaFormProps) {
   const [form] = Form.useForm();
-  const [loading, setLoading] = React.useState(false);
+  const [internalLoading, setInternalLoading] = React.useState(false);
+  const loading = propLoading ?? internalLoading;
   const [modoRepeticao, setModoRepeticao] = React.useState<string | undefined>(
     initialValues?.modoRepeticao || 'CICLO_DIAS'
   );
 
   const handleSubmit = async (values: unknown) => {
-    setLoading(true);
+    if (!propLoading) {
+      setInternalLoading(true);
+    }
     try {
       await onSubmit(values);
-      form.resetFields();
+      if (!propLoading) {
+        form.resetFields();
+      }
     } finally {
-      setLoading(false);
+      if (!propLoading) {
+        setInternalLoading(false);
+      }
     }
   };
 

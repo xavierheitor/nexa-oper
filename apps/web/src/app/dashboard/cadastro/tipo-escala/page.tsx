@@ -1,28 +1,23 @@
-/**
- * Página de Gerenciamento de Tipos de Escala
- *
- * Permite cadastro, edição e listagem de tipos de escala
- * (4x2, 5x1, Espanhola, etc)
- */
-
 'use client';
 
-import React, { useState } from 'react';
-import { Table, Button, Space, Modal, Tag, Badge, App } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined } from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
+import React from 'react';
 import { useRouter } from 'next/navigation';
+import { Badge, Tag } from 'antd';
+import { SettingOutlined } from '@ant-design/icons';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useCrudController } from '@/lib/hooks/useCrudController';
+import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
+import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
+import { getTextFilter } from '@/ui/components/tableFilters';
 import {
   listTiposEscala,
   createTipoEscala,
   updateTipoEscala,
   deleteTipoEscala,
 } from '@/lib/actions/escala/tipoEscala';
+import CrudPage from '@/lib/components/CrudPage';
 import TipoEscalaForm from './form';
-
 
 interface TipoEscala {
   id: number;
@@ -40,14 +35,10 @@ interface TipoEscala {
 }
 
 export default function TipoEscalaPage() {
-  const { message } = App.useApp();
   const router = useRouter();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<TipoEscala | null>(null);
+  const controller = useCrudController<TipoEscala>('tipoEscala');
 
-  const crud = useCrudController<TipoEscala>('tipoEscala');
-
-  const tipos = useEntityData({
+  const tipos = useEntityData<TipoEscala>({
     key: 'tiposEscala',
     fetcherAction: unwrapFetcher(listTiposEscala) as any,
     paginationEnabled: true,
@@ -59,174 +50,107 @@ export default function TipoEscalaPage() {
     },
   });
 
-  const columns: ColumnsType<TipoEscala> = [
-    {
-      title: 'Nome',
-      dataIndex: 'nome',
-      key: 'nome',
-      sorter: true,
-    },
-    {
-      title: 'Modo',
-      dataIndex: 'modoRepeticao',
-      key: 'modoRepeticao',
-      width: 180,
-      render: (modo: string) => (
-        <Tag color={modo === 'CICLO_DIAS' ? 'blue' : 'purple'}>
-          {modo === 'CICLO_DIAS' ? 'Ciclo de Dias' : 'Semana Dependente'}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Ciclo/Semanas',
-      key: 'config',
-      width: 150,
-      render: (_: unknown, record: TipoEscala) => {
-        if (record.modoRepeticao === 'CICLO_DIAS') {
-          return `${record.cicloDias} dias`;
-        }
-        return `${record.periodicidadeSemanas} semanas`;
+  const handleSubmit = useCrudFormHandler<any, TipoEscala>({
+    controller: controller as any, // Type cast needed due to ActionResult generic mismatch
+    createAction: createTipoEscala as any,
+    updateAction: updateTipoEscala as any,
+    onSuccess: () => tipos.mutate(),
+    successMessage: 'Tipo de escala salvo com sucesso!',
+  });
+
+  const columns = useTableColumnsWithActions<TipoEscala>(
+    [
+      {
+        title: 'Nome',
+        dataIndex: 'nome',
+        key: 'nome',
+        sorter: true,
+        ...getTextFilter<TipoEscala>('nome', 'nome do tipo'),
       },
-    },
-    {
-      title: 'Eletricistas/Turma',
-      dataIndex: 'eletricistasPorTurma',
-      key: 'eletricistasPorTurma',
-      width: 150,
-      render: (qtd?: number) => qtd || '-',
-    },
-    {
-      title: 'Posições',
-      key: 'posicoes',
-      width: 120,
-      render: (_: unknown, record: TipoEscala) => {
-        const count = record.modoRepeticao === 'CICLO_DIAS'
-          ? record._count?.CicloPosicoes || 0
-          : record._count?.SemanaMascaras || 0;
-        return <Badge count={count} showZero color="blue" />;
+      {
+        title: 'Modo',
+        dataIndex: 'modoRepeticao',
+        key: 'modoRepeticao',
+        width: 180,
+        render: (modo: string) => (
+          <Tag color={modo === 'CICLO_DIAS' ? 'blue' : 'purple'}>
+            {modo === 'CICLO_DIAS' ? 'Ciclo de Dias' : 'Semana Dependente'}
+          </Tag>
+        ),
       },
-    },
-    {
-      title: 'Ativo',
-      dataIndex: 'ativo',
-      key: 'ativo',
-      width: 100,
-      render: (ativo: boolean) => (
-        <Tag color={ativo ? 'green' : 'red'}>
-          {ativo ? 'Ativo' : 'Inativo'}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Ações',
-      key: 'actions',
-      width: 220,
-      render: (_: unknown, record: TipoEscala) => (
-        <Space size="small">
-          <Button
-            type="link"
-            icon={<SettingOutlined />}
-            onClick={() => router.push(`/dashboard/cadastro/tipo-escala/${record.id}`)}
-          >
-            Configurar
-          </Button>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          >
-            Editar
-          </Button>
-          <Button
-            type="link"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.id)}
-          >
-            Excluir
-          </Button>
-        </Space>
-      ),
-    },
-  ];
-
-  const handleCreate = () => {
-    setEditingItem(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEdit = (item: TipoEscala) => {
-    setEditingItem(item);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = async (id: number) => {
-    Modal.confirm({
-      title: 'Confirmar exclusão',
-      content: 'Tem certeza que deseja excluir este tipo de escala?',
-      okText: 'Sim',
-      cancelText: 'Não',
-      onOk: async () => {
-        await crud.exec(
-          () => deleteTipoEscala(id),
-          'Tipo de escala excluído com sucesso!',
-          () => tipos.mutate()
-        );
+      {
+        title: 'Ciclo/Semanas',
+        key: 'config',
+        width: 150,
+        render: (_: unknown, record: TipoEscala) => {
+          if (record.modoRepeticao === 'CICLO_DIAS') {
+            return `${record.cicloDias} dias`;
+          }
+          return `${record.periodicidadeSemanas} semanas`;
+        },
       },
-    });
-  };
-
-  const handleSave = async (values: unknown) => {
-    const action = editingItem
-      ? () => updateTipoEscala({ ...(values as Record<string, unknown>), id: editingItem.id })
-      : () => createTipoEscala(values);
-
-    await crud.exec(
-      action,
-      editingItem ? 'Tipo de escala atualizado com sucesso!' : 'Tipo de escala criado com sucesso!',
-      () => {
-        tipos.mutate();
-        setIsModalOpen(false);
-      }
-    );
-  };
+      {
+        title: 'Eletricistas/Turma',
+        dataIndex: 'eletricistasPorTurma',
+        key: 'eletricistasPorTurma',
+        width: 150,
+        render: (qtd?: number) => qtd || '-',
+      },
+      {
+        title: 'Posições',
+        key: 'posicoes',
+        width: 120,
+        render: (_: unknown, record: TipoEscala) => {
+          const count = record.modoRepeticao === 'CICLO_DIAS'
+            ? record._count?.CicloPosicoes || 0
+            : record._count?.SemanaMascaras || 0;
+          return <Badge count={count} showZero color="blue" />;
+        },
+      },
+      {
+        title: 'Ativo',
+        dataIndex: 'ativo',
+        key: 'ativo',
+        width: 100,
+        render: (ativo: boolean) => (
+          <Tag color={ativo ? 'green' : 'red'}>
+            {ativo ? 'Ativo' : 'Inativo'}
+          </Tag>
+        ),
+      },
+    ],
+    {
+      onEdit: controller.open,
+      onDelete: (item) =>
+        controller
+          .exec(
+            () => deleteTipoEscala(item.id),
+            'Tipo de escala excluído com sucesso!'
+          )
+          .finally(() => tipos.mutate()),
+      customActions: [
+        {
+          key: 'config',
+          label: 'Configurar',
+          icon: <SettingOutlined />,
+          type: 'link',
+          onClick: (item) => router.push(`/dashboard/cadastro/tipo-escala/${item.id}`),
+        },
+      ],
+    }
+  );
 
   return (
-    <div style={{ padding: '24px' }}>
-      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
-        <h1>Tipos de Escala</h1>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={handleCreate}
-        >
-          Novo Tipo
-        </Button>
-      </div>
-
-      <Table
-        columns={columns as any}
-        dataSource={tipos.data as TipoEscala[]}
-        loading={tipos.isLoading}
-        rowKey="id"
-        pagination={tipos.pagination}
-        onChange={tipos.handleTableChange as any}
-      />
-
-      <Modal
-        title={editingItem ? 'Editar Tipo de Escala' : 'Novo Tipo de Escala'}
-        open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
-        footer={null}
-        width={700}
-      >
-        <TipoEscalaForm
-          initialValues={editingItem || undefined}
-          onSubmit={handleSave}
-          onCancel={() => setIsModalOpen(false)}
-        />
-      </Modal>
-    </div>
+    <CrudPage
+      title="Tipos de Escala"
+      entityKey="tiposEscala"
+      controller={controller}
+      entityData={tipos}
+      columns={columns}
+      formComponent={TipoEscalaForm}
+      onSubmit={handleSubmit}
+      modalWidth={700}
+      addButtonText="Novo Tipo"
+    />
   );
 }
-

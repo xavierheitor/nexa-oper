@@ -1,7 +1,6 @@
 'use client';
 
-import { Card, Table, Button, Modal, Tag } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Tag } from 'antd';
 import { createTipoJustificativa } from '@/lib/actions/tipo-justificativa/create';
 import { updateTipoJustificativa } from '@/lib/actions/tipo-justificativa/update';
 import { deleteTipoJustificativa } from '@/lib/actions/tipo-justificativa/delete';
@@ -10,6 +9,8 @@ import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
+import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
+import CrudPage from '@/lib/components/CrudPage';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { TipoJustificativa } from '@nexa-oper/db';
 import TipoJustificativaForm, { TipoJustificativaFormData } from './form';
@@ -30,6 +31,15 @@ export default function TipoJustificativaPage() {
       orderBy: 'nome',
       orderDir: 'asc',
     },
+  });
+
+  // Handler padronizado para forms CRUD
+  const handleSubmit = useCrudFormHandler({
+    controller,
+    createAction: createTipoJustificativa,
+    updateAction: updateTipoJustificativa,
+    onSuccess: () => tipos.mutate(),
+    successMessage: 'Tipo de justificativa salvo com sucesso!',
   });
 
   const columns = useTableColumnsWithActions<TipoJustificativa>(
@@ -87,80 +97,22 @@ export default function TipoJustificativaPage() {
       onEdit: controller.open,
       onDelete: (item) =>
         controller
-          .exec(
-            () => deleteTipoJustificativa({ id: item.id }),
-            'Tipo de justificativa excluído com sucesso!'
-          )
-          .finally(() => {
-            tipos.mutate();
-          }),
+          .exec(() => deleteTipoJustificativa({ id: item.id }), 'Tipo de justificativa excluído com sucesso!')
+          .finally(() => tipos.mutate()),
     }
   );
 
-  const handleSubmit = async (values: TipoJustificativaFormData) => {
-    const action = async () => {
-      const result = controller.editingItem?.id
-        ? await updateTipoJustificativa({
-          ...values,
-          id: controller.editingItem.id,
-        })
-        : await createTipoJustificativa(values);
-      return result;
-    };
-
-    controller.exec(action, 'Tipo de justificativa salvo com sucesso!').finally(() => {
-      tipos.mutate();
-    });
-  };
-
-  if (tipos.error) {
-    return <p style={{ color: 'red' }}>Erro ao carregar tipos de justificativa.</p>;
-  }
-
   return (
-    <>
-      <Card
-        title="Tipos de Justificativa"
-        extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => controller.open()}>
-            Novo Tipo
-          </Button>
-        }
-      >
-        <Table
-          columns={columns}
-          dataSource={tipos.data}
-          loading={tipos.isLoading}
-          rowKey="id"
-          pagination={tipos.pagination}
-          onChange={tipos.handleTableChange}
-        />
-      </Card>
-
-      <Modal
-        title={controller.editingItem ? 'Editar Tipo de Justificativa' : 'Novo Tipo de Justificativa'}
-        open={controller.isOpen}
-        onCancel={controller.close}
-        footer={null}
-        destroyOnHidden
-        width={600}
-      >
-        <TipoJustificativaForm
-          initialValues={
-            controller.editingItem
-              ? {
-                nome: controller.editingItem.nome,
-                descricao: controller.editingItem.descricao || undefined,
-                ativo: controller.editingItem.ativo,
-                geraFalta: controller.editingItem.geraFalta,
-              }
-              : undefined
-          }
-          onSubmit={handleSubmit}
-          loading={controller.loading}
-        />
-      </Modal>
-    </>
+    <CrudPage
+      title="Tipos de Justificativa"
+      entityKey="tipos-justificativa"
+      controller={controller}
+      entityData={tipos}
+      columns={columns}
+      formComponent={TipoJustificativaForm}
+      onSubmit={handleSubmit}
+      addButtonText="Novo Tipo"
+    />
   );
 }
 

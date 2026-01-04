@@ -11,153 +11,87 @@ import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
+import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
+import CrudPage from '@/lib/components/CrudPage';
 
 // Importações de tipos e utilitários
-import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 
-// Importações do Prisma e Ant Design
+// Importações do Prisma
 import { TipoVeiculo } from '@nexa-oper/db';
-import { Button, Card, Modal, Table } from 'antd';
-
-// Importação do formulário local
 import TipoVeiculoForm, { TipoVeiculoFormData } from './form';
 
 export default function TipoVeiculoPage() {
   // Hook para controlar operações CRUD (modal, loading, execução de ações)
-  // O parâmetro 'tipos-veiculo' é a chave usada para revalidar o cache SWR
   const controller = useCrudController<TipoVeiculo>('tipos-veiculo');
 
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
   const tiposVeiculo = useEntityData<TipoVeiculo>({
-    key: 'tipos-veiculo', // Chave única para o cache SWR
-    fetcherAction: unwrapFetcher(listTiposVeiculo), // Função que busca os dados (Server Action)
-    paginationEnabled: true, // Habilita paginação
+    key: 'tipos-veiculo',
+    fetcherAction: unwrapFetcher(listTiposVeiculo),
+    paginationEnabled: true,
     initialParams: {
-      page: 1, // Página inicial
-      pageSize: 10, // Itens por página
-      orderBy: 'id', // Campo para ordenação inicial
-      orderDir: 'desc', // Direção da ordenação (mais recentes primeiro)
+      page: 1,
+      pageSize: 10,
+      orderBy: 'id',
+      orderDir: 'desc',
     },
+  });
+
+  // Handler padronizado para forms CRUD
+  const handleSubmit = useCrudFormHandler({
+    controller,
+    createAction: createTipoVeiculo,
+    updateAction: updateTipoVeiculo,
+    onSuccess: () => tiposVeiculo.mutate(),
+    successMessage: 'Tipo de veículo salvo com sucesso!',
   });
 
   // Configuração das colunas da tabela com ações integradas
   const columns = useTableColumnsWithActions<TipoVeiculo>(
     [
-      // Coluna ID - simples, apenas para referência
       {
         title: 'ID',
-        dataIndex: 'id', // Campo do objeto TipoVeiculo
-        key: 'id', // Chave única da coluna
-        sorter: true, // Habilita ordenação por esta coluna
-        width: 80, // Largura fixa da coluna
+        dataIndex: 'id',
+        key: 'id',
+        sorter: true,
+        width: 80,
       },
-      // Coluna Nome - com filtro de texto integrado
       {
         title: 'Nome',
         dataIndex: 'nome',
         key: 'nome',
-        sorter: true, // Permite ordenação
-        ...getTextFilter<TipoVeiculo>('nome', 'nome do tipo de veículo'), // Adiciona filtro de busca textual
+        sorter: true,
+        ...getTextFilter<TipoVeiculo>('nome', 'nome do tipo de veículo'),
       },
-      // Coluna Data de Criação - formatada para exibição
       {
         title: 'Criado em',
         dataIndex: 'createdAt',
         key: 'createdAt',
         sorter: true,
-        render: (date: Date) => new Date(date).toLocaleDateString('pt-BR'), // Formata data para padrão brasileiro
+        render: (date: Date) => new Date(date).toLocaleDateString('pt-BR'),
         width: 120,
       },
     ],
-    // Configuração das ações da tabela (botões Editar/Excluir)
     {
-      // Ação de edição - abre o modal com o item selecionado
       onEdit: controller.open,
-
-      // Ação de exclusão - executa a Server Action de delete
       onDelete: (item) =>
         controller
-          .exec(
-            () => deleteTipoVeiculo({ id: item.id }), // Server Action de exclusão
-            'Tipo de veículo excluído com sucesso!' // Mensagem de sucesso
-          )
-          .finally(() => {
-            tiposVeiculo.mutate(); // Revalida os dados da tabela após exclusão
-          }),
-    },
+          .exec(() => deleteTipoVeiculo({ id: item.id }), 'Tipo de veículo excluído com sucesso!')
+          .finally(() => tiposVeiculo.mutate()),
+    }
   );
 
-  // Função que processa o submit do formulário (tanto criação quanto edição)
-  const handleSubmit = async (values: TipoVeiculoFormData) => {
-    // Cria uma ação assíncrona que será executada pelo controller
-    const action = async (): Promise<ActionResult<TipoVeiculo>> => {
-      // Verifica se estamos editando (tem item selecionado) ou criando
-      const result = controller.editingItem?.id
-        ? await updateTipoVeiculo({
-          ...values, // Dados do formulário
-          id: controller.editingItem.id, // ID do item sendo editado
-        })
-        : await createTipoVeiculo(values); // Apenas dados do formulário para criação
-
-      // Retorna o resultado original do backend (não sobrescrever success!)
-      return result;
-    };
-
-    // Executa a ação através do controller (gerencia loading, notificações, etc.)
-    controller.exec(action, 'Tipo de veículo salvo com sucesso!').finally(() => {
-      tiposVeiculo.mutate(); // Revalida os dados da tabela após salvar
-    });
-  };
-
-  // Tratamento de erro - exibe mensagem se houver problema ao carregar dados
-  if (tiposVeiculo.error) {
-    return <p style={{ color: 'red' }}>Erro ao carregar tipos de veículo.</p>;
-  }
-
-  // Renderização do componente
   return (
-    <>
-      {/* Card principal que contém a tabela */}
-      <Card
-        title="Tipos de Veículo" // Título do card
-        extra={
-          // Botão "Adicionar" no canto superior direito
-          <Button type="primary" onClick={() => controller.open()}>
-            Adicionar
-          </Button>
-        }
-      >
-        {/* Tabela principal com dados dos tipos de veículo */}
-        <Table<TipoVeiculo>
-          columns={columns} // Colunas configuradas acima
-          dataSource={tiposVeiculo.data} // Dados vindos do useEntityData
-          loading={tiposVeiculo.isLoading} // Estado de loading
-          rowKey="id" // Campo único para identificar cada linha
-          pagination={tiposVeiculo.pagination} // Configuração de paginação
-          onChange={tiposVeiculo.handleTableChange} // Handler para mudanças (paginação, filtros, ordenação)
-        />
-      </Card>
-
-      {/* Modal para criação/edição de tipos de veículo */}
-      <Modal
-        title={controller.editingItem ? 'Editar Tipo de Veículo' : 'Novo Tipo de Veículo'} // Título dinâmico
-        open={controller.isOpen} // Controla se o modal está aberto
-        onCancel={controller.close} // Função para fechar o modal
-        footer={null} // Remove footer padrão (botões OK/Cancel)
-        destroyOnHidden // Destrói o conteúdo quando oculto (limpa estado)
-        width={500} // Largura do modal (menor que contrato pois tem menos campos)
-      >
-        {/* Formulário dentro do modal */}
-        <TipoVeiculoForm
-          initialValues={controller.editingItem ? {
-            // Se editando, pré-popula com dados do item selecionado
-            nome: controller.editingItem.nome,
-          } : undefined} // Se criando, deixa campos vazios
-          onSubmit={handleSubmit} // Função que processa o submit
-          loading={controller.loading} // Estado de loading para desabilitar botões
-        />
-      </Modal>
-    </>
+    <CrudPage
+      title="Tipos de Veículo"
+      entityKey="tipos-veiculo"
+      controller={controller}
+      entityData={tiposVeiculo}
+      columns={columns}
+      formComponent={TipoVeiculoForm}
+      onSubmit={handleSubmit}
+      modalWidth={500}
+    />
   );
 }

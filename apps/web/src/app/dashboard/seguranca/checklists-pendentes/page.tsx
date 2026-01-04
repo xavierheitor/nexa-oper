@@ -10,7 +10,7 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { ChecklistPendencia, StatusPendencia } from '@nexa-oper/db';
-import { App, Button, Card, Form, Modal, Select, Table, Tag, Image, Space, Typography } from 'antd';
+import { App, Button, Card, Modal, Table, Tag, Image, Space, Typography } from 'antd';
 import ChecklistPendenciaForm from './form';
 
 const { Text } = Typography;
@@ -166,6 +166,7 @@ export default function ChecklistPendenciasPage() {
           controller.open(res.data);
         }
       },
+      // Não permite deletar, apenas tratar
     }
   );
 
@@ -209,7 +210,7 @@ export default function ChecklistPendenciasPage() {
         open={controller.isOpen}
         onCancel={controller.close}
         footer={null}
-        destroyOnHidden
+        destroyOnClose
         width={800}
       >
         {controller.editingItem && (

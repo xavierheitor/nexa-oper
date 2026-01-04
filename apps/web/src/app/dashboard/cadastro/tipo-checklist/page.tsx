@@ -8,8 +8,9 @@ import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
+import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
+import CrudPage from '@/lib/components/CrudPage';
 import { getTextFilter } from '@/ui/components/tableFilters';
-import { Button, Card, Modal, Table } from 'antd';
 import { TipoChecklist } from '@nexa-oper/db';
 import TipoChecklistForm from './form';
 
@@ -21,6 +22,15 @@ export default function TipoChecklistPage() {
     fetcherAction: unwrapFetcher(listTiposChecklist),
     paginationEnabled: true,
     initialParams: { page: 1, pageSize: 10, orderBy: 'id', orderDir: 'desc' },
+  });
+
+  // Handler padronizado para forms CRUD
+  const handleSubmit = useCrudFormHandler({
+    controller,
+    createAction: createTipoChecklist,
+    updateAction: updateTipoChecklist,
+    onSuccess: () => tipos.mutate(),
+    successMessage: 'Tipo salvo com sucesso!',
   });
 
   const columns = useTableColumnsWithActions<TipoChecklist>(
@@ -36,27 +46,15 @@ export default function TipoChecklistPage() {
     }
   );
 
-  const handleSubmit = async (values: { nome: string }) => {
-    const action = async () => {
-      const result = controller.editingItem?.id
-        ? await updateTipoChecklist({ ...values, id: controller.editingItem.id })
-        : await createTipoChecklist(values);
-      return result;
-    };
-    controller.exec(action, 'Tipo salvo com sucesso!').finally(() => tipos.mutate());
-  };
-
-  if (tipos.error) return <p style={{ color: 'red' }}>Erro ao carregar tipos.</p>;
-
   return (
-    <>
-      <Card title="Tipos de Checklist" extra={<Button type="primary" onClick={() => controller.open()}>Adicionar</Button>}>
-        <Table columns={columns} dataSource={tipos.data} loading={tipos.isLoading} rowKey="id" pagination={tipos.pagination} onChange={tipos.handleTableChange} />
-      </Card>
-
-      <Modal title={controller.editingItem ? 'Editar Tipo' : 'Novo Tipo'} open={controller.isOpen} onCancel={controller.close} footer={null} destroyOnHidden width={600}>
-        <TipoChecklistForm initialValues={controller.editingItem ? { nome: controller.editingItem.nome } : undefined} onSubmit={handleSubmit} loading={controller.loading} />
-      </Modal>
-    </>
+    <CrudPage
+      title="Tipos de Checklist"
+      entityKey="tipos-checklist"
+      controller={controller}
+      entityData={tipos}
+      columns={columns}
+      formComponent={TipoChecklistForm}
+      onSubmit={handleSubmit}
+    />
   );
 }

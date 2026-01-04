@@ -12,7 +12,7 @@ export interface CargoFormData {
 }
 
 interface CargoFormProps {
-  initialValues?: CargoFormData;
+  initialValues?: Partial<CargoFormData>;
   onSubmit: (values: CargoFormData) => void;
   loading?: boolean;
 }

@@ -22,16 +22,19 @@ interface HorarioAberturaCatalogoFormProps {
     observacoes?: string;
   };
   onSubmit: (values: unknown) => Promise<void>;
-  onCancel: () => void;
+  onCancel?: () => void; // Opcional, CrudPage gerencia o fechamento do modal
+  loading?: boolean;
 }
 
 export default function HorarioAberturaCatalogoForm({
   initialValues,
   onSubmit,
   onCancel,
+  loading: propLoading,
 }: HorarioAberturaCatalogoFormProps) {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
+  const [internalLoading, setInternalLoading] = useState(false);
+  const loading = propLoading ?? internalLoading;
   const [duracaoHoras, setDuracaoHoras] = useState<number>(
     initialValues?.duracaoHoras || 8
   );
@@ -80,7 +83,9 @@ export default function HorarioAberturaCatalogoForm({
   };
 
   const handleSubmit = async (values: any) => {
-    setLoading(true);
+    if (!propLoading) {
+      setInternalLoading(true);
+    }
     try {
       const submitData = {
         nome: values.nome,
@@ -92,9 +97,13 @@ export default function HorarioAberturaCatalogoForm({
       };
 
       await onSubmit(submitData);
-      form.resetFields();
+      if (!propLoading) {
+        form.resetFields();
+      }
     } finally {
-      setLoading(false);
+      if (!propLoading) {
+        setInternalLoading(false);
+      }
     }
   };
 

@@ -1,25 +1,18 @@
-/**
- * Página de Gerenciamento de Cargos
- */
-
 'use client';
 
 import { createCargo } from '@/lib/actions/cargo/create';
 import { deleteCargo } from '@/lib/actions/cargo/delete';
 import { listCargos } from '@/lib/actions/cargo/list';
 import { updateCargo } from '@/lib/actions/cargo/update';
-
+import CrudPage from '@/lib/components/CrudPage';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
+import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
-
-import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
-
 import { Cargo } from '@nexa-oper/db';
-import { Button, Card, Modal, Table, Tag } from 'antd';
-
+import { Tag } from 'antd';
 import CargoForm, { CargoFormData } from './form';
 
 export default function CargoPage() {
@@ -35,6 +28,14 @@ export default function CargoPage() {
       orderBy: 'nome',
       orderDir: 'asc',
     },
+  });
+
+  const handleSubmit = useCrudFormHandler({
+    controller,
+    createAction: createCargo,
+    updateAction: updateCargo,
+    onSuccess: () => cargos.mutate(),
+    successMessage: 'Cargo salvo com sucesso!',
   });
 
   const columns = useTableColumnsWithActions<Cargo>(
@@ -89,65 +90,16 @@ export default function CargoPage() {
     }
   );
 
-  const handleSubmit = async (values: CargoFormData) => {
-    const action = async (): Promise<ActionResult<Cargo>> => {
-      const result = controller.editingItem?.id
-        ? await updateCargo({ ...values, id: controller.editingItem.id })
-        : await createCargo(values);
-      return result;
-    };
-
-    controller.exec(action, 'Cargo salvo com sucesso!').finally(() => {
-      cargos.mutate();
-    });
-  };
-
-  if (cargos.error) {
-    return <p style={{ color: 'red' }}>Erro ao carregar cargos.</p>;
-  }
-
   return (
-    <>
-      <Card
-        title="Cargos"
-        extra={
-          <Button type="primary" onClick={() => controller.open()}>
-            Adicionar
-          </Button>
-        }
-      >
-        <Table<Cargo>
-          columns={columns}
-          dataSource={cargos.data}
-          loading={cargos.isLoading}
-          rowKey="id"
-          pagination={cargos.pagination}
-          onChange={cargos.handleTableChange}
-        />
-      </Card>
-
-      <Modal
-        title={controller.editingItem ? 'Editar Cargo' : 'Novo Cargo'}
-        open={controller.isOpen}
-        onCancel={controller.close}
-        footer={null}
-        destroyOnHidden
-        width={500}
-      >
-        <CargoForm
-          initialValues={
-            controller.editingItem
-              ? {
-                  nome: controller.editingItem.nome,
-                  salarioBase: controller.editingItem.salarioBase,
-                }
-              : undefined
-          }
-          onSubmit={handleSubmit}
-          loading={controller.loading}
-        />
-      </Modal>
-    </>
+    <CrudPage
+      title="Cargos"
+      entityKey="cargos"
+      controller={controller}
+      entityData={cargos}
+      columns={columns}
+      formComponent={CargoForm}
+      onSubmit={handleSubmit}
+      modalWidth={500}
+    />
   );
 }
-

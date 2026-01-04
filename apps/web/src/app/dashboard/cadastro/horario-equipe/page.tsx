@@ -1,30 +1,20 @@
-/**
- * Página de Gerenciamento de Catálogo de Horários
- *
- * Lista e gerencia os horários de trabalho (presets reutilizáveis)
- */
-
 'use client';
 
-import React, { useState } from 'react';
-import { Table, Button, Space, Modal, Tag, Tooltip } from 'antd';
-import {
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  ClockCircleOutlined,
-  CheckCircleOutlined,
-} from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
-import { useEntityData } from '@/lib/hooks/useEntityData';
-import { useCrudController } from '@/lib/hooks/useCrudController';
 import {
   listHorarioAberturaCatalogo,
   createHorarioAberturaCatalogo,
   updateHorarioAberturaCatalogo,
   deleteHorarioAberturaCatalogo,
 } from '@/lib/actions/escala/horarioAberturaCatalogo';
+import CrudPage from '@/lib/components/CrudPage';
+import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { useCrudController } from '@/lib/hooks/useCrudController';
+import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
+import { useEntityData } from '@/lib/hooks/useEntityData';
+import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
+import { getTextFilter } from '@/ui/components/tableFilters';
+import { ClockCircleOutlined } from '@ant-design/icons';
+import { Space, Tag } from 'antd';
 import HorarioAberturaCatalogoForm from './form';
 
 interface HorarioAberturaCatalogo {
@@ -41,12 +31,9 @@ interface HorarioAberturaCatalogo {
 }
 
 export default function HorarioCatalogoPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<HorarioAberturaCatalogo | null>(null);
+  const controller = useCrudController<HorarioAberturaCatalogo>('horarioAberturaCatalogo');
 
-  const crud = useCrudController<HorarioAberturaCatalogo>('horarioAberturaCatalogo');
-
-  const horarios = useEntityData({
+  const horarios = useEntityData<HorarioAberturaCatalogo>({
     key: 'horarioAberturaCatalogo',
     fetcherAction: unwrapFetcher(listHorarioAberturaCatalogo) as any,
     paginationEnabled: true,
@@ -58,6 +45,14 @@ export default function HorarioCatalogoPage() {
     },
   });
 
+  const handleSubmit = useCrudFormHandler<any, HorarioAberturaCatalogo>({
+    controller: controller as any, // Type cast needed due to ActionResult generic mismatch
+    createAction: createHorarioAberturaCatalogo as any,
+    updateAction: updateHorarioAberturaCatalogo as any,
+    onSuccess: () => horarios.mutate(),
+    successMessage: 'Horário salvo com sucesso!',
+  });
+
   const calcularHorarioFim = (inicio: string, duracao: number, intervalo: number = 0): string => {
     const [horas, minutos] = inicio.split(':').map(Number);
     const totalMinutos = horas * 60 + minutos + (duracao + intervalo) * 60;
@@ -66,161 +61,83 @@ export default function HorarioCatalogoPage() {
     return `${String(horasFim).padStart(2, '0')}:${String(minutosFim).padStart(2, '0')}`;
   };
 
-  const columns: ColumnsType<HorarioAberturaCatalogo> = [
-    {
-      title: 'Nome',
-      dataIndex: 'nome',
-      key: 'nome',
-    },
-    {
-      title: 'Horário',
-      key: 'horario',
-      width: 250,
-      render: (_: unknown, record: HorarioAberturaCatalogo) => {
-        const fim = calcularHorarioFim(
-          record.inicioTurnoHora,
-          Number(record.duracaoHoras),
-          Number(record.duracaoIntervaloHoras)
-        );
-        const intervalo = Number(record.duracaoIntervaloHoras) > 0
-          ? ` + ${record.duracaoIntervaloHoras}h int.`
-          : '';
-        return (
-          <Space>
-            <ClockCircleOutlined />
-            <span>
-              {record.inicioTurnoHora.substring(0, 5)} às {fim} ({record.duracaoHoras}h{intervalo})
-            </span>
-          </Space>
-        );
+  const columns = useTableColumnsWithActions<HorarioAberturaCatalogo>(
+    [
+      {
+        title: 'Nome',
+        dataIndex: 'nome',
+        key: 'nome',
+        sorter: true,
+        ...getTextFilter<HorarioAberturaCatalogo>('nome', 'nome do horário'),
       },
-    },
-    {
-      title: 'Status',
-      dataIndex: 'ativo',
-      key: 'ativo',
-      width: 100,
-      render: (ativo: boolean) => (
-        <Tag color={ativo ? 'green' : 'default'}>
-          {ativo ? 'Ativo' : 'Inativo'}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Equipes Usando',
-      key: 'uso',
-      width: 120,
-      render: (_: unknown, record: HorarioAberturaCatalogo) => (
-        <Tag color="blue">
-          {record._count?.Historicos || 0} equipe(s)
-        </Tag>
-      ),
-    },
-    {
-      title: 'Ações',
-      key: 'actions',
-      width: 150,
-      render: (_: unknown, record: HorarioAberturaCatalogo) => (
-        <Space size="small">
-          <Tooltip title="Editar">
-            <Button
-              type="link"
-              size="small"
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Excluir">
-            <Button
-              type="link"
-              size="small"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record.id)}
-            />
-          </Tooltip>
-        </Space>
-      ),
-    },
-  ];
-
-  const handleCreate = () => {
-    setEditingItem(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEdit = (item: HorarioAberturaCatalogo) => {
-    setEditingItem(item);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = async (id: number) => {
-    Modal.confirm({
-      title: 'Confirmar exclusão',
-      content: 'Tem certeza que deseja excluir este horário?',
-      okText: 'Sim',
-      cancelText: 'Não',
-      onOk: async () => {
-        await crud.exec(
-          () => deleteHorarioAberturaCatalogo(id),
-          'Horário excluído com sucesso!',
-          () => horarios.mutate()
-        );
+      {
+        title: 'Horário',
+        key: 'horario',
+        width: 250,
+        render: (_: unknown, record: HorarioAberturaCatalogo) => {
+          const fim = calcularHorarioFim(
+            record.inicioTurnoHora,
+            Number(record.duracaoHoras),
+            Number(record.duracaoIntervaloHoras)
+          );
+          const intervalo = Number(record.duracaoIntervaloHoras) > 0
+            ? ` + ${record.duracaoIntervaloHoras}h int.`
+            : '';
+          return (
+            <Space>
+              <ClockCircleOutlined />
+              <span>
+                {record.inicioTurnoHora.substring(0, 5)} às {fim} ({record.duracaoHoras}h{intervalo})
+              </span>
+            </Space>
+          );
+        },
       },
-    });
-  };
-
-  const handleSave = async (values: unknown) => {
-    const action = editingItem
-      ? () => updateHorarioAberturaCatalogo({ ...(values as Record<string, unknown>), id: editingItem.id })
-      : () => createHorarioAberturaCatalogo(values);
-
-    await crud.exec(
-      action,
-      editingItem ? 'Horário atualizado com sucesso!' : 'Horário criado com sucesso!',
-      () => {
-        horarios.mutate();
-        setIsModalOpen(false);
-      }
-    );
-  };
+      {
+        title: 'Status',
+        dataIndex: 'ativo',
+        key: 'ativo',
+        width: 100,
+        render: (ativo: boolean) => (
+          <Tag color={ativo ? 'green' : 'default'}>
+            {ativo ? 'Ativo' : 'Inativo'}
+          </Tag>
+        ),
+      },
+      {
+        title: 'Equipes Usando',
+        key: 'uso',
+        width: 120,
+        render: (_: unknown, record: HorarioAberturaCatalogo) => (
+          <Tag color="blue">
+            {record._count?.Historicos || 0} equipe(s)
+          </Tag>
+        ),
+      },
+    ],
+    {
+      onEdit: controller.open,
+      onDelete: (item) =>
+        controller
+          .exec(
+            () => deleteHorarioAberturaCatalogo(item.id),
+            'Horário excluído com sucesso!'
+          )
+          .finally(() => horarios.mutate()),
+    }
+  );
 
   return (
-    <div style={{ padding: '24px' }}>
-      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
-        <h1>Catálogo de Horários</h1>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={handleCreate}
-        >
-          Novo Horário
-        </Button>
-      </div>
-
-      <Table
-        columns={columns as any}
-        dataSource={horarios.data as HorarioAberturaCatalogo[]}
-        loading={horarios.isLoading}
-        rowKey="id"
-        pagination={horarios.pagination}
-        onChange={horarios.handleTableChange as any}
-      />
-
-      <Modal
-        title={editingItem ? 'Editar Horário' : 'Novo Horário'}
-        open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
-        footer={null}
-        width={600}
-      >
-        <HorarioAberturaCatalogoForm
-          initialValues={editingItem || undefined}
-          onSubmit={handleSave}
-          onCancel={() => setIsModalOpen(false)}
-        />
-      </Modal>
-    </div>
+    <CrudPage
+      title="Catálogo de Horários"
+      entityKey="horarioAberturaCatalogo"
+      controller={controller}
+      entityData={horarios}
+      columns={columns}
+      formComponent={HorarioAberturaCatalogoForm}
+      onSubmit={handleSubmit}
+      modalWidth={600}
+      addButtonText="Novo Horário"
+    />
   );
 }
-
