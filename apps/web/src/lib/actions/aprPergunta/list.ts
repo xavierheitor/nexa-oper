@@ -31,7 +31,7 @@
  *   orderDir: 'asc',
  *   search: 'EPI'
  * });
- * 
+ *
  * if (result.success) {
  *   console.log(`${result.data.total} perguntas encontradas`);
  *   console.log('Perguntas:', result.data.data);
@@ -41,7 +41,7 @@
 
 'use server';
 
-import type { AprPerguntaService } from '@/lib/services/AprPerguntaService';
+import type { AprPerguntaService } from '@/lib/services/apr/AprPerguntaService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprPerguntaFilterSchema } from '../../schemas/aprPerguntaSchema';
 import { handleServerAction } from '../common/actionHandler';
@@ -65,7 +65,7 @@ import { handleServerAction } from '../common/actionHandler';
  *   ['apr-perguntas', { page: 1, pageSize: 10 }],
  *   ([_, params]) => listAprPerguntas(params)
  * );
- * 
+ *
  * // Uso direto em componente
  * const loadPerguntas = async () => {
  *   const result = await listAprPerguntas({
@@ -74,7 +74,7 @@ import { handleServerAction } from '../common/actionHandler';
  *     orderBy: 'nome',
  *     orderDir: 'asc'
  *   });
- *   
+ *
  *   if (result.success) {
  *     setPerguntas(result.data.data);
  *     setTotal(result.data.total);
@@ -86,22 +86,22 @@ export const listAprPerguntas = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação para parâmetros de listagem
     aprPerguntaFilterSchema,
-    
+
     // Lógica de listagem
     async (validatedParams, session) => {
       // Obtém instância do service via container de DI
       const service = container.get<AprPerguntaService>('aprPerguntaService');
-      
+
       // Executa listagem com parâmetros validados
       return service.list(validatedParams);
     },
-    
+
     // Parâmetros brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'AprPergunta', 
-      actionType: 'list' 
+    {
+      entityName: 'AprPergunta',
+      actionType: 'list',
     }
   );

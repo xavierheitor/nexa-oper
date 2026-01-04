@@ -46,7 +46,7 @@
  *   perguntaIds: [2, 3, 4], // Nova configuração
  *   opcaoRespostaIds: [1]   // Nova configuração
  * });
- * 
+ *
  * if (result.success) {
  *   console.log('APR atualizada:', result.data);
  * } else {
@@ -57,7 +57,7 @@
 
 'use server';
 
-import type { AprService } from '@/lib/services/AprService';
+import type { AprService } from '@/lib/services/apr/AprService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprUpdateSchema } from '../../schemas/aprSchema';
 import { handleServerAction } from '../common/actionHandler';
@@ -88,7 +88,7 @@ import { handleServerAction } from '../common/actionHandler';
  *     perguntaIds: selectedPerguntas, // Do Transfer component
  *     opcaoRespostaIds: selectedOpcoes // Do Transfer component
  *   });
- *   
+ *
  *   if (result.success) {
  *     message.success('APR atualizada com sucesso!');
  *     closeModal();
@@ -97,20 +97,20 @@ import { handleServerAction } from '../common/actionHandler';
  *     message.error(result.error);
  *   }
  * };
- * 
+ *
  * // Uso em operação batch
  * const updateMultiple = async (aprs) => {
  *   const results = await Promise.allSettled(
  *     aprs.map(a => updateApr(a))
  *   );
- *   
- *   const successful = results.filter(r => 
+ *
+ *   const successful = results.filter(r =>
  *     r.status === 'fulfilled' && r.value.success
  *   ).length;
- *   
+ *
  *   message.info(`${successful} APRs atualizadas`);
  * };
- * 
+ *
  * // Uso para reconfiguração de vínculos
  * const reconfigureLinks = async (aprId, newPerguntas, newOpcoes) => {
  *   // Mantém nome atual, apenas reconfigura vínculos
@@ -130,22 +130,22 @@ export const updateApr = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação Zod (inclui ID obrigatório)
     aprUpdateSchema,
-    
+
     // Lógica de negócio
     async (validatedData, session) => {
       // Obtém instância do service via container de DI
       const service = container.get<AprService>('aprService');
-      
+
       // Executa atualização com ID do usuário autenticado
       return service.update(validatedData, session.user.id);
     },
-    
+
     // Dados brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'Apr', 
-      actionType: 'update' 
+    {
+      entityName: 'Apr',
+      actionType: 'update',
     }
   );

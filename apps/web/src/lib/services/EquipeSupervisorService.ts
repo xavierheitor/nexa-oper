@@ -4,7 +4,7 @@ import { AbstractCrudService } from '../abstracts/AbstractCrudService';
 import {
   EquipeSupervisorCreateInput,
   EquipeSupervisorRepository,
-} from '../repositories/EquipeSupervisorRepository';
+} from '../repositories/infraestrutura/EquipeSupervisorRepository';
 import {
   equipeSupervisorCreateSchema,
   equipeSupervisorFilterSchema,

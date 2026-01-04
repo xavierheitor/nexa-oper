@@ -1,6 +1,6 @@
 'use server';
 
-import type { TipoChecklistService } from '@/lib/services/TipoChecklistService';
+import type { TipoChecklistService } from '@/lib/services/checklist/TipoChecklistService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';

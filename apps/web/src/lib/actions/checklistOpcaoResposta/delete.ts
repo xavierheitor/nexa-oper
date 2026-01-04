@@ -1,6 +1,6 @@
 'use server';
 
-import type { ChecklistOpcaoRespostaService } from '@/lib/services/ChecklistOpcaoRespostaService';
+import type { ChecklistOpcaoRespostaService } from '@/lib/services/checklist/ChecklistOpcaoRespostaService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';

@@ -33,7 +33,7 @@
  * ```typescript
  * // No frontend
  * const result = await deleteAprTipoAtividadeVinculo({ id: 1 });
- * 
+ *
  * if (result.success) {
  *   console.log('Vínculo excluído:', result.data);
  * } else {
@@ -44,7 +44,7 @@
 
 'use server';
 
-import type { AprTipoAtividadeVinculoService } from '@/lib/services/AprTipoAtividadeVinculoService';
+import type { AprTipoAtividadeVinculoService } from '@/lib/services/apr/AprTipoAtividadeVinculoService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../../common/actionHandler';
@@ -79,9 +79,9 @@ const deleteAprTipoAtividadeVinculoSchema = z.object({
  * const handleDelete = async (vinculoId) => {
  *   const confirmed = await confirm('Deseja remover este vínculo?');
  *   if (!confirmed) return;
- *   
+ *
  *   const result = await deleteAprTipoAtividadeVinculo({ id: vinculoId });
- *   
+ *
  *   if (result.success) {
  *     message.success('Vínculo removido com sucesso!');
  *     refreshList();
@@ -89,20 +89,20 @@ const deleteAprTipoAtividadeVinculoSchema = z.object({
  *     message.error(result.error);
  *   }
  * };
- * 
+ *
  * // Uso em operação batch
  * const deleteMultiple = async (vinculoIds) => {
  *   const results = await Promise.allSettled(
  *     vinculoIds.map(id => deleteAprTipoAtividadeVinculo({ id }))
  *   );
- *   
- *   const successful = results.filter(r => 
+ *
+ *   const successful = results.filter(r =>
  *     r.status === 'fulfilled' && r.value.success
  *   ).length;
- *   
+ *
  *   message.info(`${successful} vínculos removidos`);
  * };
- * 
+ *
  * // Uso em componente de tabela
  * const columns = [
  *   // ... outras colunas
@@ -118,7 +118,7 @@ const deleteAprTipoAtividadeVinculoSchema = z.object({
  *     )
  *   }
  * ];
- * 
+ *
  * // Uso para desvincular APR de tipo específico
  * const unlinkAprFromTipo = async (tipoAtividadeId) => {
  *   // Primeiro encontra o vínculo ativo
@@ -127,7 +127,7 @@ const deleteAprTipoAtividadeVinculoSchema = z.object({
  *     pageSize: 1,
  *     // Filtrar por tipoAtividadeId se necessário
  *   });
- *   
+ *
  *   if (vinculos.success && vinculos.data.data.length > 0) {
  *     const vinculo = vinculos.data.data[0];
  *     await deleteAprTipoAtividadeVinculo({ id: vinculo.id });
@@ -139,24 +139,26 @@ export const deleteAprTipoAtividadeVinculo = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação para ID
     deleteAprTipoAtividadeVinculoSchema,
-    
+
     // Lógica de negócio
     async (validatedData, session) => {
       // Obtém instância do service via container de DI
-      const service = container.get<AprTipoAtividadeVinculoService>('aprTipoAtividadeVinculoService');
-      
+      const service = container.get<AprTipoAtividadeVinculoService>(
+        'aprTipoAtividadeVinculoService'
+      );
+
       // Executa soft delete via repository (service não tem delete específico)
       // Usa o repository diretamente para operação de delete
       return (service as any).repo.delete(validatedData.id, session.user.id);
     },
-    
+
     // Dados brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'AprTipoAtividadeRelacao', 
-      actionType: 'delete' 
+    {
+      entityName: 'AprTipoAtividadeRelacao',
+      actionType: 'delete',
     }
   );
 

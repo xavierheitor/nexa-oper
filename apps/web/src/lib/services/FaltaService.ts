@@ -4,7 +4,7 @@
  * Implementa lógica de negócio para faltas
  */
 
-import { FaltaRepository } from '../repositories/FaltaRepository';
+import { FaltaRepository } from '../repositories/turnos/FaltaRepository';
 
 export class FaltaService {
   private repo: FaltaRepository;

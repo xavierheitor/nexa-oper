@@ -39,7 +39,7 @@
 import { PaginatedParams, PaginatedResult } from '@/lib/types/common';
 import { MobileUser } from '@nexa-oper/db';
 import bcrypt from 'bcryptjs';
-import { MobileUserRepository } from '../repositories/MobileUserRepository';
+import { MobileUserRepository } from '../repositories/auth/MobileUserRepository';
 import {
   MobileUserChangePassword,
   MobileUserCreate,

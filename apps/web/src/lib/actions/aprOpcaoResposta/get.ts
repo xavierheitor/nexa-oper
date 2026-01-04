@@ -29,7 +29,7 @@
  * ```typescript
  * // No frontend
  * const result = await getAprOpcaoResposta({ id: 1 });
- * 
+ *
  * if (result.success && result.data) {
  *   console.log('Opção de resposta encontrada:', result.data);
  * } else if (result.success && !result.data) {
@@ -42,7 +42,7 @@
 
 'use server';
 
-import type { AprOpcaoRespostaService } from '@/lib/services/AprOpcaoRespostaService';
+import type { AprOpcaoRespostaService } from '@/lib/services/apr/AprOpcaoRespostaService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
@@ -75,7 +75,7 @@ const getAprOpcaoRespostaSchema = z.object({
  * // Uso para carregamento de dados de edição
  * const loadOpcaoForEdit = async (opcaoId) => {
  *   const result = await getAprOpcaoResposta({ id: opcaoId });
- *   
+ *
  *   if (result.success && result.data) {
  *     setFormData({
  *       id: result.data.id,
@@ -89,29 +89,29 @@ const getAprOpcaoRespostaSchema = z.object({
  *     message.error(result.error);
  *   }
  * };
- * 
+ *
  * // Uso para validação de existência
  * const validateOpcaoExists = async (opcaoId) => {
  *   const result = await getAprOpcaoResposta({ id: opcaoId });
  *   return result.success && result.data !== null;
  * };
- * 
+ *
  * // Uso em modal de detalhes
  * const showOpcaoDetails = async (opcaoId) => {
  *   setLoading(true);
- *   
+ *
  *   const result = await getAprOpcaoResposta({ id: opcaoId });
- *   
+ *
  *   if (result.success && result.data) {
  *     setSelectedOpcao(result.data);
  *     setModalVisible(true);
  *   } else {
  *     message.error('Não foi possível carregar os detalhes');
  *   }
- *   
+ *
  *   setLoading(false);
  * };
- * 
+ *
  * // Uso com React Query para cache
  * const { data: opcao, isLoading, error } = useQuery({
  *   queryKey: ['apr-opcao-resposta', opcaoId],
@@ -124,22 +124,24 @@ export const getAprOpcaoResposta = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação para ID
     getAprOpcaoRespostaSchema,
-    
+
     // Lógica de negócio
     async (validatedData, session) => {
       // Obtém instância do service via container de DI
-      const service = container.get<AprOpcaoRespostaService>('aprOpcaoRespostaService');
-      
+      const service = container.get<AprOpcaoRespostaService>(
+        'aprOpcaoRespostaService'
+      );
+
       // Executa busca por ID
       return service.getById(validatedData.id);
     },
-    
+
     // Dados brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'AprOpcaoResposta', 
-      actionType: 'get' 
+    {
+      entityName: 'AprOpcaoResposta',
+      actionType: 'get',
     }
   );

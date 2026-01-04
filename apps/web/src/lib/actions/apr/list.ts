@@ -36,7 +36,7 @@
  *     AprOpcaoRespostaRelacao: true
  *   }
  * });
- * 
+ *
  * if (result.success) {
  *   console.log(`${result.data.total} APRs encontradas`);
  *   console.log('APRs:', result.data.data);
@@ -46,7 +46,7 @@
 
 'use server';
 
-import type { AprService } from '@/lib/services/AprService';
+import type { AprService } from '@/lib/services/apr/AprService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprFilterSchema } from '../../schemas/aprSchema';
 import { handleServerAction } from '../common/actionHandler';
@@ -70,7 +70,7 @@ import { handleServerAction } from '../common/actionHandler';
  *   ['aprs', { page: 1, pageSize: 10 }],
  *   ([_, params]) => listAprs(params)
  * );
- * 
+ *
  * // Uso direto em componente
  * const loadAprs = async () => {
  *   const result = await listAprs({
@@ -87,13 +87,13 @@ import { handleServerAction } from '../common/actionHandler';
  *       }
  *     }
  *   });
- *   
+ *
  *   if (result.success) {
  *     setAprs(result.data.data);
  *     setTotal(result.data.total);
  *   }
  * };
- * 
+ *
  * // Uso com Transfer components
  * const loadAprsForTransfer = async () => {
  *   const result = await listAprs({
@@ -102,7 +102,7 @@ import { handleServerAction } from '../common/actionHandler';
  *     orderBy: 'nome',
  *     orderDir: 'asc'
  *   });
- *   
+ *
  *   if (result.success) {
  *     const transferItems = result.data.data.map(apr => ({
  *       key: apr.id.toString(),
@@ -117,22 +117,22 @@ export const listAprs = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação para parâmetros de listagem
     aprFilterSchema,
-    
+
     // Lógica de listagem
     async (validatedParams, session) => {
       // Obtém instância do service via container de DI
       const service = container.get<AprService>('aprService');
-      
+
       // Executa listagem com parâmetros validados
       return service.list(validatedParams);
     },
-    
+
     // Parâmetros brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'Apr', 
-      actionType: 'list' 
+    {
+      entityName: 'Apr',
+      actionType: 'list',
     }
   );

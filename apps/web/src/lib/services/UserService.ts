@@ -34,7 +34,7 @@
 import { User } from '@nexa-oper/db';
 import bcrypt from 'bcryptjs';
 import { AbstractCrudService } from '../abstracts/AbstractCrudService';
-import { UserRepository } from '../repositories/UserRepository';
+import { UserRepository } from '../repositories/auth/UserRepository';
 import {
   userChangePasswordSchema,
   UserCreate,

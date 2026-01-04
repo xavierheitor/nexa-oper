@@ -27,7 +27,7 @@ import { AbstractCrudService } from '../abstracts/AbstractCrudService';
 import {
   VeiculoCreateInput,
   VeiculoRepository,
-} from '../repositories/VeiculoRepository';
+} from '../repositories/infraestrutura/VeiculoRepository';
 import {
   veiculoCreateSchema,
   veiculoFilterSchema,

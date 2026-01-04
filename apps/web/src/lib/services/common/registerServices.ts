@@ -21,16 +21,16 @@
  * ```
  */
 
-import { AprOpcaoRespostaService } from '../AprOpcaoRespostaService';
-import { AprPerguntaService } from '../AprPerguntaService';
-import { AprService } from '../AprService';
-import { AprTipoAtividadeVinculoService } from '../AprTipoAtividadeVinculoService';
-import { ChecklistOpcaoRespostaService } from '../ChecklistOpcaoRespostaService';
-import { ChecklistPerguntaService } from '../ChecklistPerguntaService';
-import { ChecklistService } from '../ChecklistService';
-import { ChecklistTipoEquipeVinculoService } from '../ChecklistTipoEquipeVinculoService';
-import { ChecklistTipoVeiculoVinculoService } from '../ChecklistTipoVeiculoVinculoService';
-import { ChecklistPendenciaService } from '../ChecklistPendenciaService';
+import { AprOpcaoRespostaService } from '../apr/AprOpcaoRespostaService';
+import { AprPerguntaService } from '../apr/AprPerguntaService';
+import { AprService } from '../apr/AprService';
+import { AprTipoAtividadeVinculoService } from '../apr/AprTipoAtividadeVinculoService';
+import { ChecklistOpcaoRespostaService } from '../checklist/ChecklistOpcaoRespostaService';
+import { ChecklistPerguntaService } from '../checklist/ChecklistPerguntaService';
+import { ChecklistService } from '../checklist/ChecklistService';
+import { ChecklistTipoEquipeVinculoService } from '../checklist/ChecklistTipoEquipeVinculoService';
+import { ChecklistTipoVeiculoVinculoService } from '../checklist/ChecklistTipoVeiculoVinculoService';
+import { ChecklistPendenciaService } from '../checklist/ChecklistPendenciaService';
 import { ContratoService } from '../ContratoService';
 import { EletricistaService } from '../EletricistaService';
 import { EquipeService } from '../EquipeService';
@@ -40,7 +40,7 @@ import { SupervisorService } from '../SupervisorService';
 import { TipoAtividadeService } from '../TipoAtividadeService';
 import { BaseService } from '../BaseService';
 import { CargoService } from '../CargoService';
-import { TipoChecklistService } from '../TipoChecklistService';
+import { TipoChecklistService } from '../checklist/TipoChecklistService';
 import { TipoEquipeService } from '../TipoEquipeService';
 import { TipoVeiculoService } from '../TipoVeiculoService';
 import { UserService } from '../UserService';

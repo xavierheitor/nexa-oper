@@ -23,7 +23,7 @@
 import { Base } from '@nexa-oper/db';
 import { z } from 'zod';
 import { AbstractCrudService } from '../abstracts/AbstractCrudService';
-import { BaseRepository } from '../repositories/BaseRepository';
+import { BaseRepository } from '../repositories/infraestrutura/BaseRepository';
 import {
   baseCreateSchema,
   baseFilterSchema,

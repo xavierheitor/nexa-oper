@@ -11,7 +11,7 @@ import {
   CargoCreateInput,
   CargoRepository,
   CargoUpdateInput,
-} from '../repositories/CargoRepository';
+} from '../repositories/pessoas/CargoRepository';
 import {
   cargoCreateSchema,
   cargoFilterSchema,

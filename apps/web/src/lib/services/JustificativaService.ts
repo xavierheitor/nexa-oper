@@ -4,7 +4,7 @@
  * Implementa lógica de negócio para justificativas de faltas individuais
  */
 
-import { JustificativaRepository } from '../repositories/JustificativaRepository';
+import { JustificativaRepository } from '../repositories/justificativas/JustificativaRepository';
 import type { CriarJustificativaInput, ListarJustificativasInput } from '../schemas/justificativaSchema';
 
 export class JustificativaService {

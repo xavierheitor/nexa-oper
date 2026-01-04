@@ -33,7 +33,7 @@
  * ```typescript
  * // No frontend
  * const result = await deleteApr({ id: 1 });
- * 
+ *
  * if (result.success) {
  *   console.log('APR excluída:', result.data);
  * } else {
@@ -44,7 +44,7 @@
 
 'use server';
 
-import type { AprService } from '@/lib/services/AprService';
+import type { AprService } from '@/lib/services/apr/AprService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
@@ -79,9 +79,9 @@ const deleteAprSchema = z.object({
  * const handleDelete = async (aprId) => {
  *   const confirmed = await confirm('Deseja excluir esta APR?');
  *   if (!confirmed) return;
- *   
+ *
  *   const result = await deleteApr({ id: aprId });
- *   
+ *
  *   if (result.success) {
  *     message.success('APR excluída com sucesso!');
  *     refreshList();
@@ -89,20 +89,20 @@ const deleteAprSchema = z.object({
  *     message.error(result.error);
  *   }
  * };
- * 
+ *
  * // Uso em operação batch
  * const deleteMultiple = async (aprIds) => {
  *   const results = await Promise.allSettled(
  *     aprIds.map(id => deleteApr({ id }))
  *   );
- *   
- *   const successful = results.filter(r => 
+ *
+ *   const successful = results.filter(r =>
  *     r.status === 'fulfilled' && r.value.success
  *   ).length;
- *   
+ *
  *   message.info(`${successful} APRs excluídas`);
  * };
- * 
+ *
  * // Uso em componente de tabela
  * const columns = [
  *   // ... outras colunas
@@ -118,23 +118,23 @@ const deleteAprSchema = z.object({
  *     )
  *   }
  * ];
- * 
+ *
  * // Uso com verificação de relacionamentos
  * const safeDelete = async (aprId) => {
  *   // Verificar se APR tem relacionamentos ativos
- *   const apr = await getApr({ 
- *     id: aprId, 
- *     include: { 
+ *   const apr = await getApr({
+ *     id: aprId,
+ *     include: {
  *       AprPerguntaRelacao: true,
- *       AprOpcaoRespostaRelacao: true 
- *     } 
+ *       AprOpcaoRespostaRelacao: true
+ *     }
  *   });
- *   
+ *
  *   if (apr.success && apr.data) {
- *     const hasRelations = 
+ *     const hasRelations =
  *       apr.data.AprPerguntaRelacao?.length > 0 ||
  *       apr.data.AprOpcaoRespostaRelacao?.length > 0;
- *       
+ *
  *     if (hasRelations) {
  *       const confirmed = await confirm(
  *         'Esta APR possui vínculos. Deseja excluir mesmo assim?'
@@ -142,7 +142,7 @@ const deleteAprSchema = z.object({
  *       if (!confirmed) return;
  *     }
  *   }
- *   
+ *
  *   await deleteApr({ id: aprId });
  * };
  * ```
@@ -151,22 +151,22 @@ export const deleteApr = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação para ID
     deleteAprSchema,
-    
+
     // Lógica de negócio
     async (validatedData, session) => {
       // Obtém instância do service via container de DI
       const service = container.get<AprService>('aprService');
-      
+
       // Executa soft delete com ID do usuário autenticado
       return service.delete(validatedData.id, session.user.id);
     },
-    
+
     // Dados brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'Apr', 
-      actionType: 'delete' 
+    {
+      entityName: 'Apr',
+      actionType: 'delete',
     }
   );

@@ -20,7 +20,7 @@
  * ```
  */
 
-import { ContratoRepository } from '@/lib/repositories/ContratoRepository';
+import { ContratoRepository } from '@/lib/repositories/catalogo/ContratoRepository';
 import {
   contratoCreateSchema,
   contratoFilterSchema,

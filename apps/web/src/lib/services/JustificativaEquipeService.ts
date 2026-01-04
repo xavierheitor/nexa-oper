@@ -5,8 +5,11 @@
  */
 
 import { prisma } from '../db/db.service';
-import { JustificativaEquipeRepository } from '../repositories/JustificativaEquipeRepository';
-import type { CriarJustificativaEquipeInput, ListarJustificativasEquipeInput } from '../schemas/justificativaEquipeSchema';
+import { JustificativaEquipeRepository } from '../repositories/justificativas/JustificativaEquipeRepository';
+import type {
+  CriarJustificativaEquipeInput,
+  ListarJustificativasEquipeInput,
+} from '../schemas/justificativaEquipeSchema';
 
 export class JustificativaEquipeService {
   private repo: JustificativaEquipeRepository;
@@ -23,9 +26,14 @@ export class JustificativaEquipeService {
     const dataReferencia = new Date(data.dataReferencia);
 
     // Verificar se já existe justificativa para esta equipe e data
-    const existente = await this.repo.findByEquipeAndData(data.equipeId, dataReferencia);
+    const existente = await this.repo.findByEquipeAndData(
+      data.equipeId,
+      dataReferencia
+    );
     if (existente) {
-      throw new Error('Já existe uma justificativa para esta equipe nesta data');
+      throw new Error(
+        'Já existe uma justificativa para esta equipe nesta data'
+      );
     }
 
     return this.repo.create({
@@ -52,11 +60,18 @@ export class JustificativaEquipeService {
     }
 
     // Atualizar status da justificativa
-    const resultado = await this.repo.updateStatus(id, 'aprovada', userId);
+    const resultado = (await this.repo.updateStatus(
+      id,
+      'aprovada',
+      userId
+    )) as any;
 
     // Se não gera falta, remover faltas pendentes dos eletricistas escalados nesta equipe e data
-    if (!resultado.tipoJustificativa.geraFalta) {
-      await this.removerFaltasPendentes(resultado.equipeId, resultado.dataReferencia);
+    if (!resultado.tipoJustificativa?.geraFalta) {
+      await this.removerFaltasPendentes(
+        resultado.equipeId,
+        resultado.dataReferencia
+      );
     }
 
     return resultado;
@@ -130,7 +145,7 @@ export class JustificativaEquipeService {
       },
     });
 
-    const eletricistaIds = slots.map((s) => s.eletricistaId);
+    const eletricistaIds = slots.map(s => s.eletricistaId);
 
     if (eletricistaIds.length > 0) {
       // Remover faltas pendentes dos eletricistas desta equipe nesta data

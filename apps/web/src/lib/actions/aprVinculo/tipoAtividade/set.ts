@@ -35,7 +35,7 @@
  *   tipoAtividadeId: 1,
  *   aprId: 2
  * });
- * 
+ *
  * if (result.success) {
  *   console.log('Vínculo criado:', result.data);
  * } else {
@@ -46,8 +46,8 @@
 
 'use server';
 
-import type { AprTipoAtividadeVinculoService } from '@/lib/services/AprTipoAtividadeVinculoService';
-import { setAprTipoAtividadeSchema } from '@/lib/services/AprTipoAtividadeVinculoService';
+import type { AprTipoAtividadeVinculoService } from '@/lib/services/apr/AprTipoAtividadeVinculoService';
+import { setAprTipoAtividadeSchema } from '@/lib/services/apr/AprTipoAtividadeVinculoService';
 import { container } from '@/lib/services/common/registerServices';
 import { handleServerAction } from '../../common/actionHandler';
 
@@ -74,7 +74,7 @@ import { handleServerAction } from '../../common/actionHandler';
  *     tipoAtividadeId: formData.tipoAtividadeId,
  *     aprId: formData.aprId
  *   });
- *   
+ *
  *   if (result.success) {
  *     message.success('Vínculo salvo com sucesso!');
  *     // Atualizar lista ou fechar modal
@@ -82,24 +82,24 @@ import { handleServerAction } from '../../common/actionHandler';
  *     message.error(result.error);
  *   }
  * };
- * 
+ *
  * // Uso em operação de substituição
  * const replaceApr = async (tipoAtividadeId, newAprId) => {
  *   const result = await setAprTipoAtividade({
  *     tipoAtividadeId,
  *     aprId: newAprId
  *   });
- *   
+ *
  *   if (result.success) {
  *     console.log('APR substituída com sucesso');
  *   }
  * };
- * 
+ *
  * // Uso em formulário de vinculação
  * const VinculoForm = () => {
  *   const handleSave = async (values) => {
  *     const result = await setAprTipoAtividade(values);
- *     
+ *
  *     if (result.success) {
  *       // Sucesso: vínculo criado/atualizado
  *       onSuccess(result.data);
@@ -115,23 +115,25 @@ export const setAprTipoAtividade = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação Zod
     setAprTipoAtividadeSchema,
-    
+
     // Lógica de negócio
     async (validatedData, session) => {
       // Obtém instância do service via container de DI
-      const service = container.get<AprTipoAtividadeVinculoService>('aprTipoAtividadeVinculoService');
-      
+      const service = container.get<AprTipoAtividadeVinculoService>(
+        'aprTipoAtividadeVinculoService'
+      );
+
       // Executa criação/atualização com ID do usuário autenticado
       return service.setMapping(validatedData, session.user.id);
     },
-    
+
     // Dados brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'AprTipoAtividadeRelacao', 
-      actionType: 'set' 
+    {
+      entityName: 'AprTipoAtividadeRelacao',
+      actionType: 'set',
     }
   );
 

@@ -27,7 +27,7 @@
  *   nome: "Não Conforme",
  *   geraPendencia: true
  * });
- * 
+ *
  * if (result.success) {
  *   console.log('Opção de resposta criada:', result.data);
  * } else {
@@ -38,7 +38,7 @@
 
 'use server';
 
-import type { AprOpcaoRespostaService } from '@/lib/services/AprOpcaoRespostaService';
+import type { AprOpcaoRespostaService } from '@/lib/services/apr/AprOpcaoRespostaService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprOpcaoRespostaCreateSchema } from '../../schemas/aprOpcaoRespostaSchema';
 import { handleServerAction } from '../common/actionHandler';
@@ -64,7 +64,7 @@ import { handleServerAction } from '../common/actionHandler';
  *     nome: formData.nome,
  *     geraPendencia: formData.geraPendencia
  *   });
- *   
+ *
  *   if (result.success) {
  *     message.success('Opção de resposta criada com sucesso!');
  *     // Atualizar lista ou fechar modal
@@ -78,22 +78,24 @@ export const createAprOpcaoResposta = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação Zod
     aprOpcaoRespostaCreateSchema,
-    
+
     // Lógica de negócio
     async (validatedData, session) => {
       // Obtém instância do service via container de DI
-      const service = container.get<AprOpcaoRespostaService>('aprOpcaoRespostaService');
-      
+      const service = container.get<AprOpcaoRespostaService>(
+        'aprOpcaoRespostaService'
+      );
+
       // Executa criação com ID do usuário autenticado
       return service.create(validatedData, session.user.id);
     },
-    
+
     // Dados brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'AprOpcaoResposta', 
-      actionType: 'create' 
+    {
+      entityName: 'AprOpcaoResposta',
+      actionType: 'create',
     }
   );

@@ -23,7 +23,7 @@
 import { TipoEquipe } from '@nexa-oper/db';
 import { z } from 'zod';
 import { AbstractCrudService } from '../abstracts/AbstractCrudService';
-import { TipoEquipeRepository } from '../repositories/TipoEquipeRepository';
+import { TipoEquipeRepository } from '../repositories/infraestrutura/TipoEquipeRepository';
 import {
   tipoEquipeCreateSchema,
   tipoEquipeFilterSchema,

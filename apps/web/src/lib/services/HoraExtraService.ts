@@ -4,7 +4,7 @@
  * Implementa lógica de negócio para horas extras
  */
 
-import { HoraExtraRepository } from '../repositories/HoraExtraRepository';
+import { HoraExtraRepository } from '../repositories/turnos/HoraExtraRepository';
 
 export class HoraExtraService {
   private repo: HoraExtraRepository;

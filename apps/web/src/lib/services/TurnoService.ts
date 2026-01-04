@@ -16,7 +16,7 @@ import {
   TurnoCreateInput,
   TurnoRepository,
   TurnoUpdateInput,
-} from '../repositories/TurnoRepository';
+} from '../repositories/turnos/TurnoRepository';
 import { PaginatedResult } from '../types/common';
 
 export class TurnoService extends AbstractCrudService<

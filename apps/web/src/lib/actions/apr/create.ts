@@ -33,7 +33,7 @@
  *   perguntaIds: [1, 2, 3],
  *   opcaoRespostaIds: [1, 2]
  * });
- * 
+ *
  * if (result.success) {
  *   console.log('APR criada:', result.data);
  * } else {
@@ -44,7 +44,7 @@
 
 'use server';
 
-import type { AprService } from '@/lib/services/AprService';
+import type { AprService } from '@/lib/services/apr/AprService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprCreateSchema } from '../../schemas/aprSchema';
 import { handleServerAction } from '../common/actionHandler';
@@ -73,7 +73,7 @@ import { handleServerAction } from '../common/actionHandler';
  *     perguntaIds: selectedPerguntas, // Do Transfer component
  *     opcaoRespostaIds: selectedOpcoes // Do Transfer component
  *   });
- *   
+ *
  *   if (result.success) {
  *     message.success('APR criada com sucesso!');
  *     // Atualizar lista ou fechar modal
@@ -81,17 +81,17 @@ import { handleServerAction } from '../common/actionHandler';
  *     message.error(result.error);
  *   }
  * };
- * 
+ *
  * // Uso em operação batch
  * const createMultiple = async (aprsData) => {
  *   const results = await Promise.allSettled(
  *     aprsData.map(data => createApr(data))
  *   );
- *   
- *   const successful = results.filter(r => 
+ *
+ *   const successful = results.filter(r =>
  *     r.status === 'fulfilled' && r.value.success
  *   ).length;
- *   
+ *
  *   message.info(`${successful} APRs criadas`);
  * };
  * ```
@@ -100,22 +100,22 @@ export const createApr = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação Zod
     aprCreateSchema,
-    
+
     // Lógica de negócio
     async (validatedData, session) => {
       // Obtém instância do service via container de DI
       const service = container.get<AprService>('aprService');
-      
+
       // Executa criação com ID do usuário autenticado
       return service.create(validatedData, session.user.id);
     },
-    
+
     // Dados brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'Apr', 
-      actionType: 'create' 
+    {
+      entityName: 'Apr',
+      actionType: 'create',
     }
   );

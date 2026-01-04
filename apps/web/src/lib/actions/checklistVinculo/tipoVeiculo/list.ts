@@ -1,6 +1,6 @@
 'use server';
 
-import type { ChecklistTipoVeiculoVinculoService } from '@/lib/services/ChecklistTipoVeiculoVinculoService';
+import type { ChecklistTipoVeiculoVinculoService } from '@/lib/services/checklist/ChecklistTipoVeiculoVinculoService';
 import { container } from '@/lib/services/common/registerServices';
 import { handleServerAction } from '../../common/actionHandler';
 import { z } from 'zod';

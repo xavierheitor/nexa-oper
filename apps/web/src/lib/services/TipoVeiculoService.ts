@@ -23,7 +23,7 @@
 import { TipoVeiculo } from '@nexa-oper/db';
 import { z } from 'zod';
 import { AbstractCrudService } from '../abstracts/AbstractCrudService';
-import { TipoVeiculoRepository } from '../repositories/TipoVeiculoRepository';
+import { TipoVeiculoRepository } from '../repositories/infraestrutura/TipoVeiculoRepository';
 import {
   tipoVeiculoCreateSchema,
   tipoVeiculoFilterSchema,

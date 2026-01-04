@@ -27,7 +27,7 @@ import { AbstractCrudService } from '../abstracts/AbstractCrudService';
 import {
   EquipeCreateInput,
   EquipeRepository,
-} from '../repositories/EquipeRepository';
+} from '../repositories/infraestrutura/EquipeRepository';
 import {
   equipeCreateSchema,
   equipeFilterSchema,

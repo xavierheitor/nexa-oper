@@ -31,7 +31,7 @@
  *   orderDir: 'asc',
  *   search: 'Conforme'
  * });
- * 
+ *
  * if (result.success) {
  *   console.log(`${result.data.total} opções de resposta encontradas`);
  *   console.log('Opções:', result.data.data);
@@ -41,7 +41,7 @@
 
 'use server';
 
-import type { AprOpcaoRespostaService } from '@/lib/services/AprOpcaoRespostaService';
+import type { AprOpcaoRespostaService } from '@/lib/services/apr/AprOpcaoRespostaService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprOpcaoRespostaFilterSchema } from '../../schemas/aprOpcaoRespostaSchema';
 import { handleServerAction } from '../common/actionHandler';
@@ -65,7 +65,7 @@ import { handleServerAction } from '../common/actionHandler';
  *   ['apr-opcoes-resposta', { page: 1, pageSize: 10 }],
  *   ([_, params]) => listAprOpcoesResposta(params)
  * );
- * 
+ *
  * // Uso direto em componente
  * const loadOpcoes = async () => {
  *   const result = await listAprOpcoesResposta({
@@ -74,7 +74,7 @@ import { handleServerAction } from '../common/actionHandler';
  *     orderBy: 'nome',
  *     orderDir: 'asc'
  *   });
- *   
+ *
  *   if (result.success) {
  *     setOpcoes(result.data.data);
  *     setTotal(result.data.total);
@@ -86,22 +86,24 @@ export const listAprOpcoesResposta = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação para parâmetros de listagem
     aprOpcaoRespostaFilterSchema,
-    
+
     // Lógica de listagem
     async (validatedParams, session) => {
       // Obtém instância do service via container de DI
-      const service = container.get<AprOpcaoRespostaService>('aprOpcaoRespostaService');
-      
+      const service = container.get<AprOpcaoRespostaService>(
+        'aprOpcaoRespostaService'
+      );
+
       // Executa listagem com parâmetros validados
       return service.list(validatedParams);
     },
-    
+
     // Parâmetros brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'AprOpcaoResposta', 
-      actionType: 'list' 
+    {
+      entityName: 'AprOpcaoResposta',
+      actionType: 'list',
     }
   );

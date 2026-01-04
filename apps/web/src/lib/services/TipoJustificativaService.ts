@@ -6,7 +6,7 @@
 
 import { TipoJustificativa } from '@nexa-oper/db';
 import { AbstractCrudService } from '../abstracts/AbstractCrudService';
-import { TipoJustificativaRepository } from '../repositories/TipoJustificativaRepository';
+import { TipoJustificativaRepository } from '../repositories/justificativas/TipoJustificativaRepository';
 import {
   criarTipoJustificativaSchema,
   atualizarTipoJustificativaSchema,

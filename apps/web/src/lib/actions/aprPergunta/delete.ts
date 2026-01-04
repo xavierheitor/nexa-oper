@@ -32,7 +32,7 @@
  * ```typescript
  * // No frontend
  * const result = await deleteAprPergunta({ id: 1 });
- * 
+ *
  * if (result.success) {
  *   console.log('Pergunta excluída:', result.data);
  * } else {
@@ -43,7 +43,7 @@
 
 'use server';
 
-import type { AprPerguntaService } from '@/lib/services/AprPerguntaService';
+import type { AprPerguntaService } from '@/lib/services/apr/AprPerguntaService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
@@ -78,9 +78,9 @@ const deleteAprPerguntaSchema = z.object({
  * const handleDelete = async (perguntaId) => {
  *   const confirmed = await confirm('Deseja excluir esta pergunta?');
  *   if (!confirmed) return;
- *   
+ *
  *   const result = await deleteAprPergunta({ id: perguntaId });
- *   
+ *
  *   if (result.success) {
  *     message.success('Pergunta excluída com sucesso!');
  *     refreshList();
@@ -88,28 +88,28 @@ const deleteAprPerguntaSchema = z.object({
  *     message.error(result.error);
  *   }
  * };
- * 
+ *
  * // Uso em operação batch
  * const deleteMultiple = async (perguntaIds) => {
  *   const results = await Promise.allSettled(
  *     perguntaIds.map(id => deleteAprPergunta({ id }))
  *   );
- *   
- *   const successful = results.filter(r => 
+ *
+ *   const successful = results.filter(r =>
  *     r.status === 'fulfilled' && r.value.success
  *   ).length;
- *   
+ *
  *   message.info(`${successful} perguntas excluídas`);
  * };
- * 
+ *
  * // Uso em componente de tabela
  * const columns = [
  *   // ... outras colunas
  *   {
  *     title: 'Ações',
  *     render: (_, pergunta) => (
- *       <Button 
- *         danger 
+ *       <Button
+ *         danger
  *         onClick={() => handleDelete(pergunta.id)}
  *       >
  *         Excluir
@@ -123,22 +123,22 @@ export const deleteAprPergunta = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação para ID
     deleteAprPerguntaSchema,
-    
+
     // Lógica de negócio
     async (validatedData, session) => {
       // Obtém instância do service via container de DI
       const service = container.get<AprPerguntaService>('aprPerguntaService');
-      
+
       // Executa soft delete com ID do usuário autenticado
       return service.delete(validatedData.id, session.user.id);
     },
-    
+
     // Dados brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'AprPergunta', 
-      actionType: 'delete' 
+    {
+      entityName: 'AprPergunta',
+      actionType: 'delete',
     }
   );

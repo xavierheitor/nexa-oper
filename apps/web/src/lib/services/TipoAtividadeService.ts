@@ -1,7 +1,7 @@
 import { TipoAtividade } from '@nexa-oper/db';
 import { z } from 'zod';
 import { AbstractCrudService } from '../abstracts/AbstractCrudService';
-import { TipoAtividadeRepository } from '../repositories/TipoAtividadeRepository';
+import { TipoAtividadeRepository } from '../repositories/catalogo/TipoAtividadeRepository';
 import {
   tipoAtividadeCreateSchema,
   tipoAtividadeFilterSchema,

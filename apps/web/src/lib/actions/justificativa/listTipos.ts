@@ -1,44 +1,25 @@
 /**
  * Server Action para listar tipos de justificativa
+ * Acessa o banco diretamente via Prisma (não chama API)
  */
 
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { container } from '../../services/common/registerServices';
+import type { TipoJustificativaService } from '../../services/TipoJustificativaService';
 import { z } from 'zod';
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : '');
-
 /**
- * Lista todos os tipos de justificativa disponíveis
+ * Lista todos os tipos de justificativa disponíveis (para selects/dropdowns)
  */
 export const listTiposJustificativa = async () =>
   handleServerAction(
     z.object({}),
     async () => {
-      if (!baseUrl) {
-        throw new Error('NEXT_PUBLIC_API_URL não está configurada');
-      }
-
-      const response = await fetch(`${baseUrl}/api/tipos-justificativa`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Erro ao buscar tipos de justificativa: ${response.statusText} - ${errorText}`);
-      }
-
-      const data = await response.json();
-      return data;
+      const service = container.get<TipoJustificativaService>('tipoJustificativaService');
+      return service.listAll(true); // Apenas tipos ativos
     },
     {},
     { entityName: 'TipoJustificativa', actionType: 'list' }
   );
-

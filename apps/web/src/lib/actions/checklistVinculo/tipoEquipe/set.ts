@@ -1,8 +1,8 @@
 'use server';
 
-import type { ChecklistTipoEquipeVinculoService } from '@/lib/services/ChecklistTipoEquipeVinculoService';
+import type { ChecklistTipoEquipeVinculoService } from '@/lib/services/checklist/ChecklistTipoEquipeVinculoService';
 import { container } from '@/lib/services/common/registerServices';
-import { setChecklistTipoEquipeSchema } from '@/lib/services/ChecklistTipoEquipeVinculoService';
+import { setChecklistTipoEquipeSchema } from '@/lib/services/checklist/ChecklistTipoEquipeVinculoService';
 import { handleServerAction } from '../../common/actionHandler';
 
 export const setChecklistTipoEquipe = async (rawData: unknown) =>

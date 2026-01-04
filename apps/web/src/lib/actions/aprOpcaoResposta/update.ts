@@ -34,7 +34,7 @@
  *   nome: "Parcialmente Conforme",
  *   geraPendencia: false
  * });
- * 
+ *
  * if (result.success) {
  *   console.log('Opção de resposta atualizada:', result.data);
  * } else {
@@ -45,7 +45,7 @@
 
 'use server';
 
-import type { AprOpcaoRespostaService } from '@/lib/services/AprOpcaoRespostaService';
+import type { AprOpcaoRespostaService } from '@/lib/services/apr/AprOpcaoRespostaService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprOpcaoRespostaUpdateSchema } from '../../schemas/aprOpcaoRespostaSchema';
 import { handleServerAction } from '../common/actionHandler';
@@ -73,7 +73,7 @@ import { handleServerAction } from '../common/actionHandler';
  *     nome: formData.nome,
  *     geraPendencia: formData.geraPendencia
  *   });
- *   
+ *
  *   if (result.success) {
  *     message.success('Opção de resposta atualizada com sucesso!');
  *     closeModal();
@@ -82,17 +82,17 @@ import { handleServerAction } from '../common/actionHandler';
  *     message.error(result.error);
  *   }
  * };
- * 
+ *
  * // Uso em operação batch
  * const updateMultiple = async (opcoes) => {
  *   const results = await Promise.allSettled(
  *     opcoes.map(o => updateAprOpcaoResposta(o))
  *   );
- *   
- *   const successful = results.filter(r => 
+ *
+ *   const successful = results.filter(r =>
  *     r.status === 'fulfilled' && r.value.success
  *   ).length;
- *   
+ *
  *   message.info(`${successful} opções de resposta atualizadas`);
  * };
  * ```
@@ -101,22 +101,24 @@ export const updateAprOpcaoResposta = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação Zod (inclui ID obrigatório)
     aprOpcaoRespostaUpdateSchema,
-    
+
     // Lógica de negócio
     async (validatedData, session) => {
       // Obtém instância do service via container de DI
-      const service = container.get<AprOpcaoRespostaService>('aprOpcaoRespostaService');
-      
+      const service = container.get<AprOpcaoRespostaService>(
+        'aprOpcaoRespostaService'
+      );
+
       // Executa atualização com ID do usuário autenticado
       return service.update(validatedData, session.user.id);
     },
-    
+
     // Dados brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'AprOpcaoResposta', 
-      actionType: 'update' 
+    {
+      entityName: 'AprOpcaoResposta',
+      actionType: 'update',
     }
   );
