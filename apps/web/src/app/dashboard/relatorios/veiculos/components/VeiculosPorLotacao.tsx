@@ -9,8 +9,10 @@ interface DadosLotacao {
   quantidade: number;
 }
 
+import type { FiltrosRelatorioBase } from '../../types';
+
 interface VeiculosPorLotacaoProps {
-  filtros?: any;
+  filtros?: FiltrosRelatorioBase;
 }
 
 export default function VeiculosPorLotacao({ filtros }: VeiculosPorLotacaoProps) {

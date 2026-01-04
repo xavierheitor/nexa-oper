@@ -9,8 +9,10 @@ interface DadosEscaladas {
   quantidade: number;
 }
 
+import type { FiltrosRelatorioBase } from '../../types';
+
 interface EquipesEscaladasProps {
-  filtros?: any;
+  filtros?: FiltrosRelatorioBase;
 }
 
 export default function EquipesEscaladas({ filtros }: EquipesEscaladasProps) {
@@ -67,7 +69,7 @@ export default function EquipesEscaladas({ filtros }: EquipesEscaladasProps) {
         rowPadding: 5,
       },
     },
-    color: ({ status }: any) => {
+    color: ({ status }: DadosEscaladas) => {
       return status === 'Escaladas' ? '#52c41a' : '#faad14';
     },
   };

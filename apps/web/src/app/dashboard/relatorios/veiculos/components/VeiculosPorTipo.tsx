@@ -9,8 +9,10 @@ interface DadosTipo {
   quantidade: number;
 }
 
+import type { FiltrosRelatorioBase } from '../../types';
+
 interface VeiculosPorTipoProps {
-  filtros?: any;
+  filtros?: FiltrosRelatorioBase;
 }
 
 export default function VeiculosPorTipo({ filtros }: VeiculosPorTipoProps) {

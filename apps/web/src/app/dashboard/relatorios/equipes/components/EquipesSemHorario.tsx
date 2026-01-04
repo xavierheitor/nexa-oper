@@ -14,8 +14,10 @@ interface EquipeSemHorario {
   base: string;
 }
 
+import type { FiltrosRelatorioBase } from '../../types';
+
 interface EquipesSemHorarioProps {
-  filtros?: any;
+  filtros?: FiltrosRelatorioBase;
 }
 
 export default function EquipesSemHorario({ filtros }: EquipesSemHorarioProps) {

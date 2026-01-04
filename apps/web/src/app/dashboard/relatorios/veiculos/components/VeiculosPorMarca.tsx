@@ -9,8 +9,10 @@ interface DadosMarca {
   quantidade: number;
 }
 
+import type { FiltrosRelatorioBase } from '../../types';
+
 interface VeiculosPorMarcaProps {
-  filtros?: any;
+  filtros?: FiltrosRelatorioBase;
 }
 
 export default function VeiculosPorMarca({ filtros }: VeiculosPorMarcaProps) {

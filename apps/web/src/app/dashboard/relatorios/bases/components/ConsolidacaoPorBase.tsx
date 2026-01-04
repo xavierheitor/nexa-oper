@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
+import type { FiltrosRelatorioBase } from '../../types';
 
 interface DadosBase {
   id: number;
@@ -85,7 +86,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
       align: 'center' as const,
       width: 140,
       sorter: (a: DadosBase, b: DadosBase) => a.eletricistas.total - b.eletricistas.total,
-      render: (_: any, record: DadosBase) => (
+      render: (_: unknown, record: DadosBase) => (
         <Tag color="green">{record.eletricistas.total}</Tag>
       ),
     },
@@ -96,7 +97,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
       width: 170,
       sorter: (a: DadosBase, b: DadosBase) =>
         a.eletricistas.escalados - b.eletricistas.escalados,
-      render: (_: any, record: DadosBase) => (
+      render: (_: unknown, record: DadosBase) => (
         <Tag color="success">{record.eletricistas.escalados}</Tag>
       ),
     },
@@ -107,7 +108,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
       width: 200,
       sorter: (a: DadosBase, b: DadosBase) =>
         a.eletricistas.naoEscalados - b.eletricistas.naoEscalados,
-      render: (_: any, record: DadosBase) => (
+      render: (_: unknown, record: DadosBase) => (
         <Tag color={record.eletricistas.naoEscalados > 0 ? 'warning' : 'default'}>
           {record.eletricistas.naoEscalados}
         </Tag>
@@ -119,7 +120,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
       align: 'center' as const,
       width: 120,
       sorter: (a: DadosBase, b: DadosBase) => a.equipes.total - b.equipes.total,
-      render: (_: any, record: DadosBase) => (
+      render: (_: unknown, record: DadosBase) => (
         <Tag color="purple">{record.equipes.total}</Tag>
       ),
     },
@@ -130,7 +131,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
       width: 150,
       sorter: (a: DadosBase, b: DadosBase) =>
         a.equipes.escaladas - b.equipes.escaladas,
-      render: (_: any, record: DadosBase) => (
+      render: (_: unknown, record: DadosBase) => (
         <Tag color="success">{record.equipes.escaladas}</Tag>
       ),
     },
@@ -141,7 +142,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
       width: 130,
       sorter: (a: DadosBase, b: DadosBase) =>
         a.equipes.inativas - b.equipes.inativas,
-      render: (_: any, record: DadosBase) => (
+      render: (_: unknown, record: DadosBase) => (
         <Tag color={record.equipes.inativas > 0 ? 'warning' : 'default'}>
           {record.equipes.inativas}
         </Tag>

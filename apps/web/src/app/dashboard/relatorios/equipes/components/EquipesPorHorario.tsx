@@ -9,8 +9,10 @@ interface DadosHorario {
   quantidade: number;
 }
 
+import type { FiltrosRelatorioBase } from '../../types';
+
 interface EquipesPorHorarioProps {
-  filtros?: any;
+  filtros?: FiltrosRelatorioBase;
 }
 
 export default function EquipesPorHorario({ filtros }: EquipesPorHorarioProps) {

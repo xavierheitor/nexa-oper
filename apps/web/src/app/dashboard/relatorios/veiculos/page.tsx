@@ -10,6 +10,7 @@ import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listContratos } from '@/lib/actions/contrato/list';
+import type { Contrato, Base } from '@nexa-oper/db';
 
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
@@ -36,7 +37,7 @@ export default function RelatoriosVeiculosPage() {
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
-  const handleFilterChange = (key: string, value: any) => {
+  const handleFilterChange = (key: string, value: number | undefined) => {
     setFiltros((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -68,12 +69,12 @@ export default function RelatoriosVeiculosPage() {
 
   // Memoiza as opções dos Selects para evitar recriações desnecessárias
   const contratosOptions = useMemo(
-    () => contratos?.map((c: any) => ({ label: c.nome, value: c.id })) || [],
+    () => contratos?.map((c: Contrato) => ({ label: c.nome, value: c.id })) || [],
     [contratos]
   );
 
   const basesOptions = useMemo(
-    () => bases?.map((b: any) => ({ label: b.nome, value: b.id })) || [],
+    () => bases?.map((b: Base) => ({ label: b.nome, value: b.id })) || [],
     [bases]
   );
 

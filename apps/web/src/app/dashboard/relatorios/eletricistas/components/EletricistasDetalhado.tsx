@@ -22,8 +22,10 @@ interface EletricistaDetalhado {
   };
 }
 
+import type { FiltrosRelatorioBase } from '../../types';
+
 interface EletricistasDetalhadoProps {
-  filtros?: any;
+  filtros?: FiltrosRelatorioBase;
 }
 
 export default function EletricistasDetalhado({

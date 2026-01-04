@@ -5,13 +5,10 @@ import type { CrudController } from '@/lib/hooks/useCrudController';
 import { Modal } from 'antd';
 import { AprVinculoModal } from './AprVinculoModal';
 // Tipo helper baseado na estrutura real do useEntityData com paginação habilitada
+// Nota: Este componente não usa pagination/handleTableChange, então tipo mínimo é suficiente
 type UseEntityDataPaginated<T> = {
   data: T[];
-  isLoading: boolean;
-  error: unknown;
   mutate: () => void;
-  pagination: any;
-  handleTableChange: any;
 };
 
 interface AprVinculoModalWrapperProps {

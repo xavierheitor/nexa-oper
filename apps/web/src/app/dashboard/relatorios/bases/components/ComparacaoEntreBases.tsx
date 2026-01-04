@@ -13,8 +13,10 @@ interface DadosComparacao {
   equipes: number;
 }
 
+import type { FiltrosRelatorioBase } from '../../types';
+
 interface ComparacaoEntreBasesProps {
-  filtros?: any;
+  filtros?: FiltrosRelatorioBase;
 }
 
 export default function ComparacaoEntreBases({
