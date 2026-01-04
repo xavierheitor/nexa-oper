@@ -102,14 +102,15 @@ export class TipoJustificativaRepository extends AbstractCrudRepository<TipoJust
     include?: GenericPrismaIncludeInput
   ): Promise<TipoJustificativa[]> {
     // Remove deletedAt do where pois TipoJustificativa não tem soft delete
-    const { deletedAt, ...whereWithoutDeleted } = where as any;
+    const whereObj = where as Record<string, unknown>;
+    const { deletedAt, ...whereWithoutDeleted } = whereObj;
 
     return prisma.tipoJustificativa.findMany({
-      where: whereWithoutDeleted,
+      where: whereWithoutDeleted as GenericPrismaWhereInput,
       orderBy,
       skip,
       take,
-      ...(include && { include }),
+      include: include || this.getDefaultInclude(),
     });
   }
 
@@ -118,16 +119,17 @@ export class TipoJustificativaRepository extends AbstractCrudRepository<TipoJust
    */
   protected async count(where: GenericPrismaWhereInput): Promise<number> {
     // Remove deletedAt do where pois TipoJustificativa não tem soft delete
-    const { deletedAt, ...whereWithoutDeleted } = where as any;
+    const whereObj = where as Record<string, unknown>;
+    const { deletedAt, ...whereWithoutDeleted } = whereObj;
 
-    return prisma.tipoJustificativa.count({ where: whereWithoutDeleted });
+    return prisma.tipoJustificativa.count({ where: whereWithoutDeleted as GenericPrismaWhereInput });
   }
 
   /**
    * Lista tipos com filtro específico
    */
   async listAll(ativo?: boolean) {
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (ativo !== undefined) {
       where.ativo = ativo;
     }
@@ -136,6 +138,33 @@ export class TipoJustificativaRepository extends AbstractCrudRepository<TipoJust
       where,
       orderBy: { nome: 'asc' },
     });
+  }
+
+  /**
+   * Verifica se o modelo tem soft delete
+   */
+  protected hasSoftDelete(): boolean {
+    return false;
+  }
+
+  /**
+   * Constrói filtros customizados
+   */
+  protected buildCustomFilters(
+    params: TipoJustificativaFilter,
+    baseWhere: GenericPrismaWhereInput
+  ): GenericPrismaWhereInput {
+    const where: Record<string, unknown> = { ...(baseWhere as Record<string, unknown>) };
+
+    if (params.ativo !== undefined) {
+      where.ativo = params.ativo;
+    }
+
+    return where as GenericPrismaWhereInput;
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return undefined;
   }
 }
 

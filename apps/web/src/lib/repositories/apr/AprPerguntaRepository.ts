@@ -49,6 +49,7 @@ import { AprPergunta, Prisma } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 /**
  * Interface para filtros específicos de APR Pergunta
@@ -200,19 +201,19 @@ export class AprPerguntaRepository extends AbstractCrudRepository<
    * @param include - Relacionamentos a incluir (opcional)
    * @returns Promise com array de perguntas encontradas
    */
-  protected findMany(
-    where: Prisma.AprPerguntaWhereInput,
-    orderBy: Prisma.AprPerguntaOrderByWithRelationInput,
+  protected async findMany(
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<AprPergunta[]> {
     return prisma.aprPergunta.findMany({
       where,
       orderBy,
       skip,
       take,
-      ...(include && { include }),
+      include: include || this.getDefaultInclude(),
     });
   }
 
@@ -225,7 +226,11 @@ export class AprPerguntaRepository extends AbstractCrudRepository<
    * @param where - Condições WHERE do Prisma
    * @returns Promise com o número total de registros
    */
-  protected count(where: Prisma.AprPerguntaWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.aprPergunta.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return undefined;
   }
 }

@@ -3,6 +3,7 @@ import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { QueryBuilder } from '../../db/helpers/queryBuilder';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface ChecklistPendenciaFilter extends PaginationParams {
   status?: 'AGUARDANDO_TRATAMENTO' | 'EM_TRATAMENTO' | 'TRATADA' | 'REGISTRO_INCORRETO';
@@ -146,8 +147,38 @@ export class ChecklistPendenciaRepository extends AbstractCrudRepository<
     }));
   }
 
-  protected count(where: Prisma.ChecklistPendenciaWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.checklistPendencia.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return {
+      checklistResposta: {
+        include: {
+          pergunta: true,
+          opcaoResposta: true,
+        },
+      },
+      checklistPreenchido: {
+        include: {
+          checklist: true,
+          eletricista: true,
+          turno: {
+            include: {
+              equipe: true,
+            },
+          },
+        },
+      },
+      turno: {
+        include: {
+          equipe: true,
+        },
+      },
+      ChecklistRespostaFoto: {
+        where: { deletedAt: null },
+      },
+    };
   }
 
   async list(params: ChecklistPendenciaFilter): Promise<{ items: ChecklistPendencia[]; total: number }> {

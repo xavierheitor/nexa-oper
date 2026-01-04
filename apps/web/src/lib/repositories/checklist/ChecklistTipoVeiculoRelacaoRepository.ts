@@ -2,6 +2,7 @@ import { Prisma, ChecklistTipoVeiculoRelacao } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface Filter extends PaginationParams {}
 
@@ -37,31 +38,38 @@ export class ChecklistTipoVeiculoRelacaoRepository extends AbstractCrudRepositor
   }
 
   findById(id: number): Promise<ChecklistTipoVeiculoRelacao | null> {
-    return prisma.checklistTipoVeiculoRelacao.findUnique({ where: { id, deletedAt: null } as any });
+    return prisma.checklistTipoVeiculoRelacao.findUnique({
+      where: { id, deletedAt: null },
+      include: this.getDefaultInclude(),
+    });
   }
 
   protected getSearchFields(): string[] {
     return [];
   }
 
-  protected findMany(
-    where: Prisma.ChecklistTipoVeiculoRelacaoWhereInput,
-    orderBy: Prisma.ChecklistTipoVeiculoRelacaoOrderByWithRelationInput,
+  protected async findMany(
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
-  ) {
+    include?: GenericPrismaIncludeInput
+  ): Promise<ChecklistTipoVeiculoRelacao[]> {
     return prisma.checklistTipoVeiculoRelacao.findMany({
       where,
       orderBy,
       skip,
       take,
-      ...(include && { include }),
+      include: include || this.getDefaultInclude(),
     });
   }
 
-  protected count(where: Prisma.ChecklistTipoVeiculoRelacaoWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.checklistTipoVeiculoRelacao.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return undefined;
   }
 
   async setActiveMapping(

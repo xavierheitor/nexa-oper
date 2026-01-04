@@ -44,6 +44,7 @@ import { AprTipoAtividadeRelacao, Prisma } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 /**
  * Interface para filtros específicos de AprTipoAtividadeRelacao
@@ -167,19 +168,19 @@ export class AprTipoAtividadeRelacaoRepository extends AbstractCrudRepository<
    * @param include - Relacionamentos a incluir (opcional)
    * @returns Promise com array de vínculos encontrados
    */
-  protected findMany(
-    where: Prisma.AprTipoAtividadeRelacaoWhereInput,
-    orderBy: Prisma.AprTipoAtividadeRelacaoOrderByWithRelationInput,
+  protected async findMany(
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<AprTipoAtividadeRelacao[]> {
     return prisma.aprTipoAtividadeRelacao.findMany({
       where,
       orderBy,
       skip,
       take,
-      ...(include && { include }),
+      include: include || this.getDefaultInclude(),
     });
   }
 
@@ -192,8 +193,12 @@ export class AprTipoAtividadeRelacaoRepository extends AbstractCrudRepository<
    * @param where - Condições WHERE do Prisma
    * @returns Promise com o número total de registros
    */
-  protected count(where: Prisma.AprTipoAtividadeRelacaoWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.aprTipoAtividadeRelacao.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return undefined;
   }
 
   /**

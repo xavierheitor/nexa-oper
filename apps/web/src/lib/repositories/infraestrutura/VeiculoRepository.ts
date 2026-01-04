@@ -2,6 +2,7 @@ import { Prisma, Veiculo } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface VeiculoFilter extends PaginationParams {
   contratoId?: number;
@@ -177,7 +178,7 @@ export class VeiculoRepository extends AbstractCrudRepository<Veiculo, VeiculoFi
     const skip = (page - 1) * pageSize;
 
     // Construir where com filtros server-side
-    const where: any = {
+    const where: Prisma.VeiculoWhereInput = {
       deletedAt: null,
       ...(contratoId && { contratoId }),
       ...(tipoVeiculoId && { tipoVeiculoId }),
@@ -233,19 +234,20 @@ export class VeiculoRepository extends AbstractCrudRepository<Veiculo, VeiculoFi
   protected getSearchFields(): string[] {
     return ['placa', 'modelo', 'ano'];
   }
+
   protected async findMany(
-    where: any,
-    orderBy: any,
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<Veiculo[]> {
     const veiculos = await prisma.veiculo.findMany({
       where,
       orderBy,
       skip,
       take,
-      ...(include && { include }),
+      include: include || this.getDefaultInclude(),
     });
 
     // Para cada veículo, buscar sua base atual
@@ -281,7 +283,12 @@ export class VeiculoRepository extends AbstractCrudRepository<Veiculo, VeiculoFi
 
     return veiculosWithBase;
   }
-  protected count(where: Prisma.VeiculoWhereInput): Promise<number> {
+
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.veiculo.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return undefined;
   }
 }

@@ -143,78 +143,66 @@ export class FaltaRepository extends AbstractCrudRepository<
   }
 
   /**
-   * Lista faltas com filtros e paginação
+   * Constrói filtros customizados a partir dos parâmetros
    *
-   * Sobrescreve o método base para adicionar suporte a filtros customizados
+   * Implementa filtros específicos de Falta: eletricistaId, equipeId, dataInicio, dataFim, status
+   *
+   * @param params - Parâmetros de filtro
+   * @param baseWhere - Filtros base já construídos (soft delete, busca, etc)
+   * @returns Objeto where com filtros customizados aplicados
    */
-  async list(params: FaltaFilter): Promise<{ items: Falta[]; total: number }> {
-    const {
-      page = 1,
-      pageSize = 20,
-      orderBy = 'dataReferencia',
-      orderDir = 'desc',
-      search,
-      eletricistaId,
-      equipeId,
-      dataInicio,
-      dataFim,
-      status,
-      include,
-    } = params;
+  protected buildCustomFilters(
+    params: FaltaFilter,
+    baseWhere: GenericPrismaWhereInput
+  ): GenericPrismaWhereInput {
+    const where: Prisma.FaltaWhereInput = {
+      ...(baseWhere as Prisma.FaltaWhereInput),
+    };
 
-    const skip = (page - 1) * pageSize;
-
-    // Construir where com filtros customizados
-    const where: any = {};
-
-    if (eletricistaId) {
-      where.eletricistaId = eletricistaId;
+    // Filtro por eletricista
+    if (params.eletricistaId) {
+      where.eletricistaId = params.eletricistaId;
     }
 
-    if (equipeId) {
-      where.equipeId = equipeId;
+    // Filtro por equipe
+    if (params.equipeId) {
+      where.equipeId = params.equipeId;
     }
 
-    if (dataInicio || dataFim) {
+    // Filtro por range de datas
+    if (params.dataInicio || params.dataFim) {
       where.dataReferencia = {};
-      if (dataInicio) {
-        where.dataReferencia.gte = dataInicio;
+      if (params.dataInicio) {
+        where.dataReferencia.gte = params.dataInicio;
       }
-      if (dataFim) {
-        where.dataReferencia.lte = dataFim;
+      if (params.dataFim) {
+        where.dataReferencia.lte = params.dataFim;
       }
     }
 
-    if (status) {
-      where.status = status;
+    // Filtro por status
+    if (params.status) {
+      where.status = params.status;
     }
 
-    // Adicionar busca por texto se fornecido
-    if (search) {
-      const searchWhere = this.buildSearchWhere(search);
-      where.AND = where.AND ? [...where.AND, searchWhere] : [searchWhere];
-    }
+    return where;
+  }
 
-    const [items, total] = await Promise.all([
-      prisma.falta.findMany({
-        where,
-        skip,
-        take: pageSize,
-        orderBy: { [orderBy]: orderDir },
-        include: include || this.getDefaultInclude(),
-      }),
-      prisma.falta.count({ where }),
-    ]);
-
-    return { items, total };
+  /**
+   * Verifica se o modelo tem soft delete
+   *
+   * Faltas não têm soft delete no schema
+   */
+  protected hasSoftDelete(): boolean {
+    return false;
   }
 
   /**
    * Retorna o include padrão para consultas
    *
-   * @returns Objeto de include padrão
+   * @returns Objeto de include padrão tipado com Prisma.FaltaInclude
    */
-  private getDefaultInclude() {
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
     return {
       eletricista: {
         select: {
@@ -242,18 +230,4 @@ export class FaltaRepository extends AbstractCrudRepository<
     };
   }
 
-  /**
-   * Constrói where para busca por texto
-   *
-   * @param search - Termo de busca
-   * @returns Objeto where para busca
-   */
-  private buildSearchWhere(search: string) {
-    const searchFields = this.getSearchFields();
-    return {
-      OR: searchFields.map(field => ({
-        [field]: { contains: search },
-      })),
-    };
-  }
 }

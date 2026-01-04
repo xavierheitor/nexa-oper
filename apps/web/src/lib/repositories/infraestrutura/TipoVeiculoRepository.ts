@@ -24,6 +24,7 @@ import { Prisma, TipoVeiculo } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import type { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 // Interface para filtros de tipo de veículo
 interface TipoVeiculoFilter extends PaginationParams {
@@ -125,19 +126,19 @@ export class TipoVeiculoRepository extends AbstractCrudRepository<
    * @param include - Relacionamentos a incluir (opcional)
    * @returns Array de tipos de veículo
    */
-  protected findMany(
-    where: Prisma.TipoVeiculoWhereInput,
-    orderBy: Prisma.TipoVeiculoOrderByWithRelationInput,
+  protected async findMany(
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<TipoVeiculo[]> {
     return prisma.tipoVeiculo.findMany({
       where,
       orderBy,
       skip,
       take,
-      ...(include && { include }),
+      include: include || this.getDefaultInclude(),
     });
   }
 
@@ -147,7 +148,11 @@ export class TipoVeiculoRepository extends AbstractCrudRepository<
    * @param where - Condições de filtro
    * @returns Número total de tipos de veículo
    */
-  protected count(where: Prisma.TipoVeiculoWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.tipoVeiculo.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return undefined;
   }
 }

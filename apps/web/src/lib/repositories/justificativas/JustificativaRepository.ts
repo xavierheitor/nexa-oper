@@ -202,45 +202,38 @@ export class JustificativaRepository extends AbstractCrudRepository<
   }
 
   /**
-   * Lista justificativas com filtros e paginação
+   * Constrói filtros customizados a partir dos parâmetros
    *
-   * Sobrescreve o método base para adicionar suporte a filtros customizados
+   * Implementa filtros específicos de Justificativa: status, eletricistaId, equipeId, dataInicio, dataFim
+   *
+   * @param params - Parâmetros de filtro
+   * @param baseWhere - Filtros base já construídos (soft delete, busca, etc)
+   * @returns Objeto where com filtros customizados aplicados
    */
-  async list(params: JustificativaFilter): Promise<{ items: Justificativa[]; total: number }> {
-    const {
-      page = 1,
-      pageSize = 20,
-      orderBy = 'createdAt',
-      orderDir = 'desc',
-      search,
-      eletricistaId,
-      equipeId,
-      dataInicio,
-      dataFim,
-      status,
-      include,
-    } = params;
+  protected buildCustomFilters(
+    params: JustificativaFilter,
+    baseWhere: GenericPrismaWhereInput
+  ): GenericPrismaWhereInput {
+    const where: Prisma.JustificativaWhereInput = {
+      ...(baseWhere as Prisma.JustificativaWhereInput),
+    };
 
-    const skip = (page - 1) * pageSize;
-
-    // Construir where com filtros customizados
-    const where: any = {};
-
-    if (status) {
-      where.status = status;
+    // Filtro por status
+    if (params.status) {
+      where.status = params.status;
     }
 
     // Filtros por falta relacionada
-    if (eletricistaId || equipeId || dataInicio || dataFim) {
+    if (params.eletricistaId || params.equipeId || params.dataInicio || params.dataFim) {
       where.Faltas = {
         some: {
           falta: {
-            ...(eletricistaId && { eletricistaId }),
-            ...(equipeId && { equipeId }),
-            ...(dataInicio || dataFim ? {
+            ...(params.eletricistaId && { eletricistaId: params.eletricistaId }),
+            ...(params.equipeId && { equipeId: params.equipeId }),
+            ...(params.dataInicio || params.dataFim ? {
               dataReferencia: {
-                ...(dataInicio && { gte: dataInicio }),
-                ...(dataFim && { lte: dataFim }),
+                ...(params.dataInicio && { gte: params.dataInicio }),
+                ...(params.dataFim && { lte: params.dataFim }),
               },
             } : {}),
           },
@@ -248,24 +241,7 @@ export class JustificativaRepository extends AbstractCrudRepository<
       };
     }
 
-    // Adicionar busca por texto se fornecido
-    if (search) {
-      const searchWhere = this.buildSearchWhere(search);
-      where.AND = where.AND ? [...where.AND, searchWhere] : [searchWhere];
-    }
-
-    const [items, total] = await Promise.all([
-      prisma.justificativa.findMany({
-        where,
-        skip,
-        take: pageSize,
-        orderBy: { [orderBy]: orderDir },
-        include: include || this.getDefaultInclude(),
-      }),
-      prisma.justificativa.count({ where }),
-    ]);
-
-    return { items, total };
+    return where;
   }
 
   /**
@@ -346,7 +322,7 @@ export class JustificativaRepository extends AbstractCrudRepository<
    *
    * @returns Objeto de include padrão
    */
-  private getDefaultInclude() {
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
     return {
       tipo: {
         select: {
@@ -381,18 +357,4 @@ export class JustificativaRepository extends AbstractCrudRepository<
     };
   }
 
-  /**
-   * Constrói where para busca por texto
-   *
-   * @param search - Termo de busca
-   * @returns Objeto where para busca
-   */
-  private buildSearchWhere(search: string) {
-    const searchFields = this.getSearchFields();
-    return {
-      OR: searchFields.map(field => ({
-        [field]: { contains: search },
-      })),
-    };
-  }
 }

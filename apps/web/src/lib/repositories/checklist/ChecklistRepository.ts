@@ -2,6 +2,7 @@ import { Prisma, Checklist } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface ChecklistFilter extends PaginationParams {}
 
@@ -51,17 +52,7 @@ export class ChecklistRepository extends AbstractCrudRepository<
   findById(id: number): Promise<Checklist | null> {
     return prisma.checklist.findUnique({
       where: { id, deletedAt: null },
-      include: {
-        tipoChecklist: true,
-        ChecklistPerguntaRelacao: {
-          where: { deletedAt: null },
-          select: { id: true, checklistPerguntaId: true },
-        },
-        ChecklistOpcaoRespostaRelacao: {
-          where: { deletedAt: null },
-          select: { id: true, checklistOpcaoRespostaId: true },
-        },
-      },
+      include: this.getDefaultInclude(),
     });
   }
 
@@ -69,24 +60,38 @@ export class ChecklistRepository extends AbstractCrudRepository<
     return ['nome'];
   }
 
-  protected findMany(
-    where: Prisma.ChecklistWhereInput,
-    orderBy: Prisma.ChecklistOrderByWithRelationInput,
+  protected async findMany(
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<Checklist[]> {
     return prisma.checklist.findMany({
       where,
       orderBy,
       skip,
       take,
-      ...(include && { include }),
+      include: include || this.getDefaultInclude(),
     });
   }
 
-  protected count(where: Prisma.ChecklistWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.checklist.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return {
+      tipoChecklist: true,
+      ChecklistPerguntaRelacao: {
+        where: { deletedAt: null },
+        select: { id: true, checklistPerguntaId: true },
+      },
+      ChecklistOpcaoRespostaRelacao: {
+        where: { deletedAt: null },
+        select: { id: true, checklistOpcaoRespostaId: true },
+      },
+    };
   }
 
   // Relações com Perguntas

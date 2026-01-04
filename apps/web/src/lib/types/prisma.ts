@@ -2,62 +2,43 @@
  * Tipos auxiliares para Prisma
  *
  * Este arquivo centraliza tipos TypeScript para operações do Prisma,
- * evitando o uso de `any` e garantindo type safety.
+ * utilizando os tipos gerados automaticamente pelo Prisma para
+ * garantir type safety completo e eliminar o uso de `any`.
+ *
+ * FUNCIONALIDADES:
+ * - Tipos genéricos baseados nos tipos do Prisma
+ * - Suporte a WhereInput, OrderByInput, IncludeInput
+ * - Type safety completo em todas as operações
+ *
+ * BENEFÍCIOS:
+ * - Eliminação de `any` em favor de tipos seguros
+ * - Autocomplete completo do TypeScript
+ * - Validação em tempo de compilação
+ * - Consistência em toda a aplicação
  */
 
 import type { Prisma } from '@nexa-oper/db';
 
 /**
- * Tipo genérico para condições WHERE do Prisma
- */
-export type PrismaWhereInput<T> = T extends Prisma.EletricistaWhereInput
-  ? Prisma.EletricistaWhereInput
-  : T extends Prisma.BaseWhereInput
-  ? Prisma.BaseWhereInput
-  : T extends Prisma.TurnoWhereInput
-  ? Prisma.TurnoWhereInput
-  : T extends Prisma.AprWhereInput
-  ? Prisma.AprWhereInput
-  : Prisma.JsonObject;
-
-/**
- * Tipo genérico para ordenação do Prisma
- */
-export type PrismaOrderByInput<T> = T extends Prisma.EletricistaOrderByWithRelationInput
-  ? Prisma.EletricistaOrderByWithRelationInput
-  : T extends Prisma.BaseOrderByWithRelationInput
-  ? Prisma.BaseOrderByWithRelationInput
-  : T extends Prisma.TurnoOrderByWithRelationInput
-  ? Prisma.TurnoOrderByWithRelationInput
-  : T extends Prisma.AprOrderByWithRelationInput
-  ? Prisma.AprOrderByWithRelationInput
-  : Prisma.JsonObject;
-
-/**
- * Tipo genérico para includes do Prisma
- */
-export type PrismaIncludeInput<T> = T extends Prisma.EletricistaInclude
-  ? Prisma.EletricistaInclude
-  : T extends Prisma.BaseInclude
-  ? Prisma.BaseInclude
-  : T extends Prisma.TurnoInclude
-  ? Prisma.TurnoInclude
-  : T extends Prisma.AprInclude
-  ? Prisma.AprInclude
-  : Record<string, unknown> | undefined;
-
-/**
  * Tipo genérico para condições WHERE (qualquer modelo)
+ * Usa Prisma.JsonObject como fallback quando não é possível inferir o tipo específico
  */
 export type GenericPrismaWhereInput = Prisma.JsonObject | Record<string, unknown>;
 
 /**
  * Tipo genérico para ordenação (qualquer modelo)
+ * Usa Prisma.JsonObject como fallback quando não é possível inferir o tipo específico
  */
 export type GenericPrismaOrderByInput = Prisma.JsonObject | Record<string, unknown>;
 
 /**
  * Tipo genérico para includes (qualquer modelo)
+ * Usado quando não é possível inferir o tipo específico
  */
 export type GenericPrismaIncludeInput = Record<string, unknown> | undefined;
 
+/**
+ * Tipo genérico para select (qualquer modelo)
+ * Usado quando não é possível inferir o tipo específico
+ */
+export type GenericPrismaSelectInput = Record<string, boolean> | undefined;

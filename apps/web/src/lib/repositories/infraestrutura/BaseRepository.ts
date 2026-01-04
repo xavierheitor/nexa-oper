@@ -25,6 +25,7 @@ import { Prisma, Base } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import type { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 // Interface para filtros de base
 interface BaseFilter extends PaginationParams {
@@ -49,6 +50,7 @@ export class BaseRepository extends AbstractCrudRepository<
         createdBy: data.createdBy,
         createdAt: data.createdAt,
       },
+      include: this.getDefaultInclude(),
     });
   }
 
@@ -68,6 +70,7 @@ export class BaseRepository extends AbstractCrudRepository<
         updatedBy: data.updatedBy,
         updatedAt: data.updatedAt,
       },
+      include: this.getDefaultInclude(),
     });
   }
 
@@ -85,6 +88,7 @@ export class BaseRepository extends AbstractCrudRepository<
         deletedAt: new Date(),
         deletedBy: userId,
       },
+      include: this.getDefaultInclude(),
     });
   }
 
@@ -97,6 +101,7 @@ export class BaseRepository extends AbstractCrudRepository<
   findById(id: number): Promise<Base | null> {
     return prisma.base.findUnique({
       where: { id, deletedAt: null },
+      include: this.getDefaultInclude(),
     });
   }
 
@@ -119,19 +124,19 @@ export class BaseRepository extends AbstractCrudRepository<
    * @param include - Relacionamentos a incluir (opcional)
    * @returns Array de bases
    */
-  protected findMany(
-    where: Prisma.BaseWhereInput,
-    orderBy: Prisma.BaseOrderByWithRelationInput,
+  protected async findMany(
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<Base[]> {
     return prisma.base.findMany({
       where,
       orderBy,
       skip,
       take,
-      ...(include && { include }),
+      include: include || this.getDefaultInclude(),
     });
   }
 
@@ -141,7 +146,38 @@ export class BaseRepository extends AbstractCrudRepository<
    * @param where - Condições de filtro
    * @returns Número total de bases
    */
-  protected count(where: Prisma.BaseWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.base.count({ where });
+  }
+
+  /**
+   * Constrói filtros customizados a partir dos parâmetros
+   *
+   * @param params - Parâmetros de filtro
+   * @param baseWhere - Filtros base já construídos (soft delete, busca, etc)
+   * @returns Objeto where com filtros customizados aplicados
+   */
+  protected buildCustomFilters(
+    params: BaseFilter,
+    baseWhere: GenericPrismaWhereInput
+  ): GenericPrismaWhereInput {
+    const where: Prisma.BaseWhereInput = {
+      ...(baseWhere as Prisma.BaseWhereInput),
+    };
+
+    if (params.contratoId) {
+      where.contratoId = params.contratoId;
+    }
+
+    return where;
+  }
+
+  /**
+   * Retorna o include padrão para consultas
+   *
+   * @returns Objeto de include padrão
+   */
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return undefined;
   }
 }

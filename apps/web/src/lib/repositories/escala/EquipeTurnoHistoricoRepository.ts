@@ -9,6 +9,7 @@ import { EquipeTurnoHistorico, Prisma } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface EquipeTurnoHistoricoFilter extends PaginationParams {
   equipeId?: number;
@@ -40,36 +41,40 @@ export class EquipeTurnoHistoricoRepository extends AbstractCrudRepository<
   }
 
   protected async findMany(
-    where: any,
-    orderBy: any,
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<EquipeTurnoHistorico[]> {
     return prisma.equipeTurnoHistorico.findMany({
       where,
       orderBy,
       skip,
       take,
-      include: include || {
-        equipe: {
-          select: {
-            id: true,
-            nome: true,
-          },
-        },
-        horarioAberturaCatalogo: {
-          select: {
-            id: true,
-            nome: true,
-          },
-        },
-      },
+      include: (include || this.getDefaultInclude()) as Prisma.EquipeTurnoHistoricoInclude,
     });
   }
 
-  protected async count(where: any): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.equipeTurnoHistorico.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return {
+      equipe: {
+        select: {
+          id: true,
+          nome: true,
+        },
+      },
+      horarioAberturaCatalogo: {
+        select: {
+          id: true,
+          nome: true,
+        },
+      },
+    };
   }
 
   private toPrismaCreateData(

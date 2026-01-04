@@ -9,6 +9,7 @@ import { EscalaEquipePeriodo, Prisma, StatusEscalaEquipePeriodo } from '@nexa-op
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface EscalaEquipePeriodoFilter extends PaginationParams {
   equipeId?: number;
@@ -41,31 +42,35 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
   }
 
   protected async findMany(
-    where: any,
-    orderBy: any,
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<EscalaEquipePeriodo[]> {
     return prisma.escalaEquipePeriodo.findMany({
       where,
       orderBy,
       skip,
       take,
-      include: include || {
-        equipe: true,
-        tipoEscala: true,
-        _count: {
-          select: {
-            Slots: true,
-          },
-        },
-      },
+      include: (include || this.getDefaultInclude()) as Prisma.EscalaEquipePeriodoInclude,
     });
   }
 
-  protected async count(where: any): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.escalaEquipePeriodo.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return {
+      equipe: true,
+      tipoEscala: true,
+      _count: {
+        select: {
+          Slots: true,
+        },
+      },
+    };
   }
 
   private toPrismaCreateData(

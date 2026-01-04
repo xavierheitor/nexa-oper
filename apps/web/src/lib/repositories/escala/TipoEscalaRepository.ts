@@ -9,6 +9,7 @@ import { TipoEscala, Prisma, ModoRepeticao } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface TipoEscalaFilter extends PaginationParams {
   ativo?: boolean;
@@ -38,30 +39,34 @@ export class TipoEscalaRepository extends AbstractCrudRepository<
   }
 
   protected async findMany(
-    where: any,
-    orderBy: any,
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<TipoEscala[]> {
     return prisma.tipoEscala.findMany({
       where,
       orderBy,
       skip,
       take,
-      include: include || {
-        _count: {
-          select: {
-            CicloPosicoes: true,
-            SemanaMascaras: true,
-          },
-        },
-      },
+      include: (include || this.getDefaultInclude()) as Prisma.TipoEscalaInclude,
     });
   }
 
-  protected async count(where: any): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.tipoEscala.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return {
+      _count: {
+        select: {
+          CicloPosicoes: true,
+          SemanaMascaras: true,
+        },
+      },
+    };
   }
 
   private toPrismaCreateData(

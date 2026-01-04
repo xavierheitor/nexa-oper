@@ -37,6 +37,7 @@ import {
   UserUpdateData,
 } from '../../schemas/userSchema';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 // Interface para filtros de usuário
 interface UserFilter extends PaginationParams {
@@ -234,11 +235,11 @@ export class UserRepository extends AbstractCrudRepository<User, UserFilter> {
    * @returns Array de usuários (sem senhas)
    */
   protected async findMany(
-    where: Prisma.UserWhereInput,
-    orderBy: Prisma.UserOrderByWithRelationInput,
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<User[]> {
     if (include) {
       // Se include for fornecido, usar findMany com include
@@ -252,7 +253,8 @@ export class UserRepository extends AbstractCrudRepository<User, UserFilter> {
 
       // Remove senhas dos resultados
       return users.map(user => {
-        const { password, ...userWithoutPassword } = user as any;
+        const userRecord = user as Record<string, unknown>;
+        const { password, ...userWithoutPassword } = userRecord;
         return userWithoutPassword as User;
       });
     }
@@ -287,7 +289,7 @@ export class UserRepository extends AbstractCrudRepository<User, UserFilter> {
    * @param where - Condições de filtro
    * @returns Número total de usuários
    */
-  protected count(where: Prisma.UserWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.user.count({ where });
   }
 

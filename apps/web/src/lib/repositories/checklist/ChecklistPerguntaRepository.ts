@@ -2,6 +2,7 @@ import { Prisma, ChecklistPergunta } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface ChecklistPerguntaFilter extends PaginationParams {}
 
@@ -44,24 +45,28 @@ export class ChecklistPerguntaRepository extends AbstractCrudRepository<
     return ['nome'];
   }
 
-  protected findMany(
-    where: Prisma.ChecklistPerguntaWhereInput,
-    orderBy: Prisma.ChecklistPerguntaOrderByWithRelationInput,
+  protected async findMany(
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<ChecklistPergunta[]> {
     return prisma.checklistPergunta.findMany({
       where,
       orderBy,
       skip,
       take,
-      ...(include && { include }),
+      include: include || this.getDefaultInclude(),
     });
   }
 
-  protected count(where: Prisma.ChecklistPerguntaWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.checklistPergunta.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return undefined;
   }
 }
 

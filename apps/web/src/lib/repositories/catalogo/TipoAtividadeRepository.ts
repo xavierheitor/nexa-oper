@@ -2,6 +2,7 @@ import { Prisma, TipoAtividade } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import type { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface TipoAtividadeFilter extends PaginationParams {}
 
@@ -37,18 +38,28 @@ export class TipoAtividadeRepository extends AbstractCrudRepository<
     return ['nome'];
   }
 
-  protected findMany(
-    where: Prisma.TipoAtividadeWhereInput,
-    orderBy: Prisma.TipoAtividadeOrderByWithRelationInput,
+  protected async findMany(
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<TipoAtividade[]> {
-    return prisma.tipoAtividade.findMany({ where, orderBy, skip, take, ...(include && { include }) });
+    return prisma.tipoAtividade.findMany({
+      where,
+      orderBy,
+      skip,
+      take,
+      include: include || this.getDefaultInclude(),
+    });
   }
 
-  protected count(where: Prisma.TipoAtividadeWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.tipoAtividade.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return undefined;
   }
 }
 

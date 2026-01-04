@@ -9,6 +9,7 @@ import { Cargo, Prisma } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface CargoFilter extends PaginationParams {
   // Filtros específicos se necessário
@@ -32,28 +33,22 @@ export class CargoRepository extends AbstractCrudRepository<
   }
 
   protected async findMany(
-    where: any,
-    orderBy: any,
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<Cargo[]> {
     return prisma.cargo.findMany({
       where,
       orderBy,
       skip,
       take,
-      include: include || {
-        _count: {
-          select: {
-            Eletricista: true,
-          },
-        },
-      },
+      include: include || this.getDefaultInclude(),
     });
   }
 
-  protected async count(where: any): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.cargo.count({ where });
   }
 
@@ -72,6 +67,7 @@ export class CargoRepository extends AbstractCrudRepository<
   async create(data: CargoCreateInput, userId?: string): Promise<Cargo> {
     return prisma.cargo.create({
       data: this.toPrismaCreateData(data, userId),
+      include: this.getDefaultInclude(),
     });
   }
 
@@ -90,58 +86,25 @@ export class CargoRepository extends AbstractCrudRepository<
         updatedAt: new Date(),
         updatedBy: userId || '',
       },
+      include: this.getDefaultInclude(),
     });
   }
 
   async findById(id: string | number): Promise<Cargo | null> {
     return prisma.cargo.findUnique({
       where: { id: Number(id), deletedAt: null },
-      include: {
-        _count: {
-          select: {
-            Eletricista: true,
-          },
-        },
-      },
+      include: this.getDefaultInclude(),
     });
   }
 
-  async list(params: CargoFilter) {
-    const {
-      page = 1,
-      pageSize = 10,
-      orderBy = 'nome',
-      orderDir = 'asc',
-      search,
-    } = params;
-
-    const skip = (page - 1) * pageSize;
-
-    const where: Prisma.CargoWhereInput = {
-      deletedAt: null,
-      ...(search && {
-        nome: { contains: search },
-      }),
-    };
-
-    const [items, total] = await Promise.all([
-      prisma.cargo.findMany({
-        where,
-        skip,
-        take: pageSize,
-        orderBy: { [orderBy]: orderDir },
-        include: {
-          _count: {
-            select: {
-              Eletricista: true,
-            },
-          },
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return {
+      _count: {
+        select: {
+          Eletricista: true,
         },
-      }),
-      prisma.cargo.count({ where }),
-    ]);
-
-    return { items, total };
+      },
+    };
   }
 
   async delete(id: string | number, userId: string): Promise<Cargo> {
@@ -151,6 +114,7 @@ export class CargoRepository extends AbstractCrudRepository<
         deletedAt: new Date(),
         deletedBy: userId,
       },
+      include: this.getDefaultInclude(),
     });
   }
 }

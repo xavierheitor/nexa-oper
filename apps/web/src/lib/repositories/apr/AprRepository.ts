@@ -42,6 +42,11 @@ import { Apr, Prisma } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import {
+  GenericPrismaIncludeInput,
+  GenericPrismaOrderByInput,
+  GenericPrismaWhereInput,
+} from '../../types/prisma';
 
 /**
  * Interface para filtros específicos de APR
@@ -86,7 +91,11 @@ export class AprRepository extends AbstractCrudRepository<Apr, AprFilter> {
    * @param userId - ID do usuário que está atualizando (opcional)
    * @returns Promise com a APR atualizada
    */
-  update(id: number, data: Prisma.AprUpdateInput, userId?: string): Promise<Apr> {
+  update(
+    id: number,
+    data: Prisma.AprUpdateInput,
+    userId?: string
+  ): Promise<Apr> {
     return prisma.apr.update({
       where: { id },
       data: {
@@ -168,19 +177,19 @@ export class AprRepository extends AbstractCrudRepository<Apr, AprFilter> {
    * @param include - Relacionamentos a incluir (opcional)
    * @returns Promise com array de APRs encontradas
    */
-  protected findMany(
-    where: Prisma.AprWhereInput,
-    orderBy: Prisma.AprOrderByWithRelationInput,
+  protected async findMany(
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<Apr[]> {
     return prisma.apr.findMany({
       where,
       orderBy,
       skip,
       take,
-      ...(include && { include }),
+      include: include || this.getDefaultInclude(),
     });
   }
 
@@ -193,7 +202,7 @@ export class AprRepository extends AbstractCrudRepository<Apr, AprFilter> {
    * @param where - Condições WHERE do Prisma
    * @returns Promise com o número total de registros
    */
-  protected count(where: Prisma.AprWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.apr.count({ where });
   }
 
@@ -231,13 +240,13 @@ export class AprRepository extends AbstractCrudRepository<Apr, AprFilter> {
     });
 
     // Conjuntos para comparação
-    const currentIds = new Set(existing.map((e) => e.aprPerguntaId));
+    const currentIds = new Set(existing.map(e => e.aprPerguntaId));
     const targetIds = new Set(perguntaIds);
 
     // Soft delete de relações removidas
-    const toRemove = existing.filter((e) => !targetIds.has(e.aprPerguntaId));
+    const toRemove = existing.filter(e => !targetIds.has(e.aprPerguntaId));
     await Promise.all(
-      toRemove.map((rel) =>
+      toRemove.map(rel =>
         prisma.aprPerguntaRelacao.update({
           where: { id: rel.id },
           data: { deletedAt: new Date(), deletedBy: userId },
@@ -246,9 +255,9 @@ export class AprRepository extends AbstractCrudRepository<Apr, AprFilter> {
     );
 
     // Adicionar novas relações
-    const toAdd = Array.from(targetIds).filter((id) => !currentIds.has(id));
+    const toAdd = Array.from(targetIds).filter(id => !currentIds.has(id));
     await Promise.all(
-      toAdd.map((perguntaId) =>
+      toAdd.map(perguntaId =>
         prisma.aprPerguntaRelacao.create({
           data: {
             apr: { connect: { id: aprId } },
@@ -295,13 +304,13 @@ export class AprRepository extends AbstractCrudRepository<Apr, AprFilter> {
     });
 
     // Conjuntos para comparação
-    const currentIds = new Set(existing.map((e) => e.aprOpcaoRespostaId));
+    const currentIds = new Set(existing.map(e => e.aprOpcaoRespostaId));
     const targetIds = new Set(opcaoIds);
 
     // Soft delete de relações removidas
-    const toRemove = existing.filter((e) => !targetIds.has(e.aprOpcaoRespostaId));
+    const toRemove = existing.filter(e => !targetIds.has(e.aprOpcaoRespostaId));
     await Promise.all(
-      toRemove.map((rel) =>
+      toRemove.map(rel =>
         prisma.aprOpcaoRespostaRelacao.update({
           where: { id: rel.id },
           data: { deletedAt: new Date(), deletedBy: userId },
@@ -310,9 +319,9 @@ export class AprRepository extends AbstractCrudRepository<Apr, AprFilter> {
     );
 
     // Adicionar novas relações
-    const toAdd = Array.from(targetIds).filter((id) => !currentIds.has(id));
+    const toAdd = Array.from(targetIds).filter(id => !currentIds.has(id));
     await Promise.all(
-      toAdd.map((opcaoId) =>
+      toAdd.map(opcaoId =>
         prisma.aprOpcaoRespostaRelacao.create({
           data: {
             apr: { connect: { id: aprId } },
@@ -323,5 +332,9 @@ export class AprRepository extends AbstractCrudRepository<Apr, AprFilter> {
         })
       )
     );
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return undefined;
   }
 }

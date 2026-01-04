@@ -35,6 +35,7 @@
 
 import { AbstractCrudRepository } from '@/lib/abstracts/AbstractCrudRepository';
 import { PaginationParams } from '@/lib/types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '@/lib/types/prisma';
 import { MobileUser, Prisma } from '@nexa-oper/db';
 import { prisma } from '../../db/db.service';
 import {
@@ -220,52 +221,6 @@ export class MobileUserRepository extends AbstractCrudRepository<
 
     const count = await prisma.mobileUser.count({ where });
     return count > 0;
-  }
-
-  /**
-   * Lista usuários móveis com paginação
-   *
-   * @param params - Parâmetros de filtro e paginação
-   * @returns Promise com resultado paginado
-   */
-  async list(params?: any): Promise<{ items: MobileUser[]; total: number }> {
-    const page = params?.page || 1;
-    const pageSize = params?.pageSize || 10;
-    const skip = (page - 1) * pageSize;
-
-    const where: Prisma.MobileUserWhereInput = {
-      deletedAt: null,
-    };
-
-    if (params?.search) {
-      where.username = {
-        contains: params.search,
-      };
-    }
-
-    const [items, total] = await Promise.all([
-      prisma.mobileUser.findMany({
-        where,
-        skip,
-        take: pageSize,
-        orderBy: {
-          [params?.sortBy || 'username']: params?.sortOrder || 'asc',
-        },
-        select: {
-          id: true,
-          username: true,
-          createdAt: true,
-          createdBy: true,
-          updatedAt: true,
-          updatedBy: true,
-          deletedAt: true,
-          deletedBy: true,
-        },
-      }),
-      prisma.mobileUser.count({ where }),
-    ]);
-
-    return { items: items as MobileUser[], total };
   }
 
   /**

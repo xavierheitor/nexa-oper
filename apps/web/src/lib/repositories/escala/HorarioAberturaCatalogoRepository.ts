@@ -9,6 +9,7 @@ import { HorarioAberturaCatalogo, Prisma } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface HorarioAberturaCatalogoFilter extends PaginationParams {
   ativo?: boolean;
@@ -36,29 +37,33 @@ export class HorarioAberturaCatalogoRepository extends AbstractCrudRepository<
   }
 
   protected async findMany(
-    where: any,
-    orderBy: any,
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<HorarioAberturaCatalogo[]> {
     return prisma.horarioAberturaCatalogo.findMany({
       where,
       orderBy,
       skip,
       take,
-      include: include || {
-        _count: {
-          select: {
-            Historicos: true,
-          },
-        },
-      },
+      include: (include || this.getDefaultInclude()) as Prisma.HorarioAberturaCatalogoInclude,
     });
   }
 
-  protected async count(where: any): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.horarioAberturaCatalogo.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return {
+      _count: {
+        select: {
+          Historicos: true,
+        },
+      },
+    };
   }
 
   private toPrismaCreateData(

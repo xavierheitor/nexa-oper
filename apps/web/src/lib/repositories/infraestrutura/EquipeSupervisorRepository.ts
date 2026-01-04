@@ -2,6 +2,7 @@ import { Prisma, EquipeSupervisor } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface EquipeSupervisorFilter extends PaginationParams {}
 
@@ -81,24 +82,28 @@ export class EquipeSupervisorRepository extends AbstractCrudRepository<
     return []; // busca textual não aplicável diretamente
   }
 
-  protected findMany(
-    where: Prisma.EquipeSupervisorWhereInput,
-    orderBy: Prisma.EquipeSupervisorOrderByWithRelationInput,
+  protected async findMany(
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<EquipeSupervisor[]> {
     return prisma.equipeSupervisor.findMany({
       where,
       orderBy,
       skip,
       take,
-      ...(include && { include }),
+      include: include || this.getDefaultInclude(),
     });
   }
 
-  protected count(where: Prisma.EquipeSupervisorWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.equipeSupervisor.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return undefined;
   }
 }
 

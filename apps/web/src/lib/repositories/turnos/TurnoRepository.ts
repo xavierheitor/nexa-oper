@@ -10,6 +10,7 @@ import { Prisma, Turno, TurnoEletricista } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import type { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 import { TurnoFilter } from '../../schemas/turnoSchema';
 
 /**
@@ -214,7 +215,7 @@ export class TurnoRepository extends AbstractCrudRepository<Turno, TurnoFilter> 
     const skip = (page - 1) * pageSize;
 
     // Construir where com filtros server-side
-    const where: any = {
+    const where: Prisma.TurnoWhereInput = {
       deletedAt: null,
       ...(veiculoId && { veiculoId }),
       ...(equipeId && { equipeId }),
@@ -274,11 +275,11 @@ export class TurnoRepository extends AbstractCrudRepository<Turno, TurnoFilter> 
    * Executa a consulta findMany
    */
   protected async findMany(
-    where: any,
-    orderBy: any,
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<Turno[]> {
     const turnos = await prisma.turno.findMany({
       where,
@@ -339,7 +340,37 @@ export class TurnoRepository extends AbstractCrudRepository<Turno, TurnoFilter> 
   /**
    * Executa a consulta count
    */
-  protected count(where: Prisma.TurnoWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.turno.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return {
+      veiculo: {
+        include: {
+          tipoVeiculo: true,
+        },
+      },
+      equipe: {
+        include: {
+          tipoEquipe: true,
+          EquipeBaseHistorico: {
+            where: {
+              dataFim: null,
+              deletedAt: null,
+            },
+            include: {
+              base: true,
+            },
+            take: 1,
+          },
+        },
+      },
+      TurnoEletricistas: {
+        include: {
+          eletricista: true,
+        },
+      },
+    };
   }
 }

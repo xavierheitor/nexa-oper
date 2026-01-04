@@ -24,6 +24,7 @@ import { Prisma, TipoEquipe } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import type { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 // Interface para filtros de tipo de equipe
 interface TipoEquipeFilter extends PaginationParams {
@@ -125,19 +126,19 @@ export class TipoEquipeRepository extends AbstractCrudRepository<
    * @param include - Relacionamentos a incluir (opcional)
    * @returns Array de tipos de equipe
    */
-  protected findMany(
-    where: Prisma.TipoEquipeWhereInput,
-    orderBy: Prisma.TipoEquipeOrderByWithRelationInput,
+  protected async findMany(
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<TipoEquipe[]> {
     return prisma.tipoEquipe.findMany({
       where,
       orderBy,
       skip,
       take,
-      ...(include && { include }),
+      include: include || this.getDefaultInclude(),
     });
   }
 
@@ -147,8 +148,12 @@ export class TipoEquipeRepository extends AbstractCrudRepository<
    * @param where - Condições de filtro
    * @returns Número total de tipos de equipe
    */
-  protected count(where: Prisma.TipoEquipeWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.tipoEquipe.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return undefined;
   }
 }
 

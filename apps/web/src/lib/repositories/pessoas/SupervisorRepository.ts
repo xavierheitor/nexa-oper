@@ -2,6 +2,7 @@ import { Prisma, Supervisor } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface SupervisorFilter extends PaginationParams {}
 
@@ -29,6 +30,7 @@ export class SupervisorRepository extends AbstractCrudRepository<
   create(data: SupervisorCreateInput, userId?: string): Promise<Supervisor> {
     return prisma.supervisor.create({
       data: this.toPrismaCreateData(data, userId),
+      include: this.getDefaultInclude(),
     });
   }
 
@@ -52,6 +54,7 @@ export class SupervisorRepository extends AbstractCrudRepository<
     return prisma.supervisor.update({
       where: { id },
       data: this.toPrismaUpdateData(data, userId),
+      include: this.getDefaultInclude(),
     });
   }
 
@@ -59,35 +62,42 @@ export class SupervisorRepository extends AbstractCrudRepository<
     return prisma.supervisor.update({
       where: { id },
       data: { deletedAt: new Date(), deletedBy: userId },
+      include: this.getDefaultInclude(),
     });
   }
 
   findById(id: number): Promise<Supervisor | null> {
-    return prisma.supervisor.findUnique({ where: { id, deletedAt: null } });
+    return prisma.supervisor.findUnique({
+      where: { id, deletedAt: null },
+      include: this.getDefaultInclude(),
+    });
   }
 
   protected getSearchFields(): string[] {
     return ['nome'];
   }
 
-  protected findMany(
-    where: Prisma.SupervisorWhereInput,
-    orderBy: Prisma.SupervisorOrderByWithRelationInput,
+  protected async findMany(
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<Supervisor[]> {
     return prisma.supervisor.findMany({
       where,
       orderBy,
       skip,
       take,
-      ...(include && { include }),
+      include: include || this.getDefaultInclude(),
     });
   }
 
-  protected count(where: Prisma.SupervisorWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.supervisor.count({ where });
   }
-}
 
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return undefined;
+  }
+}

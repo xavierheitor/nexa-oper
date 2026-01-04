@@ -64,7 +64,10 @@ export class HoraExtraRepository extends AbstractCrudRepository<
    * @param data - Dados para atualização
    * @returns Hora extra atualizada
    */
-  async update(id: number | string, data: Prisma.HoraExtraUpdateInput): Promise<HoraExtra> {
+  async update(
+    id: number | string,
+    data: Prisma.HoraExtraUpdateInput
+  ): Promise<HoraExtra> {
     const horaExtra = await prisma.horaExtra.update({
       where: { id: Number(id) },
       data: {
@@ -161,83 +164,67 @@ export class HoraExtraRepository extends AbstractCrudRepository<
   }
 
   /**
-   * Lista horas extras com filtros e paginação
+   * Constrói filtros customizados a partir dos parâmetros
    *
-   * Sobrescreve o método base para adicionar suporte a filtros customizados
+   * Implementa filtros específicos de HoraExtra: eletricistaId, equipeId, dataInicio, dataFim, status, tipo
+   *
+   * @param params - Parâmetros de filtro
+   * @param baseWhere - Filtros base já construídos (soft delete, busca, etc)
+   * @returns Objeto where com filtros customizados aplicados
    */
-  async list(params: HoraExtraFilter): Promise<{ items: HoraExtra[]; total: number }> {
-    const {
-      page = 1,
-      pageSize = 20,
-      orderBy = 'dataReferencia',
-      orderDir = 'desc',
-      search,
-      eletricistaId,
-      equipeId,
-      dataInicio,
-      dataFim,
-      status,
-      tipo,
-      include,
-    } = params;
+  protected buildCustomFilters(
+    params: HoraExtraFilter,
+    baseWhere: GenericPrismaWhereInput
+  ): GenericPrismaWhereInput {
+    const where: Prisma.HoraExtraWhereInput = {
+      ...(baseWhere as Prisma.HoraExtraWhereInput),
+    };
 
-    const skip = (page - 1) * pageSize;
-
-    // Construir where com filtros customizados
-    const where: any = {};
-
-    if (eletricistaId) {
-      where.eletricistaId = eletricistaId;
+    // Filtro por eletricista
+    if (params.eletricistaId) {
+      where.eletricistaId = params.eletricistaId;
     }
 
-    if (dataInicio || dataFim) {
+    // Filtro por range de datas
+    if (params.dataInicio || params.dataFim) {
       where.dataReferencia = {};
-      if (dataInicio) {
-        where.dataReferencia.gte = dataInicio;
+      if (params.dataInicio) {
+        where.dataReferencia.gte = params.dataInicio;
       }
-      if (dataFim) {
-        where.dataReferencia.lte = dataFim;
+      if (params.dataFim) {
+        where.dataReferencia.lte = params.dataFim;
       }
     }
 
-    if (status) {
-      where.status = status;
+    // Filtro por status
+    if (params.status) {
+      where.status = params.status;
     }
 
-    if (tipo) {
-      where.tipo = tipo;
+    // Filtro por tipo
+    if (params.tipo) {
+      where.tipo = params.tipo;
     }
 
     // Se filtrar por equipe, precisamos filtrar por turnos da equipe
-    if (equipeId) {
+    if (params.equipeId) {
       where.turnoRealizadoEletricista = {
         turnoRealizado: {
-          equipeId,
+          equipeId: params.equipeId,
         },
       };
     }
 
-    // Adicionar busca por texto se fornecido
-    if (search) {
-      const searchWhere = this.buildSearchWhere(search);
-      where.AND = where.AND ? [...where.AND, searchWhere] : [searchWhere];
-    }
+    return where;
+  }
 
-    const [items, total] = await Promise.all([
-      prisma.horaExtra.findMany({
-        where,
-        skip,
-        take: pageSize,
-        orderBy: { [orderBy]: orderDir },
-        include: include || this.getDefaultInclude(),
-      }),
-      prisma.horaExtra.count({ where }),
-    ]);
-
-    // Converter campos Decimal para number
-    const itemsSerializados = items.map(item => this.serializeDecimalFields(item));
-
-    return { items: itemsSerializados, total };
+  /**
+   * Verifica se o modelo tem soft delete
+   *
+   * HoraExtra não tem soft delete no schema
+   */
+  protected hasSoftDelete(): boolean {
+    return false;
   }
 
   /**
@@ -248,7 +235,11 @@ export class HoraExtraRepository extends AbstractCrudRepository<
    * @param updatedBy - ID do usuário que está atualizando
    * @returns Hora extra atualizada
    */
-  async updateStatus(id: number, status: 'aprovada' | 'rejeitada', updatedBy: string): Promise<HoraExtra> {
+  async updateStatus(
+    id: number,
+    status: 'aprovada' | 'rejeitada',
+    updatedBy: string
+  ): Promise<HoraExtra> {
     const horaExtra = await prisma.horaExtra.update({
       where: { id },
       data: {
@@ -265,9 +256,9 @@ export class HoraExtraRepository extends AbstractCrudRepository<
   /**
    * Retorna o include padrão para consultas
    *
-   * @returns Objeto de include padrão
+   * @returns Objeto de include padrão tipado com GenericPrismaIncludeInput
    */
-  private getDefaultInclude() {
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
     return {
       eletricista: {
         select: {
@@ -297,32 +288,26 @@ export class HoraExtraRepository extends AbstractCrudRepository<
   }
 
   /**
-   * Constrói where para busca por texto
-   *
-   * @param search - Termo de busca
-   * @returns Objeto where para busca
-   */
-  private buildSearchWhere(search: string) {
-    const searchFields = this.getSearchFields();
-    return {
-      OR: searchFields.map(field => ({
-        [field]: { contains: search },
-      })),
-    };
-  }
-
-  /**
    * Serializa campos Decimal para number (React não serializa Decimal)
    *
-   * @param item - Item com campos Decimal
+   * @param item - Item com campos Decimal (pode ser do tipo Prisma com Decimal)
    * @returns Item com campos Decimal convertidos para number
    */
-  private serializeDecimalFields(item: any): HoraExtra {
-    return {
-      ...item,
-      horasPrevistas: item.horasPrevistas ? Number(item.horasPrevistas) : null,
-      horasRealizadas: Number(item.horasRealizadas),
-      diferencaHoras: Number(item.diferencaHoras),
-    } as HoraExtra;
+  private serializeDecimalFields(item: unknown): HoraExtra {
+    // @ts-expect-error - Conversão intencional: item pode ter Decimal do Prisma, convertemos para number
+    const typedItem: Record<string, unknown> = item;
+
+    const serialized: Record<string, unknown> = {
+      ...typedItem,
+      horasPrevistas: typedItem.horasPrevistas
+        ? Number(typedItem.horasPrevistas)
+        : null,
+      horasRealizadas: Number(typedItem.horasRealizadas),
+      diferencaHoras: Number(typedItem.diferencaHoras),
+    };
+
+    // Cast necessário porque HoraExtra do Prisma usa Decimal, mas serializamos para number
+    // Esta conversão é segura porque estamos apenas mudando o tipo para serialização
+    return serialized as HoraExtra;
   }
 }

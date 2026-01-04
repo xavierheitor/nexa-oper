@@ -2,6 +2,7 @@ import { Prisma, Equipe } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface EquipeFilter extends PaginationParams {
   contratoId?: number;
@@ -101,7 +102,7 @@ export class EquipeRepository extends AbstractCrudRepository<
     const skip = (page - 1) * pageSize;
 
     // Construir where com filtros server-side
-    const where: any = {
+    const where: Prisma.EquipeWhereInput = {
       deletedAt: null,
       ...(contratoId && { contratoId }),
       ...(tipoEquipeId && { tipoEquipeId }),
@@ -153,24 +154,28 @@ export class EquipeRepository extends AbstractCrudRepository<
     return ['nome'];
   }
 
-  protected findMany(
-    where: Prisma.EquipeWhereInput,
-    orderBy: Prisma.EquipeOrderByWithRelationInput,
+  protected async findMany(
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<Equipe[]> {
     return prisma.equipe.findMany({
       where,
       orderBy,
       skip,
       take,
-      ...(include && { include }),
+      include: include || this.getDefaultInclude(),
     });
   }
 
-  protected count(where: Prisma.EquipeWhereInput): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.equipe.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return undefined;
   }
 
   /**
