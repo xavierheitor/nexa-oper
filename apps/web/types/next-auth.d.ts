@@ -40,6 +40,7 @@
 
 // Importação dos tipos base do NextAuth para extensão
 import 'next-auth';
+import type { Permission, Role } from '@/lib/types/permissions';
 
 /**
  * Extensão do módulo 'next-auth' para adicionar campos personalizados
@@ -59,6 +60,8 @@ declare module 'next-auth' {
    * - id: Identificador único do usuário (string)
    * - username: Nome de usuário para login (string)
    * - email: Email do usuário (string)
+   * - permissions: Lista de permissões do usuário (Permission[])
+   * - roles: Lista de roles do usuário (Role[])
    *
    * NOTA: Estes campos devem corresponder aos dados retornados
    * pela função authorize() no auth.config.ts
@@ -67,6 +70,8 @@ declare module 'next-auth' {
     id: string; // ID único do usuário
     username: string; // Nome de usuário para autenticação
     email: string; // Email do usuário
+    permissions: Permission[]; // Lista de permissões do usuário
+    roles: Role[]; // Lista de roles do usuário
   }
 
   /**
@@ -79,6 +84,8 @@ declare module 'next-auth' {
    * - user.id: ID do usuário logado
    * - user.username: Nome de usuário
    * - user.email: Email (opcional)
+   * - user.permissions: Lista de permissões do usuário
+   * - user.roles: Lista de roles do usuário
    *
    * USO: Acessível via useSession() em qualquer componente
    */
@@ -87,6 +94,8 @@ declare module 'next-auth' {
       id: string; // ID do usuário logado
       username: string; // Nome de usuário
       email?: string; // Email (opcional)
+      permissions: Permission[]; // Lista de permissões do usuário
+      roles: Role[]; // Lista de roles do usuário
     };
   }
 
@@ -100,6 +109,8 @@ declare module 'next-auth' {
    * - id: ID do usuário
    * - username: Nome de usuário
    * - email: Email (opcional)
+   * - permissions: Lista de permissões do usuário
+   * - roles: Lista de roles do usuário
    * - lastActivity: Timestamp da última atividade (para sliding session)
    *
    * NOTA: Estes dados são definidos no callback JWT do auth.config.ts
@@ -108,6 +119,8 @@ declare module 'next-auth' {
     id: string; // ID do usuário no token
     username: string; // Nome de usuário no token
     email?: string; // Email no token (opcional)
+    permissions: Permission[]; // Lista de permissões do usuário no token
+    roles: Role[]; // Lista de roles do usuário no token
     lastActivity?: number; // Timestamp da última atividade (sliding session)
   }
 }
@@ -130,6 +143,8 @@ declare module 'next-auth/jwt' {
    * - id: ID do usuário
    * - username: Nome de usuário
    * - email: Email (obrigatório nesta versão)
+   * - permissions: Lista de permissões do usuário
+   * - roles: Lista de roles do usuário
    * - lastActivity: Timestamp da última atividade
    *
    * DIFERENÇA: Nesta versão, email é obrigatório, não opcional
@@ -138,6 +153,8 @@ declare module 'next-auth/jwt' {
     id: string; // ID do usuário
     username: string; // Nome de usuário
     email: string; // Email (obrigatório)
+    permissions: Permission[]; // Lista de permissões do usuário
+    roles: Role[]; // Lista de roles do usuário
     lastActivity?: number; // Timestamp da última atividade (sliding session)
   }
 }

@@ -1,12 +1,12 @@
 /**
  * Tipos e Constantes para Sistema de Permissões
  *
- * Este arquivo define a estrutura básica para o sistema de permissões futuro.
- * Por enquanto, serve como documentação e preparação para implementação.
+ * Este arquivo define a estrutura completa do sistema de permissões da aplicação,
+ * incluindo tipos específicos, constantes e funções helper para verificação.
  *
- * ESTRUTURA PREVISTA:
+ * ESTRUTURA:
  * - Permissões baseadas em recursos e ações (ex: 'dashboard:view', 'users:create')
- * - Roles hierárquicos (ex: 'admin', 'manager', 'user')
+ * - Roles hierárquicos (ex: 'admin', 'gerente', 'usuario', 'supervisor')
  * - Verificação de permissões em componentes e rotas
  * - Middleware de permissões para rotas protegidas
  *
@@ -14,30 +14,53 @@
  * - Formato: 'recurso:acao'
  * - Exemplos:
  *   - 'dashboard:view' - Visualizar dashboard
- *   - 'users:create' - Criar usuários
- *   - 'users:update' - Atualizar usuários
- *   - 'users:delete' - Deletar usuários
- *   - 'escalas:view' - Visualizar escalas
- *   - 'escalas:edit' - Editar escalas
- *   - 'escalas:publish' - Publicar escalas
+ *   - 'apr:manage' - Gerenciar APRs (criar, editar, excluir)
+ *   - 'checklist:manage' - Gerenciar checklists
+ *   - 'relatorio:view' - Visualizar relatórios
+ *   - 'usuario:manage' - Gerenciar usuários
  *
- * ROLES PREVISTOS:
+ * ROLES DISPONÍVEIS:
  * - 'admin' - Acesso total
- * - 'manager' - Acesso a gestão de equipes e escalas
- * - 'user' - Acesso básico de visualização
- *
- * TODO: Implementar quando o sistema de permissões for desenvolvido
+ * - 'gerente' - Acesso a gestão de equipes e escalas
+ * - 'supervisor' - Acesso de supervisão
+ * - 'usuario' - Acesso básico de visualização
  */
 
 /**
- * Tipo para permissões no formato 'recurso:acao'
+ * Tipo para permissões específicas do sistema
+ *
+ * Define todas as permissões disponíveis na aplicação no formato 'recurso:acao'
  */
-export type Permission = string;
+export type Permission =
+  | 'dashboard:view'
+  | 'apr:manage'
+  | 'checklist:manage'
+  | 'relatorio:view'
+  | 'usuario:manage'
+  | 'users:view'
+  | 'users:create'
+  | 'users:update'
+  | 'users:delete'
+  | 'escalas:view'
+  | 'escalas:create'
+  | 'escalas:update'
+  | 'escalas:delete'
+  | 'escalas:publish'
+  | 'eletricistas:view'
+  | 'eletricistas:create'
+  | 'eletricistas:update'
+  | 'eletricistas:delete'
+  | 'equipes:view'
+  | 'equipes:create'
+  | 'equipes:update'
+  | 'equipes:delete';
 
 /**
  * Tipo para roles de usuário
+ *
+ * Define os roles disponíveis no sistema
  */
-export type Role = 'admin' | 'manager' | 'user' | string;
+export type Role = 'admin' | 'gerente' | 'usuario' | 'supervisor';
 
 /**
  * Interface para dados de permissões do usuário
@@ -54,66 +77,93 @@ export interface UserPermissions {
 }
 
 /**
- * Constantes de permissões (exemplos para referência futura)
+ * Constantes de permissões
+ *
+ * Centraliza todas as permissões disponíveis para uso no código,
+ * garantindo type safety e facilitando refatoração
  */
 export const PERMISSIONS = {
   // Dashboard
-  DASHBOARD_VIEW: 'dashboard:view',
+  DASHBOARD_VIEW: 'dashboard:view' as const,
 
-  // Usuários
-  USERS_VIEW: 'users:view',
-  USERS_CREATE: 'users:create',
-  USERS_UPDATE: 'users:update',
-  USERS_DELETE: 'users:delete',
+  // APR (Análise Preliminar de Riscos)
+  APR_MANAGE: 'apr:manage' as const,
 
-  // Escalas
-  ESCALAS_VIEW: 'escalas:view',
-  ESCALAS_CREATE: 'escalas:create',
-  ESCALAS_UPDATE: 'escalas:update',
-  ESCALAS_DELETE: 'escalas:delete',
-  ESCALAS_PUBLISH: 'escalas:publish',
-
-  // Eletricistas
-  ELETRICISTAS_VIEW: 'eletricistas:view',
-  ELETRICISTAS_CREATE: 'eletricistas:create',
-  ELETRICISTAS_UPDATE: 'eletricistas:update',
-  ELETRICISTAS_DELETE: 'eletricistas:delete',
-
-  // Equipes
-  EQUIPES_VIEW: 'equipes:view',
-  EQUIPES_CREATE: 'equipes:create',
-  EQUIPES_UPDATE: 'equipes:update',
-  EQUIPES_DELETE: 'equipes:delete',
+  // Checklist
+  CHECKLIST_MANAGE: 'checklist:manage' as const,
 
   // Relatórios
-  RELATORIOS_VIEW: 'relatorios:view',
+  RELATORIO_VIEW: 'relatorio:view' as const,
+
+  // Usuários
+  USUARIO_MANAGE: 'usuario:manage' as const,
+  USERS_VIEW: 'users:view' as const,
+  USERS_CREATE: 'users:create' as const,
+  USERS_UPDATE: 'users:update' as const,
+  USERS_DELETE: 'users:delete' as const,
+
+  // Escalas
+  ESCALAS_VIEW: 'escalas:view' as const,
+  ESCALAS_CREATE: 'escalas:create' as const,
+  ESCALAS_UPDATE: 'escalas:update' as const,
+  ESCALAS_DELETE: 'escalas:delete' as const,
+  ESCALAS_PUBLISH: 'escalas:publish' as const,
+
+  // Eletricistas
+  ELETRICISTAS_VIEW: 'eletricistas:view' as const,
+  ELETRICISTAS_CREATE: 'eletricistas:create' as const,
+  ELETRICISTAS_UPDATE: 'eletricistas:update' as const,
+  ELETRICISTAS_DELETE: 'eletricistas:delete' as const,
+
+  // Equipes
+  EQUIPES_VIEW: 'equipes:view' as const,
+  EQUIPES_CREATE: 'equipes:create' as const,
+  EQUIPES_UPDATE: 'equipes:update' as const,
+  EQUIPES_DELETE: 'equipes:delete' as const,
 } as const;
 
 /**
  * Constantes de roles
+ *
+ * Centraliza todos os roles disponíveis no sistema
  */
 export const ROLES = {
-  ADMIN: 'admin',
-  MANAGER: 'manager',
-  USER: 'user',
+  ADMIN: 'admin' as const,
+  GERENTE: 'gerente' as const,
+  USUARIO: 'usuario' as const,
+  SUPERVISOR: 'supervisor' as const,
 } as const;
 
 /**
- * Mapeamento de roles para permissões (exemplo para futuro)
+ * Mapeamento de roles para permissões
+ *
+ * Define quais permissões cada role possui no sistema.
+ * Admin possui todas as permissões, outros roles têm permissões específicas.
  */
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
-  admin: Object.values(PERMISSIONS),
-  manager: [
+  admin: Object.values(PERMISSIONS) as Permission[],
+  gerente: [
     PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.APR_MANAGE,
+    PERMISSIONS.CHECKLIST_MANAGE,
+    PERMISSIONS.RELATORIO_VIEW,
     PERMISSIONS.ESCALAS_VIEW,
     PERMISSIONS.ESCALAS_CREATE,
     PERMISSIONS.ESCALAS_UPDATE,
     PERMISSIONS.ESCALAS_PUBLISH,
     PERMISSIONS.ELETRICISTAS_VIEW,
     PERMISSIONS.EQUIPES_VIEW,
-    PERMISSIONS.RELATORIOS_VIEW,
   ],
-  user: [
+  supervisor: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.APR_MANAGE,
+    PERMISSIONS.CHECKLIST_MANAGE,
+    PERMISSIONS.RELATORIO_VIEW,
+    PERMISSIONS.ESCALAS_VIEW,
+    PERMISSIONS.ELETRICISTAS_VIEW,
+    PERMISSIONS.EQUIPES_VIEW,
+  ],
+  usuario: [
     PERMISSIONS.DASHBOARD_VIEW,
     PERMISSIONS.ESCALAS_VIEW,
     PERMISSIONS.ELETRICISTAS_VIEW,
@@ -122,7 +172,10 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
 };
 
 /**
- * Função helper para verificar permissões (preparado para futuro)
+ * Função helper para verificar permissões
+ *
+ * Verifica se um usuário possui uma permissão específica.
+ * Usuários admin possuem todas as permissões automaticamente.
  *
  * @param userPermissions - Permissões do usuário
  * @param requiredPermission - Permissão necessária
@@ -142,7 +195,9 @@ export function hasPermission(
 }
 
 /**
- * Função helper para verificar roles (preparado para futuro)
+ * Função helper para verificar roles
+ *
+ * Verifica se um usuário possui um role específico.
  *
  * @param userRoles - Roles do usuário
  * @param requiredRole - Role necessária
@@ -150,5 +205,36 @@ export function hasPermission(
  */
 export function hasRole(userRoles: Role[], requiredRole: Role): boolean {
   return userRoles.includes(requiredRole);
+}
+
+/**
+ * Função helper para obter permissões de um role
+ *
+ * Retorna todas as permissões associadas a um role específico.
+ *
+ * @param role - Role para buscar permissões
+ * @returns Array de permissões do role
+ */
+export function getPermissionsByRole(role: Role): Permission[] {
+  return ROLE_PERMISSIONS[role] || [];
+}
+
+/**
+ * Função helper para obter todas as permissões de múltiplos roles
+ *
+ * Combina e retorna todas as permissões únicas de uma lista de roles.
+ *
+ * @param roles - Array de roles
+ * @returns Array de permissões únicas de todos os roles
+ */
+export function getPermissionsByRoles(roles: Role[]): Permission[] {
+  const allPermissions = new Set<Permission>();
+
+  roles.forEach(role => {
+    const rolePermissions = getPermissionsByRole(role);
+    rolePermissions.forEach(permission => allPermissions.add(permission));
+  });
+
+  return Array.from(allPermissions);
 }
 

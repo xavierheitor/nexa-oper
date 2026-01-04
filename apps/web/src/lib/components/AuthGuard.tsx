@@ -1,14 +1,15 @@
 /**
  * Componente de Proteção de Rotas (AuthGuard)
  *
- * Componente que protege rotas verificando autenticação antes de renderizar
- * o conteúdo. Preparado para sistema de permissões futuro.
+ * Componente que protege rotas verificando autenticação e permissões
+ * antes de renderizar o conteúdo.
  *
  * FUNCIONALIDADES:
  * - Verifica autenticação antes de renderizar
  * - Mostra loading enquanto verifica sessão
  * - Redireciona para login se não autenticado
- * - Suporta verificação de permissões (preparado para futuro)
+ * - Valida permissões do usuário
+ * - Mostra página de acesso negado se não tiver permissão
  * - Previne renderização de conteúdo com valores zerados
  *
  * COMO USAR:
@@ -18,7 +19,7 @@
  *   <MinhaPagina />
  * </AuthGuard>
  *
- * // Com permissão específica (futuro)
+ * // Com permissão específica
  * <AuthGuard requiredPermission="dashboard:view">
  *   <MinhaPagina />
  * </AuthGuard>
@@ -28,6 +29,7 @@
 'use client';
 
 import { useAuth } from '@/lib/hooks/useAuth';
+import type { Permission } from '@/lib/types/permissions';
 import { Spin } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -36,8 +38,8 @@ interface AuthGuardProps {
   /** Conteúdo a ser renderizado se autenticado */
   children: React.ReactNode;
 
-  /** Permissão necessária para acessar (opcional, para futuro) */
-  requiredPermission?: string;
+  /** Permissão necessária para acessar (opcional) */
+  requiredPermission?: Permission;
 
   /** Se deve redirecionar para login quando não autenticado (padrão: true) */
   redirectToLogin?: boolean;

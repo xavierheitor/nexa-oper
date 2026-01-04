@@ -39,6 +39,7 @@ import bcrypt from 'bcrypt'; // Biblioteca para criptografia de senhas
 import { type NextAuthOptions } from 'next-auth'; // Tipos do NextAuth
 import CredentialsProvider from 'next-auth/providers/credentials'; // Provedor de credenciais
 import { prisma } from '../db/db.service'; // Serviço de banco de dados
+import { getPermissionsByRoles, type Role } from '../types/permissions'; // Funções e tipos de permissões
 
 /**
  * Configuração principal do NextAuth
@@ -65,10 +66,11 @@ export const authOptions: NextAuthOptions = {
        * Função de autorização
        *
        * Esta função é chamada quando o usuário tenta fazer login.
-       * Ela valida as credenciais fornecidas contra o banco de dados.
+       * Ela valida as credenciais fornecidas contra o banco de dados
+       * e busca os roles e permissões do usuário.
        *
        * @param credentials - Credenciais fornecidas pelo usuário
-       * @returns Dados do usuário se válido, null se inválido
+       * @returns Dados do usuário com roles e permissões se válido, null se inválido
        */
       async authorize(credentials) {
         // Extrai username e password das credenciais
@@ -77,9 +79,16 @@ export const authOptions: NextAuthOptions = {
           password: string;
         };
 
-        // Busca o usuário no banco de dados pelo username
+        // Busca o usuário no banco de dados pelo username, incluindo seus roles
         const user = await prisma.user.findUnique({
           where: { username },
+          include: {
+            RoleUser: {
+              include: {
+                role: true, // Inclui dados do role
+              },
+            },
+          },
         });
 
         // Se usuário não encontrado, lança erro
@@ -91,11 +100,19 @@ export const authOptions: NextAuthOptions = {
         // Se senha inválida, lança erro
         if (!isValid) throw new Error('Usuário ou senha inválidos!');
 
-        // Retorna dados do usuário para o NextAuth
+        // Extrai os roles do usuário (nome do role em lowercase para compatibilidade)
+        const userRoles: Role[] = user.RoleUser.map(ru => ru.role.nome.toLowerCase() as Role);
+
+        // Mapeia os roles para permissões usando a função helper
+        const userPermissions = getPermissionsByRoles(userRoles);
+
+        // Retorna dados do usuário para o NextAuth, incluindo roles e permissões
         return {
           id: user.id.toString(), // ID do usuário (convertido para string)
           username: user.username, // Nome de usuário
           email: user.email ?? '', // Email (com fallback para string vazia)
+          permissions: userPermissions, // Lista de permissões derivadas dos roles
+          roles: userRoles, // Lista de roles do usuário
         };
       },
     }),
@@ -114,7 +131,8 @@ export const authOptions: NextAuthOptions = {
      * Callback JWT - Implementa Sliding Session
      *
      * Executado sempre que um JWT é criado, atualizado ou acessado.
-     * Implementa renovação automática da sessão baseada em atividade.
+     * Implementa renovação automática da sessão baseada em atividade
+     * e inclui roles e permissões no token.
      *
      * SLIDING SESSION:
      * - A cada requisição, verifica se passou o updateAge (5 min)
@@ -123,10 +141,15 @@ export const authOptions: NextAuthOptions = {
      * - Inatividade de 8h = logout automático
      * - Atividade constante = sessão infinita
      *
+     * PERMISSÕES E ROLES:
+     * - Roles e permissões são incluídos no token no primeiro login
+     * - Permissões são derivadas dos roles do usuário
+     * - Token contém arrays de permissions e roles para validação rápida
+     *
      * @param token - Token JWT atual
      * @param user - Dados do usuário (apenas no primeiro login)
      * @param trigger - Tipo de trigger (signin, update)
-     * @returns Token JWT modificado com timestamp atualizado
+     * @returns Token JWT modificado com dados do usuário, roles e permissões
      */
     async jwt({ token, user, trigger }) {
       // Se é o primeiro login (user existe), adiciona dados ao token
@@ -134,6 +157,8 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id; // ID do usuário
         token.username = user.username; // Nome de usuário
         token.email = user.email; // Email do usuário
+        token.permissions = user.permissions || []; // Permissões do usuário
+        token.roles = user.roles || []; // Roles do usuário
         token.lastActivity = Date.now(); // Timestamp da última atividade
       }
 
@@ -150,11 +175,12 @@ export const authOptions: NextAuthOptions = {
      * Callback de Sessão
      *
      * Executado sempre que uma sessão é verificada.
-     * Permite adicionar dados personalizados à sessão do cliente.
+     * Permite adicionar dados personalizados à sessão do cliente,
+     * incluindo roles e permissões.
      *
      * @param session - Sessão atual
      * @param token - Token JWT
-     * @returns Sessão modificada
+     * @returns Sessão modificada com roles e permissões
      */
     async session({ session, token }) {
       // Se existe usuário na sessão, adiciona dados do token
@@ -162,6 +188,8 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id; // ID do usuário
         session.user.username = token.username; // Nome de usuário
         session.user.email = token.email; // Email do usuário
+        session.user.permissions = token.permissions || []; // Permissões do usuário
+        session.user.roles = token.roles || []; // Roles do usuário
       }
       return session;
     },
