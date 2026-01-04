@@ -13,6 +13,7 @@
 import React, { useMemo } from 'react';
 import { Card, Col, Row, Statistic, Spin, Empty, Typography } from 'antd';
 import { useHydrated } from '@/lib/hooks/useHydrated';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import {
   ClockCircleOutlined,
   CalendarOutlined,
@@ -44,7 +45,7 @@ interface DadosGraficoBase {
 
 export default function DashboardPage() {
   // Fetch de turnos abertos e totais do dia
-  const { data: turnosData, loading: loadingTurnos } = useDataFetch<{
+  const { data: turnosData, loading: loadingTurnos, error: errorTurnos, refetch: refetchTurnos } = useDataFetch<{
     turnosAbertos: number;
     totalDiarios: number;
   }>(
@@ -94,7 +95,7 @@ export default function DashboardPage() {
   );
 
   // Fetch de gráfico por tipo de equipe
-  const { data: dadosGrafico, loading: loadingGrafico } = useDataFetch<DadosGraficoTipoEquipe[]>(
+  const { data: dadosGrafico, loading: loadingGrafico, error: errorGrafico, refetch: refetchGrafico } = useDataFetch<DadosGraficoTipoEquipe[]>(
     async () => {
       const result = await getStatsByTipoEquipe();
       if (result.success && result.data) {
@@ -106,7 +107,7 @@ export default function DashboardPage() {
   );
 
   // Fetch de gráfico por base
-  const { data: dadosGraficoBase, loading: loadingGraficoBase } = useDataFetch<DadosGraficoBase[]>(
+  const { data: dadosGraficoBase, loading: loadingGraficoBase, error: errorGraficoBase, refetch: refetchGraficoBase } = useDataFetch<DadosGraficoBase[]>(
     async () => {
       const result = await getStatsByBase();
       if (result.success && result.data) {
@@ -138,7 +139,7 @@ export default function DashboardPage() {
   }, [dadosGraficoBase]);
 
   // Fetch de recursos por base
-  const { data: recursosPorBase, loading: loadingRecursos } = useDataFetch<RecursosPorBase[]>(
+  const { data: recursosPorBase, loading: loadingRecursos, error: errorRecursos, refetch: refetchRecursos } = useDataFetch<RecursosPorBase[]>(
     async () => {
       const result = await getRecursosPorBase();
       if (result.success && result.data) {
@@ -173,6 +174,12 @@ export default function DashboardPage() {
   return (
     <div style={{ padding: '24px' }}>
       <Title level={2}>Dashboard - {dataFormatada}</Title>
+
+      {/* Tratamento de Erros */}
+      <ErrorAlert error={errorTurnos} onRetry={refetchTurnos} />
+      <ErrorAlert error={errorGrafico} onRetry={refetchGrafico} />
+      <ErrorAlert error={errorGraficoBase} onRetry={refetchGraficoBase} />
+      <ErrorAlert error={errorRecursos} onRetry={refetchRecursos} />
 
       {/* Estatísticas Principais */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>

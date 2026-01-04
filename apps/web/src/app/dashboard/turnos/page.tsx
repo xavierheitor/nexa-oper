@@ -12,6 +12,7 @@
 import React, { useState, useMemo } from 'react';
 import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, Button, Tooltip, Input, Select } from 'antd';
 import { useHydrated } from '@/lib/hooks/useHydrated';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import { ClockCircleOutlined, CalendarOutlined, CheckOutlined, EnvironmentOutlined, CloseOutlined, SearchOutlined, CarOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { listTurnos } from '@/lib/actions/turno/list';
@@ -108,7 +109,7 @@ export default function TurnosPage() {
   const [selectedTurnoParaFechar, setSelectedTurnoParaFechar] = useState<TurnoData | null>(null);
 
   // Fetch de turnos abertos e totais do dia
-  const { data: turnosAbertosResult, loading: loadingTurnos, refetch: refetchTurnos } = useDataFetch<{
+  const { data: turnosAbertosResult, loading: loadingTurnos, error: errorTurnos, refetch: refetchTurnos } = useDataFetch<{
     turnosAbertos: TurnoData[];
     totalDiarios: number;
   }>(
@@ -203,7 +204,7 @@ export default function TurnosPage() {
   }, [turnosAbertosResult, filtroVeiculo, filtroEquipe, filtroEletricista, filtroBase, filtroTipoEquipe]);
 
   // Fetch de gráfico por tipo de equipe
-  const { data: dadosGrafico, loading: loadingGrafico, refetch: refetchGrafico } = useDataFetch<DadosGraficoTipoEquipe[]>(
+  const { data: dadosGrafico, loading: loadingGrafico, error: errorGrafico, refetch: refetchGrafico } = useDataFetch<DadosGraficoTipoEquipe[]>(
     async () => {
       const result = await getStatsByTipoEquipe();
       if (result.success && result.data) {
@@ -215,7 +216,7 @@ export default function TurnosPage() {
   );
 
   // Fetch de gráfico por hora e tipo
-  const { data: dadosGraficoHora, loading: loadingGraficoHora, refetch: refetchGraficoHora } = useDataFetch<DadosGraficoHora[]>(
+  const { data: dadosGraficoHora, loading: loadingGraficoHora, error: errorGraficoHora, refetch: refetchGraficoHora } = useDataFetch<DadosGraficoHora[]>(
     async () => {
       const result = await getStatsByHoraETipoEquipe();
       if (result.success && result.data) {
@@ -227,7 +228,7 @@ export default function TurnosPage() {
   );
 
   // Fetch de gráfico por base
-  const { data: dadosGraficoBase, loading: loadingGraficoBase, refetch: refetchGraficoBase } = useDataFetch<DadosGraficoBase[]>(
+  const { data: dadosGraficoBase, loading: loadingGraficoBase, error: errorGraficoBase, refetch: refetchGraficoBase } = useDataFetch<DadosGraficoBase[]>(
     async () => {
       const result = await getStatsByBase();
       if (result.success && result.data) {
@@ -513,6 +514,12 @@ export default function TurnosPage() {
       <Title level={2}>
         Turnos Abertos - Hoje ({dataFormatada})
       </Title>
+
+      {/* Tratamento de Erros */}
+      <ErrorAlert error={errorTurnos} onRetry={refetchTurnos} />
+      <ErrorAlert error={errorGrafico} onRetry={refetchGrafico} />
+      <ErrorAlert error={errorGraficoHora} onRetry={refetchGraficoHora} />
+      <ErrorAlert error={errorGraficoBase} onRetry={refetchGraficoBase} />
 
       {/* Estatísticas */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>

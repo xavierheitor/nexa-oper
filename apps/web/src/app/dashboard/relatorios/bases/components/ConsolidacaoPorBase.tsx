@@ -4,6 +4,7 @@ import { Card, Empty, Spin, Table, Tag } from 'antd';
 import { useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 
 interface DadosBase {
   id: number;
@@ -48,7 +49,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
     [filtros]
   );
 
-  const { data: dadosRaw, loading } = useDataFetch<DadosBase[]>(fetcher, [fetcher]);
+  const { data: dadosRaw, loading, error, refetch } = useDataFetch<DadosBase[]>(fetcher, [fetcher]);
 
   // Garante que dados nunca seja null
   const dados: DadosBase[] = dadosRaw ?? [];
@@ -206,14 +207,19 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
         </div>
       }
     >
-      <Table
-        columns={columns}
-        dataSource={dados}
-        rowKey="id"
-        pagination={pagination}
-        size="small"
-        scroll={{ x: 1500 }}
-      />
+      <ErrorAlert error={error} onRetry={refetch} />
+      {dados.length === 0 && !error ? (
+        <Empty description="Nenhum dado disponível" />
+      ) : (
+          <Table
+            columns={columns}
+            dataSource={dados}
+            rowKey="id"
+            pagination={pagination}
+            size="small"
+            scroll={{ x: 1500 }}
+          />
+      )}
     </Card>
   );
 }

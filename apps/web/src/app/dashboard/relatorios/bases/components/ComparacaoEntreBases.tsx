@@ -4,6 +4,7 @@ import { Column } from '@ant-design/plots';
 import { Card, Empty, Select, Spin } from 'antd';
 import { useState, useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 
 interface DadosComparacao {
   base: string;
@@ -39,7 +40,7 @@ export default function ComparacaoEntreBases({
     [filtros]
   );
 
-  const { data: dadosRaw, loading } = useDataFetch<DadosComparacao[]>(fetcher, [fetcher]);
+  const { data: dadosRaw, loading, error, refetch } = useDataFetch<DadosComparacao[]>(fetcher, [fetcher]);
 
   // Garante que dados nunca seja null
   const dados: DadosComparacao[] = dadosRaw ?? [];
@@ -108,14 +109,6 @@ export default function ComparacaoEntreBases({
     );
   }
 
-  if (dados.length === 0) {
-    return (
-      <Card title="Comparação entre Bases">
-        <Empty description="Nenhum dado disponível" />
-      </Card>
-    );
-  }
-
   return (
     <Card
       title="Comparação entre Bases"
@@ -128,7 +121,12 @@ export default function ComparacaoEntreBases({
         />
       }
     >
-      <Column {...config} />
+      <ErrorAlert error={error} onRetry={refetch} />
+      {dados.length === 0 && !error ? (
+        <Empty description="Nenhum dado disponível" />
+      ) : (
+        <Column {...config} />
+      )}
     </Card>
   );
 }
