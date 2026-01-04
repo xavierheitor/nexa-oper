@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
 import { container } from '@/lib/services/common/registerServices';
-import type { CargoService } from '@/lib/services/CargoService';
+import type { CargoService } from '@/lib/services/pessoas/CargoService';
 
 export const deleteCargo = async (rawData: unknown) =>
   handleServerAction(

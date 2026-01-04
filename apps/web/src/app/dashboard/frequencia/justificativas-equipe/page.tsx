@@ -263,7 +263,7 @@ export default function JustificativasEquipePage() {
 
           <Table
             columns={columns}
-            dataSource={data?.items || []}
+            dataSource={data?.data || []}
             loading={!data}
             rowKey="id"
             pagination={{

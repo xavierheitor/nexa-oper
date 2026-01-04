@@ -34,7 +34,7 @@
 
 'use server';
 
-import type { BaseService } from '@/lib/services/BaseService';
+import type { BaseService } from '@/lib/services/infraestrutura/BaseService';
 import { container } from '@/lib/services/common/registerServices';
 import { baseFilterSchema } from '../../schemas/baseSchema';
 import { handleServerAction } from '../common/actionHandler';

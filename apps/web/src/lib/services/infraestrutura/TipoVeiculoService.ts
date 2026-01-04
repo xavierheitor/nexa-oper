@@ -22,14 +22,14 @@
 
 import { TipoVeiculo } from '@nexa-oper/db';
 import { z } from 'zod';
-import { AbstractCrudService } from '../abstracts/AbstractCrudService';
-import { TipoVeiculoRepository } from '../repositories/infraestrutura/TipoVeiculoRepository';
+import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
+import { TipoVeiculoRepository } from '../../repositories/infraestrutura/TipoVeiculoRepository';
 import {
   tipoVeiculoCreateSchema,
   tipoVeiculoFilterSchema,
   tipoVeiculoUpdateSchema
-} from '../schemas/tipoVeiculoSchema';
-import { PaginatedResult } from '../types/common';
+} from '../../schemas/tipoVeiculoSchema';
+import { PaginatedResult } from '../../types/common';
 
 // Tipos derivados dos schemas
 type TipoVeiculoCreate = z.infer<typeof tipoVeiculoCreateSchema>;

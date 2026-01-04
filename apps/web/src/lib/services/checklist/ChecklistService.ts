@@ -43,24 +43,7 @@ export class ChecklistService extends AbstractCrudService<
     return checklist;
   }
 
-  async delete(id: number, userId: string): Promise<Checklist> {
-    return this.repoConcrete.delete(id, userId);
-  }
 
-  async getById(id: number): Promise<Checklist | null> {
-    return this.repoConcrete.findById(id);
-  }
-
-  async list(params: Filter): Promise<PaginatedResult<Checklist>> {
-    const { items, total } = await this.repoConcrete.list(params);
-    return {
-      data: items,
-      total,
-      totalPages: Math.ceil(total / params.pageSize),
-      page: params.page,
-      pageSize: params.pageSize,
-    };
-  }
 
   protected getSearchFields(): string[] {
     return ['nome'];

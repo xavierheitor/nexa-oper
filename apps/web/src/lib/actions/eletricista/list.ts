@@ -13,7 +13,7 @@
 import { eletricistaFilterSchema } from '../../schemas/eletricistaSchema';
 import { container } from '../../services/common/registerServices';
 import { handleServerAction } from '../common/actionHandler';
-import { EletricistaService } from './../../services/EletricistaService';
+import { EletricistaService } from '../../services/pessoas/EletricistaService';
 
 /**
  * Lista eletricistas com paginação e filtros

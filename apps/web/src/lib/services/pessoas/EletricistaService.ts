@@ -23,10 +23,10 @@
  */
 
 import { Eletricista } from '@nexa-oper/db';
-import { AbstractCrudService } from '../abstracts/AbstractCrudService';
-import { EletricistaRepository } from '../repositories/pessoas/EletricistaRepository';
-import { EletricistaCreate, eletricistaCreateSchema, EletricistaFilter, EletricistaUpdate, eletricistaUpdateSchema } from '../schemas/eletricistaSchema';
-import { PaginatedResult } from '../types/common';
+import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
+import { EletricistaRepository } from '../../repositories/pessoas/EletricistaRepository';
+import { EletricistaCreate, eletricistaCreateSchema, EletricistaFilter, EletricistaUpdate, eletricistaUpdateSchema } from '../../schemas/eletricistaSchema';
+import { PaginatedResult } from '../../types/common';
 
 /**
  * Tipo para dados brutos recebidos do handleServerAction (inclui campos de auditoria)

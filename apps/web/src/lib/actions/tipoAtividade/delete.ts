@@ -1,6 +1,6 @@
 'use server';
 
-import type { TipoAtividadeService } from '@/lib/services/TipoAtividadeService';
+import type { TipoAtividadeService } from '@/lib/services/catalogo/TipoAtividadeService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';

@@ -28,8 +28,8 @@ import {
 } from '@/lib/schemas/contratoSchema';
 import { Contrato } from '@nexa-oper/db';
 import { z } from 'zod';
-import { AbstractCrudService } from '../abstracts/AbstractCrudService';
-import { PaginatedResult } from '../types/common';
+import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
+import { PaginatedResult } from '../../types/common';
 
 // Tipos derivados dos schemas
 type ContratoCreate = z.infer<typeof contratoCreateSchema>;
@@ -96,52 +96,4 @@ export class ContratoService extends AbstractCrudService<
     } as any);
   }
 
-  /**
-   * Exclui um contrato existente
-   *
-   * @param id - ID do contrato
-   * @param userId - ID do usuário que está excluindo
-   * @returns Contrato excluído
-   */
-  async delete(id: number, userId: string): Promise<Contrato> {
-    return this.repo.delete(id, userId);
-  }
-
-  /**
-   * Busca um contrato por ID
-   *
-   * @param id - ID do contrato
-   * @returns Contrato encontrado ou null
-   */
-  async getById(id: number): Promise<Contrato | null> {
-    return this.repo.findById(id);
-  }
-
-  /**
-   * Lista contratos com paginação
-   *
-   * @param params - Parâmetros de paginação e filtro
-   * @returns Resultado paginado
-   */
-  async list(params: ContratoFilter): Promise<PaginatedResult<Contrato>> {
-    const { items, total } = await this.repo.list(params);
-    const totalPages = Math.ceil(total / params.pageSize);
-
-    return {
-      data: items,
-      total,
-      totalPages,
-      page: params.page,
-      pageSize: params.pageSize,
-    };
-  }
-
-  /**
-   * Define os campos que podem ser utilizados para busca
-   *
-   * @returns Array com os nomes dos campos de busca
-   */
-  protected getSearchFields(): string[] {
-    return ['nome', 'numero'];
-  }
 }

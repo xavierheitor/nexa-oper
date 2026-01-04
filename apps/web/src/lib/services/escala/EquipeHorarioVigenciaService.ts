@@ -39,7 +39,9 @@ export class EquipeHorarioVigenciaService extends AbstractCrudService<
 
   constructor() {
     const repo = new EquipeHorarioVigenciaRepository();
-    // @ts-expect-error - Diferenças sutis entre tipos de input (Decimal vs number) são tratadas no runtime
+    // Cast necessário porque EquipeHorarioVigenciaRepository.create aceita userId como parâmetro opcional
+    // e duracaoHoras usa number mas o tipo esperado usa Decimal
+    // @ts-expect-error - Diferenças sutis entre tipos (Decimal vs number, userId opcional) são tratadas no runtime
     super(repo);
     this.horarioRepo = repo;
   }

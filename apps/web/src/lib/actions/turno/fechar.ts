@@ -9,7 +9,7 @@
 
 import { handleServerAction } from '../common/actionHandler';
 import { container } from '../../services/common/registerServices';
-import { TurnoService } from '../../services/TurnoService';
+import { TurnoService } from '../../services/turnos/TurnoService';
 import { z } from 'zod';
 
 const fecharTurnoSchema = z.object({

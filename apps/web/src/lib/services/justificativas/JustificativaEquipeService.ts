@@ -4,29 +4,52 @@
  * Implementa lógica de negócio para justificativas quando equipes não abrem turno
  */
 
-import { prisma } from '../db/db.service';
-import { JustificativaEquipeRepository } from '../repositories/justificativas/JustificativaEquipeRepository';
+import { JustificativaEquipe } from '@nexa-oper/db';
+import { prisma } from '../../db/db.service';
+import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
+import { JustificativaEquipeRepository } from '../../repositories/justificativas/JustificativaEquipeRepository';
 import type {
   CriarJustificativaEquipeInput,
   ListarJustificativasEquipeInput,
-} from '../schemas/justificativaEquipeSchema';
+} from '../../schemas/justificativaEquipeSchema';
+import { PaginatedResult } from '../../types/common';
+import type { PaginationParams } from '../../types/common';
 
-export class JustificativaEquipeService {
-  private repo: JustificativaEquipeRepository;
+// Tipo de filtro compatível com PaginationParams
+type JustificativaEquipeFilter = PaginationParams & {
+  equipeId?: number;
+  status?: 'pendente' | 'aprovada' | 'rejeitada';
+  dataInicio?: Date;
+  dataFim?: Date;
+};
+
+export class JustificativaEquipeService extends AbstractCrudService<
+  CriarJustificativaEquipeInput,
+  { id: number }, // Stub para update (nunca usado)
+  JustificativaEquipeFilter,
+  JustificativaEquipe
+> {
+  private justificativaEquipeRepo: JustificativaEquipeRepository;
 
   constructor() {
-    this.repo = new JustificativaEquipeRepository();
+    const repo = new JustificativaEquipeRepository();
+    // Cast necessário porque JustificativaEquipeRepository tem assinatura customizada
+    super(repo as any);
+    this.justificativaEquipeRepo = repo;
   }
 
   /**
    * Cria uma nova justificativa de equipe
    * Valida se já existe justificativa para a equipe naquela data
    */
-  async create(data: CriarJustificativaEquipeInput, userId: string) {
+  async create(
+    data: CriarJustificativaEquipeInput,
+    userId: string
+  ): Promise<JustificativaEquipe> {
     const dataReferencia = new Date(data.dataReferencia);
 
     // Verificar se já existe justificativa para esta equipe e data
-    const existente = await this.repo.findByEquipeAndData(
+    const existente = await this.justificativaEquipeRepo.findByEquipeAndData(
       data.equipeId,
       dataReferencia
     );
@@ -36,7 +59,7 @@ export class JustificativaEquipeService {
       );
     }
 
-    return this.repo.create({
+    return this.justificativaEquipeRepo.create({
       equipeId: data.equipeId,
       dataReferencia,
       tipoJustificativaId: data.tipoJustificativaId,
@@ -45,11 +68,29 @@ export class JustificativaEquipeService {
     });
   }
 
+  async update(
+    data: { id: number },
+    userId: string
+  ): Promise<JustificativaEquipe> {
+    throw new Error(
+      'Justificativas de equipe não podem ser atualizadas diretamente pelo service. Use aprovar/rejeitar.'
+    );
+  }
+
+  /**
+   * Lista justificativas de equipe com filtros
+   */
+  override async list(
+    params: JustificativaEquipeFilter
+  ): Promise<PaginatedResult<JustificativaEquipe>> {
+    return super.list(params);
+  }
+
   /**
    * Aprova uma justificativa de equipe
    * Se o tipo não gera falta, remove faltas pendentes dos eletricistas da equipe
    */
-  async aprovar(id: number, userId: string) {
+  async aprovar(id: number, userId: string): Promise<JustificativaEquipe> {
     const justificativa = await this.repo.findById(id);
     if (!justificativa) {
       throw new Error('Justificativa não encontrada');
@@ -60,7 +101,7 @@ export class JustificativaEquipeService {
     }
 
     // Atualizar status da justificativa
-    const resultado = (await this.repo.updateStatus(
+    const resultado = (await this.justificativaEquipeRepo.updateStatus(
       id,
       'aprovada',
       userId
@@ -80,7 +121,7 @@ export class JustificativaEquipeService {
   /**
    * Rejeita uma justificativa de equipe
    */
-  async rejeitar(id: number, userId: string) {
+  async rejeitar(id: number, userId: string): Promise<JustificativaEquipe> {
     const justificativa = await this.repo.findById(id);
     if (!justificativa) {
       throw new Error('Justificativa não encontrada');
@@ -90,33 +131,7 @@ export class JustificativaEquipeService {
       throw new Error('Apenas justificativas pendentes podem ser rejeitadas');
     }
 
-    return this.repo.updateStatus(id, 'rejeitada', userId);
-  }
-
-  /**
-   * Lista justificativas de equipe com filtros
-   */
-  async list(params: ListarJustificativasEquipeInput) {
-    const { dataInicio, dataFim, ...rest } = params;
-
-    return this.repo.list({
-      ...rest,
-      dataInicio: dataInicio ? new Date(dataInicio) : undefined,
-      dataFim: dataFim ? new Date(dataFim) : undefined,
-      orderBy: 'dataReferencia',
-      orderDir: 'desc',
-    });
-  }
-
-  /**
-   * Busca justificativa de equipe por ID
-   */
-  async getById(id: number) {
-    const justificativa = await this.repo.findById(id);
-    if (!justificativa) {
-      throw new Error('Justificativa não encontrada');
-    }
-    return justificativa;
+    return this.justificativaEquipeRepo.updateStatus(id, 'rejeitada', userId);
   }
 
   /**
@@ -162,5 +177,6 @@ export class JustificativaEquipeService {
       });
     }
   }
-}
 
+  // getById vem da classe abstrata
+}

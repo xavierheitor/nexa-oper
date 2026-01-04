@@ -6,18 +6,18 @@
  */
 
 import { Turno } from '@nexa-oper/db';
-import { AbstractCrudService } from '../abstracts/AbstractCrudService';
+import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
 import {
   TurnoCreate,
   TurnoFilter,
   TurnoUpdate,
-} from '../schemas/turnoSchema';
+} from '../../schemas/turnoSchema';
 import {
   TurnoCreateInput,
   TurnoRepository,
   TurnoUpdateInput,
-} from '../repositories/turnos/TurnoRepository';
-import { PaginatedResult } from '../types/common';
+} from '../../repositories/turnos/TurnoRepository';
+import { PaginatedResult } from '../../types/common';
 
 export class TurnoService extends AbstractCrudService<
   TurnoCreate,

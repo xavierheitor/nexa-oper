@@ -7,7 +7,6 @@ import {
   tipoChecklistFilterSchema,
   tipoChecklistUpdateSchema,
 } from '../../schemas/tipoChecklistSchema';
-import { PaginatedResult } from '../../types/common';
 
 type Create = z.infer<typeof tipoChecklistCreateSchema>;
 type Update = z.infer<typeof tipoChecklistUpdateSchema>;
@@ -19,43 +18,22 @@ export class TipoChecklistService extends AbstractCrudService<
   Filter,
   TipoChecklist
 > {
-  private repoConcrete: TipoChecklistRepository;
-
   constructor() {
-    const repo = new TipoChecklistRepository();
-    super(repo);
-    this.repoConcrete = repo;
+    super(new TipoChecklistRepository());
   }
 
   async create(data: Create, userId: string): Promise<TipoChecklist> {
-    return this.repoConcrete.create({ nome: data.nome, createdBy: userId }, userId);
+    // Cast necessário porque TipoChecklistRepository.create aceita userId como parâmetro opcional
+    const repo = this.repo as any as { create(data: any, userId?: string): Promise<TipoChecklist> };
+    return repo.create({ nome: data.nome } as any, userId);
   }
 
   async update(data: Update, userId: string): Promise<TipoChecklist> {
     const { id, ...rest } = data;
-    return this.repoConcrete.update(id, rest, userId);
+    // Cast necessário porque TipoChecklistRepository.update aceita userId como parâmetro opcional
+    const repo = this.repo as any as { update(id: number, data: any, userId?: string): Promise<TipoChecklist> };
+    return repo.update(id, rest as any, userId);
   }
 
-  async delete(id: number, userId: string): Promise<TipoChecklist> {
-    return this.repoConcrete.delete(id, userId);
-  }
-
-  async getById(id: number): Promise<TipoChecklist | null> {
-    return this.repoConcrete.findById(id);
-  }
-
-  async list(params: Filter): Promise<PaginatedResult<TipoChecklist>> {
-    const { items, total } = await this.repoConcrete.list(params as any);
-    return {
-      data: items,
-      total,
-      totalPages: Math.ceil(total / params.pageSize),
-      page: params.page,
-      pageSize: params.pageSize,
-    };
-  }
-
-  protected getSearchFields(): string[] {
-    return ['nome'];
-  }
+  // delete, getById, list vêm da classe abstrata
 }

@@ -28,7 +28,7 @@
 
 'use server';
 
-import type { TipoEquipeService } from '@/lib/services/TipoEquipeService';
+import type { TipoEquipeService } from '@/lib/services/infraestrutura/TipoEquipeService';
 import { container } from '@/lib/services/common/registerServices';
 import { tipoEquipeUpdateSchema } from '../../schemas/tipoEquipeSchema';
 import { handleServerAction } from '../common/actionHandler';

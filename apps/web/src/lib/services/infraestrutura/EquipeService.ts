@@ -23,17 +23,17 @@
 
 import { Equipe } from '@nexa-oper/db';
 import { z } from 'zod';
-import { AbstractCrudService } from '../abstracts/AbstractCrudService';
+import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
 import {
   EquipeCreateInput,
   EquipeRepository,
-} from '../repositories/infraestrutura/EquipeRepository';
+} from '../../repositories/infraestrutura/EquipeRepository';
 import {
   equipeCreateSchema,
   equipeFilterSchema,
   equipeUpdateSchema,
-} from '../schemas/equipeSchema';
-import { PaginatedResult } from '../types/common';
+} from '../../schemas/equipeSchema';
+import { PaginatedResult } from '../../types/common';
 
 // Tipos derivados dos schemas
 type EquipeCreate = z.infer<typeof equipeCreateSchema>;

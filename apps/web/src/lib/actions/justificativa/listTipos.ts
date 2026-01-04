@@ -7,7 +7,7 @@
 
 import { handleServerAction } from '../common/actionHandler';
 import { container } from '../../services/common/registerServices';
-import type { TipoJustificativaService } from '../../services/TipoJustificativaService';
+import type { TipoJustificativaService } from '../../services/justificativas/TipoJustificativaService';
 import { z } from 'zod';
 
 /**

@@ -6,18 +6,18 @@
 
 import { Cargo } from '@nexa-oper/db';
 import { z } from 'zod';
-import { AbstractCrudService } from '../abstracts/AbstractCrudService';
+import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
 import {
   CargoCreateInput,
   CargoRepository,
   CargoUpdateInput,
-} from '../repositories/pessoas/CargoRepository';
+} from '../../repositories/pessoas/CargoRepository';
 import {
   cargoCreateSchema,
   cargoFilterSchema,
   cargoUpdateSchema,
-} from '../schemas/cargoSchema';
-import { PaginatedResult } from '../types/common';
+} from '../../schemas/cargoSchema';
+import { PaginatedResult } from '../../types/common';
 
 type CargoCreate = z.infer<typeof cargoCreateSchema>;
 type CargoUpdate = z.infer<typeof cargoUpdateSchema>;
@@ -31,12 +31,24 @@ export class CargoService extends AbstractCrudService<
 > {
   private cargoRepo: CargoRepository;
 
+  /**
+   * Construtor do serviço
+   *
+   * Inicializa o repositório
+   */
   constructor() {
     const repo = new CargoRepository();
     super(repo);
     this.cargoRepo = repo;
   }
 
+  /**
+   * Cria um novo cargo
+   *
+   * @param data - Dados do cargo
+   * @param userId - ID do usuário que está criando
+   * @returns Cargo criado
+   */
   async create(data: CargoCreate, userId: string): Promise<Cargo> {
     const createData: CargoCreateInput = {
       nome: data.nome,
@@ -46,8 +58,15 @@ export class CargoService extends AbstractCrudService<
     return this.cargoRepo.create(createData, userId);
   }
 
+  /**
+   * Atualiza um cargo existente
+   *
+   * @param data - Dados do cargo
+   * @param userId - ID do usuário que está atualizando
+   * @returns Cargo atualizado
+   */
   async update(data: CargoUpdate, userId: string): Promise<Cargo> {
-    const cargo = await this.cargoRepo.findById(data.id);
+    const cargo = await this.repo.findById(data.id);
     if (!cargo) {
       throw new Error('Cargo não encontrado');
     }
@@ -59,16 +78,5 @@ export class CargoService extends AbstractCrudService<
     };
 
     return this.cargoRepo.update(data.id, updateInput, userId);
-  }
-
-  async list(params: CargoFilter): Promise<PaginatedResult<Cargo>> {
-    const { items, total } = await this.cargoRepo.list(params);
-    return {
-      data: items,
-      total,
-      totalPages: Math.ceil(total / params.pageSize),
-      page: params.page,
-      pageSize: params.pageSize,
-    };
   }
 }

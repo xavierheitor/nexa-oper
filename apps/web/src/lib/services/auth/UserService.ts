@@ -33,8 +33,8 @@
 
 import { User } from '@nexa-oper/db';
 import bcrypt from 'bcryptjs';
-import { AbstractCrudService } from '../abstracts/AbstractCrudService';
-import { UserRepository } from '../repositories/auth/UserRepository';
+import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
+import { UserRepository } from '../../repositories/auth/UserRepository';
 import {
   userChangePasswordSchema,
   UserCreate,
@@ -46,8 +46,8 @@ import {
   UserUpdate,
   UserUpdateData,
   userUpdateSchema
-} from '../schemas/userSchema';
-import { PaginatedResult } from '../types/common';
+} from '../../schemas/userSchema';
+import { PaginatedResult } from '../../types/common';
 
 export class UserService extends AbstractCrudService<
   UserCreate,
@@ -225,15 +225,6 @@ export class UserService extends AbstractCrudService<
     return this.userRepo.delete(id, userId);
   }
 
-  /**
-   * Busca um usuário por ID
-   *
-   * @param id - ID do usuário
-   * @returns Usuário encontrado ou null
-   */
-  async getById(id: number): Promise<User | null> {
-    return this.userRepo.findById(id);
-  }
 
   /**
    * Lista usuários com paginação

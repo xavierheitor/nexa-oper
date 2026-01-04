@@ -22,14 +22,14 @@
 
 import { TipoEquipe } from '@nexa-oper/db';
 import { z } from 'zod';
-import { AbstractCrudService } from '../abstracts/AbstractCrudService';
-import { TipoEquipeRepository } from '../repositories/infraestrutura/TipoEquipeRepository';
+import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
+import { TipoEquipeRepository } from '../../repositories/infraestrutura/TipoEquipeRepository';
 import {
   tipoEquipeCreateSchema,
   tipoEquipeFilterSchema,
   tipoEquipeUpdateSchema,
-} from '../schemas/tipoEquipeSchema';
-import { PaginatedResult } from '../types/common';
+} from '../../schemas/tipoEquipeSchema';
+import { PaginatedResult } from '../../types/common';
 
 // Tipos derivados dos schemas
 type TipoEquipeCreate = z.infer<typeof tipoEquipeCreateSchema>;

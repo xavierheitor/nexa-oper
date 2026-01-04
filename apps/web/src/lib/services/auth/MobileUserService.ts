@@ -35,11 +35,11 @@
  * - Suporte a logging automático
  */
 
-// Removendo herança para simplificar
-import { PaginatedParams, PaginatedResult } from '@/lib/types/common';
+import { PaginatedParams, PaginatedResult, PaginationParams } from '@/lib/types/common';
 import { MobileUser } from '@nexa-oper/db';
 import bcrypt from 'bcryptjs';
-import { MobileUserRepository } from '../repositories/auth/MobileUserRepository';
+import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
+import { MobileUserRepository } from '../../repositories/auth/MobileUserRepository';
 import {
   MobileUserChangePassword,
   MobileUserCreate,
@@ -49,7 +49,13 @@ import {
   mobileUserChangePasswordSchema,
   mobileUserCreateSchema,
   mobileUserUpdateSchema,
-} from '../schemas/mobileUserSchema';
+} from '../../schemas/mobileUserSchema';
+
+// Tipo de filtro compatível com PaginationParams
+interface MobileUserFilter extends PaginationParams {
+  search?: string;
+  include?: any;
+}
 
 /**
  * Service para operações de MobileUser
@@ -57,11 +63,18 @@ import {
  * Implementa regras de negócio e validações específicas
  * para usuários móveis, garantindo integridade e segurança.
  */
-export class MobileUserService {
+export class MobileUserService extends AbstractCrudService<
+  MobileUserCreate,
+  MobileUserUpdate,
+  MobileUserFilter,
+  MobileUser
+> {
   private mobileUserRepo: MobileUserRepository;
 
   constructor() {
-    this.mobileUserRepo = new MobileUserRepository();
+    const repo = new MobileUserRepository();
+    super(repo);
+    this.mobileUserRepo = repo;
   }
 
   /**
@@ -142,28 +155,20 @@ export class MobileUserService {
    *
    * @param id - ID do usuário móvel a ser excluído
    * @param userId - ID do usuário que está excluindo
-   * @returns Promise<void>
+   * @returns Promise com o usuário móvel excluído
    */
-  async delete(id: number, userId: string): Promise<void> {
+  async delete(id: number | string, userId: string): Promise<MobileUser> {
     // Verifica se o usuário móvel existe
-    const mobileUser = await this.mobileUserRepo.findById(id);
+    const mobileUser = await this.mobileUserRepo.findById(Number(id));
     if (!mobileUser) {
       throw new Error('Usuário móvel não encontrado');
     }
 
     // Exclui o usuário móvel (soft delete)
-    await this.mobileUserRepo.delete(id, userId);
+    return this.mobileUserRepo.delete(Number(id), userId);
   }
 
-  /**
-   * Busca um usuário móvel por ID
-   *
-   * @param id - ID do usuário móvel
-   * @returns Promise com o usuário móvel encontrado (sem senha)
-   */
-  async getById(id: number): Promise<MobileUser | null> {
-    return await this.mobileUserRepo.findById(id);
-  }
+  // getById vem da classe abstrata
 
   /**
    * Lista usuários móveis com paginação e filtros
@@ -171,24 +176,8 @@ export class MobileUserService {
    * @param params - Parâmetros de paginação e filtros
    * @returns Promise com resultado paginado
    */
-  async list(params?: PaginatedParams): Promise<PaginatedResult<MobileUser>> {
-    // Usa parâmetros padrão se não fornecidos
-    const defaultParams = {
-      page: 1,
-      pageSize: 10,
-      ...params,
-    };
-
-    const { items, total } = await this.mobileUserRepo.list(defaultParams);
-    const totalPages = Math.ceil(total / defaultParams.pageSize);
-
-    return {
-      data: items,
-      total,
-      totalPages,
-      page: defaultParams.page,
-      pageSize: defaultParams.pageSize,
-    };
+  async list(params: MobileUserFilter): Promise<PaginatedResult<MobileUser>> {
+    return super.list(params);
   }
 
   /**

@@ -7,7 +7,6 @@ import {
   checklistOpcaoRespostaFilterSchema,
   checklistOpcaoRespostaUpdateSchema,
 } from '../../schemas/checklistOpcaoRespostaSchema';
-import { PaginatedResult } from '../../types/common';
 
 type Create = z.infer<typeof checklistOpcaoRespostaCreateSchema>;
 type Update = z.infer<typeof checklistOpcaoRespostaUpdateSchema>;
@@ -36,30 +35,8 @@ export class ChecklistOpcaoRespostaService extends AbstractCrudService<
 
   async update(data: Update, userId: string): Promise<ChecklistOpcaoResposta> {
     const { id, ...rest } = data;
-    return this.repoConcrete.update(id, { ...rest }, userId);
+    return this.repoConcrete.update(id, { ...rest } as any, userId);
   }
 
-  async delete(id: number, userId: string): Promise<ChecklistOpcaoResposta> {
-    return this.repoConcrete.delete(id, userId);
-  }
-
-  async getById(id: number): Promise<ChecklistOpcaoResposta | null> {
-    return this.repoConcrete.findById(id);
-  }
-
-  async list(params: Filter): Promise<PaginatedResult<ChecklistOpcaoResposta>> {
-    const { items, total } = await this.repoConcrete.list(params);
-    return {
-      data: items,
-      total,
-      totalPages: Math.ceil(total / params.pageSize),
-      page: params.page,
-      pageSize: params.pageSize,
-    };
-  }
-
-  protected getSearchFields(): string[] {
-    return ['nome'];
-  }
+  // delete, getById, list vêm da classe abstrata
 }
-

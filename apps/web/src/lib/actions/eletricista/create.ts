@@ -28,7 +28,7 @@
 'use server';
 
 import { eletricistaCreateSchema } from '@/lib/schemas/eletricistaSchema';
-import type { EletricistaService } from '@/lib/services/EletricistaService';
+import type { EletricistaService } from '@/lib/services/pessoas/EletricistaService';
 import { container } from '@/lib/services/common/registerServices';
 import { handleServerAction } from '../common/actionHandler';
 

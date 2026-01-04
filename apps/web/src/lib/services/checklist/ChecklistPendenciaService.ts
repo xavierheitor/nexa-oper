@@ -6,7 +6,6 @@ import {
   checklistPendenciaFilterSchema,
   checklistPendenciaUpdateSchema,
 } from '../../schemas/checklistPendenciaSchema';
-import { PaginatedResult } from '../../types/common';
 
 type Update = z.infer<typeof checklistPendenciaUpdateSchema>;
 type Filter = z.infer<typeof checklistPendenciaFilterSchema>;
@@ -43,31 +42,8 @@ export class ChecklistPendenciaService extends AbstractCrudService<
         tratadoEm: tratadoEm instanceof Date ? tratadoEm : new Date(tratadoEm),
       }),
     };
-    return this.repoConcrete.update(id, updateData, userId);
+    return this.repoConcrete.update(id, updateData as any, userId);
   }
 
-  async delete(id: number, userId: string): Promise<ChecklistPendencia> {
-    return this.repoConcrete.delete(id, userId);
-  }
-
-  async getById(id: number): Promise<ChecklistPendencia | null> {
-    return this.repoConcrete.findById(id);
-  }
-
-  async list(params: Filter): Promise<PaginatedResult<ChecklistPendencia>> {
-    const { items, total } = await this.repoConcrete.list(params);
-    return {
-      data: items,
-      total,
-      totalPages: Math.ceil(total / params.pageSize),
-      page: params.page,
-      pageSize: params.pageSize,
-    };
-  }
-
-  protected getSearchFields(): string[] {
-    return ['observacaoProblema', 'observacaoTratamento'];
-  }
+  // delete, getById, list vêm da classe abstrata
 }
-
-

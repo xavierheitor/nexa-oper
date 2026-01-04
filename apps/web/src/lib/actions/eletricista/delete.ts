@@ -23,7 +23,7 @@
 'use server';
 
 import { z } from 'zod';
-import { EletricistaService } from '../../services/EletricistaService';
+import { EletricistaService } from '../../services/pessoas/EletricistaService';
 import { container } from '../../services/common/registerServices';
 import { handleServerAction } from '../common/actionHandler';
 

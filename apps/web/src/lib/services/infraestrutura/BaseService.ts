@@ -22,14 +22,14 @@
 
 import { Base } from '@nexa-oper/db';
 import { z } from 'zod';
-import { AbstractCrudService } from '../abstracts/AbstractCrudService';
-import { BaseRepository } from '../repositories/infraestrutura/BaseRepository';
+import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
+import { BaseRepository } from '../../repositories/infraestrutura/BaseRepository';
 import {
   baseCreateSchema,
   baseFilterSchema,
   baseUpdateSchema,
-} from '../schemas/baseSchema';
-import { PaginatedResult } from '../types/common';
+} from '../../schemas/baseSchema';
+import { PaginatedResult } from '../../types/common';
 
 // Tipos derivados dos schemas
 type BaseCreate = z.infer<typeof baseCreateSchema>;
@@ -100,52 +100,4 @@ export class BaseService extends AbstractCrudService<
     return this.repo.update(id, updateData);
   }
 
-  /**
-   * Exclui uma base existente
-   *
-   * @param id - ID da base
-   * @param userId - ID do usuário que está excluindo
-   * @returns Base excluída
-   */
-  async delete(id: number, userId: string): Promise<Base> {
-    return this.repo.delete(id, userId);
-  }
-
-  /**
-   * Busca uma base por ID
-   *
-   * @param id - ID da base
-   * @returns Base encontrada ou null
-   */
-  async getById(id: number): Promise<Base | null> {
-    return this.repo.findById(id);
-  }
-
-  /**
-   * Lista bases com paginação
-   *
-   * @param params - Parâmetros de paginação e filtro
-   * @returns Resultado paginado
-   */
-  async list(params: BaseFilter): Promise<PaginatedResult<Base>> {
-    const { items, total } = await this.repo.list(params);
-    const totalPages = Math.ceil(total / params.pageSize);
-
-    return {
-      data: items,
-      total,
-      totalPages,
-      page: params.page,
-      pageSize: params.pageSize,
-    };
-  }
-
-  /**
-   * Define os campos que podem ser utilizados para busca
-   *
-   * @returns Array com os nomes dos campos de busca
-   */
-  protected getSearchFields(): string[] {
-    return ['nome'];
-  }
 }

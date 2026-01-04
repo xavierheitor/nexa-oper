@@ -44,7 +44,7 @@
 
 'use server';
 
-import type { ContratoService } from '@/lib/services/ContratoService';
+import type { ContratoService } from '@/lib/services/catalogo/ContratoService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';

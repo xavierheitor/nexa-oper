@@ -5,8 +5,8 @@
  */
 
 import { TipoJustificativa } from '@nexa-oper/db';
-import { AbstractCrudService } from '../abstracts/AbstractCrudService';
-import { TipoJustificativaRepository } from '../repositories/justificativas/TipoJustificativaRepository';
+import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
+import { TipoJustificativaRepository } from '../../repositories/justificativas/TipoJustificativaRepository';
 import {
   criarTipoJustificativaSchema,
   atualizarTipoJustificativaSchema,
@@ -14,7 +14,7 @@ import {
   type CriarTipoJustificativaInput,
   type AtualizarTipoJustificativaInput,
   type ListarTiposJustificativaInput,
-} from '../schemas/tipoJustificativaSchema';
+} from '../../schemas/tipoJustificativaSchema';
 
 export class TipoJustificativaService extends AbstractCrudService<
   CriarTipoJustificativaInput,

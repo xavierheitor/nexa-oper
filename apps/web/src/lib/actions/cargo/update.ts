@@ -7,7 +7,7 @@
 import { handleServerAction } from '../common/actionHandler';
 import { cargoUpdateSchema } from '@/lib/schemas/cargoSchema';
 import { container } from '@/lib/services/common/registerServices';
-import type { CargoService } from '@/lib/services/CargoService';
+import type { CargoService } from '@/lib/services/pessoas/CargoService';
 
 export const updateCargo = async (rawData: unknown) =>
   handleServerAction(

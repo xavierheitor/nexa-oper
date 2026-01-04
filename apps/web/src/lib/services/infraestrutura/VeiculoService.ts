@@ -23,17 +23,17 @@
 
 import { Veiculo } from '@nexa-oper/db';
 import { z } from 'zod';
-import { AbstractCrudService } from '../abstracts/AbstractCrudService';
+import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
 import {
   VeiculoCreateInput,
   VeiculoRepository,
-} from '../repositories/infraestrutura/VeiculoRepository';
+} from '../../repositories/infraestrutura/VeiculoRepository';
 import {
   veiculoCreateSchema,
   veiculoFilterSchema,
   veiculoUpdateSchema,
-} from '../schemas/veiculoSchema';
-import { PaginatedResult } from '../types/common';
+} from '../../schemas/veiculoSchema';
+import { PaginatedResult } from '../../types/common';
 
 // Tipos derivados dos schemas
 type VeiculoCreate = z.infer<typeof veiculoCreateSchema>;
@@ -122,45 +122,6 @@ export class VeiculoService extends AbstractCrudService<
     return this.veiculoRepo.update(id, updateInput, userId);
   }
 
-  /**
-   * Exclui um veículo existente
-   *
-   * @param id - ID do veículo
-   * @param userId - ID do usuário que está excluindo
-   * @returns Veículo excluído
-   */
-  async delete(id: number, userId: string): Promise<Veiculo> {
-    return this.veiculoRepo.delete(id, userId);
-  }
-
-  /**
-   * Busca um veículo por ID
-   *
-   * @param id - ID do veículo
-   * @returns Veículo encontrado ou null
-   */
-  async getById(id: number): Promise<Veiculo | null> {
-    return this.veiculoRepo.findById(id);
-  }
-
-  /**
-   * Lista veículos com paginação
-   *
-   * @param params - Parâmetros de paginação e filtro
-   * @returns Resultado paginado
-   */
-  async list(params: VeiculoFilter): Promise<PaginatedResult<Veiculo>> {
-    const { items, total } = await this.veiculoRepo.list(params);
-    const totalPages = Math.ceil(total / params.pageSize);
-
-    return {
-      data: items,
-      total,
-      totalPages,
-      page: params.page,
-      pageSize: params.pageSize,
-    };
-  }
 
   /**
    * Define os campos que podem ser utilizados para busca

@@ -75,7 +75,6 @@ export class AprPerguntaService extends AbstractCrudService<
   AprPerguntaFilter,
   AprPergunta
 > {
-  /** Referência concreta ao repository para operações específicas */
   private repoConcrete: AprPerguntaRepository;
 
   /**
@@ -153,83 +152,7 @@ export class AprPerguntaService extends AbstractCrudService<
     return this.repoConcrete.update(id, updateData, userId);
   }
 
-  /**
-   * Exclui uma pergunta APR (soft delete)
-   *
-   * Realiza soft delete marcando a pergunta como deletada
-   * sem remover fisicamente do banco de dados.
-   *
-   * @param id - ID da pergunta a ser excluída
-   * @param userId - ID do usuário que está excluindo
-   * @returns Promise com a pergunta marcada como deletada
-   *
-   * @throws {Error} Se a pergunta não for encontrada
-   *
-   * @example
-   * ```typescript
-   * const pergunta = await service.delete(1, "user123");
-   * ```
-   */
-  async delete(id: number, userId: string): Promise<AprPergunta> {
-    return this.repoConcrete.delete(id, userId);
-  }
-
-  /**
-   * Busca uma pergunta APR por ID
-   *
-   * Retorna apenas perguntas ativas (não deletadas).
-   *
-   * @param id - ID da pergunta a ser buscada
-   * @returns Promise com a pergunta encontrada ou null
-   *
-   * @example
-   * ```typescript
-   * const pergunta = await service.getById(1);
-   * if (pergunta) {
-   *   console.log(pergunta.nome);
-   * }
-   * ```
-   */
-  async getById(id: number): Promise<AprPergunta | null> {
-    return this.repoConcrete.findById(id);
-  }
-
-  /**
-   * Lista perguntas APR com paginação e filtros
-   *
-   * Busca perguntas aplicando filtros, ordenação e paginação.
-   * Transforma o resultado do repository para formato padronizado.
-   *
-   * @param params - Parâmetros de filtro, paginação e ordenação
-   * @returns Promise com resultado paginado
-   *
-   * @example
-   * ```typescript
-   * const result = await service.list({
-   *   page: 1,
-   *   pageSize: 10,
-   *   orderBy: 'nome',
-   *   orderDir: 'asc',
-   *   search: 'EPI'
-   * });
-   *
-   * console.log(`Encontradas ${result.total} perguntas`);
-   * console.log(`Página ${result.page} de ${result.totalPages}`);
-   * ```
-   */
-  async list(params: AprPerguntaFilter): Promise<PaginatedResult<AprPergunta>> {
-    // Busca dados via repository
-    const { items, total } = await this.repoConcrete.list(params);
-
-    // Transforma para formato padronizado de resposta
-    return {
-      data: items,
-      total,
-      totalPages: Math.ceil(total / params.pageSize),
-      page: params.page,
-      pageSize: params.pageSize,
-    };
-  }
+  // delete, getById, list vêm da classe abstrata
 
   /**
    * Define campos pesquisáveis para busca textual

@@ -1,16 +1,16 @@
 import { EquipeSupervisor } from '@nexa-oper/db';
 import { z } from 'zod';
-import { AbstractCrudService } from '../abstracts/AbstractCrudService';
+import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
 import {
   EquipeSupervisorCreateInput,
   EquipeSupervisorRepository,
-} from '../repositories/infraestrutura/EquipeSupervisorRepository';
+} from '../../repositories/infraestrutura/EquipeSupervisorRepository';
 import {
   equipeSupervisorCreateSchema,
   equipeSupervisorFilterSchema,
   equipeSupervisorUpdateSchema,
-} from '../schemas/equipeSupervisorSchema';
-import { PaginatedResult } from '../types/common';
+} from '../../schemas/equipeSupervisorSchema';
+import { PaginatedResult } from '../../types/common';
 
 type ESCreate = z.infer<typeof equipeSupervisorCreateSchema>;
 type ESUpdate = z.infer<typeof equipeSupervisorUpdateSchema>;
@@ -45,10 +45,6 @@ export class EquipeSupervisorService extends AbstractCrudService<
     return this.repoConcrete.update(id, rest, userId);
   }
 
-  async delete(id: number, userId: string): Promise<EquipeSupervisor> {
-    return this.repoConcrete.delete(id, userId);
-  }
-
   /**
    * Encerra o vínculo definindo a data de fim como hoje
    */
@@ -56,21 +52,6 @@ export class EquipeSupervisorService extends AbstractCrudService<
     return this.repoConcrete.update(id, { fim: new Date() }, userId);
   }
 
-  async getById(id: number): Promise<EquipeSupervisor | null> {
-    return this.repoConcrete.findById(id);
-  }
-
-  async list(params: ESFilter): Promise<PaginatedResult<EquipeSupervisor>> {
-    const { items, total } = await this.repoConcrete.list(params);
-    const totalPages = Math.ceil(total / params.pageSize);
-    return {
-      data: items,
-      total,
-      totalPages,
-      page: params.page,
-      pageSize: params.pageSize,
-    };
-  }
 
   protected getSearchFields(): string[] {
     return [];

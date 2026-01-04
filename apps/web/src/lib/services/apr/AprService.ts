@@ -196,70 +196,7 @@ export class AprService extends AbstractCrudService<
     return apr;
   }
 
-  /**
-   * Exclui uma APR (soft delete)
-   *
-   * Realiza soft delete marcando a APR como deletada.
-   * Os relacionamentos são mantidos para auditoria.
-   *
-   * @param id - ID da APR a ser excluída
-   * @param userId - ID do usuário que está excluindo
-   * @returns Promise com a APR marcada como deletada
-   *
-   * @throws {Error} Se a APR não for encontrada
-   */
-  async delete(id: number, userId: string): Promise<Apr> {
-    return this.repoConcrete.delete(id, userId);
-  }
-
-  /**
-   * Busca uma APR por ID
-   *
-   * Retorna apenas APRs ativas (não deletadas).
-   *
-   * @param id - ID da APR a ser buscada
-   * @returns Promise com a APR encontrada ou null
-   */
-  async getById(id: number): Promise<Apr | null> {
-    return this.repoConcrete.findById(id);
-  }
-
-  /**
-   * Lista APRs com paginação e filtros
-   *
-   * Busca APRs aplicando filtros, ordenação e paginação.
-   * Transforma o resultado do repository para formato padronizado.
-   *
-   * @param params - Parâmetros de filtro, paginação e ordenação
-   * @returns Promise com resultado paginado
-   *
-   * @example
-   * ```typescript
-   * const result = await service.list({
-   *   page: 1,
-   *   pageSize: 10,
-   *   orderBy: 'nome',
-   *   orderDir: 'asc',
-   *   search: 'Soldagem'
-   * });
-   *
-   * console.log(`Encontradas ${result.total} APRs`);
-   * console.log(`Página ${result.page} de ${result.totalPages}`);
-   * ```
-   */
-  async list(params: AprFilter): Promise<PaginatedResult<Apr>> {
-    // Busca dados via repository
-    const { items, total } = await this.repoConcrete.list(params);
-
-    // Transforma para formato padronizado de resposta
-    return {
-      data: items,
-      total,
-      totalPages: Math.ceil(total / params.pageSize),
-      page: params.page,
-      pageSize: params.pageSize,
-    };
-  }
+  // delete, getById, list vêm da classe abstrata
 
   /**
    * Define campos pesquisáveis para busca textual
