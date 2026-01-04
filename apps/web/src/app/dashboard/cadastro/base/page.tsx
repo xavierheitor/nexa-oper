@@ -8,6 +8,7 @@ import { updateBase } from '@/lib/actions/base/update';
 
 // Importações dos hooks e utilitários da aplicação
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
@@ -19,6 +20,7 @@ import { getTextFilter } from '@/ui/components/tableFilters';
 
 // Importações do Prisma
 import { Base } from '@nexa-oper/db';
+import { Spin } from 'antd';
 import BaseForm, { BaseFormData } from './form';
 
 export default function BasePage() {
@@ -81,6 +83,16 @@ export default function BasePage() {
           .finally(() => bases.mutate()),
     }
   );
+
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <CrudPage

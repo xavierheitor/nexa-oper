@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useMemo, useCallback } from 'react';
-import { Card, Col, Row, Typography } from 'antd';
+import { Card, Col, Row, Spin, Typography } from 'antd';
 import ConsolidacaoPorBase from './components/ConsolidacaoPorBase';
 import ComparacaoEntreBases from './components/ComparacaoEntreBases';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useSelectOptions } from '@/lib/hooks/useSelectOptions';
 import { useTableFilters } from '@/lib/hooks/useTableFilters';
 import FilterBar from '@/ui/components/FilterBar';
@@ -50,6 +51,16 @@ export default function RelatoriosBasesPage() {
       handleFilterChange(key as 'contratoId' | 'baseId', value as number | undefined);
     }
   }, [handleFilterChange]);
+
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '24px' }}>

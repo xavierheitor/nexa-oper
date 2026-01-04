@@ -11,6 +11,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, Button, Tooltip, Input, Select } from 'antd';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import { ClockCircleOutlined, CalendarOutlined, CheckOutlined, EnvironmentOutlined, CloseOutlined, SearchOutlined, CarOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { listTurnos } from '@/lib/actions/turno/list';
@@ -480,13 +481,8 @@ export default function TurnosPage() {
     },
   ];
 
-  if (loading && !turnosAbertosResult?.turnosAbertos?.length) {
-    return (
-      <div style={{ textAlign: 'center', padding: '40px' }}>
-        <Spin size="large" />
-      </div>
-    );
-  }
+  // Check de hidratação DEPOIS de todos os hooks, mas ANTES de qualquer return condicional
+  const hydrated = useHydrated();
 
   // Formatar data de referência (hoje) para exibição no título
   const hoje = new Date();
@@ -495,6 +491,22 @@ export default function TurnosPage() {
     month: '2-digit',
     year: 'numeric',
   });
+
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (loading && !turnosAbertosResult?.turnosAbertos?.length) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '24px' }}>

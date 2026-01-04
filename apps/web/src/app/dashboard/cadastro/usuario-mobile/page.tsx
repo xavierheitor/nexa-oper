@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, Table, Modal, Button, Space, Tag } from 'antd';
+import { Card, Table, Modal, Button, Space, Tag, Spin } from 'antd';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import { MobileOutlined, UserOutlined, KeyOutlined } from '@ant-design/icons';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
@@ -103,6 +104,17 @@ export default function MobileUserPage() {
       ],
     }
   );
+
+  // Check de hidratação DEPOIS de todos os hooks, mas ANTES de qualquer return condicional
+  const hydrated = useHydrated();
+
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   if (mobileUsers.error) return <p style={{ color: 'red' }}>Erro ao carregar usuários móveis.</p>;
 

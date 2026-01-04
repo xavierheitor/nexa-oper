@@ -8,13 +8,14 @@ import {
 } from '@/lib/actions/escala/horarioAberturaCatalogo';
 import CrudPage from '@/lib/components/CrudPage';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { ClockCircleOutlined } from '@ant-design/icons';
-import { Space, Tag } from 'antd';
+import { Space, Spin, Tag } from 'antd';
 import HorarioAberturaCatalogoForm from './form';
 
 interface HorarioAberturaCatalogo {
@@ -126,6 +127,16 @@ export default function HorarioCatalogoPage() {
           .finally(() => horarios.mutate()),
     }
   );
+
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <CrudPage

@@ -12,6 +12,7 @@
 
 import React, { useMemo } from 'react';
 import { Card, Col, Row, Statistic, Spin, Empty, Typography } from 'antd';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import {
   ClockCircleOutlined,
   CalendarOutlined,
@@ -158,6 +159,16 @@ export default function DashboardPage() {
     month: '2-digit',
     year: 'numeric',
   });
+
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '24px' }}>

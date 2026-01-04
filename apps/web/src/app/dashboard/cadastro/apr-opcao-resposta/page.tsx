@@ -6,12 +6,14 @@ import { listAprOpcoesResposta } from '@/lib/actions/aprOpcaoResposta/list';
 import { updateAprOpcaoResposta } from '@/lib/actions/aprOpcaoResposta/update';
 import CrudPage from '@/lib/components/CrudPage';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { AprOpcaoResposta } from '@nexa-oper/db';
+import { Spin } from 'antd';
 import AprOpcaoRespostaForm from './form';
 
 export default function AprOpcaoRespostaPage() {
@@ -56,6 +58,16 @@ export default function AprOpcaoRespostaPage() {
           .finally(() => opcoesResposta.mutate()),
     }
   );
+
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <CrudPage
