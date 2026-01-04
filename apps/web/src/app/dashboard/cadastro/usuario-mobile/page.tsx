@@ -158,7 +158,7 @@ export default function MobileUserPage() {
         open={controller.isOpen}
         onCancel={controller.close}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         width={600}
         maskClosable={false}
       >
@@ -182,7 +182,7 @@ export default function MobileUserPage() {
           setSelectedUserForPermissoes(null);
         }}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         width={800}
       >
         {selectedUserForPermissoes && (
