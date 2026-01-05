@@ -16,7 +16,7 @@ interface Equipe {
  */
 export function useReconciliacao() {
   // Carregar equipes
-  const { data: equipesData, loading: loadingEquipes } = useDataFetch<Array<{ id: number; nome: string }>>(
+  const { data: equipesData, loading: loadingEquipes, error: errorEquipes, refetch: refetchEquipes } = useDataFetch<Array<{ id: number; nome: string }>>(
     async () => {
       const result = await listEquipes({ page: 1, pageSize: 1000 });
       if (result.success && result.data) {
@@ -31,6 +31,8 @@ export function useReconciliacao() {
   return {
     equipes: equipesData ?? [],
     loadingEquipes,
+    error: errorEquipes,
+    refetch: refetchEquipes,
   };
 }
 

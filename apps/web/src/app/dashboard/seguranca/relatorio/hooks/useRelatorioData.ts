@@ -55,7 +55,7 @@ export function useRelatorioData(
   );
 
   // Buscar dados de reprovas por pergunta
-  const { data: dataPerguntas, loading: loadingPerguntas, refetch: refetchPerguntas } = useDataFetch<ReprovaPorPergunta[]>(
+  const { data: dataPerguntas, loading: loadingPerguntas, error: errorPerguntas, refetch: refetchPerguntas } = useDataFetch<ReprovaPorPergunta[]>(
     () =>
       unwrapFetcher(getReprovasPorPergunta)({
         dataInicio: periodo[0].toDate(),
@@ -70,6 +70,7 @@ export function useRelatorioData(
   const {
     data: dataEquipes,
     loading: loadingEquipes,
+    error: errorEquipes,
     refetch: refetchEquipes,
   } = useDataFetch<ReprovaPorEquipe[]>(
     () =>
@@ -86,6 +87,7 @@ export function useRelatorioData(
   const {
     data: dataTiposChecklist,
     loading: loadingTiposChecklist,
+    error: errorTiposChecklist,
     refetch: refetchTiposChecklist,
   } = useDataFetch<ReprovaPorTipoChecklist[]>(
     () =>
@@ -115,6 +117,11 @@ export function useRelatorioData(
     loadingEquipes,
     loadingTiposChecklist,
     loading: loadingPerguntas || loadingEquipes || loadingTiposChecklist,
+
+    // Error states
+    errorPerguntas,
+    errorEquipes,
+    errorTiposChecklist,
 
     // Refetch functions
     refetchPerguntas,

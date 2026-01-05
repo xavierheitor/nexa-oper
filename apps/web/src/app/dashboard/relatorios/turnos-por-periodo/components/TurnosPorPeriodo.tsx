@@ -30,6 +30,7 @@ import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import { BarChartOutlined, TeamOutlined, CarOutlined, ClockCircleOutlined, FileExcelOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
@@ -127,7 +128,7 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
   });
 
   // Buscar tipos de equipe para filtro
-  const { data: tiposEquipe, isLoading: loadingTiposEquipe } = useEntityData({
+  const { data: tiposEquipe, isLoading: loadingTiposEquipe, error: errorTiposEquipe, mutate: refetchTiposEquipe } = useEntityData({
     key: 'turnos-por-periodo-tipos-equipe',
     fetcherAction: async (params) => {
       const result = await listTiposEquipe({
@@ -143,7 +144,7 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
   });
 
   // Buscar turnos do período
-  const { data: turnosRaw, loading } = useDataFetch<TurnoData[]>(
+  const { data: turnosRaw, loading, error: errorTurnos, refetch: refetchTurnos } = useDataFetch<TurnoData[]>(
     async () => {
       if (!filtros?.periodoInicio || !filtros?.periodoFim) {
         return [];
@@ -687,6 +688,10 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
 
   return (
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
+      {/* Tratamento de Erros */}
+      <ErrorAlert error={errorTiposEquipe?.message} onRetry={refetchTiposEquipe} />
+      <ErrorAlert error={errorTurnos} onRetry={refetchTurnos} />
+
       {/* Gráfico de Barras Empilhadas */}
       <Card
         title={

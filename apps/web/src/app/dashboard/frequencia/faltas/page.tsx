@@ -9,6 +9,7 @@ import { listTiposJustificativa } from '@/lib/actions/justificativa/listTipos';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { criarJustificativa } from '@/lib/actions/justificativa/criarJustificativa';
 import { uploadAnexoJustificativa } from '@/lib/actions/justificativa/uploadAnexo';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import FaltaTable from '@/ui/components/FaltaTable';
 import JustificarFaltaModal from '@/ui/components/JustificarFaltaModal';
 import useSWR from 'swr';
@@ -38,7 +39,7 @@ export default function FaltasPage() {
   const [loadingJustificar, setLoadingJustificar] = useState(false);
 
   // Carregar tipos de justificativa
-  const { data: tiposJustificativa = [] } = useDataFetch<Array<{ id: number; nome: string }>>(
+  const { data: tiposJustificativa = [], error: errorTiposJustificativa, refetch: refetchTiposJustificativa } = useDataFetch<Array<{ id: number; nome: string }>>(
     async () => {
       const result = await listTiposJustificativa();
       if (result.success && result.data) {
@@ -197,6 +198,10 @@ export default function FaltasPage() {
 
   return (
     <div style={{ padding: '24px' }}>
+      {/* Tratamento de Erros */}
+      <ErrorAlert error={errorTiposJustificativa} onRetry={refetchTiposJustificativa} />
+      <ErrorAlert error={error?.message} onRetry={mutate} />
+
       <Card
         title="Faltas"
         extra={

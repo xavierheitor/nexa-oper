@@ -17,6 +17,7 @@ import { App } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { reconciliarManual } from '@/lib/actions/turno-realizado/reconciliarManual';
 import { reconciliarForcado } from '@/lib/actions/turno-realizado/reconciliarForcado';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import { ReconciliacaoForm } from './components/ReconciliacaoForm';
 import { ReconciliacaoResults } from './components/ReconciliacaoResults';
 import { InformacoesCard } from './components/InformacoesCard';
@@ -80,7 +81,7 @@ export default function ReconciliacaoManualPage() {
   const [resultadoForcado, setResultadoForcado] = useState<ResultadoForcado | null>(null);
   const [resultado, setResultado] = useState<ResultadoReconciliacao | null>(null);
 
-  const { equipes } = useReconciliacao();
+  const { equipes, error: errorEquipes, refetch: refetchEquipes } = useReconciliacao();
 
   // Buscar pendências de reconciliação usando server action
   const buscarPendentes = async (diasHistorico: number = 30) => {
@@ -281,6 +282,9 @@ export default function ReconciliacaoManualPage() {
 
   return (
     <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
+      {/* Tratamento de Erros */}
+      <ErrorAlert error={errorEquipes} onRetry={refetchEquipes} />
+
       <Card>
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <div>

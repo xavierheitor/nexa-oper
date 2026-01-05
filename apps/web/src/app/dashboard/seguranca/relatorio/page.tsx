@@ -8,6 +8,7 @@ import { ReprovasPerguntaChart } from './components/ReprovasPerguntaChart';
 import { ReprovasEquipeChart } from './components/ReprovasEquipeChart';
 import { ReprovasTipoChart } from './components/ReprovasTipoChart';
 import { ResumoEstatisticas } from './components/ResumoEstatisticas';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import { useRelatorioData } from './hooks/useRelatorioData';
 
 const { Text } = Typography;
@@ -34,6 +35,12 @@ export default function RelatorioSegurancaPage() {
     loading,
     loadingBases,
     loadingTiposEquipe,
+    errorPerguntas,
+    errorEquipes,
+    errorTiposChecklist,
+    refetchPerguntas,
+    refetchEquipes,
+    refetchTiposChecklist,
   } = useRelatorioData(periodo, baseId, tipoEquipeId);
 
   const handlePeriodoChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
@@ -67,6 +74,11 @@ export default function RelatorioSegurancaPage() {
       }
     >
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        {/* Tratamento de Erros */}
+        <ErrorAlert error={errorPerguntas} onRetry={refetchPerguntas} />
+        <ErrorAlert error={errorEquipes} onRetry={refetchEquipes} />
+        <ErrorAlert error={errorTiposChecklist} onRetry={refetchTiposChecklist} />
+
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <Spin size="large" />

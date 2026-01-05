@@ -10,6 +10,7 @@ import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listContratos } from '@/lib/actions/contrato/list';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import type { Contrato, Base } from '@nexa-oper/db';
 
 const { RangePicker } = DatePicker;
@@ -23,14 +24,14 @@ export default function RelatoriosEletricistasPage() {
     baseId: undefined,
   });
 
-  const { data: contratos, isLoading: loadingContratos } = useEntityData({
+  const { data: contratos, isLoading: loadingContratos, error: errorContratos, mutate: refetchContratos } = useEntityData({
     key: 'relatorios-eletricistas-contratos',
     fetcherAction: unwrapFetcher(listContratos),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
-  const { data: bases, isLoading: loadingBases } = useEntityData({
+  const { data: bases, isLoading: loadingBases, error: errorBases, mutate: refetchBases } = useEntityData({
     key: 'relatorios-eletricistas-bases',
     fetcherAction: unwrapFetcher(listBases),
     paginationEnabled: false,
@@ -81,6 +82,10 @@ export default function RelatoriosEletricistasPage() {
   return (
     <div style={{ padding: '24px' }}>
       <Title level={2}>Relatórios - Eletricistas</Title>
+
+      {/* Tratamento de Erros */}
+      <ErrorAlert error={errorContratos?.message} onRetry={refetchContratos} />
+      <ErrorAlert error={errorBases?.message} onRetry={refetchBases} />
 
       <Card style={{ marginBottom: 24 }}>
         <Space wrap size='middle'>
