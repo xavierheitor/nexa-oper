@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Form, Select, Button, Spin, Card, Table, Space, App } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 

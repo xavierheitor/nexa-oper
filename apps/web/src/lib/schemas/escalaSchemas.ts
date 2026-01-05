@@ -23,6 +23,7 @@
  */
 
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 // ============================================
 // ENUMS
@@ -120,7 +121,7 @@ export const tipoEscalaFilterSchema = z.object({
   search: z.string().optional(),
   ativo: z.boolean().optional(),
   modoRepeticao: ModoRepeticaoEnum.optional(),
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
 });
 
 // ============================================
@@ -237,7 +238,7 @@ export const escalaEquipePeriodoFilterSchema = z.object({
   status: StatusEscalaEquipePeriodoEnum.optional(),
   periodoInicio: z.coerce.date().optional(),
   periodoFim: z.coerce.date().optional(),
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
 });
 
 // ============================================
@@ -366,7 +367,7 @@ export const horarioAberturaCatalogoFilterSchema = z.object({
   orderDir: z.enum(['asc', 'desc']),
   search: z.string().optional(),
   ativo: z.boolean().optional(),
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
 });
 
 // ============================================
@@ -377,8 +378,11 @@ export const equipeTurnoHistoricoCreateSchema = z
   .object({
     equipeId: z.number().int().positive('Equipe é obrigatória'),
     horarioAberturaCatalogoId: z.number().int().positive().optional(),
-    dataInicio: z.coerce.date(),
-    dataFim: z.coerce.date().optional(),
+    dataInicio: z.coerce.date({
+      required_error: 'Data de início é obrigatória',
+      invalid_type_error: 'Data de início deve ser uma data válida',
+    }),
+    dataFim: z.coerce.date().nullable().optional(),
     inicioTurnoHora: z
       .string()
       .regex(/^\d{2}:\d{2}:\d{2}$/, 'Formato deve ser HH:MM:SS'),
@@ -388,7 +392,16 @@ export const equipeTurnoHistoricoCreateSchema = z
     observacoes: z.string().max(1000).optional(),
   })
   .refine(
-    data => !data.dataFim || data.dataFim >= data.dataInicio,
+    data => {
+      // Se dataFim não existe, está ok
+      if (!data.dataFim) return true;
+      // Se dataInicio não é válida, não podemos comparar
+      if (!(data.dataInicio instanceof Date) || isNaN(data.dataInicio.getTime())) return false;
+      // Se dataFim não é válida, não podemos comparar
+      if (!(data.dataFim instanceof Date) || isNaN(data.dataFim.getTime())) return false;
+      // Comparar datas
+      return data.dataFim >= data.dataInicio;
+    },
     {
       message: 'Data fim deve ser maior ou igual à data início',
       path: ['dataFim'],
@@ -400,8 +413,11 @@ export const equipeTurnoHistoricoUpdateSchema = z
     id: z.number().int().positive(),
     equipeId: z.number().int().positive('Equipe é obrigatória'),
     horarioAberturaCatalogoId: z.number().int().positive().optional(),
-    dataInicio: z.coerce.date(),
-    dataFim: z.coerce.date().optional(),
+    dataInicio: z.coerce.date({
+      required_error: 'Data de início é obrigatória',
+      invalid_type_error: 'Data de início deve ser uma data válida',
+    }),
+    dataFim: z.coerce.date().nullable().optional(),
     inicioTurnoHora: z
       .string()
       .regex(/^\d{2}:\d{2}:\d{2}$/, 'Formato deve ser HH:MM:SS'),
@@ -411,7 +427,16 @@ export const equipeTurnoHistoricoUpdateSchema = z
     observacoes: z.string().max(1000).optional(),
   })
   .refine(
-    data => !data.dataFim || data.dataFim >= data.dataInicio,
+    data => {
+      // Se dataFim não existe, está ok
+      if (!data.dataFim) return true;
+      // Se dataInicio não é válida, não podemos comparar
+      if (!(data.dataInicio instanceof Date) || isNaN(data.dataInicio.getTime())) return false;
+      // Se dataFim não é válida, não podemos comparar
+      if (!(data.dataFim instanceof Date) || isNaN(data.dataFim.getTime())) return false;
+      // Comparar datas
+      return data.dataFim >= data.dataInicio;
+    },
     {
       message: 'Data fim deve ser maior ou igual à data início',
       path: ['dataFim'],
@@ -426,7 +451,7 @@ export const equipeTurnoHistoricoFilterSchema = z.object({
   search: z.string().optional(),
   equipeId: z.number().int().positive().optional(),
   vigente: z.boolean().optional(),
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
 });
 
 // ============================================
@@ -478,7 +503,7 @@ export const equipeHorarioVigenciaFilterSchema = z.object({
   search: z.string().optional(),
   equipeId: z.number().int().positive().optional(),
   vigente: z.boolean().optional(), // Filtrar apenas vigências ativas
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
 });
 
 // ============================================

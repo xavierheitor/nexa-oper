@@ -1,8 +1,7 @@
 'use client';
 
-import { Button, message } from 'antd';
+import { Button } from 'antd';
 import { SwapOutlined } from '@ant-design/icons';
-import { useState } from 'react';
 
 interface TransferBaseButtonProps {
   onTransfer: () => void;

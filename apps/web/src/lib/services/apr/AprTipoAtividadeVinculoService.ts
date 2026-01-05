@@ -63,10 +63,12 @@ type AprTipoAtividadeVinculoFilter = z.infer<typeof aprTipoAtividadeVinculoFilte
  */
 export class AprTipoAtividadeVinculoService extends AbstractCrudService<
   SetAprTipoAtividade,
-  any, // Update não é usado neste contexto
+  SetAprTipoAtividade & { id?: number }, // Update não é usado neste contexto
   AprTipoAtividadeVinculoFilter,
   AprTipoAtividadeRelacao
 > {
+  private readonly customRepo: AprTipoAtividadeRelacaoRepository;
+
   /**
    * Construtor do service
    *
@@ -75,15 +77,9 @@ export class AprTipoAtividadeVinculoService extends AbstractCrudService<
    */
   constructor() {
     const repo = new AprTipoAtividadeRelacaoRepository();
-    // Cast necessário pois os métodos create/update são sobrescritos nesta classe
-    super(repo as any);
-  }
-
-  /**
-   * Acessa o repository com tipo específico para operações customizadas
-   */
-  private get customRepo(): AprTipoAtividadeRelacaoRepository {
-    return this.repo as unknown as AprTipoAtividadeRelacaoRepository;
+    // @ts-expect-error - O repositório tem tipos de input diferentes (usa objetos Prisma), mas funciona no runtime
+    super(repo);
+    this.customRepo = repo;
   }
 
   /**
@@ -160,7 +156,10 @@ export class AprTipoAtividadeVinculoService extends AbstractCrudService<
    * Implementa método update requerido pelo AbstractCrudService
    * Update não é usado neste contexto - delega para setMapping
    */
-  async update(data: any, userId: string): Promise<AprTipoAtividadeRelacao> {
+  async update(
+    data: SetAprTipoAtividade & { id?: number },
+    userId: string
+  ): Promise<AprTipoAtividadeRelacao> {
     // Como update não é usado, tratamos como create/setMapping
     if (data.tipoAtividadeId && data.aprId) {
       return this.setMapping(
@@ -216,7 +215,7 @@ export class AprTipoAtividadeVinculoService extends AbstractCrudService<
         apr: true,
         tipoAtividade: true,
       },
-    } as any);
+    });
 
     // Transforma para formato padronizado de resposta
     return {

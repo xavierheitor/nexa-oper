@@ -40,6 +40,7 @@
  */
 
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 /**
  * Schema para criação de nova opção de resposta APR
@@ -73,21 +74,21 @@ export const aprOpcaoRespostaUpdateSchema = aprOpcaoRespostaCreateSchema.extend(
 export const aprOpcaoRespostaFilterSchema = z.object({
   /** Número da página para paginação (obrigatório) */
   page: z.number().int().positive('Página deve ser um número positivo'),
-  
+
   /** Quantidade de itens por página (obrigatório) */
   pageSize: z.number().int().positive('Tamanho da página deve ser um número positivo'),
-  
+
   /** Campo para ordenação (obrigatório) */
   orderBy: z.string().min(1, 'Campo de ordenação é obrigatório'),
-  
+
   /** Direção da ordenação (obrigatório) */
   orderDir: z.enum(['asc', 'desc']),
-  
+
   /** Termo de busca para filtrar opções de resposta (opcional) */
   search: z.string().optional(),
-  
+
   /** Configuração de includes para relacionamentos (opcional) */
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
 });
 
 // Exportação dos tipos TypeScript gerados automaticamente

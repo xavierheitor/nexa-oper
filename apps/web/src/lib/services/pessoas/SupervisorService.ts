@@ -10,7 +10,6 @@ import {
   supervisorFilterSchema,
   supervisorUpdateSchema,
 } from '../../schemas/supervisorSchema';
-import { PaginatedResult } from '../../types/common';
 
 type SupervisorCreate = z.infer<typeof supervisorCreateSchema>;
 type SupervisorUpdate = z.infer<typeof supervisorUpdateSchema>;

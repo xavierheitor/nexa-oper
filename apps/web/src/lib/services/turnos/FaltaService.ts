@@ -8,7 +8,7 @@ import { Falta } from '@nexa-oper/db';
 import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
 import { FaltaRepository } from '../../repositories/turnos/FaltaRepository';
 import { FaltaFilter as FaltaFilterSchema } from '../../schemas/turnoRealizadoSchema';
-import { PaginatedResult, PaginationParams } from '../../types/common';
+import { PaginatedResult } from '../../types/common';
 
 // Tipo de filtro compatível com PaginationParams
 type FaltaFilter = Omit<FaltaFilterSchema, 'orderBy' | 'orderDir'> & {
@@ -28,11 +28,11 @@ export class FaltaService extends AbstractCrudService<
     super(new FaltaRepository() as any);
   }
 
-  async create(data: { id: number }, userId: string): Promise<Falta> {
+  async create(_data: { id: number }, _userId: string): Promise<Falta> {
     throw new Error('Faltas não podem ser criadas diretamente pelo service. Use o sistema de escala.');
   }
 
-  async update(data: { id: number }, userId: string): Promise<Falta> {
+  async update(_data: { id: number }, _userId: string): Promise<Falta> {
     throw new Error('Faltas não podem ser atualizadas diretamente pelo service.');
   }
 

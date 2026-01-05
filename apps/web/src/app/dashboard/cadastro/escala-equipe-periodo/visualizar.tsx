@@ -9,7 +9,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Modal, Table, Spin, Tag, Card, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { visualizarEscala } from '@/lib/actions/escala/escalaEquipePeriodo';
@@ -61,9 +61,31 @@ export default function VisualizarEscala({ escalaId, open, onClose }: Visualizar
       }
       const result = await visualizarEscala(escalaId);
       if (result.success && result.data) {
-        // Fazer cast explícito para o tipo esperado, já que o handleServerAction
-        // não preserva completamente os tipos do Prisma
-        const dadosCompleto = result.data as unknown as DadosEscala;
+        // Validar e mapear dados para o tipo esperado
+        if (!result.data) {
+          throw new Error('Dados não encontrados');
+        }
+        // O repositório retorna com equipe e tipoEscala incluídos
+        // Fazer cast para incluir os campos que vêm do include do Prisma
+        const escalaComIncludes = result.data as typeof result.data & {
+          equipe?: { nome: string };
+          tipoEscala?: { nome: string };
+          Slots?: DadosEscala['Slots'];
+        };
+
+        const dadosCompleto: DadosEscala = {
+          id: escalaComIncludes.id,
+          status: String(escalaComIncludes.status),
+          equipe: escalaComIncludes.equipe || { nome: '' },
+          tipoEscala: escalaComIncludes.tipoEscala || { nome: '' },
+          periodoInicio: escalaComIncludes.periodoInicio instanceof Date
+            ? escalaComIncludes.periodoInicio
+            : new Date(escalaComIncludes.periodoInicio),
+          periodoFim: escalaComIncludes.periodoFim instanceof Date
+            ? escalaComIncludes.periodoFim
+            : new Date(escalaComIncludes.periodoFim),
+          Slots: escalaComIncludes.Slots || [],
+        };
         return dadosCompleto;
       }
       throw new Error(result.error || 'Erro ao carregar escala');

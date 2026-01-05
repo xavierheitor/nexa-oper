@@ -43,6 +43,7 @@
  */
 
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 /**
  * Schema para criação de nova APR
@@ -54,10 +55,10 @@ import { z } from 'zod';
 export const aprCreateSchema = z.object({
   /** Nome/título da APR (obrigatório, 1-255 caracteres) */
   nome: z.string().min(1, 'Nome é obrigatório').max(255, 'Nome deve ter no máximo 255 caracteres'),
-  
+
   /** Array de IDs das perguntas APR a serem vinculadas (opcional) */
   perguntaIds: z.array(z.number().int().positive('ID da pergunta deve ser positivo')).optional().default([]),
-  
+
   /** Array de IDs das opções de resposta APR a serem vinculadas (opcional) */
   opcaoRespostaIds: z.array(z.number().int().positive('ID da opção de resposta deve ser positivo')).optional().default([]),
 });
@@ -82,21 +83,21 @@ export const aprUpdateSchema = aprCreateSchema.extend({
 export const aprFilterSchema = z.object({
   /** Número da página para paginação (obrigatório) */
   page: z.number().int().positive('Página deve ser um número positivo'),
-  
+
   /** Quantidade de itens por página (obrigatório) */
   pageSize: z.number().int().positive('Tamanho da página deve ser um número positivo'),
-  
+
   /** Campo para ordenação (obrigatório) */
   orderBy: z.string().min(1, 'Campo de ordenação é obrigatório'),
-  
+
   /** Direção da ordenação (obrigatório) */
   orderDir: z.enum(['asc', 'desc']),
-  
+
   /** Termo de busca para filtrar APRs (opcional) */
   search: z.string().optional(),
-  
+
   /** Configuração de includes para relacionamentos (opcional) */
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
 });
 
 // Exportação dos tipos TypeScript gerados automaticamente

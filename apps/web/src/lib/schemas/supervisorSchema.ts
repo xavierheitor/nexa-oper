@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 export const supervisorCreateSchema = z.object({
   nome: z.string().min(1).max(255),
@@ -15,6 +16,6 @@ export const supervisorFilterSchema = z.object({
   orderBy: z.string(),
   orderDir: z.enum(['asc', 'desc']),
   search: z.string().optional(),
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
 });
 

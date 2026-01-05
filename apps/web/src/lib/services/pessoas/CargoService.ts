@@ -17,7 +17,6 @@ import {
   cargoFilterSchema,
   cargoUpdateSchema,
 } from '../../schemas/cargoSchema';
-import { PaginatedResult } from '../../types/common';
 
 type CargoCreate = z.infer<typeof cargoCreateSchema>;
 type CargoUpdate = z.infer<typeof cargoUpdateSchema>;

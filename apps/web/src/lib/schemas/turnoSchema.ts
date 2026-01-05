@@ -6,6 +6,7 @@
  */
 
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 /**
  * Schema para filtros de turno
@@ -22,7 +23,7 @@ export const turnoFilterSchema = z.object({
   status: z.enum(['ABERTO', 'FECHADO', 'CANCELADO']).optional(),
   dataInicio: z.coerce.date().optional(),
   dataFim: z.coerce.date().optional(),
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
 });
 
 /**

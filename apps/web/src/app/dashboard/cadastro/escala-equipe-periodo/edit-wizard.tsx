@@ -48,6 +48,43 @@ interface EletricistaEscala {
   primeiroDiaFolga: number;
 }
 
+interface TipoEscala {
+  id: number;
+  nome: string;
+  modoRepeticao: string;
+  cicloDias?: number | null;
+  periodicidadeSemanas?: number | null;
+  eletricistasPorTurma?: number | null;
+  ativo: boolean;
+}
+
+interface EscalaVisualizacao {
+  id: number;
+  equipeId: number;
+  tipoEscalaId: number;
+  periodoInicio: Date | string;
+  periodoFim: Date | string;
+  observacoes?: string | null;
+  Slots?: Array<{
+    id: number;
+    eletricistaId: number;
+    data: Date | string;
+    estado: string;
+    eletricista: {
+      id: number;
+      nome: string;
+      matricula: string;
+    };
+  }>;
+}
+
+interface FormValues {
+  equipeId: number;
+  tipoEscalaId: number;
+  periodo: [dayjs.Dayjs, dayjs.Dayjs];
+  observacoes?: string;
+}
+
 export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: EscalaEditWizardProps) {
   const { message } = App.useApp();
   const [currentStep, setCurrentStep] = useState(0);
@@ -55,12 +92,12 @@ export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: Escal
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
 
-  const [tipoEscalaSelecionado, setTipoEscalaSelecionado] = useState<any>(null);
+  const [tipoEscalaSelecionado, setTipoEscalaSelecionado] = useState<TipoEscala | null>(null);
   const [equipeIdSelecionada, setEquipeIdSelecionada] = useState<number | null>(null);
   const [eletricistasEscala, setEletricistasEscala] = useState<EletricistaEscala[]>([]);
   const [buscaEletricista, setBuscaEletricista] = useState('');
-  const [dadosOriginais, setDadosOriginais] = useState<any>(null);
-  const [valoresFormulario, setValoresFormulario] = useState<any>(null);
+  const [dadosOriginais, setDadosOriginais] = useState<EscalaVisualizacao | null>(null);
+  const [valoresFormulario, setValoresFormulario] = useState<FormValues | null>(null);
 
   // Carregar dados da escala existente
   useEffect(() => {
@@ -86,8 +123,17 @@ export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: Escal
           };
 
           form.setFieldsValue(valoresIniciais);
-          // Salvar valores iniciais no estado também
-          setValoresFormulario(valoresIniciais);
+          // Salvar valores iniciais no estado também - garantir que periodo seja uma tupla
+          const periodoTuple: [dayjs.Dayjs, dayjs.Dayjs] = [
+            dayjs(dados.periodoInicio),
+            dayjs(dados.periodoFim),
+          ];
+          setValoresFormulario({
+            equipeId: valoresIniciais.equipeId,
+            tipoEscalaId: valoresIniciais.tipoEscalaId,
+            periodo: periodoTuple,
+            observacoes: valoresIniciais.observacoes ?? undefined,
+          });
 
           setEquipeIdSelecionada(dados.equipeId);
 
@@ -96,9 +142,9 @@ export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: Escal
           if (!isMounted) return;
 
           if (tipos.success && tipos.data) {
-            const tipo = tipos.data.data?.find((t: any) => t.id === dados.tipoEscalaId);
+            const tipo = (tipos.data.data || []).find((t) => t.id === dados.tipoEscalaId);
             if (tipo) {
-              setTipoEscalaSelecionado(tipo);
+              setTipoEscalaSelecionado(tipo as TipoEscala);
             }
           }
 
@@ -106,8 +152,8 @@ export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: Escal
           const eletricistasMap = new Map<number, { nome: string; primeiroDiaFolga: number | null }>();
 
           // Ordenar slots por data e eletricista
-          // @ts-ignore - Slots existe no runtime mas não está no tipo TypeScript
-          const slotsOrdenados = [...((dados as any).Slots || [])].sort((a: any, b: any) => {
+          const slots = (dados as EscalaVisualizacao).Slots || [];
+          const slotsOrdenados = [...slots].sort((a, b) => {
             if (a.eletricistaId !== b.eletricistaId) {
               return a.eletricistaId - b.eletricistaId;
             }
@@ -183,7 +229,7 @@ export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: Escal
   });
 
   // Carregar tipos de escala
-  const { data: tiposEscala, isLoading: tiposLoading } = useEntityData({
+  const { data: tiposEscala, isLoading: tiposLoading } = useEntityData<TipoEscala>({
     key: 'tipos-escala-edit-wizard',
     fetcherAction: unwrapFetcher((params) =>
       listTiposEscala({
@@ -298,6 +344,13 @@ export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: Escal
         return;
       }
 
+      // Verificar dados originais antes de usar
+      if (!dadosOriginais) {
+        message.error('Dados originais não encontrados');
+        setLoading(false);
+        return;
+      }
+
       // Atualizar período
       const updateResult = await updateEscalaEquipePeriodo({
         id: escalaId,
@@ -310,6 +363,7 @@ export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: Escal
 
       if (!updateResult.success) {
         message.error(updateResult.error || 'Erro ao atualizar escala');
+        setLoading(false);
         return;
       }
 
@@ -578,11 +632,16 @@ export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: Escal
               filterOption={(input, option) =>
                 (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
               }
-              onChange={(value) => {
-                const tipo = tiposEscala?.find((t: any) => t.id === value);
-                setTipoEscalaSelecionado(tipo);
+              onChange={(value: number | undefined) => {
+                if (value === undefined) {
+                  setTipoEscalaSelecionado(null);
+                  return;
+                }
+                const tiposArray = tiposEscala as TipoEscala[] | undefined;
+                const tipo = tiposArray?.find((t) => t.id === value);
+                setTipoEscalaSelecionado(tipo || null);
               }}
-              options={tiposEscala?.map((tipo: any) => ({
+              options={(tiposEscala as TipoEscala[] | undefined)?.map((tipo) => ({
                 value: tipo.id,
                 label: tipo.nome,
               }))}

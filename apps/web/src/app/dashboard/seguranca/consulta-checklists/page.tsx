@@ -29,6 +29,7 @@ import { listVeiculos } from '@/lib/actions/veiculo/list';
 import { listTiposChecklist } from '@/lib/actions/tipoChecklist/list';
 import { listChecklists } from '@/lib/actions/checklist/list';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
+import { useSelectOptions } from '@/lib/hooks/useSelectOptions';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -345,10 +346,7 @@ export default function ConsultaChecklistsPage() {
                 filterOption={(input, option) =>
                   (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                 }
-                options={tiposEquipe.map((tipo: any) => ({
-                  value: tipo.id,
-                  label: tipo.nome,
-                }))}
+                options={useSelectOptions(tiposEquipe, { labelKey: 'nome', valueKey: 'id' })}
               />
             </Col>
             <Col xs={24} sm={12} md={8}>
@@ -365,10 +363,7 @@ export default function ConsultaChecklistsPage() {
                 filterOption={(input, option) =>
                   (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                 }
-                options={equipes.map((equipe: any) => ({
-                  value: equipe.id,
-                  label: equipe.nome,
-                }))}
+                options={useSelectOptions(equipes, { labelKey: 'nome', valueKey: 'id' })}
                 disabled={!tipoEquipeId && tiposEquipe.length > 0}
               />
             </Col>
@@ -386,10 +381,12 @@ export default function ConsultaChecklistsPage() {
                 filterOption={(input, option) =>
                   (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                 }
-                options={veiculos.map((veiculo: any) => ({
-                  value: veiculo.placa,
-                  label: `${veiculo.placa}${veiculo.modelo ? ` - ${veiculo.modelo}` : ''}`,
-                }))}
+                options={useSelectOptions(veiculos, {
+                  transform: (veiculo) => ({
+                    label: `${veiculo.placa}${veiculo.modelo ? ` - ${veiculo.modelo}` : ''}`,
+                    value: veiculo.placa,
+                  }),
+                })}
               />
             </Col>
             <Col xs={24} sm={12} md={8}>
@@ -406,10 +403,12 @@ export default function ConsultaChecklistsPage() {
                 filterOption={(input, option) =>
                   (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                 }
-                options={eletricistas.map((eletricista: any) => ({
-                  value: eletricista.id,
-                  label: `${eletricista.nome} (${eletricista.matricula})`,
-                }))}
+                options={useSelectOptions(eletricistas, {
+                  transform: (eletricista) => ({
+                    label: `${eletricista.nome} (${eletricista.matricula})`,
+                    value: eletricista.id,
+                  }),
+                })}
               />
             </Col>
             <Col xs={24} sm={12} md={8}>
@@ -426,10 +425,7 @@ export default function ConsultaChecklistsPage() {
                 filterOption={(input, option) =>
                   (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                 }
-                options={bases.map((base: any) => ({
-                  value: base.id,
-                  label: base.nome,
-                }))}
+                options={useSelectOptions(bases, { labelKey: 'nome', valueKey: 'id' })}
               />
             </Col>
             <Col xs={24} sm={12} md={8}>
@@ -447,10 +443,7 @@ export default function ConsultaChecklistsPage() {
                 filterOption={(input, option) =>
                   (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                 }
-                options={tiposChecklist.map((tipo: any) => ({
-                  value: tipo.id,
-                  label: tipo.nome,
-                }))}
+                options={useSelectOptions(tiposChecklist, { labelKey: 'nome', valueKey: 'id' })}
               />
             </Col>
             <Col xs={24} sm={12} md={8}>
@@ -467,10 +460,7 @@ export default function ConsultaChecklistsPage() {
                 filterOption={(input, option) =>
                   (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                 }
-                options={checklists.map((checklist: any) => ({
-                  value: checklist.id,
-                  label: checklist.nome,
-                }))}
+                options={useSelectOptions(checklists, { labelKey: 'nome', valueKey: 'id' })}
                 disabled={!tipoChecklistId && tiposChecklist.length > 0}
               />
             </Col>

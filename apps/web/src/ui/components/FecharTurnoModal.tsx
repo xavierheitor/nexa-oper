@@ -10,7 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, InputNumber, DatePicker, message, Typography, Space, Alert } from 'antd';
 import { fecharTurno } from '@/lib/actions/turno/fechar';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
 
 dayjs.locale('pt-br');

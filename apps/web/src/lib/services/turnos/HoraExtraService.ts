@@ -8,7 +8,7 @@ import { HoraExtra } from '@nexa-oper/db';
 import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
 import { HoraExtraRepository } from '../../repositories/turnos/HoraExtraRepository';
 import { HoraExtraFilter as HoraExtraFilterSchema } from '../../schemas/turnoRealizadoSchema';
-import { PaginatedResult, PaginationParams } from '../../types/common';
+import { PaginatedResult } from '../../types/common';
 
 // Tipo de filtro compatível com PaginationParams
 type HoraExtraFilter = Omit<HoraExtraFilterSchema, 'orderBy' | 'orderDir'> & {
@@ -32,11 +32,11 @@ export class HoraExtraService extends AbstractCrudService<
     this.horaExtraRepo = repo;
   }
 
-  async create(data: { id: number }, userId: string): Promise<HoraExtra> {
+  async create(_data: { id: number }, _userId: string): Promise<HoraExtra> {
     throw new Error('Horas extras não podem ser criadas diretamente pelo service.');
   }
 
-  async update(data: { id: number }, userId: string): Promise<HoraExtra> {
+  async update(_data: { id: number }, _userId: string): Promise<HoraExtra> {
     throw new Error('Horas extras não podem ser atualizadas diretamente pelo service.');
   }
 

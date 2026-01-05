@@ -23,6 +23,7 @@
  */
 
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 // Regex para validação de senha forte
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
@@ -147,7 +148,7 @@ export const userFilterSchema = z.object({
   orderDir: z.enum(['asc', 'desc']).default('asc'),
   search: z.string().optional(),
   ativo: z.boolean().optional(), // Para filtrar por usuários não deletados
-  include: z.any().optional(), // Para includes dinâmicos
+  include: z.custom<IncludeConfig>().optional(), // Para includes dinâmicos
 });
 
 // Schema para login (referência)

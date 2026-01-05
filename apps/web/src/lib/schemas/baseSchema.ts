@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 export const baseCreateSchema = z.object({
   nome: z.string().min(1).max(255),
@@ -16,5 +17,9 @@ export const baseFilterSchema = z.object({
   orderDir: z.enum(['asc', 'desc']).default('asc'),
   search: z.string().optional(),
   contratoId: z.number().int().positive().optional(),
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
 });
+
+export type BaseCreate = z.infer<typeof baseCreateSchema>;
+export type BaseUpdate = z.infer<typeof baseUpdateSchema>;
+export type BaseFilter = z.infer<typeof baseFilterSchema>;

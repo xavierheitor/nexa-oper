@@ -47,11 +47,15 @@
 'use client';
 
 import { useMemo } from 'react';
+import type { SelectOption, SelectOptionValue } from '../types/selectOptions';
 
 /**
  * Opções de configuração do hook
+ *
+ * @template T - Tipo do item no array de dados
+ * @template TValue - Tipo do valor da opção (inferido automaticamente ou pode ser especificado)
  */
-export interface UseSelectOptionsConfig<T = any> {
+export interface UseSelectOptionsConfig<T = unknown, TValue extends SelectOptionValue = SelectOptionValue> {
   /**
    * Chave do objeto para usar como label
    * Pode ser uma chave aninhada usando dot notation (ex: 'contrato.nome')
@@ -67,20 +71,30 @@ export interface UseSelectOptionsConfig<T = any> {
    * Função de transformação customizada
    * Se fornecida, labelKey e valueKey são ignorados
    */
-  transform?: (item: T) => { label: string; value: any };
+  transform?: (item: T) => SelectOption<TValue>;
 
   /**
    * Valor padrão a retornar quando o array estiver vazio ou undefined
    * @default []
    */
-  defaultValue?: Array<{ label: string; value: any }>;
+  defaultValue?: SelectOption<TValue>[];
 }
 
 /**
  * Acessa valor aninhado usando dot notation
  */
-function getNestedValue(obj: any, path: string): any {
-  return path.split('.').reduce((current, key) => current?.[key], obj);
+function getNestedValue(obj: unknown, path: string): unknown {
+  if (!obj || typeof obj !== 'object') return undefined;
+  const keys = path.split('.');
+  let current: unknown = obj;
+  for (const key of keys) {
+    if (current && typeof current === 'object' && key in current) {
+      current = (current as Record<string, unknown>)[key];
+    } else {
+      return undefined;
+    }
+  }
+  return current;
 }
 
 /**
@@ -90,10 +104,10 @@ function getNestedValue(obj: any, path: string): any {
  * @param config - Configuração do hook
  * @returns Array de opções no formato { label, value }
  */
-export function useSelectOptions<T = any>(
+export function useSelectOptions<T = unknown, TValue extends SelectOptionValue = SelectOptionValue>(
   data: T[] | undefined | null,
-  config: UseSelectOptionsConfig<T> = {}
-): Array<{ label: string; value: any }> {
+  config: UseSelectOptionsConfig<T, TValue> = {}
+): SelectOption<TValue>[] {
   const { labelKey = 'nome', valueKey = 'id', transform, defaultValue = [] } = config;
 
   return useMemo(() => {
@@ -108,10 +122,14 @@ export function useSelectOptions<T = any>(
     }
 
     // Transforma usando chaves configuradas
-    return data.map((item) => ({
-      label: getNestedValue(item, labelKey) || '',
-      value: getNestedValue(item, valueKey) ?? null,
-    }));
+    return data.map((item) => {
+      const labelValue = getNestedValue(item, labelKey);
+      const valueValue = getNestedValue(item, valueKey);
+      return {
+        label: String(labelValue || ''),
+        value: (valueValue ?? null) as TValue,
+      };
+    });
   }, [data, labelKey, valueKey, transform, defaultValue]);
 }
 

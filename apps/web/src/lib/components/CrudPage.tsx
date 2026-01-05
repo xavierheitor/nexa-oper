@@ -153,6 +153,7 @@ export default function CrudPage<TEntity extends { id: number | string }, TFormD
   const getInitialValues = (): Partial<TFormData> | undefined => {
     if (!controller.editingItem) return undefined;
     // Retorna o item sendo editado - formulários devem mapear campos apropriadamente
+    // Usa type assertion segura através de unknown já que TEntity e TFormData podem não ser totalmente compatíveis
     return controller.editingItem as unknown as Partial<TFormData>;
   };
 

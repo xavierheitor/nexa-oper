@@ -26,6 +26,7 @@
  */
 
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 /**
  * Schema para criação de usuário móvel
@@ -133,7 +134,7 @@ export const mobileUserFilterSchema = z.object({
   pageSize: z.number().int().positive().max(100).optional(),
   sortBy: z.string().optional(),
   sortOrder: z.enum(['asc', 'desc']).optional(),
-  include: z.any().optional(), // Para includes dinâmicos
+  include: z.custom<IncludeConfig>().optional(), // Para includes dinâmicos
 });
 
 // ========================================

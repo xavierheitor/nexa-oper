@@ -62,7 +62,12 @@ export default function ChecklistPendenciaForm({ initialValues, onSubmit, loadin
     }
   };
 
-  const handleFinish = (values: any) => {
+  interface FormValues {
+    status: StatusPendencia;
+    observacaoTratamento?: string;
+  }
+
+  const handleFinish = (values: FormValues) => {
     onSubmit({
       id: initialValues.id,
       status: values.status,

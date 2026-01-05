@@ -11,10 +11,8 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-  CalendarOutlined,
   CheckCircleOutlined,
   FileOutlined,
-  TeamOutlined,
   EyeOutlined,
   ClockCircleOutlined,
 } from '@ant-design/icons';
@@ -263,9 +261,11 @@ export default function EscalaEquipePeriodoPage() {
   };
 
   const handlePublicarTodas = async () => {
-    // @ts-ignore - escalas.data não possui tipagem completa no runtime
-    const escalasRascunho: EscalaEquipePeriodo[] = (escalas.data as unknown as EscalaEquipePeriodo[]).filter(
-      e => e.status === 'RASCUNHO'
+    // Filtrar escalas em rascunho
+    // escalas.data pode não ter equipe e tipoEscala incluídos, então fazemos cast
+    const escalasData = (escalas.data || []) as Array<EscalaEquipePeriodo | Omit<EscalaEquipePeriodo, 'equipe' | 'tipoEscala'>>;
+    const escalasRascunho = escalasData.filter(
+      (e) => e.status === 'RASCUNHO'
     );
 
     if (escalasRascunho.length === 0) {
@@ -282,11 +282,14 @@ export default function EscalaEquipePeriodoPage() {
             Escalas que serão publicadas:
           </p>
           <ul style={{ fontSize: '12px', maxHeight: '200px', overflowY: 'auto' }}>
-            {escalasRascunho.map(e => (
-              <li key={e.id}>
-                <strong>{e.equipe.nome}</strong> - {e.tipoEscala.nome}
-              </li>
-            ))}
+            {escalasRascunho.map(e => {
+              const escala = e as EscalaEquipePeriodo;
+              return (
+                <li key={e.id}>
+                  <strong>{escala.equipe?.nome || 'N/A'}</strong> - {escala.tipoEscala?.nome || 'N/A'}
+                </li>
+              );
+            })}
           </ul>
         </div>
       ),
@@ -540,7 +543,7 @@ export default function EscalaEquipePeriodoPage() {
             disabled={
               !escalas.data ||
               // @ts-ignore - escalas.data não possui tipagem completa no runtime
-              ((escalas.data as unknown as EscalaEquipePeriodo[]).filter(e => e.status === 'RASCUNHO').length === 0)
+              ((escalas.data || []).filter(e => e.status === 'RASCUNHO').length === 0)
             }
           >
             Publicar Todas
@@ -559,7 +562,7 @@ export default function EscalaEquipePeriodoPage() {
         // @ts-ignore - tipagem do Table não cobre o formato de columns usado
         columns={columns}
         // @ts-ignore - tipagem do Table não cobre o formato de dataSource usado
-        dataSource={escalas.data as unknown as EscalaEquipePeriodo[]}
+        dataSource={escalas.data || []}
         loading={escalas.isLoading}
         rowKey="id"
         pagination={escalas.pagination}

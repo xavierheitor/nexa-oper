@@ -113,9 +113,15 @@ export default function BaseForm({
           loading={contratosLoading}
           showSearch
           optionFilterProp="children"
-          filterOption={(input, option) =>
-            (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
-          }
+          filterOption={(input, option) => {
+            // option.children pode ser ReactNode, então precisamos extrair o texto
+            const childrenText = typeof option?.children === 'string'
+              ? option.children
+              : Array.isArray(option?.children)
+              ? option.children.map(c => typeof c === 'string' ? c : '').join('')
+              : '';
+            return childrenText.toLowerCase().includes(input.toLowerCase());
+          }}
         >
           {contratos.map((contrato) => (
             <Select.Option key={contrato.id} value={contrato.id}>
