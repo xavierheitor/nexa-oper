@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Card, Empty, Spin, Tag, Typography, Space, Divider, Table, DatePicker } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import { UserOutlined, TeamOutlined, CalendarOutlined, HomeOutlined, FileTextOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -72,6 +73,25 @@ export default function EscaladosPorDia({ filtros }: EscaladosPorDiaProps) {
     },
     [dataSelecionada, filtros?.baseId, filtros?.contratoId]
   );
+
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <Card
+        title={
+          <Space>
+            <CalendarOutlined />
+            <span>Escalados e Folgas por Dia</span>
+          </Space>
+        }
+      >
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Spin size="large" />
+        </div>
+      </Card>
+    );
+  }
 
   // Formatar data para exibição
   const dataFormatada = dataSelecionada

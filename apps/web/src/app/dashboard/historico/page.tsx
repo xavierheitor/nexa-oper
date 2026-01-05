@@ -25,6 +25,7 @@ import FecharTurnoModal from '@/ui/components/FecharTurnoModal';
 import { useLoadingStates } from '@/lib/hooks/useLoadingStates';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -427,6 +428,16 @@ export default function HistoricoPage() {
     }
     return [];
   }, [dadosGraficoBase]);
+
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   // Aplicar filtros aos turnos do histórico
   const turnosFiltrados = useMemo(() => {

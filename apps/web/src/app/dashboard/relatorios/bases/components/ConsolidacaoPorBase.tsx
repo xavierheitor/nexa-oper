@@ -4,6 +4,7 @@ import { Card, Empty, Spin, Table, Tag } from 'antd';
 import { useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
 
@@ -51,6 +52,18 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
   );
 
   const { data: dadosRaw, loading, error, refetch } = useDataFetch<DadosBase[]>(fetcher, [fetcher]);
+
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <Card title="Consolidação por Base">
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Spin size="large" />
+        </div>
+      </Card>
+    );
+  }
 
   // Garante que dados nunca seja null
   const dados: DadosBase[] = dadosRaw ?? [];

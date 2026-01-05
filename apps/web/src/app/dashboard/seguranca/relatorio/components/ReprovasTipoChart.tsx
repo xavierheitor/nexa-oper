@@ -1,8 +1,9 @@
 'use client';
 
 import { Column } from '@ant-design/plots';
-import { Typography } from 'antd';
+import { Typography, Spin } from 'antd';
 import { useMemo } from 'react';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 
 interface ReprovaPorTipoChecklist {
   tipoChecklistId: number;
@@ -26,6 +27,19 @@ export function ReprovasTipoChart({
   data,
   loading = false,
 }: ReprovasTipoChartProps) {
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ marginTop: '40px' }}>
+        <Title level={4}>Reprovas por Tipo de Checklist</Title>
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Spin size="large" />
+        </div>
+      </div>
+    );
+  }
+
   const chartConfig = useMemo(() => {
     const dados = data ?? [];
     if (!dados || dados.length === 0) {

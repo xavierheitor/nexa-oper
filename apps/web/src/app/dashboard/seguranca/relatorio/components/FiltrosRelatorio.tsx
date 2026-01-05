@@ -1,7 +1,8 @@
 'use client';
 
-import { DatePicker, Select, Space } from 'antd';
+import { DatePicker, Select, Space, Spin } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import type { Base, TipoEquipe } from '@nexa-oper/db';
 
 const { RangePicker } = DatePicker;
@@ -39,6 +40,16 @@ export function FiltrosRelatorio({
   onBaseChange,
   onTipoEquipeChange,
 }: FiltrosRelatorioProps) {
+  // Check de hidratação
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50px' }}>
+        <Spin size="small" />
+      </div>
+    );
+  }
+
   const basesList = bases ?? [];
   const tiposEquipeList = tiposEquipe ?? [];
 

@@ -1,6 +1,7 @@
 'use client';
 
-import { Card, Space, Typography } from 'antd';
+import { Card, Space, Typography, Spin } from 'antd';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 
 interface ReprovaPorPergunta {
   perguntaId: number;
@@ -41,6 +42,18 @@ export function ResumoEstatisticas({
   dataEquipes,
   dataTiposChecklist,
 }: ResumoEstatisticasProps) {
+  // Check de hidratação
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <Card size="small" title="Resumo">
+        <div style={{ textAlign: 'center', padding: '20px 0' }}>
+          <Spin size="small" />
+        </div>
+      </Card>
+    );
+  }
+
   const perguntas = dataPerguntas ?? [];
   const equipes = dataEquipes ?? [];
   const tiposChecklist = dataTiposChecklist ?? [];

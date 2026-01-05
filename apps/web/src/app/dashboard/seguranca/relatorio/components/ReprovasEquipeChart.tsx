@@ -1,8 +1,9 @@
 'use client';
 
 import { Column } from '@ant-design/plots';
-import { Typography } from 'antd';
+import { Typography, Spin } from 'antd';
 import { useMemo } from 'react';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 
 interface ReprovaPorEquipe {
   equipeId: number;
@@ -26,6 +27,19 @@ export function ReprovasEquipeChart({
   data,
   loading = false,
 }: ReprovasEquipeChartProps) {
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ marginTop: '40px' }}>
+        <Title level={4}>Top 10 Equipes com Mais Reprovas</Title>
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Spin size="large" />
+        </div>
+      </div>
+    );
+  }
+
   const chartConfig = useMemo(() => {
     const dados = data ?? [];
     if (!dados || dados.length === 0) {
