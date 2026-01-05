@@ -186,6 +186,7 @@ interface VinculoTVFormValues {
 }
 
 function VinculoTVModal({ onSaved, controllerExec }: { onSaved: () => void; controllerExec: CrudController<unknown>['exec'] }) {
+  const { message } = App.useApp();
   const [form] = Form.useForm<VinculoTVFormValues>();
 
   // Carregar tipos de veículo e checklists
@@ -249,6 +250,7 @@ interface VinculoTEFormValues {
 }
 
 function VinculoTEModal({ onSaved, controllerExec }: { onSaved: () => void; controllerExec: CrudController<unknown>['exec'] }) {
+  const { message } = App.useApp();
   const [form] = Form.useForm<VinculoTEFormValues>();
 
   // Carregar tipos de equipe e checklists

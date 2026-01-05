@@ -128,9 +128,16 @@ export default function EscalaEquipePeriodoPage() {
 
   const { data: tiposEscala } = useEntityData({
     key: 'tipos-escala-filtro-escala',
-    fetcherAction: unwrapFetcher(listTiposEscala),
+    fetcherAction: unwrapFetcher((params) => listTiposEscala({
+      ...params,
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'nome',
+      orderDir: 'asc',
+      ativo: true,
+    })),
     paginationEnabled: false,
-    initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc', ativo: true },
+    initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
   const basesOptions = useSelectOptions(bases, { labelKey: 'nome', valueKey: 'id' });
@@ -139,36 +146,33 @@ export default function EscalaEquipePeriodoPage() {
 
   const crud = useCrudController<EscalaEquipePeriodo>('escalaEquipePeriodo');
 
+  // Criar fetcher que inclui os filtros customizados
+  const escalasFetcher = useMemo(
+    () =>
+      unwrapFetcher((params) =>
+        listEscalasEquipePeriodo({
+          ...params,
+          ...periodoFiltro,
+          tipoEquipeId: filtroTipoEquipe,
+          baseId: filtroBase,
+          tipoEscalaId: filtroTipoEscala,
+          status: filtroStatus as 'RASCUNHO' | 'EM_APROVACAO' | 'PUBLICADA' | 'ARQUIVADA' | undefined,
+        })
+      ),
+    [periodoFiltro, filtroTipoEquipe, filtroBase, filtroTipoEscala, filtroStatus]
+  );
+
   const escalas = useEntityData({
     key: 'escalasEquipePeriodo',
-    fetcherAction: unwrapFetcher(listEscalasEquipePeriodo),
+    fetcherAction: escalasFetcher,
     paginationEnabled: true,
     initialParams: {
       page: 1,
       pageSize: 10,
       orderBy: 'periodoInicio',
       orderDir: 'desc',
-      ...periodoFiltro,
-      tipoEquipeId: filtroTipoEquipe,
-      baseId: filtroBase,
-      tipoEscalaId: filtroTipoEscala,
-      status: filtroStatus as 'RASCUNHO' | 'EM_APROVACAO' | 'PUBLICADA' | 'ARQUIVADA' | undefined,
     },
   });
-
-  // Atualizar parâmetros quando os filtros mudarem
-  useEffect(() => {
-    escalas.setParams((prev: any) => ({
-      ...prev,
-      page: 1, // Resetar para primeira página ao mudar filtro
-      ...periodoFiltro,
-      tipoEquipeId: filtroTipoEquipe,
-      baseId: filtroBase,
-      tipoEscalaId: filtroTipoEscala,
-      status: filtroStatus as 'RASCUNHO' | 'EM_APROVACAO' | 'PUBLICADA' | 'ARQUIVADA' | undefined,
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [periodoFiltro, filtroTipoEquipe, filtroBase, filtroTipoEscala, filtroStatus]);
 
   const handleGerarSlots = async (record: EscalaEquipePeriodo) => {
     const isPublicada = record.status === 'PUBLICADA';

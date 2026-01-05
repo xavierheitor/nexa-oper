@@ -194,7 +194,7 @@ export default function JustificarFaltaModal({
 
         <Form.Item>
           <Space>
-            <Button type="primary" htmlType="submit" loading={loading || uploading}>
+            <Button type="primary" htmlType="submit" loading={loading}>
               Justificar
             </Button>
             <Button onClick={handleCancel}>Cancelar</Button>

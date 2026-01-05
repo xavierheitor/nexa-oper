@@ -380,10 +380,7 @@ export const equipeTurnoHistoricoCreateSchema = z
   .object({
     equipeId: z.number().int().positive('Equipe é obrigatória'),
     horarioAberturaCatalogoId: z.number().int().positive().optional(),
-    dataInicio: z.coerce.date({
-      required_error: 'Data de início é obrigatória',
-      invalid_type_error: 'Data de início deve ser uma data válida',
-    }),
+    dataInicio: z.coerce.date(),
     dataFim: z.coerce.date().nullable().optional(),
     inicioTurnoHora: z
       .string()
@@ -415,10 +412,7 @@ export const equipeTurnoHistoricoUpdateSchema = z
     id: z.number().int().positive(),
     equipeId: z.number().int().positive('Equipe é obrigatória'),
     horarioAberturaCatalogoId: z.number().int().positive().optional(),
-    dataInicio: z.coerce.date({
-      required_error: 'Data de início é obrigatória',
-      invalid_type_error: 'Data de início deve ser uma data válida',
-    }),
+    dataInicio: z.coerce.date(),
     dataFim: z.coerce.date().nullable().optional(),
     inicioTurnoHora: z
       .string()

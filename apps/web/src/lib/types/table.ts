@@ -103,7 +103,7 @@ export interface TypedTableColumn<TRecord = unknown, TValue = unknown> {
   key?: string;
   render?: TableColumnRender<TRecord, TValue>;
   sorter?: boolean | TableSorterFunction<TRecord>;
-  filterDropdown?: TableFilterDropdownRender<TRecord>;
+  filterDropdown?: TableFilterDropdownRender;
   onFilter?: TableOnFilter<TRecord, TValue>;
   [key: string]: unknown;
 }
