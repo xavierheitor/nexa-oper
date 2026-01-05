@@ -789,6 +789,87 @@ export default function TurnosPage() {
         />
       </Card>
 
+      {/* Card de Turnos Não Abertos - Para Cobrança */}
+      {loadingTurnosPrevistos ? (
+        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+          <Col xs={24}>
+            <Card>
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <Spin size="large" />
+              </div>
+            </Card>
+          </Col>
+        </Row>
+      ) : turnosPrevistosResult ? (
+        (() => {
+          const turnosNaoAbertos = turnosPrevistosResult.filter(
+            (tp) => tp.status === 'NAO_ABERTO'
+          );
+
+          if (turnosNaoAbertos.length > 0) {
+            return (
+              <Card
+                title={
+                  <Space>
+                    <span>Turnos Previstos Não Abertos</span>
+                    <Tag color="error">{turnosNaoAbertos.length}</Tag>
+                  </Space>
+                }
+                style={{ marginBottom: 24 }}
+                extra={
+                  <Tag color="warning">
+                    Aguardando abertura de turno
+                  </Tag>
+                }
+              >
+                <Table
+                  dataSource={turnosNaoAbertos}
+                  rowKey={(record) => `${record.equipeId}-${record.status}`}
+                  pagination={{ pageSize: 10, showSizeChanger: true }}
+                  size="small"
+                  columns={[
+                    {
+                      title: 'Equipe',
+                      dataIndex: 'equipeNome',
+                      key: 'equipeNome',
+                      width: 200,
+                      fixed: 'left',
+                    },
+                    {
+                      title: 'Tipo de Equipe',
+                      dataIndex: 'tipoEquipeNome',
+                      key: 'tipoEquipeNome',
+                      width: 150,
+                    },
+                    {
+                      title: 'Horário Previsto',
+                      dataIndex: 'horarioPrevisto',
+                      key: 'horarioPrevisto',
+                      width: 140,
+                      render: (horario: string | null) => formatTime(horario) || '-',
+                    },
+                    {
+                      title: 'Eletricistas',
+                      key: 'eletricistas',
+                      render: (_: unknown, record: TurnoPrevisto) => (
+                        <Space direction="vertical" size={0}>
+                          {record.eletricistas.map((el) => (
+                            <span key={el.id}>
+                              {el.nome} ({el.matricula})
+                            </span>
+                          ))}
+                        </Space>
+                      ),
+                    },
+                  ]}
+                />
+              </Card>
+            );
+          }
+          return null;
+        })()
+      ) : null}
+
       {/* Seção de Turnos Previstos */}
       {loadingStatsPrevistos ? (
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
