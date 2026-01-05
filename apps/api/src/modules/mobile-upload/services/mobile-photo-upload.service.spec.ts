@@ -4,8 +4,10 @@ jest.mock('fs/promises', () => ({
 }));
 
 import * as fsPromises from 'fs/promises';
-import { MobilePhotoUploadService } from './mobile-photo-upload.service';
+
 import { DatabaseService } from '@database/database.service';
+
+import { MobilePhotoUploadService } from './mobile-photo-upload.service';
 import { PhotoUploadDto } from '../dto';
 
 describe('MobilePhotoUploadService', () => {

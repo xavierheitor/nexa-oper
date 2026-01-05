@@ -4,6 +4,8 @@ import { Card, Empty, Spin, Table, Tag } from 'antd';
 import { useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
+import { useHydrated } from '@/lib/hooks/useHydrated';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 
 interface EquipeSemHorario {
   id: number;
@@ -13,8 +15,10 @@ interface EquipeSemHorario {
   base: string;
 }
 
+import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
+
 interface EquipesSemHorarioProps {
-  filtros?: any;
+  filtros?: FiltrosRelatorioBase;
 }
 
 export default function EquipesSemHorario({ filtros }: EquipesSemHorarioProps) {
@@ -39,7 +43,7 @@ export default function EquipesSemHorario({ filtros }: EquipesSemHorarioProps) {
     [filtros]
   );
 
-  const { data: dadosRaw, loading } = useDataFetch<EquipeSemHorario[]>(
+  const { data: dadosRaw, loading, error, refetch } = useDataFetch<EquipeSemHorario[]>(
     fetcher,
     [fetcher]
   );
@@ -95,29 +99,23 @@ export default function EquipesSemHorario({ filtros }: EquipesSemHorarioProps) {
     );
   }
 
-  if (dados.length === 0) {
-    return (
-      <Card
-        title="Equipes sem Horário Definido"
-        extra={<Tag color="success">0 pendências</Tag>}
-      >
-        <Empty description="Todas as equipes têm horário definido" />
-      </Card>
-    );
-  }
-
   return (
     <Card
       title="Equipes sem Horário Definido"
-      extra={<Tag color="warning">{dados.length} equipe(s)</Tag>}
+      extra={<Tag color={dados.length === 0 ? "success" : "warning"}>{dados.length} pendência(s)</Tag>}
     >
-      <Table
-        columns={columns}
-        dataSource={dados}
-        rowKey="id"
-        pagination={pagination}
-        size="small"
-      />
+      <ErrorAlert error={error} onRetry={refetch} />
+      {dados.length === 0 && !error ? (
+        <Empty description="Todas as equipes têm horário definido" />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={dados}
+          rowKey="id"
+          pagination={pagination}
+          size="small"
+        />
+      )}
     </Card>
   );
 }

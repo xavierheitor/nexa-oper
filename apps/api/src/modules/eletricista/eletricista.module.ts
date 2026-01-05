@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
 import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@modules/engine/auth/auth.module';
-import { EletricistaController } from './controllers/eletricista.controller';
+import { Module } from '@nestjs/common';
+
 import { EletricistaSyncController } from './controllers/eletricista-sync.controller';
+import { EletricistaController } from './controllers/eletricista.controller';
 import { EletricistaService } from './services/eletricista.service';
 
 @Module({

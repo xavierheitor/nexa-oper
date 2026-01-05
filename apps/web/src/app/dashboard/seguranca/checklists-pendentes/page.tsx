@@ -4,13 +4,14 @@ import { getChecklistPendencia } from '@/lib/actions/checklistPendencia/get';
 import { listChecklistPendencias } from '@/lib/actions/checklistPendencia/list';
 import { updateChecklistPendencia } from '@/lib/actions/checklistPendencia/update';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { ChecklistPendencia, StatusPendencia } from '@nexa-oper/db';
-import { App, Button, Card, Form, Modal, Select, Table, Tag, Image, Space, Typography } from 'antd';
+import { App, Button, Card, Modal, Spin, Table, Tag, Image, Space, Typography } from 'antd';
 import ChecklistPendenciaForm from './form';
 
 const { Text } = Typography;
@@ -166,6 +167,7 @@ export default function ChecklistPendenciasPage() {
           controller.open(res.data);
         }
       },
+      // Não permite deletar, apenas tratar
     }
   );
 
@@ -180,6 +182,17 @@ export default function ChecklistPendenciasPage() {
     };
     controller.exec(action, 'Pendência atualizada com sucesso!').finally(() => pendencias.mutate());
   };
+
+  // Check de hidratação DEPOIS de todos os hooks, mas ANTES de qualquer return condicional
+  const hydrated = useHydrated();
+
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   if (pendencias.error) return <p style={{ color: 'red' }}>Erro ao carregar pendências.</p>;
 
@@ -209,7 +222,7 @@ export default function ChecklistPendenciasPage() {
         open={controller.isOpen}
         onCancel={controller.close}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         width={800}
       >
         {controller.editingItem && (

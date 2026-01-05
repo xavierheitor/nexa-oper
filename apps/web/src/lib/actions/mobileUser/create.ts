@@ -44,7 +44,7 @@
 
 'use server';
 
-import type { MobileUserService } from '@/lib/services/MobileUserService';
+import type { MobileUserService } from '@/lib/services/auth/MobileUserService';
 import { container } from '@/lib/services/common/registerServices';
 import { mobileUserCreateSchema } from '../../schemas/mobileUserSchema';
 import { handleServerAction } from '../common/actionHandler';

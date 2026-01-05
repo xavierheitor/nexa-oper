@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Página de Gerenciamento de Períodos de Escala
  *
@@ -6,7 +5,7 @@
  */
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Table, Button, Space, Modal, Tag, Tooltip, App, Alert, DatePicker, Form } from 'antd';
 import {
   PlusOutlined,
@@ -20,6 +19,7 @@ import {
   ClockCircleOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
@@ -92,6 +92,16 @@ export default function EscalaEquipePeriodoPage() {
   const [escalaParaProlongar, setEscalaParaProlongar] = useState<EscalaEquipePeriodo | null>(null);
   const [formProlongar] = Form.useForm<{ novoPeriodoFim: dayjs.Dayjs }>();
 
+  // Estado para filtro de período (mês atual por padrão)
+  const [mesFiltro, setMesFiltro] = useState<Dayjs>(dayjs());
+
+  // Calcular período de início e fim do mês selecionado
+  const periodoFiltro = useMemo(() => {
+    const inicioMes = mesFiltro.startOf('month').toDate();
+    const fimMes = mesFiltro.endOf('month').toDate();
+    return { periodoInicio: inicioMes, periodoFim: fimMes };
+  }, [mesFiltro]);
+
   const crud = useCrudController<EscalaEquipePeriodo>('escalaEquipePeriodo');
 
   const escalas = useEntityData({
@@ -103,8 +113,18 @@ export default function EscalaEquipePeriodoPage() {
       pageSize: 10,
       orderBy: 'periodoInicio',
       orderDir: 'desc',
+      ...periodoFiltro,
     },
   });
+
+  // Atualizar parâmetros quando o período mudar
+  React.useEffect(() => {
+    escalas.setParams((prev: any) => ({
+      ...prev,
+      page: 1, // Resetar para primeira página ao mudar filtro
+      ...periodoFiltro,
+    }));
+  }, [periodoFiltro]);
 
   const handleGerarSlots = async (record: EscalaEquipePeriodo) => {
     const isPublicada = record.status === 'PUBLICADA';
@@ -234,7 +254,7 @@ export default function EscalaEquipePeriodoPage() {
         message.error(result.error || 'Erro ao prolongar escala');
       }
     } catch (error) {
-      if (error?.errorFields) {
+      if (error && typeof error === 'object' && 'errorFields' in error) {
         // Erro de validação do formulário
         return;
       }
@@ -243,8 +263,7 @@ export default function EscalaEquipePeriodoPage() {
   };
 
   const handlePublicarTodas = async () => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-ignore - escalas.data não possui tipagem completa no runtime
     const escalasRascunho: EscalaEquipePeriodo[] = (escalas.data as unknown as EscalaEquipePeriodo[]).filter(
       e => e.status === 'RASCUNHO'
     );
@@ -494,9 +513,21 @@ export default function EscalaEquipePeriodoPage() {
 
   return (
     <div style={{ padding: '24px' }}>
-      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1>Períodos de Escala</h1>
         <Space>
+          <DatePicker
+            picker="month"
+            format="MM/YYYY"
+            value={mesFiltro}
+            onChange={(date) => {
+              if (date) {
+                setMesFiltro(date);
+              }
+            }}
+            placeholder="Selecione o mês"
+            style={{ width: 150 }}
+          />
           <Button
             icon={<EyeOutlined />}
             onClick={() => setIsVisualizacaoGeralOpen(true)}
@@ -508,8 +539,7 @@ export default function EscalaEquipePeriodoPage() {
             onClick={handlePublicarTodas}
             disabled={
               !escalas.data ||
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
+              // @ts-ignore - escalas.data não possui tipagem completa no runtime
               ((escalas.data as unknown as EscalaEquipePeriodo[]).filter(e => e.status === 'RASCUNHO').length === 0)
             }
           >
@@ -525,14 +555,10 @@ export default function EscalaEquipePeriodoPage() {
         </Space>
       </div>
 
-      {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-      {/* @ts-ignore */}
       <Table
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-ignore - tipagem do Table não cobre o formato de columns usado
         columns={columns}
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-ignore - tipagem do Table não cobre o formato de dataSource usado
         dataSource={escalas.data as unknown as EscalaEquipePeriodo[]}
         loading={escalas.isLoading}
         rowKey="id"
@@ -701,4 +727,3 @@ export default function EscalaEquipePeriodoPage() {
     </div>
   );
 }
-

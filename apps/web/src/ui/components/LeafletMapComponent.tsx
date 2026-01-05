@@ -6,7 +6,7 @@ import L from 'leaflet';
 
 // Fix para ícones do Leaflet no Next.js
 if (typeof window !== 'undefined') {
-  // @ts-ignore
+  // @ts-ignore - _getIconUrl é propriedade interna do Leaflet
   delete L.Icon.Default.prototype._getIconUrl;
   L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
@@ -167,4 +167,3 @@ export default function LeafletMapComponent({ localizacoes, formatDateTime }: Le
     </MapContainer>
   );
 }
-

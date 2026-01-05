@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Card, Spin, message } from 'antd';
-import { App } from 'antd';
+import { Card, Spin } from 'antd';
 import { getConsolidadoEletricista } from '@/lib/actions/turno-realizado/getConsolidadoEletricista';
 import {
   ConsolidadoEletricistaResponse,
   PeriodoTipo,
 } from '@/lib/schemas/turnoRealizadoSchema';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import ConsolidadoEletricistaCard from '@/ui/components/ConsolidadoEletricistaCard';
 import HistoricoTable from '@/ui/components/HistoricoTable';
 import PeriodoSelector from '@/ui/components/PeriodoSelector';
@@ -20,7 +20,6 @@ import useSWR from 'swr';
 export default function FrequenciaEletricistaPage() {
   const params = useParams();
   const eletricistaId = Number(params.id);
-  const { message: messageApi } = App.useApp();
 
   const [periodo, setPeriodo] = useState<{
     periodo: PeriodoTipo;
@@ -59,12 +58,6 @@ export default function FrequenciaEletricistaPage() {
     }
   );
 
-  useEffect(() => {
-    if (error) {
-      messageApi.error(error.message || 'Erro ao carregar dados de frequência');
-    }
-  }, [error, messageApi]);
-
   if (isLoading && !data) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>
@@ -73,33 +66,36 @@ export default function FrequenciaEletricistaPage() {
     );
   }
 
-  if (error && !data) {
-    return (
-      <Card>
-        <p>Erro ao carregar dados: {error.message}</p>
-      </Card>
-    );
-  }
-
-  if (!data) {
+  if (!data && !error) {
     return null;
   }
 
   return (
     <div style={{ padding: '24px' }}>
-      <Card
-        title={`Frequência - ${data.eletricista.nome} (${data.eletricista.matricula})`}
-        extra={
-          <PeriodoSelector value={periodo} onChange={setPeriodo} />
-        }
-        style={{ marginBottom: 24 }}
-      >
-        <ConsolidadoEletricistaCard resumo={data.resumo} loading={isLoading} />
-      </Card>
+      {/* Tratamento de Erros */}
+      <ErrorAlert error={error?.message} onRetry={mutate} />
 
-      <Card title="Histórico Detalhado" style={{ marginBottom: 24 }}>
-        <HistoricoTable dados={data.detalhamento} loading={isLoading} />
-      </Card>
+      {error && !data ? (
+        <Card>
+          <p>Erro ao carregar dados: {error.message}</p>
+        </Card>
+      ) : data ? (
+        <>
+          <Card
+            title={`Frequência - ${data.eletricista.nome} (${data.eletricista.matricula})`}
+            extra={
+              <PeriodoSelector value={periodo} onChange={setPeriodo} />
+            }
+            style={{ marginBottom: 24 }}
+          >
+            <ConsolidadoEletricistaCard resumo={data.resumo} loading={isLoading} />
+          </Card>
+
+          <Card title="Histórico Detalhado" style={{ marginBottom: 24 }}>
+            <HistoricoTable dados={data.detalhamento} loading={isLoading} />
+          </Card>
+        </>
+      ) : null}
     </div>
   );
 }

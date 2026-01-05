@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
 import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@modules/engine/auth/auth.module';
+import { Module } from '@nestjs/common';
+
 import { EquipeController, EquipeSyncController } from './controllers';
 import { EquipeService } from './services/equipe.service';
 

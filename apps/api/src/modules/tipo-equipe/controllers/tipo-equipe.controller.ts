@@ -13,6 +13,7 @@
  * - GET /api/tipo-equipe/count - Conta tipos de equipe ativos
  */
 
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import {
   Body,
   Controller,
@@ -35,8 +36,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { TipoEquipeService } from '../services/tipo-equipe.service';
+
 import {
   CreateTipoEquipeDto,
   UpdateTipoEquipeDto,
@@ -44,6 +44,7 @@ import {
   TipoEquipeQueryDto,
   TipoEquipeResponseDto,
 } from '../dto';
+import { TipoEquipeService } from '../services/tipo-equipe.service';
 
 @ApiTags('tipo-equipe')
 @ApiBearerAuth()
@@ -60,7 +61,8 @@ export class TipoEquipeController {
   @Get()
   @ApiOperation({
     summary: 'Listar tipos de equipe',
-    description: 'Retorna lista paginada de tipos de equipe com filtros opcionais',
+    description:
+      'Retorna lista paginada de tipos de equipe com filtros opcionais',
   })
   @ApiQuery({
     name: 'page',
@@ -105,7 +107,9 @@ export class TipoEquipeController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Parâmetros de consulta inválidos',
   })
-  async findAll(@Query() query: TipoEquipeQueryDto): Promise<TipoEquipeListResponseDto> {
+  async findAll(
+    @Query() query: TipoEquipeQueryDto
+  ): Promise<TipoEquipeListResponseDto> {
     this.logger.log('Listando tipos de equipe', { query });
     return this.tipoEquipeService.findAll(query);
   }
@@ -173,7 +177,9 @@ export class TipoEquipeController {
     status: HttpStatus.CONFLICT,
     description: 'Já existe um tipo de equipe com este nome',
   })
-  async create(@Body() createDto: CreateTipoEquipeDto): Promise<TipoEquipeResponseDto> {
+  async create(
+    @Body() createDto: CreateTipoEquipeDto
+  ): Promise<TipoEquipeResponseDto> {
     this.logger.log('Criando tipo de equipe', { nome: createDto.nome });
     return this.tipoEquipeService.create(createDto);
   }
@@ -209,7 +215,9 @@ export class TipoEquipeController {
     status: HttpStatus.BAD_REQUEST,
     description: 'ID inválido fornecido',
   })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<TipoEquipeResponseDto> {
+  async findOne(
+    @Param('id', ParseIntPipe) id: number
+  ): Promise<TipoEquipeResponseDto> {
     this.logger.log(`Buscando tipo de equipe por ID: ${id}`);
     return this.tipoEquipeService.findById(id);
   }
@@ -251,7 +259,7 @@ export class TipoEquipeController {
   })
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateDto: UpdateTipoEquipeDto,
+    @Body() updateDto: UpdateTipoEquipeDto
   ): Promise<TipoEquipeResponseDto> {
     this.logger.log(`Atualizando tipo de equipe: ${id}`, updateDto);
     return this.tipoEquipeService.update(id, updateDto);

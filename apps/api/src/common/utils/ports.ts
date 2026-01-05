@@ -1,5 +1,5 @@
-import { promisify } from 'util';
 import { exec } from 'child_process';
+import { promisify } from 'util';
 const execAsync = promisify(exec);
 
 export async function isPortInUse(port: number): Promise<boolean> {
@@ -32,7 +32,10 @@ export async function killPortProcesses(port: number): Promise<void> {
   }
 }
 
-export async function ensurePortFree(port: number, onLog?: (msg: string) => void): Promise<void> {
+export async function ensurePortFree(
+  port: number,
+  onLog?: (msg: string) => void
+): Promise<void> {
   if (await isPortInUse(port)) {
     onLog?.(`⚠️  Porta ${port} em uso. Liberando...`);
     await killPortProcesses(port);
@@ -44,5 +47,3 @@ export async function ensurePortFree(port: number, onLog?: (msg: string) => void
     onLog?.(`✅ Porta ${port} livre`);
   }
 }
-
-

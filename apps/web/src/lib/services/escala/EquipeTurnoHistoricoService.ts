@@ -39,7 +39,7 @@ export class EquipeTurnoHistoricoService extends AbstractCrudService<
 
   constructor() {
     const repo = new EquipeTurnoHistoricoRepository();
-    // @ts-ignore - Compatibilidade de tipos do repositório
+    // @ts-expect-error - Diferenças sutis entre tipos de input (null vs undefined) são tratadas no runtime
     super(repo);
     this.turnoRepo = repo;
   }
@@ -99,7 +99,6 @@ export class EquipeTurnoHistoricoService extends AbstractCrudService<
       );
     }
 
-    // @ts-ignore - Compatibilidade de tipos
     const updateInput: EquipeTurnoHistoricoUpdateInput = {
       id: data.id,
       equipeId: data.equipeId,
@@ -139,4 +138,3 @@ export class EquipeTurnoHistoricoService extends AbstractCrudService<
     return this.turnoRepo.findVigenteByEquipeAndData(equipeId, data);
   }
 }
-

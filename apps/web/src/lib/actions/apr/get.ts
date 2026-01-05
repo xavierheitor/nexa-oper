@@ -30,7 +30,7 @@
  * ```typescript
  * // No frontend
  * const result = await getApr({ id: 1 });
- * 
+ *
  * if (result.success && result.data) {
  *   console.log('APR encontrada:', result.data);
  * } else if (result.success && !result.data) {
@@ -43,7 +43,7 @@
 
 'use server';
 
-import type { AprService } from '@/lib/services/AprService';
+import type { AprService } from '@/lib/services/apr/AprService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
@@ -76,7 +76,7 @@ const getAprSchema = z.object({
  * // Uso para carregamento de dados de edição
  * const loadAprForEdit = async (aprId) => {
  *   const result = await getApr({ id: aprId });
- *   
+ *
  *   if (result.success && result.data) {
  *     setFormData({
  *       id: result.data.id,
@@ -89,39 +89,39 @@ const getAprSchema = z.object({
  *     message.error(result.error);
  *   }
  * };
- * 
+ *
  * // Uso para validação de existência
  * const validateAprExists = async (aprId) => {
  *   const result = await getApr({ id: aprId });
  *   return result.success && result.data !== null;
  * };
- * 
+ *
  * // Uso em modal de detalhes
  * const showAprDetails = async (aprId) => {
  *   setLoading(true);
- *   
+ *
  *   const result = await getApr({ id: aprId });
- *   
+ *
  *   if (result.success && result.data) {
  *     setSelectedApr(result.data);
  *     setModalVisible(true);
  *   } else {
  *     message.error('Não foi possível carregar os detalhes');
  *   }
- *   
+ *
  *   setLoading(false);
  * };
- * 
+ *
  * // Uso com React Query para cache
  * const { data: apr, isLoading, error } = useQuery({
  *   queryKey: ['apr', aprId],
  *   queryFn: () => getApr({ id: aprId }),
  *   enabled: !!aprId
  * });
- * 
+ *
  * // Uso para carregar dados para Transfer components
  * const loadAprForTransfer = async (aprId) => {
- *   const result = await getApr({ 
+ *   const result = await getApr({
  *     id: aprId,
  *     include: {
  *       AprPerguntaRelacao: {
@@ -132,7 +132,7 @@ const getAprSchema = z.object({
  *       }
  *     }
  *   });
- *   
+ *
  *   if (result.success && result.data) {
  *     // Extrair IDs para Transfer components
  *     const perguntaIds = result.data.AprPerguntaRelacao?.map(
@@ -141,7 +141,7 @@ const getAprSchema = z.object({
  *     const opcaoIds = result.data.AprOpcaoRespostaRelacao?.map(
  *       rel => rel.aprOpcaoRespostaId
  *     ) || [];
- *     
+ *
  *     setSelectedPerguntas(perguntaIds);
  *     setSelectedOpcoes(opcaoIds);
  *   }
@@ -152,22 +152,22 @@ export const getApr = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação para ID
     getAprSchema,
-    
+
     // Lógica de negócio
     async (validatedData, session) => {
       // Obtém instância do service via container de DI
       const service = container.get<AprService>('aprService');
-      
+
       // Executa busca por ID
       return service.getById(validatedData.id);
     },
-    
+
     // Dados brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'Apr', 
-      actionType: 'get' 
+    {
+      entityName: 'Apr',
+      actionType: 'get',
     }
   );

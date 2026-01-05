@@ -1,0 +1,74 @@
+/**
+ * Modelo para Snapshot Diário de Aderência de Escala
+ *
+ * Este modelo armazena o resultado da análise de aderência de turnos previstos
+ * baseados em escalas, permitindo consulta histórica e relatórios.
+ *
+ * CASOS DE USO:
+ * - Histórico de aderência de turnos por equipe
+ * - Relatórios de aderência ao longo do tempo
+ * - Análise de tendências de atrasos/antecipações
+ * - Auditoria de cumprimento de escalas
+ * - Identificação de padrões de não aderência
+ */
+
+/// =========================
+/// Snapshot Diário de Aderência de Escala
+/// =========================
+model AderenciaEscalaSnapshot {
+  id Int @id @default(autoincrement())
+
+  // Data de referência (dia analisado)
+  dataReferencia DateTime // Data do dia analisado (sempre início do dia)
+
+  // Equipe relacionada
+  equipeId Int
+  equipe   Equipe @relation(fields: [equipeId], references: [id])
+
+  // Tipo de equipe (snapshot para consulta rápida)
+  tipoEquipeId   Int
+  tipoEquipeNome String @db.VarChar(255)
+
+  // Escala que gerou este turno previsto
+  escalaEquipePeriodoId Int?
+  escalaEquipePeriodo   EscalaEquipePeriodo? @relation(fields: [escalaEquipePeriodoId], references: [id])
+
+  // Horário previsto (do slot ou da vigência)
+  horarioPrevisto String? @db.VarChar(8) // "HH:MM:SS" ou null
+
+  // IDs dos eletricistas previstos (armazenado como JSON array de números)
+  eletricistasPrevistosIds String @db.Text // JSON array com [id1, id2, ...]
+
+  // Status da aderência
+  status String @db.VarChar(20) // ADERENTE | NAO_ADERENTE | NAO_ABERTO | TURNO_EXTRA
+
+  // Informações do turno aberto (se houver)
+  turnoId      Int?
+  turno        Turno? @relation(fields: [turnoId], references: [id])
+  dataAbertura DateTime? // Quando o turno foi aberto
+
+  // Diferença em minutos do horário previsto (se abriu)
+  diferencaMinutos Int? // Diferença em minutos (positivo = atraso, negativo = antecipação)
+
+  // Metadados
+  geradoEm DateTime @default(now()) // Quando este snapshot foi gerado
+  geradoPor String  @db.VarChar(255) // Sistema ou usuário que gerou
+
+  // Auditoria
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  // Índices para consultas eficientes
+  @@index([dataReferencia])
+  @@index([equipeId])
+  @@index([equipeId, dataReferencia])
+  @@index([status])
+  @@index([tipoEquipeId, dataReferencia])
+  @@index([escalaEquipePeriodoId])
+  @@unique([equipeId, dataReferencia]) // Uma equipe só pode ter um snapshot por dia
+}
+

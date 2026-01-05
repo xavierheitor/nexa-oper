@@ -1,6 +1,7 @@
-import { Controller, Get, Header } from '@nestjs/common';
-import { MetricsService } from './metrics.service';
 import { Public } from '@common/decorators/public.decorator';
+import { Controller, Get, Header } from '@nestjs/common';
+
+import { MetricsService } from './metrics.service';
 
 @Controller('metrics')
 export class MetricsController {
@@ -13,7 +14,9 @@ export class MetricsController {
     try {
       // getRegistry().metrics() pode ser lento em alguns casos
       // Adiciona timeout para não travar a requisição
-      const metricsPromise = Promise.resolve(this.metricsService.getRegistry().metrics());
+      const metricsPromise = Promise.resolve(
+        this.metricsService.getRegistry().metrics()
+      );
       const timeoutPromise = new Promise<string>((_, reject) => {
         setTimeout(() => reject(new Error('Metrics collection timeout')), 2000);
       });
@@ -25,5 +28,3 @@ export class MetricsController {
     }
   }
 }
-
-

@@ -37,21 +37,7 @@
  * ```
  */
 
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
-import { DatabaseService } from '@database/database.service';
-import {
-  buildPaginationMeta,
-  validatePaginationParams,
-  normalizePaginationParams,
-} from '@common/utils/pagination';
-import { handleCrudError } from '@common/utils/error-handler';
-import { validateId } from '@common/utils/validation';
+import { ERROR_MESSAGES } from '@common/constants/errors';
 import {
   getDefaultUserContext,
   createAuditData,
@@ -59,8 +45,26 @@ import {
   deleteAuditData,
   UserContext,
 } from '@common/utils/audit';
-import { ERROR_MESSAGES } from '@common/constants/errors';
-import { ORDER_CONFIG, ERROR_MESSAGES as MODULE_ERROR_MESSAGES } from '../constants';
+import { handleCrudError } from '@common/utils/error-handler';
+import {
+  buildPaginationMeta,
+  validatePaginationParams,
+  normalizePaginationParams,
+} from '@common/utils/pagination';
+import { validateId } from '@common/utils/validation';
+import { DatabaseService } from '@database/database.service';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+
+import {
+  ORDER_CONFIG,
+  ERROR_MESSAGES as MODULE_ERROR_MESSAGES,
+} from '../constants';
 import {
   CreateTipoVeiculoDto,
   UpdateTipoVeiculoDto,
@@ -99,12 +103,15 @@ export class TipoVeiculoService {
    */
   async findAll(
     params: FindAllParams,
-    userContext?: UserContext,
+    userContext?: UserContext
   ): Promise<TipoVeiculoListResponseDto> {
     this.logger.log('Listando tipos de veículo', { params });
 
     // Normaliza parâmetros de paginação
-    const { page, limit } = normalizePaginationParams(params.page, params.limit);
+    const { page, limit } = normalizePaginationParams(
+      params.page,
+      params.limit
+    );
 
     // Valida parâmetros de paginação
     validatePaginationParams(page, limit);
@@ -133,7 +140,7 @@ export class TipoVeiculoService {
       this.logger.log(`Listagem concluída: ${tipos.length} de ${total} tipos`);
 
       return {
-        data: tipos.map((tipo) => this.mapToResponseDto(tipo)),
+        data: tipos.map(tipo => this.mapToResponseDto(tipo)),
         meta,
       };
     } catch (error) {
@@ -148,7 +155,10 @@ export class TipoVeiculoService {
    * @param userContext - Contexto do usuário para auditoria
    * @returns Tipo de veículo encontrado
    */
-  async findById(id: number, userContext?: UserContext): Promise<TipoVeiculoResponseDto> {
+  async findById(
+    id: number,
+    userContext?: UserContext
+  ): Promise<TipoVeiculoResponseDto> {
     this.logger.log(`Buscando tipo de veículo por ID: ${id}`);
 
     // Valida ID
@@ -160,7 +170,9 @@ export class TipoVeiculoService {
       });
 
       if (!tipo) {
-        throw new NotFoundException(MODULE_ERROR_MESSAGES.TIPO_VEICULO_NOT_FOUND);
+        throw new NotFoundException(
+          MODULE_ERROR_MESSAGES.TIPO_VEICULO_NOT_FOUND
+        );
       }
 
       this.logger.log(`Tipo de veículo encontrado: ${tipo.nome}`);
@@ -180,7 +192,7 @@ export class TipoVeiculoService {
    */
   async create(
     createDto: CreateTipoVeiculoDto,
-    userContext?: UserContext,
+    userContext?: UserContext
   ): Promise<TipoVeiculoResponseDto> {
     this.logger.log('Criando tipo de veículo', { nome: createDto.nome });
 
@@ -198,7 +210,9 @@ export class TipoVeiculoService {
         },
       });
 
-      this.logger.log(`Tipo de veículo criado com sucesso: ${tipo.nome} (ID: ${tipo.id})`);
+      this.logger.log(
+        `Tipo de veículo criado com sucesso: ${tipo.nome} (ID: ${tipo.id})`
+      );
 
       return this.mapToResponseDto(tipo);
     } catch (error) {
@@ -217,7 +231,7 @@ export class TipoVeiculoService {
   async update(
     id: number,
     updateDto: UpdateTipoVeiculoDto,
-    userContext?: UserContext,
+    userContext?: UserContext
   ): Promise<TipoVeiculoResponseDto> {
     this.logger.log(`Atualizando tipo de veículo: ${id}`, updateDto);
 
@@ -244,7 +258,9 @@ export class TipoVeiculoService {
         },
       });
 
-      this.logger.log(`Tipo de veículo atualizado com sucesso: ${tipo.nome} (ID: ${tipo.id})`);
+      this.logger.log(
+        `Tipo de veículo atualizado com sucesso: ${tipo.nome} (ID: ${tipo.id})`
+      );
 
       return this.mapToResponseDto(tipo);
     } catch (error) {
@@ -320,9 +336,11 @@ export class TipoVeiculoService {
         orderBy: { updatedAt: 'desc' },
       });
 
-      this.logger.log(`Sincronização concluída: ${tipos.length} tipos de veículo`);
+      this.logger.log(
+        `Sincronização concluída: ${tipos.length} tipos de veículo`
+      );
 
-      return tipos.map((tipo) => this.mapToSyncDto(tipo));
+      return tipos.map(tipo => this.mapToSyncDto(tipo));
     } catch (error) {
       handleCrudError(error, this.logger, 'sync', 'tipos de veículo');
     }
@@ -369,7 +387,10 @@ export class TipoVeiculoService {
    * @param nome - Nome a verificar
    * @param excludeId - ID a excluir da verificação (para atualizações)
    */
-  private async checkNomeDuplicado(nome: string, excludeId?: number): Promise<void> {
+  private async checkNomeDuplicado(
+    nome: string,
+    excludeId?: number
+  ): Promise<void> {
     const where: any = {
       nome: {
         equals: nome,
@@ -385,7 +406,9 @@ export class TipoVeiculoService {
     const existing = await this.db.getPrisma().tipoVeiculo.findFirst({ where });
 
     if (existing) {
-      throw new ConflictException(MODULE_ERROR_MESSAGES.TIPO_VEICULO_ALREADY_EXISTS);
+      throw new ConflictException(
+        MODULE_ERROR_MESSAGES.TIPO_VEICULO_ALREADY_EXISTS
+      );
     }
   }
 
@@ -403,7 +426,9 @@ export class TipoVeiculoService {
     });
 
     if (veiculosCount > 0) {
-      throw new BadRequestException(MODULE_ERROR_MESSAGES.CANNOT_DELETE_TIPO_VEICULO_IN_USE);
+      throw new BadRequestException(
+        MODULE_ERROR_MESSAGES.CANNOT_DELETE_TIPO_VEICULO_IN_USE
+      );
     }
   }
 

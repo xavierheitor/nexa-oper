@@ -5,8 +5,9 @@
  * para criar um novo tipo de atividade no sistema.
  */
 
-import { IsNotEmpty, IsString, MinLength, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, MinLength, MaxLength } from 'class-validator';
+
 import { ATIVIDADE_VALIDATION_CONFIG } from '../constants/atividade.constants';
 
 /**

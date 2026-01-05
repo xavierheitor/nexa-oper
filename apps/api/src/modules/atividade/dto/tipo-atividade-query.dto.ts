@@ -5,9 +5,10 @@
  * de tipos de atividade, incluindo paginação e busca.
  */
 
-import { IsOptional, IsString, IsInt, Min, Max } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type, Transform } from 'class-transformer';
+import { IsOptional, IsString, IsInt, Min, Max } from 'class-validator';
+
 import { PAGINATION_CONFIG } from '../constants/atividade.constants';
 
 /**

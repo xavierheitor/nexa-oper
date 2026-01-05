@@ -7,7 +7,7 @@
 import { handleServerAction } from '../common/actionHandler';
 import { veiculoLoteSchema } from '@/lib/schemas/veiculoSchema';
 import { container } from '@/lib/services/common/registerServices';
-import type { VeiculoService } from '@/lib/services/VeiculoService';
+import type { VeiculoService } from '@/lib/services/infraestrutura/VeiculoService';
 import { prisma } from '@/lib/db/db.service';
 
 export const createVeiculosLote = async (rawData: unknown) =>

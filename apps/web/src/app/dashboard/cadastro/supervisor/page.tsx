@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client';
 
 import { createSupervisor } from '@/lib/actions/supervisor/create';
@@ -261,8 +260,6 @@ export default function SupervisorPage() {
         width={600}
       >
         <VinculoForm
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
           initialValues={
             vinculoController.editingItem
               ? {

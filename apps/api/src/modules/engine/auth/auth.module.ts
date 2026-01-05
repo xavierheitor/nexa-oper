@@ -1,14 +1,15 @@
+import { DatabaseModule } from '@database/database.module';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AuthController } from './controllers/auth.controller';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { PassportModule } from '@nestjs/passport';
+
+import { AuthController } from './controllers/auth.controller';
+import { ContractPermissionsGuard } from './guards/contract-permissions.guard';
 import { AuthService } from './services/auth.service';
 import { ContractPermissionsService } from './services/contract-permissions.service';
-import { ContractPermissionsGuard } from './guards/contract-permissions.guard';
-import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './strategies/jwt.strategy';
 import { MobileUsersModule } from '../mobile-users/mobile-users.module';
-import { DatabaseModule } from '@database/database.module';
 
 /**
  * Obtém o JWT_SECRET validado do ConfigService

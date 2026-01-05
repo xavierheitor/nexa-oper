@@ -48,5 +48,6 @@ export const VALIDATION_CONFIG = {
 export const ERROR_MESSAGES = {
   TIPO_EQUIPE_NOT_FOUND: 'Tipo de equipe não encontrado',
   TIPO_EQUIPE_ALREADY_EXISTS: 'Já existe um tipo de equipe com este nome',
-  CANNOT_DELETE_TIPO_EQUIPE_IN_USE: 'Não é possível excluir tipo de equipe que está sendo usado por equipes',
+  CANNOT_DELETE_TIPO_EQUIPE_IN_USE:
+    'Não é possível excluir tipo de equipe que está sendo usado por equipes',
 } as const;

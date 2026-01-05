@@ -363,8 +363,19 @@ export default function EscalaWizard({ onFinish, onCancel }: EscalaWizardProps) 
             />
           </Form.Item>
 
-          <Form.Item name="observacoes" label="Observações">
-            <Input.TextArea rows={3} placeholder="Observações sobre este período" />
+          <Form.Item
+            name="observacoes"
+            label="Observações"
+            rules={[
+              { max: 1000, message: 'Observações deve ter no máximo 1000 caracteres' }
+            ]}
+          >
+            <Input.TextArea
+              rows={3}
+              placeholder="Observações sobre este período"
+              maxLength={1000}
+              showCount
+            />
           </Form.Item>
 
           <Space style={{ width: '100%', justifyContent: 'flex-end' }}>

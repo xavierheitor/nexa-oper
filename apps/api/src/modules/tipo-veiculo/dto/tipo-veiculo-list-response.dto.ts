@@ -5,8 +5,9 @@
  * paginadas de tipos de veículo.
  */
 
-import { ApiProperty } from '@nestjs/swagger';
 import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
+import { ApiProperty } from '@nestjs/swagger';
+
 import { TipoVeiculoResponseDto } from './tipo-veiculo-response.dto';
 
 /**

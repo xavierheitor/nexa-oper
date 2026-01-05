@@ -9,6 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+
 import { JustificativasService } from './justificativas.service';
 
 @ApiTags('justificativas')
@@ -20,9 +21,13 @@ export class JustificativasController {
   @Get('tipos-justificativa')
   @ApiOperation({
     summary: 'Listar tipos de justificativa',
-    description: 'Retorna todos os tipos de justificativa ativos para uso em formulários',
+    description:
+      'Retorna todos os tipos de justificativa ativos para uso em formulários',
   })
-  @ApiResponse({ status: 200, description: 'Lista de tipos retornada com sucesso' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de tipos retornada com sucesso',
+  })
   async listarTipos() {
     return this.service.listarTipos();
   }
@@ -41,7 +46,7 @@ export class JustificativasController {
       ativo?: boolean;
       geraFalta?: boolean;
       createdBy?: string;
-    },
+    }
   ) {
     return this.service.criarTipo({
       nome: body.nome,
@@ -67,7 +72,7 @@ export class JustificativasController {
       ativo?: boolean;
       geraFalta?: boolean;
       updatedBy?: string;
-    },
+    }
   ) {
     return this.service.atualizarTipo(id, {
       nome: body.nome,
@@ -84,7 +89,7 @@ export class JustificativasController {
   async criar(
     @Param('faltaId', ParseIntPipe) faltaId: number,
     @Body()
-    body: { tipoId: number; descricao?: string; createdBy?: string },
+    body: { tipoId: number; descricao?: string; createdBy?: string }
   ) {
     return this.service.criarJustificativa({
       faltaId,
@@ -98,7 +103,7 @@ export class JustificativasController {
   @ApiOperation({ summary: 'Aprovar justificativa individual' })
   async aprovar(
     @Param('id', ParseIntPipe) id: number,
-    @Body('decididoPor') decididoPor?: string,
+    @Body('decididoPor') decididoPor?: string
   ) {
     return this.service.aprovarJustificativa(id, decididoPor ?? 'system');
   }
@@ -107,7 +112,7 @@ export class JustificativasController {
   @ApiOperation({ summary: 'Rejeitar justificativa individual' })
   async rejeitar(
     @Param('id', ParseIntPipe) id: number,
-    @Body('decididoPor') decididoPor?: string,
+    @Body('decididoPor') decididoPor?: string
   ) {
     return this.service.rejeitarJustificativa(id, decididoPor ?? 'system');
   }
@@ -128,7 +133,7 @@ export class JustificativasController {
       tipoJustificativaId: number;
       descricao?: string;
       createdBy?: string;
-    },
+    }
   ) {
     return this.service.criarJustificativaEquipe({
       equipeId,
@@ -147,12 +152,9 @@ export class JustificativasController {
   })
   async aprovarJustificativaEquipe(
     @Param('id', ParseIntPipe) id: number,
-    @Body('decididoPor') decididoPor?: string,
+    @Body('decididoPor') decididoPor?: string
   ) {
-    await this.service.aprovarJustificativaEquipe(
-      id,
-      decididoPor ?? 'system',
-    );
+    await this.service.aprovarJustificativaEquipe(id, decididoPor ?? 'system');
     return { success: true, message: 'Justificativa aprovada' };
   }
 
@@ -160,11 +162,11 @@ export class JustificativasController {
   @ApiOperation({ summary: 'Rejeitar justificativa de equipe' })
   async rejeitarJustificativaEquipe(
     @Param('id', ParseIntPipe) id: number,
-    @Body('decididoPor') decididoPor?: string,
+    @Body('decididoPor') decididoPor?: string
   ) {
     return this.service.rejeitarJustificativaEquipe(
       id,
-      decididoPor ?? 'system',
+      decididoPor ?? 'system'
     );
   }
 
@@ -174,7 +176,7 @@ export class JustificativasController {
     @Query('equipeId') equipeId?: string,
     @Query('dataInicio') dataInicio?: string,
     @Query('dataFim') dataFim?: string,
-    @Query('status') status?: string,
+    @Query('status') status?: string
   ) {
     return this.service.listarJustificativasEquipe({
       equipeId: equipeId ? parseInt(equipeId, 10) : undefined,
@@ -186,14 +188,16 @@ export class JustificativasController {
 
   // Casos Pendentes de Justificativa de Equipe
   @Get('justificativas-equipe/casos-pendentes')
-  @ApiOperation({ summary: 'Listar casos pendentes de justificativa de equipe' })
+  @ApiOperation({
+    summary: 'Listar casos pendentes de justificativa de equipe',
+  })
   async listarCasosPendentes(
     @Query('equipeId') equipeId?: string,
     @Query('dataInicio') dataInicio?: string,
     @Query('dataFim') dataFim?: string,
     @Query('status') status?: string,
     @Query('page') page?: string,
-    @Query('pageSize') pageSize?: string,
+    @Query('pageSize') pageSize?: string
   ) {
     return this.service.listarCasosPendentes({
       equipeId: equipeId ? parseInt(equipeId, 10) : undefined,
@@ -209,7 +213,7 @@ export class JustificativasController {
   @ApiOperation({ summary: 'Marcar caso pendente como ignorado' })
   async ignorarCaso(
     @Param('id', ParseIntPipe) id: number,
-    @Body('decididoPor') decididoPor?: string,
+    @Body('decididoPor') decididoPor?: string
   ) {
     return this.service.ignorarCasoPendente(id, decididoPor ?? 'system');
   }
@@ -223,7 +227,7 @@ export class JustificativasController {
       tipoJustificativaId: number;
       descricao?: string;
       createdBy?: string;
-    },
+    }
   ) {
     return this.service.criarJustificativaDeCaso({
       casoId,
@@ -233,5 +237,3 @@ export class JustificativasController {
     });
   }
 }
-
-

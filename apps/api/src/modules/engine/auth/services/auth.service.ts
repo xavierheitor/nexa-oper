@@ -1,3 +1,4 @@
+import { MobileUsersService } from '@modules/engine/mobile-users/services/mobile-users.service';
 import {
   ForbiddenException,
   Injectable,
@@ -6,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { MobileUsersService } from '@modules/engine/mobile-users/services/mobile-users.service';
 
 /**
  * Serviço de Autenticação Mobile

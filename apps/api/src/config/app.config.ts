@@ -5,10 +5,10 @@
  * e comportamento da aplicação.
  */
 
+import { StandardLogger } from '@common/utils/logger';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Express } from 'express';
 import * as express from 'express';
-import { StandardLogger } from '@common/utils/logger';
 
 /**
  * Interface para configuração da aplicação
@@ -94,8 +94,9 @@ export function configureBodyParser(
   logger: StandardLogger
 ): void {
   expressApp.use(express.json({ limit: jsonLimit }));
-  expressApp.use(express.urlencoded({ extended: true, limit: urlencodedLimit }));
+  expressApp.use(
+    express.urlencoded({ extended: true, limit: urlencodedLimit })
+  );
 
   logger.log(`Parsing JSON/URL configurado: limite de ${jsonLimit}`);
 }
-

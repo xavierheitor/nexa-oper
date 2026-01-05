@@ -17,6 +17,13 @@
  */
 
 import {
+  RequireContractPermission,
+  OptionalContractPermission,
+} from '@modules/engine/auth/decorators/contract-permission.decorator';
+import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import {
   Body,
   Controller,
   Delete,
@@ -38,20 +45,14 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import {
-  RequireContractPermission,
-  OptionalContractPermission,
-} from '@modules/engine/auth/decorators/contract-permission.decorator';
-import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import { EquipeService } from '../services/equipe.service';
+
 import {
   CreateEquipeDto,
   UpdateEquipeDto,
   EquipeResponseDto,
   EquipeListResponseDto,
 } from '../dto';
+import { EquipeService } from '../services/equipe.service';
 
 /**
  * Controlador de Equipes
@@ -71,7 +72,8 @@ export class EquipeController {
   @Get()
   @ApiOperation({
     summary: 'Lista equipes com paginação e filtros',
-    description: 'Retorna uma lista paginada de equipes respeitando as permissões de contrato do usuário',
+    description:
+      'Retorna uma lista paginada de equipes respeitando as permissões de contrato do usuário',
   })
   @ApiQuery({
     name: 'page',
@@ -123,7 +125,8 @@ export class EquipeController {
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
-    description: 'Usuário não tem permissão para acessar o contrato especificado',
+    description:
+      'Usuário não tem permissão para acessar o contrato especificado',
   })
   async findAll(
     @Query('page') page: string = '1',
@@ -158,7 +161,8 @@ export class EquipeController {
   @Get(':id')
   @ApiOperation({
     summary: 'Busca equipe por ID',
-    description: 'Retorna uma equipe específica respeitando as permissões de contrato',
+    description:
+      'Retorna uma equipe específica respeitando as permissões de contrato',
   })
   @ApiParam({
     name: 'id',
@@ -238,7 +242,8 @@ export class EquipeController {
   @Put(':id')
   @ApiOperation({
     summary: 'Atualiza equipe existente',
-    description: 'Atualiza uma equipe existente respeitando as permissões de contrato',
+    description:
+      'Atualiza uma equipe existente respeitando as permissões de contrato',
   })
   @ApiParam({
     name: 'id',
@@ -286,7 +291,8 @@ export class EquipeController {
   @Delete(':id')
   @ApiOperation({
     summary: 'Remove equipe',
-    description: 'Remove uma equipe (soft delete) respeitando as permissões de contrato',
+    description:
+      'Remove uma equipe (soft delete) respeitando as permissões de contrato',
   })
   @ApiParam({
     name: 'id',
@@ -324,7 +330,8 @@ export class EquipeController {
   @Get('count')
   @ApiOperation({
     summary: 'Conta equipes ativas',
-    description: 'Retorna o total de equipes ativas respeitando as permissões de contrato',
+    description:
+      'Retorna o total de equipes ativas respeitando as permissões de contrato',
   })
   @ApiResponse({
     status: HttpStatus.OK,

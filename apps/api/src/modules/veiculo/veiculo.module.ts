@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
 import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@modules/engine/auth/auth.module';
-import { VeiculoController } from './controllers/veiculo.controller';
+import { Module } from '@nestjs/common';
+
 import { VeiculoSyncController } from './controllers/veiculo-sync.controller';
+import { VeiculoController } from './controllers/veiculo.controller';
 import { VeiculoService } from './services/veiculo.service';
 
 /**

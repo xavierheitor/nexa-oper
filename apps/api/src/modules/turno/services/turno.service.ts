@@ -34,33 +34,32 @@
  */
 
 import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
-import { DatabaseService } from '@database/database.service';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import { extractAllowedContractIds } from '@modules/engine/auth/utils/contract-helpers';
-import {
-  buildPaginationMeta,
-  validatePaginationParams,
-  normalizePaginationParams,
-} from '@common/utils/pagination';
-import {
-  validateId,
-  ensureEntityExists,
-} from '@common/utils/validation';
-import { handleCrudError } from '@common/utils/error-handler';
-import { withTransactionTimeout, withSyncTimeout } from '@common/utils/timeout';
-import {
   getDefaultUserContext,
   createAuditData,
   updateAuditData,
   deleteAuditData,
 } from '@common/utils/audit';
 import { parseMobileDate } from '@common/utils/date-timezone';
+import { handleCrudError } from '@common/utils/error-handler';
+import {
+  buildPaginationMeta,
+  validatePaginationParams,
+  normalizePaginationParams,
+} from '@common/utils/pagination';
+import { withTransactionTimeout, withSyncTimeout } from '@common/utils/timeout';
+import { validateId, ensureEntityExists } from '@common/utils/validation';
+import { DatabaseService } from '@database/database.service';
+import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import { extractAllowedContractIds } from '@modules/engine/auth/utils/contract-helpers';
+import { TurnoRealizadoService } from '@modules/turno-realizado/turno-realizado.service';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+
 import {
   ORDER_CONFIG,
   ERROR_MESSAGES as TURNO_ERRORS,
@@ -74,7 +73,7 @@ import {
   TurnoSyncDto,
 } from '../dto';
 import { ChecklistPreenchidoService } from './checklist-preenchido.service';
-import { TurnoRealizadoService } from '@modules/turno-realizado/turno-realizado.service';
+
 
 /**
  * Interface de parâmetros para consulta paginada interna
@@ -143,9 +142,7 @@ export class TurnoService {
 
       // Usar transação para garantir atomicidade com timeout
       const resultado = await withTransactionTimeout(
-        this.db
-          .getPrisma()
-          .$transaction(async transaction => {
+        this.db.getPrisma().$transaction(async transaction => {
           // ✅ VALIDAÇÕES DE CONFLITO DENTRO DA TRANSAÇÃO (evita race conditions)
           // Verifica se já existe turno aberto para o veículo
           const turnoVeiculo = await transaction.turno.findFirst({
@@ -210,7 +207,9 @@ export class TurnoService {
             });
 
             if (eletricistasEmConflito.size > 0) {
-              throw new ConflictException(TURNO_ERRORS.TURNO_JA_ABERTO_ELETRICISTA);
+              throw new ConflictException(
+                TURNO_ERRORS.TURNO_JA_ABERTO_ELETRICISTA
+              );
             }
           }
 
@@ -295,11 +294,13 @@ export class TurnoService {
           equipeId: turnoCompleto.equipeId,
           dataReferencia: dataReferencia.toISOString().split('T')[0], // YYYY-MM-DD
           turnoId: resultado.turno.id, // Referência ao Turno original
-          eletricistasAbertos: turnoCompleto.TurnoEletricistas.map((te: any) => ({
-            eletricistaId: te.eletricistaId,
-            abertoEm: turnoCompleto.dataInicio.toISOString(),
-            deviceInfo: turnoCompleto.dispositivo || undefined,
-          })),
+          eletricistasAbertos: turnoCompleto.TurnoEletricistas.map(
+            (te: any) => ({
+              eletricistaId: te.eletricistaId,
+              abertoEm: turnoCompleto.dataInicio.toISOString(),
+              deviceInfo: turnoCompleto.dispositivo || undefined,
+            })
+          ),
           origem: 'mobile',
           executadoPor: userId || String(turnoCompleto.createdBy || 'system'),
         });
@@ -440,22 +441,26 @@ export class TurnoService {
       // Se não encontrar, usa fallback por data e equipe
       try {
         const userContext = getDefaultUserContext();
-        const executadoPor = String(userContext.userId || turnoFechado.updatedBy || 'system');
+        const executadoPor = String(
+          userContext.userId || turnoFechado.updatedBy || 'system'
+        );
 
         // Tentar fechar pelo turnoId primeiro (mais preciso)
-        let turnoRealizadoFechado = await this.turnoRealizadoService.fecharTurnoPorTurnoId(
-          turnoFechado.id,
-          executadoPor
-        );
+        let turnoRealizadoFechado =
+          await this.turnoRealizadoService.fecharTurnoPorTurnoId(
+            turnoFechado.id,
+            executadoPor
+          );
 
         // Se não encontrou pelo turnoId, tentar por data e equipe (fallback para turnos antigos)
         if (!turnoRealizadoFechado) {
           const dataReferencia = new Date(turnoFechado.dataInicio);
-          turnoRealizadoFechado = await this.turnoRealizadoService.fecharTurnoPorDataEquipe(
-            dataReferencia,
-            turnoFechado.equipeId,
-            executadoPor
-          );
+          turnoRealizadoFechado =
+            await this.turnoRealizadoService.fecharTurnoPorDataEquipe(
+              dataReferencia,
+              turnoFechado.equipeId,
+              executadoPor
+            );
         }
       } catch (error: any) {
         // Não falhar o fechamento do Turno se houver erro ao fechar TurnoRealizado

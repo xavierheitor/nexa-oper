@@ -4,6 +4,8 @@ import { Column } from '@ant-design/plots';
 import { Card, Empty, Select, Spin } from 'antd';
 import { useState, useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useHydrated } from '@/lib/hooks/useHydrated';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 
 interface DadosComparacao {
   base: string;
@@ -12,8 +14,10 @@ interface DadosComparacao {
   equipes: number;
 }
 
+import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
+
 interface ComparacaoEntreBasesProps {
-  filtros?: any;
+  filtros?: FiltrosRelatorioBase;
 }
 
 export default function ComparacaoEntreBases({
@@ -39,7 +43,7 @@ export default function ComparacaoEntreBases({
     [filtros]
   );
 
-  const { data: dadosRaw, loading } = useDataFetch<DadosComparacao[]>(fetcher, [fetcher]);
+  const { data: dadosRaw, loading, error, refetch } = useDataFetch<DadosComparacao[]>(fetcher, [fetcher]);
 
   // Garante que dados nunca seja null
   const dados: DadosComparacao[] = dadosRaw ?? [];
@@ -97,8 +101,9 @@ export default function ComparacaoEntreBases({
     []
   );
 
-  // Retornos condicionais após todos os hooks
-  if (loading) {
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
     return (
       <Card title="Comparação entre Bases">
         <div style={{ textAlign: 'center', padding: '40px 0' }}>
@@ -108,10 +113,13 @@ export default function ComparacaoEntreBases({
     );
   }
 
-  if (dados.length === 0) {
+  // Retornos condicionais após todos os hooks
+  if (loading) {
     return (
       <Card title="Comparação entre Bases">
-        <Empty description="Nenhum dado disponível" />
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Spin size="large" />
+        </div>
       </Card>
     );
   }
@@ -128,7 +136,12 @@ export default function ComparacaoEntreBases({
         />
       }
     >
-      <Column {...config} />
+      <ErrorAlert error={error} onRetry={refetch} />
+      {dados.length === 0 && !error ? (
+        <Empty description="Nenhum dado disponível" />
+      ) : (
+        <Column {...config} />
+      )}
     </Card>
   );
 }

@@ -43,7 +43,7 @@
 
 'use server';
 
-import type { UserService } from '@/lib/services/UserService';
+import type { UserService } from '@/lib/services/auth/UserService';
 import { container } from '@/lib/services/common/registerServices';
 import { userChangePasswordSchema } from '../../schemas/userSchema';
 import { handleServerAction } from '../common/actionHandler';

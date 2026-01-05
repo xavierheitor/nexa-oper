@@ -28,6 +28,7 @@ import { listEletricistas } from '@/lib/actions/eletricista/list';
 import { listVeiculos } from '@/lib/actions/veiculo/list';
 import { listTiposChecklist } from '@/lib/actions/tipoChecklist/list';
 import { listChecklists } from '@/lib/actions/checklist/list';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -98,17 +99,17 @@ export default function ConsultaChecklistsPage() {
   const [pageSize, setPageSize] = useState(20);
 
   // Buscar dados para os selects
-  const { data: basesData } = useDataFetch(
+  const { data: basesData, error: errorBases, refetch: refetchBases } = useDataFetch(
     () => unwrapFetcher(listBases)({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' }),
     []
   );
 
-  const { data: tiposEquipeData } = useDataFetch(
+  const { data: tiposEquipeData, error: errorTiposEquipe, refetch: refetchTiposEquipe } = useDataFetch(
     () => unwrapFetcher(listTiposEquipe)({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' }),
     []
   );
 
-  const { data: equipesData } = useDataFetch(
+  const { data: equipesData, error: errorEquipes, refetch: refetchEquipes } = useDataFetch(
     () => unwrapFetcher(listEquipes)({
       page: 1,
       pageSize: 1000,
@@ -119,22 +120,22 @@ export default function ConsultaChecklistsPage() {
     [tipoEquipeId]
   );
 
-  const { data: eletricistasData } = useDataFetch(
+  const { data: eletricistasData, error: errorEletricistas, refetch: refetchEletricistas } = useDataFetch(
     () => unwrapFetcher(listEletricistas)({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' }),
     []
   );
 
-  const { data: veiculosData } = useDataFetch(
+  const { data: veiculosData, error: errorVeiculos, refetch: refetchVeiculos } = useDataFetch(
     () => unwrapFetcher(listVeiculos)({ page: 1, pageSize: 1000, orderBy: 'placa', orderDir: 'asc' }),
     []
   );
 
-  const { data: tiposChecklistData } = useDataFetch(
+  const { data: tiposChecklistData, error: errorTiposChecklist, refetch: refetchTiposChecklist } = useDataFetch(
     () => unwrapFetcher(listTiposChecklist)({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' }),
     []
   );
 
-  const { data: checklistsData } = useDataFetch(
+  const { data: checklistsData, error: errorChecklists, refetch: refetchChecklists } = useDataFetch(
     () => unwrapFetcher(listChecklists)({
       page: 1,
       pageSize: 1000,
@@ -154,7 +155,7 @@ export default function ConsultaChecklistsPage() {
   const checklists = checklistsData || [];
 
   // Buscar checklists preenchidos com filtros
-  const { data, loading } = useDataFetch<{
+  const { data, loading, error: errorChecklistsPreenchidos, refetch: refetchChecklistsPreenchidos } = useDataFetch<{
     data: ChecklistPreenchidoListado[];
     total: number;
     page: number;
@@ -306,6 +307,16 @@ export default function ConsultaChecklistsPage() {
   return (
     <div style={{ padding: '24px' }}>
       <Title level={2}>Consulta Checklists</Title>
+
+      {/* Tratamento de Erros */}
+      <ErrorAlert error={errorBases} onRetry={refetchBases} />
+      <ErrorAlert error={errorTiposEquipe} onRetry={refetchTiposEquipe} />
+      <ErrorAlert error={errorEquipes} onRetry={refetchEquipes} />
+      <ErrorAlert error={errorEletricistas} onRetry={refetchEletricistas} />
+      <ErrorAlert error={errorVeiculos} onRetry={refetchVeiculos} />
+      <ErrorAlert error={errorTiposChecklist} onRetry={refetchTiposChecklist} />
+      <ErrorAlert error={errorChecklists} onRetry={refetchChecklists} />
+      <ErrorAlert error={errorChecklistsPreenchidos} onRetry={refetchChecklistsPreenchidos} />
 
       {/* Filtros */}
       <Card style={{ marginBottom: 24 }}>

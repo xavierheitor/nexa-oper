@@ -5,17 +5,18 @@
  * processar pendências automáticas e gerenciar o fluxo de fotos.
  */
 
+import { PrismaTransactionClient } from '@common/types/prisma';
+import { parseMobileDate } from '@common/utils/date-timezone';
+import { handleServiceError } from '@common/utils/error-handler';
+import { withTimeout, TIMEOUT_CONFIG } from '@common/utils/timeout';
+import { DatabaseService } from '@database/database.service';
 import {
   Injectable,
   Logger,
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { DatabaseService } from '@database/database.service';
-import { parseMobileDate } from '@common/utils/date-timezone';
-import { handleServiceError } from '@common/utils/error-handler';
-import { withTimeout, TIMEOUT_CONFIG } from '@common/utils/timeout';
-import { PrismaTransactionClient } from '@common/types/prisma';
+
 import {
   SalvarChecklistPreenchidoDto,
   ChecklistPreenchidoResponseDto,
@@ -158,7 +159,7 @@ export class ChecklistPreenchidoService {
       `Processando ${checklistsPreenchidos.length} checklists de forma assíncrona`
     );
 
-    let pendenciasGeradas = 0;
+    const pendenciasGeradas = 0;
     const respostasAguardandoFoto: Array<{
       checklistRespostaId: number;
       perguntaId: number;
@@ -243,9 +244,7 @@ export class ChecklistPreenchidoService {
 
     // ✅ Validar que array de respostas não está vazio antes de salvar
     if (!checklistData.respostas || checklistData.respostas.length === 0) {
-      throw new BadRequestException(
-        'Lista de respostas não pode estar vazia'
-      );
+      throw new BadRequestException('Lista de respostas não pode estar vazia');
     }
 
     // Criar checklist preenchido
@@ -307,9 +306,7 @@ export class ChecklistPreenchidoService {
 
     // ✅ Validar que array de respostas não está vazio
     if (!respostas || respostas.length === 0) {
-      throw new BadRequestException(
-        'Lista de respostas não pode estar vazia'
-      );
+      throw new BadRequestException('Lista de respostas não pode estar vazia');
     }
 
     // Buscar perguntas obrigatórias do checklist

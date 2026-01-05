@@ -11,7 +11,7 @@
 import { turnoFilterSchema } from '../../schemas/turnoSchema';
 import { container } from '../../services/common/registerServices';
 import { handleServerAction } from '../common/actionHandler';
-import { TurnoService } from '../../services/TurnoService';
+import { TurnoService } from '../../services/turnos/TurnoService';
 
 /**
  * Lista turnos com paginação e filtros

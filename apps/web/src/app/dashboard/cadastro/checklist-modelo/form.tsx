@@ -121,8 +121,15 @@ export default function ChecklistForm({ onSubmit, initialValues, loading = false
       }
     >
       <Title level={5}>Dados do Checklist</Title>
-      <Form.Item name="nome" label="Nome" rules={[{ required: true }, { min: 1, max: 255 }]}>
-        <Input placeholder="Digite o nome do checklist" />
+      <Form.Item
+        name="nome"
+        label="Nome"
+        rules={[
+          { required: true, message: 'Nome é obrigatório' },
+          { min: 1, max: 255, message: 'Nome deve ter entre 1 e 255 caracteres' }
+        ]}
+      >
+        <Input placeholder="Digite o nome do checklist" maxLength={255} />
       </Form.Item>
 
       <Form.Item name="tipoChecklistId" label="Tipo" rules={[{ required: true }]}>

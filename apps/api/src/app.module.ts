@@ -35,6 +35,16 @@
  * ```
  */
 
+import { ErrorLoggingInterceptor } from '@common/interceptors/error-logging.interceptor';
+import { OperationLoggingInterceptor } from '@common/interceptors/operation-logging.interceptor';
+import { LoggerMiddleware } from '@common/middleware/logger.middleware';
+import { RateLimitMiddleware } from '@common/middleware/rate-limit.middleware';
+import { DatabaseModule } from '@database/database.module';
+import { AprModule } from '@modules/apr/apr.module';
+import { ChecklistModule } from '@modules/checklist/checklist.module';
+import { EletricistaModule } from '@modules/eletricista/eletricista.module';
+import { AuthModule } from '@modules/engine/auth/auth.module';
+import { ContractsModule } from '@modules/engine/contracts/contracts.module';
 import {
   MiddlewareConsumer,
   Module,
@@ -43,31 +53,24 @@ import {
 } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { envValidationSchema } from './config/validation';
-import { DatabaseModule } from '@database/database.module';
-import { AprModule } from '@modules/apr/apr.module';
-import { AuthModule } from '@modules/engine/auth/auth.module';
-import { ContractsModule } from '@modules/engine/contracts/contracts.module';
-import { ChecklistModule } from '@modules/checklist/checklist.module';
 import { VeiculoModule } from '@modules/veiculo/veiculo.module';
-import { EletricistaModule } from '@modules/eletricista/eletricista.module';
-import { LoggerMiddleware } from '@common/middleware/logger.middleware';
-import { RateLimitMiddleware } from '@common/middleware/rate-limit.middleware';
-import { ErrorLoggingInterceptor } from '@common/interceptors/error-logging.interceptor';
-import { OperationLoggingInterceptor } from '@common/interceptors/operation-logging.interceptor';
-import { EquipeModule } from './modules/equipe';
-import { AtividadeModule } from './modules/atividade';
-import { TurnoModule } from './modules/turno';
-import { TipoVeiculoModule } from './modules/tipo-veiculo/tipo-veiculo.module';
-import { TipoEquipeModule } from './modules/tipo-equipe/tipo-equipe.module';
-import { MobileUploadModule } from './modules/mobile-upload/mobile-upload.module';
+
 import { HealthModule } from './health/health.module';
 import { MetricsModule } from './metrics/metrics.module';
-import { TurnoRealizadoModule } from './modules/turno-realizado/turno-realizado.module';
+import { AtividadeModule } from './modules/atividade';
+import { EquipeModule } from './modules/equipe';
+import { InternalReconciliacaoModule } from './modules/internal-reconciliacao/internal-reconciliacao.module';
 import { JustificativasModule } from './modules/justificativas/justificativas.module';
+import { MobileUploadModule } from './modules/mobile-upload/mobile-upload.module';
+import { TipoEquipeModule } from './modules/tipo-equipe/tipo-equipe.module';
+import { TipoVeiculoModule } from './modules/tipo-veiculo/tipo-veiculo.module';
+import { TurnoModule } from './modules/turno';
+import { TurnoRealizadoModule } from './modules/turno-realizado/turno-realizado.module';
 import { WebLogsModule } from './modules/web-logs/web-logs.module';
 
 /**
@@ -101,6 +104,18 @@ import { WebLogsModule } from './modules/web-logs/web-logs.module';
     // Módulo de agendamento de jobs
     ScheduleModule.forRoot(),
 
+    // Módulo de Event Emitter para Event Sourcing
+    EventEmitterModule.forRoot({
+      // Configuração global do Event Emitter
+      wildcard: false,
+      delimiter: '.',
+      newListener: false,
+      removeListener: false,
+      maxListeners: 10,
+      verboseMemoryLeak: false,
+      ignoreErrors: false,
+    }),
+
     // Módulo de banco de dados - deve ser importado primeiro
     DatabaseModule,
 
@@ -125,6 +140,7 @@ import { WebLogsModule } from './modules/web-logs/web-logs.module';
     TurnoRealizadoModule,
     JustificativasModule,
     WebLogsModule,
+    InternalReconciliacaoModule,
 
     // TODO: Adicionar outros módulos conforme necessário
     // UserModule,

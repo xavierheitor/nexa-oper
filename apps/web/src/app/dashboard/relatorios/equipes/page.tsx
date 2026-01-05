@@ -10,6 +10,8 @@ import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listContratos } from '@/lib/actions/contrato/list';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
+import type { Contrato, Base } from '@nexa-oper/db';
 
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
@@ -22,21 +24,21 @@ export default function RelatoriosEquipesPage() {
     baseId: undefined,
   });
 
-  const { data: contratos, isLoading: loadingContratos } = useEntityData({
+  const { data: contratos, isLoading: loadingContratos, error: errorContratos, mutate: refetchContratos } = useEntityData({
     key: 'relatorios-equipes-contratos',
     fetcherAction: unwrapFetcher(listContratos),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
-  const { data: bases, isLoading: loadingBases } = useEntityData({
+  const { data: bases, isLoading: loadingBases, error: errorBases, mutate: refetchBases } = useEntityData({
     key: 'relatorios-equipes-bases',
     fetcherAction: unwrapFetcher(listBases),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
-  const handleFilterChange = (key: string, value: any) => {
+  const handleFilterChange = (key: string, value: number | undefined) => {
     setFiltros((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -68,18 +70,22 @@ export default function RelatoriosEquipesPage() {
 
   // Memoiza as opções dos Selects para evitar recriações desnecessárias
   const contratosOptions = useMemo(
-    () => contratos?.map((c: any) => ({ label: c.nome, value: c.id })) || [],
+    () => contratos?.map((c: Contrato) => ({ label: c.nome, value: c.id })) || [],
     [contratos]
   );
 
   const basesOptions = useMemo(
-    () => bases?.map((b: any) => ({ label: b.nome, value: b.id })) || [],
+    () => bases?.map((b: Base) => ({ label: b.nome, value: b.id })) || [],
     [bases]
   );
 
   return (
     <div style={{ padding: '24px' }}>
       <Title level={2}>Relatórios - Equipes</Title>
+
+      {/* Tratamento de Erros */}
+      <ErrorAlert error={errorContratos?.message} onRetry={refetchContratos} />
+      <ErrorAlert error={errorBases?.message} onRetry={refetchBases} />
 
       <Card style={{ marginBottom: 24 }}>
         <Space wrap size='middle'>

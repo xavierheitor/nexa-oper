@@ -3,18 +3,22 @@
 import { Pie } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useHydrated } from '@/lib/hooks/useHydrated';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 
 interface DadosEscaladas {
   status: string;
   quantidade: number;
 }
 
+import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
+
 interface EquipesEscaladasProps {
-  filtros?: any;
+  filtros?: FiltrosRelatorioBase;
 }
 
 export default function EquipesEscaladas({ filtros }: EquipesEscaladasProps) {
-  const { data: dados = [], loading } = useDataFetch<DadosEscaladas[]>(
+  const { data: dados = [], loading, error, refetch } = useDataFetch<DadosEscaladas[]>(
     async () => {
       const { getEquipesEscaladas } = await import(
         '@/lib/actions/relatorios/relatoriosEquipes'
@@ -29,6 +33,18 @@ export default function EquipesEscaladas({ filtros }: EquipesEscaladasProps) {
     [filtros]
   );
 
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <Card title="Equipes Escaladas vs Não Escaladas">
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Spin size="large" />
+        </div>
+      </Card>
+    );
+  }
+
   if (loading) {
     return (
       <Card title="Equipes Escaladas vs Não Escaladas">
@@ -39,16 +55,16 @@ export default function EquipesEscaladas({ filtros }: EquipesEscaladasProps) {
     );
   }
 
-  if (!dados?.length) {
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
+  if (!dadosSeguros?.length && !error) {
     return (
       <Card title="Equipes Escaladas vs Não Escaladas">
         <Empty description="Nenhum dado disponível" />
       </Card>
     );
   }
-
-  // Garante que dados não é null após a verificação
-  const dadosSeguros = dados;
 
   const config = {
     data: dadosSeguros,
@@ -67,15 +83,15 @@ export default function EquipesEscaladas({ filtros }: EquipesEscaladasProps) {
         rowPadding: 5,
       },
     },
-    color: ({ status }: any) => {
+    color: ({ status }: DadosEscaladas) => {
       return status === 'Escaladas' ? '#52c41a' : '#faad14';
     },
   };
 
   return (
     <Card title="Equipes Escaladas vs Não Escaladas">
-      <Pie {...config} />
+      <ErrorAlert error={error} onRetry={refetch} message="Erro ao carregar dados de equipes escaladas" />
+      {dadosSeguros && dadosSeguros.length > 0 && <Pie {...config} />}
     </Card>
   );
 }
-

@@ -83,4 +83,3 @@ export class FaltaFilterDto {
   @IsPositive()
   pageSize?: number = 20;
 }
-

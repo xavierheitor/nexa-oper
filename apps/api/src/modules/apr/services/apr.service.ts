@@ -50,6 +50,15 @@
  * ```
  */
 
+import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
+import { handleCrudError } from '@common/utils/error-handler';
+import {
+  validatePaginationParams,
+  buildPaginationMeta,
+} from '@common/utils/pagination';
+import { validateId } from '@common/utils/validation';
+import { buildWhereClause as buildWhereClauseHelper } from '@common/utils/where-clause';
+import { DatabaseService } from '@database/database.service';
 import {
   BadRequestException,
   ConflictException,
@@ -57,7 +66,13 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { DatabaseService } from '@database/database.service';
+
+import {
+  AUDIT_CONFIG,
+  ERROR_MESSAGES,
+  APR_ORDER_CONFIG_COMPAT,
+  ORDER_CONFIG,
+} from '../constants/apr.constants';
 import {
   AprListResponseDto,
   AprResponseDto,
@@ -69,20 +84,6 @@ import {
   CreateAprDto,
   UpdateAprDto,
 } from '../dto';
-import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
-import {
-  validatePaginationParams,
-  buildPaginationMeta,
-} from '@common/utils/pagination';
-import { validateId } from '@common/utils/validation';
-import { handleCrudError } from '@common/utils/error-handler';
-import { buildWhereClause as buildWhereClauseHelper } from '@common/utils/where-clause';
-import {
-  AUDIT_CONFIG,
-  ERROR_MESSAGES,
-  APR_ORDER_CONFIG_COMPAT,
-  ORDER_CONFIG,
-} from '../constants/apr.constants';
 
 /**
  * Interface para parâmetros de consulta interna
@@ -122,7 +123,6 @@ export class AprService {
 
   constructor(private readonly db: DatabaseService) {}
 
-
   /**
    * Valida ID de modelo APR
    * @private
@@ -158,7 +158,6 @@ export class AprService {
       searchFields: { nome: true },
     });
   }
-
 
   /**
    * Lista todos os modelos de APR com paginação e busca
@@ -447,7 +446,12 @@ export class AprService {
       );
       return data as AprTipoAtividadeRelacaoSyncDto[];
     } catch (error) {
-      handleCrudError(error, this.logger, 'sync', 'relações APR-Tipo de Atividade');
+      handleCrudError(
+        error,
+        this.logger,
+        'sync',
+        'relações APR-Tipo de Atividade'
+      );
     }
   }
 
@@ -523,7 +527,10 @@ export class AprService {
    * console.log(`Modelo criado com ID: ${apr.id}`);
    * ```
    */
-  async create(createAprDto: CreateAprDto, userId?: string): Promise<AprResponseDto> {
+  async create(
+    createAprDto: CreateAprDto,
+    userId?: string
+  ): Promise<AprResponseDto> {
     const { nome } = createAprDto;
     const userContext = this.getCurrentUserContext(userId);
 

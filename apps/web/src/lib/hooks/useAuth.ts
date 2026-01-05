@@ -1,14 +1,16 @@
 /**
  * Hook de Autenticação
  *
- * Hook customizado para verificar autenticação no cliente e preparar
- * para sistema de permissões futuro.
+ * Hook customizado para verificar autenticação no cliente e validar
+ * permissões e roles do usuário.
  *
  * FUNCIONALIDADES:
  * - Verifica status de autenticação
- * - Fornece dados da sessão
+ * - Fornece dados da sessão (incluindo permissions e roles)
  * - Redireciona para login se não autenticado
- * - Preparado para verificação de permissões
+ * - Valida permissões do usuário
+ * - Valida roles do usuário
+ * - Suporte a permissão requerida para acesso
  *
  * COMO USAR:
  * ```typescript
@@ -22,19 +24,21 @@
  *   return <div>Acesso negado</div>;
  * }
  * ```
+ *
+ * COM PERMISSÃO REQUERIDA:
+ * ```typescript
+ * const { hasPermission } = useAuth({
+ *   requiredPermission: 'apr:manage'
+ * });
+ * ```
  */
 
 'use client';
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
-/**
- * Tipos para permissões (preparado para futuro)
- */
-export type Permission = string; // Ex: 'dashboard:view', 'users:create', etc.
-export type Role = string; // Ex: 'admin', 'manager', 'user', etc.
+import { useEffect, useCallback } from 'react';
+import type { Permission, Role } from '@/lib/types/permissions';
 
 interface UseAuthReturn {
   /** Dados do usuário da sessão */
@@ -42,6 +46,8 @@ interface UseAuthReturn {
     id: string;
     username: string;
     email?: string;
+    permissions: Permission[];
+    roles: Role[];
   } | null;
 
   /** Se o usuário está autenticado */
@@ -50,10 +56,10 @@ interface UseAuthReturn {
   /** Se está carregando a sessão */
   isLoading: boolean;
 
-  /** Função para verificar permissões (preparado para futuro) */
+  /** Função para verificar permissões */
   hasPermission: (permission: Permission) => boolean;
 
-  /** Função para verificar roles (preparado para futuro) */
+  /** Função para verificar roles */
   hasRole: (role: Role) => boolean;
 
   /** Função para fazer logout */
@@ -65,7 +71,7 @@ interface UseAuthReturn {
  *
  * @param options - Opções de configuração
  * @param options.redirectToLogin - Se deve redirecionar para login quando não autenticado (padrão: true)
- * @param options.requiredPermission - Permissão necessária para acessar (opcional, para futuro)
+ * @param options.requiredPermission - Permissão necessária para acessar (opcional)
  * @returns Dados de autenticação e funções auxiliares
  */
 export function useAuth(options?: {
@@ -81,35 +87,51 @@ export function useAuth(options?: {
 
   // Redireciona para login se não autenticado
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && redirectToLogin && typeof window !== 'undefined') {
+    if (
+      !isLoading &&
+      !isAuthenticated &&
+      redirectToLogin &&
+      typeof window !== 'undefined'
+    ) {
       // Usa window.location.href para forçar redirecionamento completo
       // Isso garante que a página seja completamente recarregada e não mostre conteúdo zerado
       window.location.href = '/login';
     }
   }, [isAuthenticated, isLoading, redirectToLogin]);
 
-  // Verifica permissões (preparado para futuro)
-  // Por enquanto, sempre retorna true se autenticado
-  const hasPermission = (permission: Permission): boolean => {
-    if (!isAuthenticated) return false;
+  /**
+   * Verifica se o usuário possui uma permissão específica
+   *
+   * @param permission - Permissão a ser verificada
+   * @returns true se o usuário possui a permissão, false caso contrário
+   */
+  const hasPermission = useCallback(
+    (permission: Permission): boolean => {
+      if (!isAuthenticated || !session?.user) return false;
 
-    // TODO: Implementar verificação de permissões quando o sistema estiver pronto
-    // Por enquanto, todos os usuários autenticados têm todas as permissões
-    // const userPermissions = session?.user?.permissions || [];
-    // return userPermissions.includes(permission);
+      // Obtém permissões da sessão
+      const userPermissions = session.user.permissions || [];
 
-    return true; // Temporário: permite tudo se autenticado
-  };
+      // Verifica se o usuário possui a permissão
+      return userPermissions.includes(permission);
+    },
+    [isAuthenticated, session]
+  );
 
-  // Verifica roles (preparado para futuro)
+  /**
+   * Verifica se o usuário possui um role específico
+   *
+   * @param role - Role a ser verificado
+   * @returns true se o usuário possui o role, false caso contrário
+   */
   const hasRole = (role: Role): boolean => {
-    if (!isAuthenticated) return false;
+    if (!isAuthenticated || !session?.user) return false;
 
-    // TODO: Implementar verificação de roles quando o sistema estiver pronto
-    // const userRoles = session?.user?.roles || [];
-    // return userRoles.includes(role);
+    // Obtém roles da sessão
+    const userRoles = session.user.roles || [];
 
-    return true; // Temporário: permite tudo se autenticado
+    // Verifica se o usuário possui o role
+    return userRoles.includes(role);
   };
 
   // Verifica permissão requerida se especificada
@@ -120,17 +142,18 @@ export function useAuth(options?: {
       requiredPermission &&
       !hasPermission(requiredPermission)
     ) {
-      // TODO: Redirecionar para página de acesso negado quando implementado
+      // Redireciona para dashboard quando não tem permissão requerida
+      // TODO: Criar página de acesso negado quando necessário
       router.push('/dashboard');
     }
-  }, [isLoading, isAuthenticated, requiredPermission, router]);
+  }, [isLoading, isAuthenticated, requiredPermission, hasPermission, router]);
 
   // Função de logout
   const logout = async () => {
     const { signOut } = await import('next-auth/react');
     await signOut({
       callbackUrl: '/login',
-      redirect: true
+      redirect: true,
     });
   };
 
@@ -140,6 +163,8 @@ export function useAuth(options?: {
           id: session.user.id,
           username: session.user.username,
           email: session.user.email,
+          permissions: session.user.permissions || [],
+          roles: session.user.roles || [],
         }
       : null,
     isAuthenticated,
@@ -149,4 +174,3 @@ export function useAuth(options?: {
     logout,
   };
 }
-

@@ -43,6 +43,8 @@
  * ```
  */
 
+import { GetUsuarioMobileId } from '@modules/engine/auth/decorators/get-user-id-decorator';
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import {
   Body,
   Controller,
@@ -65,9 +67,7 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { GetUsuarioMobileId } from '@modules/engine/auth/decorators/get-user-id-decorator';
-import { AprService } from '../services/apr.service';
+
 import {
   AprListResponseDto,
   AprResponseDto,
@@ -75,6 +75,7 @@ import {
   UpdateAprDto,
   AprQueryDto,
 } from '../dto';
+import { AprService } from '../services/apr.service';
 
 /**
  * Controlador de APR (Análise Preliminar de Risco) - CRUD

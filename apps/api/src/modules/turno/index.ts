@@ -28,4 +28,9 @@ export {
 } from './dto';
 
 // Constantes
-export { ORDER_CONFIG, ERROR_MESSAGES, TURNO_VALIDATION_CONFIG, TURNO_STATUS } from './constants';
+export {
+  ORDER_CONFIG,
+  ERROR_MESSAGES,
+  TURNO_VALIDATION_CONFIG,
+  TURNO_STATUS,
+} from './constants';

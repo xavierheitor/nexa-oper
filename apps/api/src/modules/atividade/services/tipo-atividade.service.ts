@@ -34,6 +34,30 @@
  * ```
  */
 
+import { ERROR_MESSAGES } from '@common/constants/errors';
+import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
+import {
+  getDefaultUserContext,
+  createAuditData,
+  updateAuditData,
+  deleteAuditData,
+} from '@common/utils/audit';
+import {
+  handleCrudError,
+  handlePrismaUniqueError,
+} from '@common/utils/error-handler';
+import {
+  buildPaginationMeta,
+  validatePaginationParams,
+  normalizePaginationParams,
+} from '@common/utils/pagination';
+import { validateId, validateOptionalId } from '@common/utils/validation';
+import { DatabaseService } from '@database/database.service';
+import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import {
+  extractAllowedContractIds,
+  ensureContractPermission,
+} from '@modules/engine/auth/utils/contract-helpers';
 import {
   BadRequestException,
   ConflictException,
@@ -42,27 +66,11 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { DatabaseService } from '@database/database.service';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+
 import {
-  extractAllowedContractIds,
-  ensureContractPermission,
-} from '@modules/engine/auth/utils/contract-helpers';
-import {
-  buildPaginationMeta,
-  validatePaginationParams,
-  normalizePaginationParams,
-} from '@common/utils/pagination';
-import { handleCrudError, handlePrismaUniqueError } from '@common/utils/error-handler';
-import { validateId, validateOptionalId } from '@common/utils/validation';
-import {
-  getDefaultUserContext,
-  createAuditData,
-  updateAuditData,
-  deleteAuditData,
-} from '@common/utils/audit';
-import { ERROR_MESSAGES } from '@common/constants/errors';
-import { ORDER_CONFIG, ERROR_MESSAGES as ATIVIDADE_ERRORS } from '../constants/atividade.constants';
+  ORDER_CONFIG,
+  ERROR_MESSAGES as ATIVIDADE_ERRORS,
+} from '../constants/atividade.constants';
 import {
   CreateTipoAtividadeDto,
   UpdateTipoAtividadeDto,
@@ -70,7 +78,6 @@ import {
   TipoAtividadeResponseDto,
   TipoAtividadeSyncDto,
 } from '../dto';
-import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
 
 /**
  * Interface de parâmetros para consulta paginada interna
@@ -108,16 +115,19 @@ export class TipoAtividadeService {
    */
   async findAll(
     params: FindAllParams,
-    allowedContracts: ContractPermission[],
+    allowedContracts: ContractPermission[]
   ): Promise<TipoAtividadeListResponseDto> {
     this.logger.log(
-      `Listando tipos de atividade - página: ${params.page}, limite: ${params.limit}, busca: ${params.search || 'nenhuma'}`,
+      `Listando tipos de atividade - página: ${params.page}, limite: ${params.limit}, busca: ${params.search || 'nenhuma'}`
     );
 
     try {
       // Validação de parâmetros de paginação
       validatePaginationParams(params.page, params.limit);
-      const { page, limit } = normalizePaginationParams(params.page, params.limit);
+      const { page, limit } = normalizePaginationParams(
+        params.page,
+        params.limit
+      );
 
       // Construção da cláusula WHERE
       const where = this.buildWhereClause(params, allowedContracts);
@@ -147,7 +157,7 @@ export class TipoAtividadeService {
       const meta = buildPaginationMeta(page, limit, total);
 
       this.logger.log(
-        `Listagem de tipos de atividade retornou ${data.length} registros de ${total} total`,
+        `Listagem de tipos de atividade retornou ${data.length} registros de ${total} total`
       );
 
       return {
@@ -168,13 +178,16 @@ export class TipoAtividadeService {
    * @returns Lista completa de tipos de atividade
    */
   async findAllForSync(
-    allowedContracts: ContractPermission[],
+    allowedContracts: ContractPermission[]
   ): Promise<TipoAtividadeSyncDto[]> {
     this.logger.log('Sincronizando tipos de atividade - retorno completo');
 
     try {
       // Construção da cláusula WHERE
-      const where = this.buildWhereClause({ page: 1, limit: 1000 }, allowedContracts);
+      const where = this.buildWhereClause(
+        { page: 1, limit: 1000 },
+        allowedContracts
+      );
 
       const data = await this.db.getPrisma().tipoAtividade.findMany({
         where,
@@ -192,7 +205,7 @@ export class TipoAtividadeService {
       });
 
       this.logger.log(
-        `Sincronização de tipos de atividade retornou ${data.length} registros`,
+        `Sincronização de tipos de atividade retornou ${data.length} registros`
       );
       return data as TipoAtividadeSyncDto[];
     } catch (error) {
@@ -209,7 +222,7 @@ export class TipoAtividadeService {
    */
   async findOne(
     id: number,
-    allowedContracts: ContractPermission[],
+    allowedContracts: ContractPermission[]
   ): Promise<TipoAtividadeResponseDto> {
     this.logger.log(`Buscando tipo de atividade com ID: ${id}`);
 
@@ -218,7 +231,11 @@ export class TipoAtividadeService {
       validateId(id, 'ID do tipo de atividade');
 
       // Construção da cláusula WHERE
-      const where = this.buildWhereClause({ page: 1, limit: 1000 }, allowedContracts, id);
+      const where = this.buildWhereClause(
+        { page: 1, limit: 1000 },
+        allowedContracts,
+        id
+      );
 
       const tipoAtividade = await this.db.getPrisma().tipoAtividade.findFirst({
         where,
@@ -254,7 +271,7 @@ export class TipoAtividadeService {
    */
   async create(
     createDto: CreateTipoAtividadeDto,
-    allowedContracts: ContractPermission[],
+    allowedContracts: ContractPermission[]
   ): Promise<TipoAtividadeResponseDto> {
     this.logger.log(`Criando tipo de atividade: ${createDto.nome}`);
 
@@ -288,7 +305,9 @@ export class TipoAtividadeService {
         },
       });
 
-      this.logger.log(`Tipo de atividade criado com sucesso: ${tipoAtividade.nome}`);
+      this.logger.log(
+        `Tipo de atividade criado com sucesso: ${tipoAtividade.nome}`
+      );
       return tipoAtividade as TipoAtividadeResponseDto;
     } catch (error) {
       handlePrismaUniqueError(error, this.logger, 'tipo de atividade');
@@ -307,7 +326,7 @@ export class TipoAtividadeService {
   async update(
     id: number,
     updateDto: UpdateTipoAtividadeDto,
-    allowedContracts: ContractPermission[],
+    allowedContracts: ContractPermission[]
   ): Promise<TipoAtividadeResponseDto> {
     this.logger.log(`Atualizando tipo de atividade com ID: ${id}`);
 
@@ -348,7 +367,9 @@ export class TipoAtividadeService {
         },
       });
 
-      this.logger.log(`Tipo de atividade atualizado com sucesso: ${tipoAtividade.nome}`);
+      this.logger.log(
+        `Tipo de atividade atualizado com sucesso: ${tipoAtividade.nome}`
+      );
       return tipoAtividade as TipoAtividadeResponseDto;
     } catch (error) {
       handlePrismaUniqueError(error, this.logger, 'tipo de atividade');
@@ -365,7 +386,7 @@ export class TipoAtividadeService {
    */
   async remove(
     id: number,
-    allowedContracts: ContractPermission[],
+    allowedContracts: ContractPermission[]
   ): Promise<TipoAtividadeResponseDto> {
     this.logger.log(`Removendo tipo de atividade com ID: ${id}`);
 
@@ -403,7 +424,9 @@ export class TipoAtividadeService {
         },
       });
 
-      this.logger.log(`Tipo de atividade removido com sucesso: ${tipoAtividade.nome}`);
+      this.logger.log(
+        `Tipo de atividade removido com sucesso: ${tipoAtividade.nome}`
+      );
       return tipoAtividade as TipoAtividadeResponseDto;
     } catch (error) {
       handleCrudError(error, this.logger, 'delete', 'tipo de atividade');
@@ -420,7 +443,10 @@ export class TipoAtividadeService {
     this.logger.log('Contando tipos de atividade');
 
     try {
-      const where = this.buildWhereClause({ page: 1, limit: 1000 }, allowedContracts);
+      const where = this.buildWhereClause(
+        { page: 1, limit: 1000 },
+        allowedContracts
+      );
       return await this.db.getPrisma().tipoAtividade.count({ where });
     } catch (error) {
       handleCrudError(error, this.logger, 'count', 'tipos de atividade');
@@ -438,7 +464,7 @@ export class TipoAtividadeService {
   private buildWhereClause(
     params: FindAllParams,
     allowedContracts: ContractPermission[],
-    id?: number,
+    id?: number
   ) {
     const where: any = {
       deletedAt: null,

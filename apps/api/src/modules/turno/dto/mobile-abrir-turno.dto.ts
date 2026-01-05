@@ -5,9 +5,19 @@
  * pelo aplicativo móvel para abertura de turno.
  */
 
-import { IsNotEmpty, IsString, IsInt, IsArray, IsOptional, IsNumber, IsObject, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type, Transform } from 'class-transformer';
+import {
+  IsNotEmpty,
+  IsString,
+  IsInt,
+  IsArray,
+  IsOptional,
+  IsNumber,
+  IsObject,
+  ValidateNested,
+} from 'class-validator';
+
 import { ChecklistRespostaDto } from './checklist-resposta.dto';
 
 /**
@@ -271,14 +281,20 @@ export class MobileAbrirTurnoDto {
   @Type(() => EquipeMobileDto)
   equipe: EquipeMobileDto;
 
-  @ApiProperty({ description: 'Lista de eletricistas', type: [EletricistaMobileDto] })
+  @ApiProperty({
+    description: 'Lista de eletricistas',
+    type: [EletricistaMobileDto],
+  })
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => EletricistaMobileDto)
   eletricistas: EletricistaMobileDto[];
 
-  @ApiProperty({ description: 'Lista de checklists', type: [ChecklistMobileDto] })
+  @ApiProperty({
+    description: 'Lista de checklists',
+    type: [ChecklistMobileDto],
+  })
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })

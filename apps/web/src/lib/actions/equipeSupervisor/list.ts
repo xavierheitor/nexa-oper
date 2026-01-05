@@ -4,7 +4,7 @@
 
 'use server';
 
-import type { EquipeSupervisorService } from '@/lib/services/EquipeSupervisorService';
+import type { EquipeSupervisorService } from '@/lib/services/infraestrutura/EquipeSupervisorService';
 import { container } from '@/lib/services/common/registerServices';
 import { equipeSupervisorFilterSchema } from '../../schemas/equipeSupervisorSchema';
 import { handleServerAction } from '../common/actionHandler';

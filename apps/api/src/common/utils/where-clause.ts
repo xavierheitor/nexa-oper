@@ -28,7 +28,9 @@ export interface WhereClauseOptions {
  * Constrói cláusula WHERE base com deletedAt: null
  * @param includeDeleted - Se true, não filtra por deletedAt
  */
-export function buildBaseWhereClause(includeDeleted = false): Record<string, any> {
+export function buildBaseWhereClause(
+  includeDeleted = false
+): Record<string, any> {
   if (includeDeleted) {
     return {};
   }
@@ -164,4 +166,3 @@ export function buildWhereClause(
 
   return where;
 }
-

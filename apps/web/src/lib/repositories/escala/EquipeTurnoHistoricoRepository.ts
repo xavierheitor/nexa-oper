@@ -1,4 +1,4 @@
-// @ts-nocheck - Erros de tipo devido ao cache do TypeScript, mas a implementação está correta
+// NOTE: Tipos podem exigir ajustes finos, mas a implementação está correta.
 /**
  * Repository para EquipeTurnoHistorico
  *
@@ -6,10 +6,10 @@
  */
 
 import { EquipeTurnoHistorico, Prisma } from '@nexa-oper/db';
-// @ts-nocheck
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface EquipeTurnoHistoricoFilter extends PaginationParams {
   equipeId?: number;
@@ -32,7 +32,6 @@ export type EquipeTurnoHistoricoUpdateInput = Partial<EquipeTurnoHistoricoCreate
   id: number;
 };
 
-// @ts-ignore
 export class EquipeTurnoHistoricoRepository extends AbstractCrudRepository<
   EquipeTurnoHistorico,
   EquipeTurnoHistoricoFilter
@@ -42,36 +41,40 @@ export class EquipeTurnoHistoricoRepository extends AbstractCrudRepository<
   }
 
   protected async findMany(
-    where: any,
-    orderBy: any,
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<EquipeTurnoHistorico[]> {
     return prisma.equipeTurnoHistorico.findMany({
       where,
       orderBy,
       skip,
       take,
-      include: include || {
-        equipe: {
-          select: {
-            id: true,
-            nome: true,
-          },
-        },
-        horarioAberturaCatalogo: {
-          select: {
-            id: true,
-            nome: true,
-          },
-        },
-      },
+      include: (include || this.getDefaultInclude()) as Prisma.EquipeTurnoHistoricoInclude,
     });
   }
 
-  protected async count(where: any): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.equipeTurnoHistorico.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return {
+      equipe: {
+        select: {
+          id: true,
+          nome: true,
+        },
+      },
+      horarioAberturaCatalogo: {
+        select: {
+          id: true,
+          nome: true,
+        },
+      },
+    };
   }
 
   private toPrismaCreateData(
@@ -131,8 +134,6 @@ export class EquipeTurnoHistoricoRepository extends AbstractCrudRepository<
     });
   }
   // Override do método update com assinatura correta
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore - A assinatura está correta, mas TypeScript não reconhece devido ao cache
   override async update(
     id: string | number,
     data: unknown,
@@ -352,4 +353,3 @@ export class EquipeTurnoHistoricoRepository extends AbstractCrudRepository<
     return count > 0;
   }
 }
-

@@ -18,16 +18,18 @@ interface UserFormProps {
   onSubmit: (values: UserFormData) => void;
   initialValues?: Partial<UserFormData>;
   loading?: boolean;
-  isEditing?: boolean;
+  isEditing?: boolean; // Mantido para compatibilidade, mas pode ser inferido de initialValues
 }
 
 export default function UserForm({
   onSubmit,
   initialValues,
   loading = false,
-  isEditing = false,
+  isEditing: propIsEditing,
 }: UserFormProps) {
   const [form] = Form.useForm();
+  // Infere se está editando baseado em initialValues (se tem dados, está editando)
+  const isEditing = propIsEditing ?? !!initialValues;
   const [passwordStrength, setPasswordStrength] = useState<{
     score: number;
     feedback: string[];

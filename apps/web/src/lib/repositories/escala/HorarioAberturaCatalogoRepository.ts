@@ -1,4 +1,4 @@
-// @ts-nocheck - Erros de tipo devido ao cache do TypeScript, mas a implementação está correta
+// NOTE: Tipos podem exigir ajustes finos, mas a implementação está correta.
 /**
  * Repository para HorarioAberturaCatalogo
  *
@@ -6,10 +6,10 @@
  */
 
 import { HorarioAberturaCatalogo, Prisma } from '@nexa-oper/db';
-// @ts-nocheck
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface HorarioAberturaCatalogoFilter extends PaginationParams {
   ativo?: boolean;
@@ -28,7 +28,6 @@ export type HorarioAberturaCatalogoUpdateInput = Partial<HorarioAberturaCatalogo
   id: number;
 };
 
-// @ts-ignore
 export class HorarioAberturaCatalogoRepository extends AbstractCrudRepository<
   HorarioAberturaCatalogo,
   HorarioAberturaCatalogoFilter
@@ -38,29 +37,33 @@ export class HorarioAberturaCatalogoRepository extends AbstractCrudRepository<
   }
 
   protected async findMany(
-    where: any,
-    orderBy: any,
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<HorarioAberturaCatalogo[]> {
     return prisma.horarioAberturaCatalogo.findMany({
       where,
       orderBy,
       skip,
       take,
-      include: include || {
-        _count: {
-          select: {
-            Historicos: true,
-          },
-        },
-      },
+      include: (include || this.getDefaultInclude()) as Prisma.HorarioAberturaCatalogoInclude,
     });
   }
 
-  protected async count(where: any): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.horarioAberturaCatalogo.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return {
+      _count: {
+        select: {
+          Historicos: true,
+        },
+      },
+    };
   }
 
   private toPrismaCreateData(
@@ -88,8 +91,6 @@ export class HorarioAberturaCatalogoRepository extends AbstractCrudRepository<
     });
   }
   // Override do método update com assinatura correta
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore - A assinatura está correta, mas TypeScript não reconhece devido ao cache
   override async update(
     id: string | number,
     data: unknown,
@@ -173,4 +174,3 @@ export class HorarioAberturaCatalogoRepository extends AbstractCrudRepository<
     });
   }
 }
-

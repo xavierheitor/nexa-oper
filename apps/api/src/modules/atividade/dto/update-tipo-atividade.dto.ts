@@ -5,8 +5,9 @@
  * um tipo de atividade existente no sistema. Todos os campos são opcionais.
  */
 
-import { IsOptional, IsString, MinLength, MaxLength } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString, MinLength, MaxLength } from 'class-validator';
+
 import { ATIVIDADE_VALIDATION_CONFIG } from '../constants/atividade.constants';
 
 /**

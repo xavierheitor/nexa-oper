@@ -1,0 +1,33 @@
+/// =========================
+/// Job Lock (para sincronização de jobs agendados)
+/// =========================
+///
+/// Este modelo implementa um sistema de lock distribuído via banco de dados
+/// para garantir que jobs agendados (como reconciliação) sejam executados
+/// apenas uma vez mesmo em ambientes com múltiplas instâncias (PM2, etc).
+///
+/// COMO FUNCIONA:
+/// - Cada job tem um nome único (jobName)
+/// - Para executar, o job tenta adquirir o lock (lockedAt = now, expiresAt = now + TTL)
+/// - Outras instâncias verificam se o lock está expirado (expiresAt < now) antes de adquirir
+/// - Lock é liberado automaticamente após TTL ou manualmente após conclusão
+
+model JobLock {
+  /// Nome único do job (chave primária)
+  jobName String @id @db.VarChar(100)
+
+  /// Data/hora em que o lock foi adquirido
+  lockedAt DateTime?
+
+  /// Identificador de quem adquiriu o lock (ex: hostname, processo ID, instância)
+  lockedBy String? @db.VarChar(255)
+
+  /// Data/hora em que o lock expira (lockedAt + TTL)
+  expiresAt DateTime?
+
+  /// Data/hora da última atualização do registro
+  updatedAt DateTime @updatedAt
+
+  @@index([expiresAt])
+  @@map("JobLock")
+}

@@ -1,4 +1,4 @@
-// @ts-nocheck - Erros de tipo devido ao cache do TypeScript, mas a implementação está correta
+// NOTE: Tipos podem exigir ajustes finos, mas a implementação está correta.
 /**
  * Repository para EscalaEquipePeriodo
  *
@@ -6,10 +6,10 @@
  */
 
 import { EscalaEquipePeriodo, Prisma, StatusEscalaEquipePeriodo } from '@nexa-oper/db';
-// @ts-nocheck
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
+import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface EscalaEquipePeriodoFilter extends PaginationParams {
   equipeId?: number;
@@ -33,7 +33,6 @@ export type EscalaEquipePeriodoUpdateInput = Partial<EscalaEquipePeriodoCreateIn
   versao?: number;
 };
 
-// @ts-ignore
 export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
   EscalaEquipePeriodo,
   EscalaEquipePeriodoFilter
@@ -43,31 +42,35 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
   }
 
   protected async findMany(
-    where: any,
-    orderBy: any,
+    where: GenericPrismaWhereInput,
+    orderBy: GenericPrismaOrderByInput,
     skip: number,
     take: number,
-    include?: any
+    include?: GenericPrismaIncludeInput
   ): Promise<EscalaEquipePeriodo[]> {
     return prisma.escalaEquipePeriodo.findMany({
       where,
       orderBy,
       skip,
       take,
-      include: include || {
-        equipe: true,
-        tipoEscala: true,
-        _count: {
-          select: {
-            Slots: true,
-          },
-        },
-      },
+      include: (include || this.getDefaultInclude()) as Prisma.EscalaEquipePeriodoInclude,
     });
   }
 
-  protected async count(where: any): Promise<number> {
+  protected async count(where: GenericPrismaWhereInput): Promise<number> {
     return prisma.escalaEquipePeriodo.count({ where });
+  }
+
+  protected getDefaultInclude(): GenericPrismaIncludeInput {
+    return {
+      equipe: true,
+      tipoEscala: true,
+      _count: {
+        select: {
+          Slots: true,
+        },
+      },
+    };
   }
 
   private toPrismaCreateData(
@@ -100,8 +103,6 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
     });
   }
   // Override do método update com assinatura correta
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore - A assinatura está correta, mas TypeScript não reconhece devido ao cache
   override async update(
     id: string | number,
     data: unknown,
@@ -187,10 +188,19 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
       ...(equipeId && { equipeId }),
       ...(tipoEscalaId && { tipoEscalaId }),
       ...(status && { status }),
-      ...(periodoInicio && {
+      // Filtro por período: busca escalas que intersectam com o período especificado
+      ...(periodoInicio && periodoFim && {
+        AND: [
+          { periodoInicio: { lte: periodoFim } },
+          { periodoFim: { gte: periodoInicio } },
+        ],
+      }),
+      // Se apenas periodoInicio for fornecido, busca escalas que começam nesse dia ou depois
+      ...(periodoInicio && !periodoFim && {
         periodoInicio: { gte: periodoInicio },
       }),
-      ...(periodoFim && {
+      // Se apenas periodoFim for fornecido, busca escalas que terminam nesse dia ou antes
+      ...(!periodoInicio && periodoFim && {
         periodoFim: { lte: periodoFim },
       }),
       ...(search && {
@@ -312,4 +322,3 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
     });
   }
 }
-

@@ -3,18 +3,22 @@
 import { Column } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useHydrated } from '@/lib/hooks/useHydrated';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 
 interface DadosHorario {
   horario: string;
   quantidade: number;
 }
 
+import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
+
 interface EquipesPorHorarioProps {
-  filtros?: any;
+  filtros?: FiltrosRelatorioBase;
 }
 
 export default function EquipesPorHorario({ filtros }: EquipesPorHorarioProps) {
-  const { data: dados = [], loading } = useDataFetch<DadosHorario[]>(
+  const { data: dados = [], loading, error, refetch } = useDataFetch<DadosHorario[]>(
     async () => {
       const { getEquipesPorHorario } = await import(
         '@/lib/actions/relatorios/relatoriosEquipes'
@@ -29,6 +33,18 @@ export default function EquipesPorHorario({ filtros }: EquipesPorHorarioProps) {
     [filtros]
   );
 
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <Card title="Equipes por Horário">
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Spin size="large" />
+        </div>
+      </Card>
+    );
+  }
+
   if (loading) {
     return (
       <Card title="Equipes por Horário">
@@ -39,16 +55,16 @@ export default function EquipesPorHorario({ filtros }: EquipesPorHorarioProps) {
     );
   }
 
-  if (!dados?.length) {
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
+  if (!dadosSeguros?.length && !error) {
     return (
       <Card title="Equipes por Horário">
         <Empty description="Nenhum dado disponível" />
       </Card>
     );
   }
-
-  // Garante que dados não é null após a verificação
-  const dadosSeguros = dados;
 
   const config = {
     data: dadosSeguros,
@@ -69,8 +85,8 @@ export default function EquipesPorHorario({ filtros }: EquipesPorHorarioProps) {
 
   return (
     <Card title="Equipes por Horário">
-      <Column {...config} />
+      <ErrorAlert error={error} onRetry={refetch} message="Erro ao carregar dados de equipes por horário" />
+      {dadosSeguros && dadosSeguros.length > 0 && <Column {...config} />}
     </Card>
   );
 }
-

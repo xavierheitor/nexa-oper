@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+
 import { WebLogsController } from './web-logs.controller';
 import { WebLogsService } from './web-logs.service';
 
@@ -7,4 +8,3 @@ import { WebLogsService } from './web-logs.service';
   providers: [WebLogsService],
 })
 export class WebLogsModule {}
-

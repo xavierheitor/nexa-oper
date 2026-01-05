@@ -1,6 +1,11 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '../../database/database.service';
 import { PrismaTransactionClient } from '@common/types/prisma';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
+
+import { DatabaseService } from '../../database/database.service';
 
 export interface CriarTipoDTO {
   nome: string;
@@ -71,7 +76,7 @@ export class JustificativasService {
   // Justificativas individuais (para faltas)
   async criarJustificativa(dto: CriarJustificativaDTO) {
     const prisma = this.db.getPrisma();
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async tx => {
       const just = await tx.justificativa.create({
         data: {
           tipoId: dto.tipoId,
@@ -238,7 +243,7 @@ export class JustificativasService {
           },
         });
 
-        const eletricistaIds = slots.map((s) => s.eletricistaId);
+        const eletricistaIds = slots.map(s => s.eletricistaId);
 
         if (eletricistaIds.length > 0) {
           // Remover faltas pendentes dos eletricistas desta equipe nesta data
@@ -378,7 +383,7 @@ export class JustificativasService {
 
     // Para cada caso, contar quantas faltas individuais foram geradas
     const casosComFaltas = await Promise.all(
-      casos.map(async (caso) => {
+      casos.map(async caso => {
         const faltasCount = await prisma.falta.count({
           where: {
             equipeId: caso.equipeId,
@@ -421,7 +426,7 @@ export class JustificativasService {
   }) {
     const prisma = this.db.getPrisma();
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async tx => {
       // Buscar o caso
       const caso = await tx.casoJustificativaEquipe.findUnique({
         where: { id: params.casoId },

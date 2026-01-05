@@ -2,17 +2,13 @@
  * Serviço responsável por processar uploads de localização enviados pelo aplicativo mobile.
  */
 
-import { Injectable, Logger } from '@nestjs/common';
-import { DatabaseService } from '@database/database.service';
 import { createHash } from 'crypto';
-import {
-  LocationUploadDto,
-  LocationUploadResponseDto,
-} from '../dto';
-import {
-  createAuditData,
-  getDefaultUserContext,
-} from '@common/utils/audit';
+
+import { createAuditData, getDefaultUserContext } from '@common/utils/audit';
+import { DatabaseService } from '@database/database.service';
+import { Injectable, Logger } from '@nestjs/common';
+
+import { LocationUploadDto, LocationUploadResponseDto } from '../dto';
 
 /**
  * Serviço de upload de localizações mobile.

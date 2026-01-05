@@ -7,6 +7,7 @@ import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import EquipesMenosLocalizacoes from './components/EquipesMenosLocalizacoes';
 import EquipesMaiorTempoSemCaptura from './components/EquipesMaiorTempoSemCaptura';
 
@@ -21,14 +22,14 @@ export default function RelatoriosLocalizacaoPage() {
     baseId: undefined as number | undefined,
   });
 
-  const { data: tiposEquipe, isLoading: loadingTiposEquipe } = useEntityData({
+  const { data: tiposEquipe, isLoading: loadingTiposEquipe, error: errorTiposEquipe, mutate: refetchTiposEquipe } = useEntityData({
     key: 'relatorios-localizacao-tipos-equipe',
     fetcherAction: unwrapFetcher(listTiposEquipe),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
-  const { data: bases, isLoading: loadingBases } = useEntityData({
+  const { data: bases, isLoading: loadingBases, error: errorBases, mutate: refetchBases } = useEntityData({
     key: 'relatorios-localizacao-bases',
     fetcherAction: unwrapFetcher(listBases),
     paginationEnabled: false,
@@ -82,6 +83,10 @@ export default function RelatoriosLocalizacaoPage() {
   return (
     <div style={{ padding: '24px' }}>
       <Title level={2}>Relatórios - Localização</Title>
+
+      {/* Tratamento de Erros */}
+      <ErrorAlert error={errorTiposEquipe?.message} onRetry={refetchTiposEquipe} />
+      <ErrorAlert error={errorBases?.message} onRetry={refetchBases} />
 
       <Card style={{ marginBottom: 24 }}>
         <Space wrap size="middle">

@@ -22,8 +22,15 @@ export default function TipoAtividadeForm({ onSubmit, initialValues, loading = f
   return (
     <Spin spinning={loading}>
       <Form form={form} layout="vertical" onFinish={onSubmit}>
-      <Form.Item name="nome" label="Tipo de Atividade" rules={[{ required: true, message: 'Nome é obrigatório' }, { min: 1, max: 255 }]}>
-        <Input autoFocus placeholder="Digite o nome do tipo" />
+      <Form.Item
+        name="nome"
+        label="Tipo de Atividade"
+        rules={[
+          { required: true, message: 'Nome é obrigatório' },
+          { min: 1, max: 255, message: 'Nome deve ter entre 1 e 255 caracteres' }
+        ]}
+      >
+        <Input autoFocus placeholder="Digite o nome do tipo" maxLength={255} />
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit" block loading={loading}>Salvar</Button>

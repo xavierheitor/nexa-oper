@@ -26,7 +26,10 @@ export class TipoVeiculoSyncDto {
   @IsPositive()
   id: number;
 
-  @ApiProperty({ description: 'Nome do tipo de veículo', example: 'Caminhão Basculante' })
+  @ApiProperty({
+    description: 'Nome do tipo de veículo',
+    example: 'Caminhão Basculante',
+  })
   @IsString()
   nome: string;
 

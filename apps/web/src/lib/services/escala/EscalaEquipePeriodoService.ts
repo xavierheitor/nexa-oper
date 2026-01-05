@@ -68,7 +68,7 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
 
   constructor() {
     const repo = new EscalaEquipePeriodoRepository();
-    // @ts-ignore - Compatibilidade de tipos do repositório
+    // @ts-expect-error - Diferenças sutis entre tipos de input (null vs undefined) são tratadas no runtime
     super(repo);
     this.escalaRepo = repo;
   }
@@ -264,8 +264,8 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
 
     // ✅ CORREÇÃO: Ao prolongar CICLO_DIAS, buscar último slot e continuar o ciclo a partir dele
     // Para SEMANA_DEPENDENTE, não precisa fazer nada especial (usa semanaIndex baseado em semanas)
-    let ultimoSlotPorEletricista: Map<number, { data: Date; estado: 'TRABALHO' | 'FOLGA'; posicaoNoCiclo: number }> = new Map();
-    let posicaoInicialPorEletricista: Map<number, number> = new Map();
+    const ultimoSlotPorEletricista: Map<number, { data: Date; estado: 'TRABALHO' | 'FOLGA'; posicaoNoCiclo: number }> = new Map();
+    const posicaoInicialPorEletricista: Map<number, number> = new Map();
 
     // Definir periodoInicio para uso em todo o método
     const periodoInicio = new Date(periodo.periodoInicio);
@@ -565,7 +565,7 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       }>;
     },
     dataInicio: Date
-  ): 'TRABALHO' | 'FOLGA' | 'BLOQUEADO_CALENDARIO' | 'EXCECAO' {
+  ): 'TRABALHO' | 'FOLGA' {
     if (tipoEscala.modoRepeticao === 'CICLO_DIAS') {
       const diffDays = Math.floor(
         (data.getTime() - dataInicio.getTime()) / (1000 * 60 * 60 * 24)
@@ -1202,7 +1202,7 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
     });
 
     // Verificar cada dia do período
-    let currentDate = new Date(periodo.periodoInicio);
+    const currentDate = new Date(periodo.periodoInicio);
     const dataFim = new Date(periodo.periodoFim);
     const diasComProblema: string[] = [];
 
@@ -1233,6 +1233,4 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
     }
   }
 }
-
-
 

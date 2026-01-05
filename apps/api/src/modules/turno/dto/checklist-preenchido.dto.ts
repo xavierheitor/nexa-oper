@@ -5,9 +5,20 @@
  * relacionados aos checklists preenchidos pelos eletricistas.
  */
 
-import { IsNotEmpty, IsInt, IsString, IsDateString, IsArray, IsOptional, IsNumber, ValidateNested, ArrayMinSize } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import {
+  IsNotEmpty,
+  IsInt,
+  IsString,
+  IsDateString,
+  IsArray,
+  IsOptional,
+  IsNumber,
+  ValidateNested,
+  ArrayMinSize,
+} from 'class-validator';
+
 import { ChecklistRespostaDto } from './checklist-resposta.dto';
 
 /**
@@ -124,7 +135,7 @@ export class ChecklistPreenchidoResponseDto {
 export class SalvarChecklistsDoTurnoDto {
   @ApiProperty({
     description: 'ID do turno',
-    example: 16
+    example: 16,
   })
   @IsNotEmpty()
   @IsInt()
@@ -132,7 +143,7 @@ export class SalvarChecklistsDoTurnoDto {
 
   @ApiProperty({
     description: 'Lista de checklists preenchidos',
-    type: [SalvarChecklistPreenchidoDto]
+    type: [SalvarChecklistPreenchidoDto],
   })
   @IsNotEmpty({ message: 'Lista de checklists é obrigatória' })
   @IsArray({ message: 'Checklists deve ser uma lista' })

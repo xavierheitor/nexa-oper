@@ -7,5 +7,5 @@ export {
   PAGINATION_CONFIG,
   SEARCH_CONFIG,
   VALIDATION_CONFIG,
-  ERROR_MESSAGES
+  ERROR_MESSAGES,
 } from './tipo-equipe.constants';

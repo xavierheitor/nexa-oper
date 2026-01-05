@@ -4,6 +4,9 @@ import { Card, Empty, Spin, Table, Tag } from 'antd';
 import { useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
+import { useHydrated } from '@/lib/hooks/useHydrated';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
+import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
 
 interface DadosBase {
   id: number;
@@ -48,12 +51,13 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
     [filtros]
   );
 
-  const { data: dadosRaw, loading } = useDataFetch<DadosBase[]>(fetcher, [fetcher]);
+  const { data: dadosRaw, loading, error, refetch } = useDataFetch<DadosBase[]>(fetcher, [fetcher]);
 
   // Garante que dados nunca seja null
   const dados: DadosBase[] = dadosRaw ?? [];
 
   // Memoiza as colunas para evitar recriações desnecessárias
+  // IMPORTANTE: Todos os hooks devem ser chamados antes de qualquer return condicional
   const columns = useMemo(
     () => [
     {
@@ -84,7 +88,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
       align: 'center' as const,
       width: 140,
       sorter: (a: DadosBase, b: DadosBase) => a.eletricistas.total - b.eletricistas.total,
-      render: (_: any, record: DadosBase) => (
+      render: (_: unknown, record: DadosBase) => (
         <Tag color="green">{record.eletricistas.total}</Tag>
       ),
     },
@@ -95,7 +99,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
       width: 170,
       sorter: (a: DadosBase, b: DadosBase) =>
         a.eletricistas.escalados - b.eletricistas.escalados,
-      render: (_: any, record: DadosBase) => (
+      render: (_: unknown, record: DadosBase) => (
         <Tag color="success">{record.eletricistas.escalados}</Tag>
       ),
     },
@@ -106,7 +110,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
       width: 200,
       sorter: (a: DadosBase, b: DadosBase) =>
         a.eletricistas.naoEscalados - b.eletricistas.naoEscalados,
-      render: (_: any, record: DadosBase) => (
+      render: (_: unknown, record: DadosBase) => (
         <Tag color={record.eletricistas.naoEscalados > 0 ? 'warning' : 'default'}>
           {record.eletricistas.naoEscalados}
         </Tag>
@@ -118,7 +122,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
       align: 'center' as const,
       width: 120,
       sorter: (a: DadosBase, b: DadosBase) => a.equipes.total - b.equipes.total,
-      render: (_: any, record: DadosBase) => (
+      render: (_: unknown, record: DadosBase) => (
         <Tag color="purple">{record.equipes.total}</Tag>
       ),
     },
@@ -129,7 +133,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
       width: 150,
       sorter: (a: DadosBase, b: DadosBase) =>
         a.equipes.escaladas - b.equipes.escaladas,
-      render: (_: any, record: DadosBase) => (
+      render: (_: unknown, record: DadosBase) => (
         <Tag color="success">{record.equipes.escaladas}</Tag>
       ),
     },
@@ -140,7 +144,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
       width: 130,
       sorter: (a: DadosBase, b: DadosBase) =>
         a.equipes.inativas - b.equipes.inativas,
-      render: (_: any, record: DadosBase) => (
+      render: (_: unknown, record: DadosBase) => (
         <Tag color={record.equipes.inativas > 0 ? 'warning' : 'default'}>
           {record.equipes.inativas}
         </Tag>
@@ -176,6 +180,18 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
     [dados]
   );
 
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <Card title="Consolidação por Base">
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Spin size="large" />
+        </div>
+      </Card>
+    );
+  }
+
   if (loading) {
     return (
       <Card title="Consolidação por Base">
@@ -206,14 +222,19 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
         </div>
       }
     >
-      <Table
-        columns={columns}
-        dataSource={dados}
-        rowKey="id"
-        pagination={pagination}
-        size="small"
-        scroll={{ x: 1500 }}
-      />
+      <ErrorAlert error={error} onRetry={refetch} />
+      {dados.length === 0 && !error ? (
+        <Empty description="Nenhum dado disponível" />
+      ) : (
+          <Table
+            columns={columns}
+            dataSource={dados}
+            rowKey="id"
+            pagination={pagination}
+            size="small"
+            scroll={{ x: 1500 }}
+          />
+      )}
     </Card>
   );
 }

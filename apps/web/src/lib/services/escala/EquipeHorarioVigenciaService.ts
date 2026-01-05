@@ -39,7 +39,9 @@ export class EquipeHorarioVigenciaService extends AbstractCrudService<
 
   constructor() {
     const repo = new EquipeHorarioVigenciaRepository();
-    // @ts-ignore - Compatibilidade de tipos do repositório
+    // Cast necessário porque EquipeHorarioVigenciaRepository.create aceita userId como parâmetro opcional
+    // e duracaoHoras usa number mas o tipo esperado usa Decimal
+    // @ts-expect-error - Diferenças sutis entre tipos (Decimal vs number, userId opcional) são tratadas no runtime
     super(repo);
     this.horarioRepo = repo;
   }
@@ -95,8 +97,8 @@ export class EquipeHorarioVigenciaService extends AbstractCrudService<
       );
     }
 
-    // @ts-ignore - Compatibilidade de tipos do repositório
     const updateInput: EquipeHorarioVigenciaUpdateInput = {
+      id: data.id,
       equipeId: data.equipeId,
       inicioTurnoHora: data.inicioTurnoHora,
       duracaoHoras: data.duracaoHoras,
@@ -146,4 +148,3 @@ export class EquipeHorarioVigenciaService extends AbstractCrudService<
     return `${String(horasFim).padStart(2, '0')}:${String(minutosFim).padStart(2, '0')}:${String(segundos || 0).padStart(2, '0')}`;
   }
 }
-

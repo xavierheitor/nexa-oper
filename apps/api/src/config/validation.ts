@@ -1,19 +1,17 @@
 import * as Joi from 'joi';
 
 export const envValidationSchema = Joi.object({
-  NODE_ENV: Joi.string().valid('development', 'test', 'production').default('development'),
+  NODE_ENV: Joi.string()
+    .valid('development', 'test', 'production')
+    .default('development'),
   PORT: Joi.number().port().default(3001),
 
   // Segurança / Auth
-  JWT_SECRET: Joi.string()
-    .min(32)
-    .invalid('secret')
-    .required()
-    .messages({
-      'any.required': 'JWT_SECRET é obrigatório',
-      'string.min': 'JWT_SECRET deve ter pelo menos 32 caracteres',
-      'any.invalid': 'JWT_SECRET não pode ser "secret"',
-    }),
+  JWT_SECRET: Joi.string().min(32).invalid('secret').required().messages({
+    'any.required': 'JWT_SECRET é obrigatório',
+    'string.min': 'JWT_SECRET deve ter pelo menos 32 caracteres',
+    'any.invalid': 'JWT_SECRET não pode ser "secret"',
+  }),
 
   // Banco de dados
   DATABASE_URL: Joi.string().uri().required(),
@@ -27,8 +25,34 @@ export const envValidationSchema = Joi.object({
   RATE_LIMIT_MAX_PER_USER: Joi.number().min(1).default(5),
 
   // Uploads
-  UPLOAD_ROOT: Joi.string().optional().description('Caminho absoluto para pasta de uploads (padrão: ./uploads)'),
-  UPLOAD_BASE_URL: Joi.string().uri().optional().description('URL base pública para acesso aos uploads (ex: https://storage.seudominio.com)'),
+  UPLOAD_ROOT: Joi.string()
+    .optional()
+    .description('Caminho absoluto para pasta de uploads (padrão: ./uploads)'),
+  UPLOAD_BASE_URL: Joi.string()
+    .uri()
+    .optional()
+    .description(
+      'URL base pública para acesso aos uploads (ex: https://storage.seudominio.com)'
+    ),
+
+  // Reconciliação interna
+  INTERNAL_KEY: Joi.string()
+    .min(16)
+    .optional()
+    .description('Chave interna para autenticação de endpoints internos'),
+  RECONCILE_CRON: Joi.string()
+    .optional()
+    .description(
+      'Expressão cron para execução automática de reconciliação (padrão: "0 23 * * *")'
+    ),
+  RECONCILE_LOCK_TTL_MS: Joi.number()
+    .min(60000)
+    .optional()
+    .default(900000)
+    .description('TTL do lock de reconciliação em ms (padrão: 15min)'),
+  RECONCILIACAO_DIAS_HISTORICO: Joi.number()
+    .min(1)
+    .optional()
+    .default(30)
+    .description('Número de dias de histórico para reconciliação (padrão: 30)'),
 });
-
-

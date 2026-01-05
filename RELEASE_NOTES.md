@@ -3,6 +3,7 @@
 ## 📦 Versões
 
 ### Web: `v0.1.1`
+
 ### API: `v0.0.2`
 
 ---
@@ -96,6 +97,4 @@ git push origin api-v0.0.2
 
 ---
 
-**Data**: 2025-12-07
-**Autor**: Sistema Nexa Oper
-
+**Data**: 2025-12-07 **Autor**: Sistema Nexa Oper

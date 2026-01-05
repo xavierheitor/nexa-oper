@@ -31,7 +31,7 @@
 'use server';
 
 import { eletricistaUpdateSchema } from '../../schemas/eletricistaSchema';
-import { EletricistaService } from '../../services/EletricistaService';
+import { EletricistaService } from '../../services/pessoas/EletricistaService';
 import { container } from '../../services/common/registerServices';
 import { handleServerAction } from '../common/actionHandler';
 

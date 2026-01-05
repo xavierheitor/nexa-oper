@@ -29,6 +29,8 @@
  * ```
  */
 
+import { SyncAuditRemoverInterceptor } from '@common/interceptors';
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import {
   Controller,
   Get,
@@ -43,10 +45,9 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { SyncAuditRemoverInterceptor } from '@common/interceptors';
-import { TipoVeiculoService } from '../services/tipo-veiculo.service';
+
 import { TipoVeiculoSyncDto } from '../dto';
+import { TipoVeiculoService } from '../services/tipo-veiculo.service';
 
 /**
  * Controlador de Sincronização de Tipos de Veículo
@@ -107,7 +108,9 @@ export class TipoVeiculoSyncController {
 
     try {
       const result = await this.tipoVeiculoService.findAllForSync();
-      this.logger.log(`Sincronização concluída com ${result.length} tipos de veículo`);
+      this.logger.log(
+        `Sincronização concluída com ${result.length} tipos de veículo`
+      );
       return result;
     } catch (error) {
       this.logger.error('Erro na sincronização de tipos de veículo:', error);

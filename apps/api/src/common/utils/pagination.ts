@@ -11,7 +11,10 @@ export function buildPagination(query: PaginationQuery) {
   const skip = (page - 1) * pageSize;
   const take = pageSize;
   const orderBy = query.sortBy
-    ? { [query.sortBy]: (query.sortDir?.toLowerCase() === 'desc' ? 'desc' : 'asc') as 'asc' | 'desc' }
+    ? {
+        [query.sortBy]:
+          query.sortDir?.toLowerCase() === 'desc' ? 'desc' : 'asc',
+      }
     : undefined;
   return { page, pageSize, skip, take, orderBy } as const;
 }
@@ -41,6 +44,7 @@ export function buildPagedResponse<T>(
  */
 
 import { BadRequestException } from '@nestjs/common';
+
 import { PaginationMetaDto } from '../dto/pagination-meta.dto';
 
 /**

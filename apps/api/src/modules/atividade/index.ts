@@ -12,7 +12,10 @@ export { AtividadeModule } from './atividade.module';
 export { TipoAtividadeService } from './services';
 
 // Controllers
-export { TipoAtividadeController, TipoAtividadeSyncController } from './controllers';
+export {
+  TipoAtividadeController,
+  TipoAtividadeSyncController,
+} from './controllers';
 
 // DTOs
 export {
@@ -25,4 +28,8 @@ export {
 } from './dto';
 
 // Constantes
-export { ORDER_CONFIG, ERROR_MESSAGES, ATIVIDADE_VALIDATION_CONFIG } from './constants';
+export {
+  ORDER_CONFIG,
+  ERROR_MESSAGES,
+  ATIVIDADE_VALIDATION_CONFIG,
+} from './constants';

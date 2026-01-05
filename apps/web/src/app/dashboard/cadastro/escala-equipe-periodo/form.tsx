@@ -184,6 +184,9 @@ export default function EscalaEquipePeriodoForm({
       <Form.Item
         name="observacoes"
         label="Observações"
+        rules={[
+          { max: 1000, message: 'Observações deve ter no máximo 1000 caracteres' }
+        ]}
       >
         <Input.TextArea
           rows={3}

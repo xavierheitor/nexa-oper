@@ -21,7 +21,9 @@ import {
   transferirEscalaSchema,
   marcarFaltaSchema,
   registrarTrocaSchema,
+  slotEscalaUpdateSchema,
 } from '../../schemas/escalaSchemas';
+import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
 
 /**
@@ -257,6 +259,58 @@ export const transferirEscala = async (rawData: unknown) =>
         },
         session.user.id
       );
+    },
+    rawData,
+    { entityName: 'SlotEscala', actionType: 'update' }
+  );
+
+/**
+ * Atualiza um slot individual de escala
+ */
+export const updateSlotEscala = async (rawData: unknown) =>
+  handleServerAction(
+    slotEscalaUpdateSchema,
+    async (data, session) => {
+      // Verificar se o slot existe
+      const slot = await prisma.slotEscala.findUnique({
+        where: { id: data.id },
+        include: {
+          escalaEquipePeriodo: {
+            select: { status: true },
+          },
+        },
+      });
+
+      if (!slot) {
+        throw new Error('Slot não encontrado');
+      }
+
+      // Verificar se a escala está publicada (permitir edição mesmo publicada para correções)
+      // Não vamos bloquear edição de slots publicados, pois o usuário pode precisar corrigir erros
+
+      // Atualizar o slot
+      const updated = await prisma.slotEscala.update({
+        where: { id: data.id },
+        data: {
+          estado: data.estado,
+          inicioPrevisto: data.estado === 'TRABALHO' ? data.inicioPrevisto : null,
+          fimPrevisto: data.estado === 'TRABALHO' ? data.fimPrevisto : null,
+          anotacoesDia: data.anotacoesDia || null,
+          updatedBy: session.user.id,
+          updatedAt: new Date(),
+        },
+        include: {
+          eletricista: {
+            select: {
+              id: true,
+              nome: true,
+              matricula: true,
+            },
+          },
+        },
+      });
+
+      return updated;
     },
     rawData,
     { entityName: 'SlotEscala', actionType: 'update' }

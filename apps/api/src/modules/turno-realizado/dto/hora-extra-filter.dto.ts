@@ -87,4 +87,3 @@ export class HoraExtraFilterDto {
   @IsPositive()
   pageSize?: number = 20;
 }
-

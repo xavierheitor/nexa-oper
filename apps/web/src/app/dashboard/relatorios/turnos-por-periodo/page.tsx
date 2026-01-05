@@ -16,6 +16,7 @@ import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listContratos } from '@/lib/actions/contrato/list';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import TurnosPorPeriodo from './components/TurnosPorPeriodo';
 
 const { RangePicker } = DatePicker;
@@ -29,14 +30,14 @@ export default function TurnosPorPeriodoPage() {
     baseId: undefined,
   });
 
-  const { data: contratos, isLoading: loadingContratos } = useEntityData({
+  const { data: contratos, isLoading: loadingContratos, error: errorContratos, mutate: refetchContratos } = useEntityData({
     key: 'turnos-por-periodo-contratos',
     fetcherAction: unwrapFetcher(listContratos),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
-  const { data: bases, isLoading: loadingBases } = useEntityData({
+  const { data: bases, isLoading: loadingBases, error: errorBases, mutate: refetchBases } = useEntityData({
     key: 'turnos-por-periodo-bases',
     fetcherAction: unwrapFetcher(listBases),
     paginationEnabled: false,
@@ -87,6 +88,10 @@ export default function TurnosPorPeriodoPage() {
   return (
     <div style={{ padding: '24px' }}>
       <Title level={2}>Relatório - Turnos por Período</Title>
+
+      {/* Tratamento de Erros */}
+      <ErrorAlert error={errorContratos?.message} onRetry={refetchContratos} />
+      <ErrorAlert error={errorBases?.message} onRetry={refetchBases} />
 
       {/* Filtros de Período */}
       <Card style={{ marginBottom: 24 }}>

@@ -25,6 +25,7 @@ import FecharTurnoModal from '@/ui/components/FecharTurnoModal';
 import { useLoadingStates } from '@/lib/hooks/useLoadingStates';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -428,6 +429,16 @@ export default function HistoricoPage() {
     return [];
   }, [dadosGraficoBase]);
 
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   // Aplicar filtros aos turnos do histórico
   const turnosFiltrados = useMemo(() => {
     let turnos = turnosHistorico;
@@ -537,6 +548,24 @@ export default function HistoricoPage() {
           </span>
         );
       },
+    },
+    {
+      title: 'KM Inicial',
+      key: 'kmInicio',
+      width: 120,
+      align: 'right',
+      render: (_: unknown, record: TurnoData) => (
+        <span>{record.kmInicio?.toLocaleString('pt-BR') || '-'}</span>
+      ),
+    },
+    {
+      title: 'KM Final',
+      key: 'kmFim',
+      width: 120,
+      align: 'right',
+      render: (_: unknown, record: TurnoData) => (
+        <span>{record.kmFim?.toLocaleString('pt-BR') || '-'}</span>
+      ),
     },
     {
       title: 'Status',
@@ -802,28 +831,28 @@ export default function HistoricoPage() {
       {/* Tabela de Histórico */}
       <Card>
         {/* Filtros */}
-        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-          <Col xs={24} sm={12} md={6}>
+        <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Filtrar por veículo (placa/modelo)"
+              placeholder="Veículo"
               prefix={<SearchOutlined />}
               value={filtroVeiculo}
               onChange={(e) => setFiltroVeiculo(e.target.value)}
               allowClear
             />
           </Col>
-          <Col xs={24} sm={12} md={6}>
+          <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Filtrar por equipe"
+              placeholder="Equipe"
               prefix={<SearchOutlined />}
               value={filtroEquipe}
               onChange={(e) => setFiltroEquipe(e.target.value)}
               allowClear
             />
           </Col>
-          <Col xs={24} sm={12} md={6}>
+          <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Filtrar por eletricista (nome/matrícula)"
+              placeholder="Eletricista"
               prefix={<SearchOutlined />}
               value={filtroEletricista}
               onChange={(e) => setFiltroEletricista(e.target.value)}
@@ -832,7 +861,7 @@ export default function HistoricoPage() {
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Select
-              placeholder="Filtrar por base"
+              placeholder="Base"
               style={{ width: '100%' }}
               value={filtroBase}
               onChange={setFiltroBase}

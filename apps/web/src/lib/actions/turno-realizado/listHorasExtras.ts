@@ -8,7 +8,7 @@
 import { handleServerAction } from '../common/actionHandler';
 import { horaExtraFilterSchema } from '../../schemas/turnoRealizadoSchema';
 import { container } from '../../services/common/registerServices';
-import type { HoraExtraService } from '../../services/HoraExtraService';
+import type { HoraExtraService } from '../../services/turnos/HoraExtraService';
 
 /**
  * Lista horas extras com filtros e paginação

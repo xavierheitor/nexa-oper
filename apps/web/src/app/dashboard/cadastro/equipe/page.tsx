@@ -12,6 +12,7 @@ import { listBases } from '@/lib/actions/base/list';
 
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
@@ -22,7 +23,7 @@ import TableExternalFilters from '@/ui/components/TableExternalFilters';
 import TransferBaseModal from '@/ui/components/TransferBaseModal';
 
 import { Contrato, Equipe, TipoEquipe, Base } from '@nexa-oper/db';
-import { Button, Card, Modal, Table, Space, App, Tag } from 'antd';
+import { Button, Card, Modal, Table, Space, App, Spin, Tag } from 'antd';
 import { SwapOutlined } from '@ant-design/icons';
 
 import EquipeForm, { EquipeFormData } from './form';
@@ -205,6 +206,17 @@ export default function EquipePage() {
       setIsTransferLoading(false);
     }
   };
+
+  // Check de hidratação DEPOIS de todos os hooks, mas ANTES de qualquer return condicional
+  const hydrated = useHydrated();
+
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   if (equipes.error) {
     return <p style={{ color: 'red' }}>Erro ao carregar equipes.</p>;

@@ -45,13 +45,14 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+
 import {
   RequireContractPermission,
   RequireAnyContractPermission,
   OptionalContractPermission,
 } from '../../auth/decorators/contract-permission.decorator';
 import { GetUsuarioMobileId } from '../../auth/decorators/get-user-id-decorator';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { ContractPermissionsService } from '../../auth/services/contract-permissions.service';
 
 @ApiTags('contracts')

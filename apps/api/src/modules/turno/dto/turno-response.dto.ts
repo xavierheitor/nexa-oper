@@ -43,19 +43,29 @@ export class TurnoResponseDto {
   /**
    * Data de solicitação
    */
-  @ApiProperty({ description: 'Data de solicitação', example: '2024-01-01T07:30:00.000Z' })
+  @ApiProperty({
+    description: 'Data de solicitação',
+    example: '2024-01-01T07:30:00.000Z',
+  })
   dataSolicitacao: Date;
 
   /**
    * Data de início
    */
-  @ApiProperty({ description: 'Data de início', example: '2024-01-01T08:00:00.000Z' })
+  @ApiProperty({
+    description: 'Data de início',
+    example: '2024-01-01T08:00:00.000Z',
+  })
   dataInicio: Date;
 
   /**
    * Data de fim
    */
-  @ApiProperty({ description: 'Data de fim', example: '2024-01-01T17:00:00.000Z', nullable: true })
+  @ApiProperty({
+    description: 'Data de fim',
+    example: '2024-01-01T17:00:00.000Z',
+    nullable: true,
+  })
   dataFim: Date | null;
 
   /**
@@ -124,7 +134,10 @@ export class TurnoResponseDto {
   /**
    * Data de criação
    */
-  @ApiProperty({ description: 'Data de criação', example: '2024-01-01T08:00:00.000Z' })
+  @ApiProperty({
+    description: 'Data de criação',
+    example: '2024-01-01T08:00:00.000Z',
+  })
   createdAt: Date;
 
   /**
@@ -136,7 +149,10 @@ export class TurnoResponseDto {
   /**
    * Data de atualização
    */
-  @ApiProperty({ description: 'Data de atualização', example: '2024-01-01T17:00:00.000Z' })
+  @ApiProperty({
+    description: 'Data de atualização',
+    example: '2024-01-01T17:00:00.000Z',
+  })
   updatedAt: Date;
 
   /**
@@ -148,12 +164,20 @@ export class TurnoResponseDto {
   /**
    * Data de exclusão (soft delete)
    */
-  @ApiProperty({ description: 'Data de exclusão', example: null, nullable: true })
+  @ApiProperty({
+    description: 'Data de exclusão',
+    example: null,
+    nullable: true,
+  })
   deletedAt: Date | null;
 
   /**
    * Usuário que excluiu
    */
-  @ApiProperty({ description: 'Usuário que excluiu', example: null, nullable: true })
+  @ApiProperty({
+    description: 'Usuário que excluiu',
+    example: null,
+    nullable: true,
+  })
   deletedBy: string | null;
 }

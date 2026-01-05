@@ -4,7 +4,7 @@
 
 'use server';
 
-import type { EquipeService } from '@/lib/services/EquipeService';
+import type { EquipeService } from '@/lib/services/infraestrutura/EquipeService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';

@@ -18,21 +18,22 @@ import { StatusEletricistaLabels, StatusEletricistaColors, StatusEletricista } f
 // Importações do hook e utilitários da aplicação
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
-import { App, Button, Card, Input, Modal, Space, Table, Tag } from 'antd';
+import { App, Button, Card, Input, Modal, Space, Spin, Table, Tag } from 'antd';
 import { SwapOutlined, PlusOutlined, SearchOutlined, EditOutlined } from '@ant-design/icons';
-import { createEletricista } from '../../../../lib/actions/eletricista/create';
-import { deleteEletricista } from '../../../../lib/actions/eletricista/delete';
-import { transferEletricistaBase } from '../../../../lib/actions/eletricista/transferBase';
-import { registrarStatusEletricista } from '../../../../lib/actions/eletricista/registrarStatus';
-import { updateEletricista } from '../../../../lib/actions/eletricista/update';
-import { ActionResult } from '../../../../lib/types/common';
-import TransferBaseModal from '../../../../ui/components/TransferBaseModal';
-import AlterarStatusModal from '../../../../ui/components/AlterarStatusModal';
-import { getTextFilter } from '../../../../ui/components/tableFilters';
-import TableExternalFilters from '../../../../ui/components/TableExternalFilters';
+import { createEletricista } from '@/lib/actions/eletricista/create';
+import { deleteEletricista } from '@/lib/actions/eletricista/delete';
+import { transferEletricistaBase } from '@/lib/actions/eletricista/transferBase';
+import { registrarStatusEletricista } from '@/lib/actions/eletricista/registrarStatus';
+import { updateEletricista } from '@/lib/actions/eletricista/update';
+import { ActionResult } from '@/lib/types/common';
+import TransferBaseModal from '@/ui/components/TransferBaseModal';
+import AlterarStatusModal from '@/ui/components/AlterarStatusModal';
+import { getTextFilter } from '@/ui/components/tableFilters';
+import TableExternalFilters from '@/ui/components/TableExternalFilters';
 import EletricistaForm, { EletricistaFormData } from './form';
 import EletricistaLoteForm, { type EletricistaLoteFormData } from './lote-form';
 
@@ -398,6 +399,16 @@ export default function EletricistaPage() {
     }
   };
 
+  // Check de hidratação DEPOIS de todos os hooks, mas ANTES de qualquer return condicional
+  const hydrated = useHydrated();
+
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   // Tratamento de erro - exibe mensagem se houver problema ao carregar dados
   if (eletricistas.error) {

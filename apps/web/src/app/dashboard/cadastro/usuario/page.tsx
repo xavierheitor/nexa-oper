@@ -5,26 +5,22 @@ import { deleteUser } from '@/lib/actions/user/delete';
 import { listUsers } from '@/lib/actions/user/list';
 import { resetUserPassword } from '@/lib/actions/user/resetPassword';
 import { updateUser } from '@/lib/actions/user/update';
-
+import CrudPage from '@/lib/components/CrudPage';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
+import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
-
-import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
-
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import { User } from '@nexa-oper/db';
-import { Button, Card, Modal, Space, Table, Tag } from 'antd';
-
+import { Space, Spin, Tag } from 'antd';
 import UserForm, { UserFormData } from './form';
 
 export default function UserPage() {
-  // Controller CRUD
   const controller = useCrudController<User>('usuarios');
 
-  // Dados da tabela
   const users = useEntityData<User>({
     key: 'usuarios',
     fetcherAction: unwrapFetcher(listUsers),
@@ -37,7 +33,18 @@ export default function UserPage() {
     },
   });
 
-  // Configuração das colunas
+  const handleSubmit = useCrudFormHandler<UserFormData, User>({
+    controller: controller as any, // Type cast needed due to ActionResult generic mismatch
+    createAction: createUser as any,
+    updateAction: ((data: UserFormData & { id: number }) => updateUser({
+      ...data,
+      // Se estamos editando e as senhas estão vazias, não incluí-las
+      ...(data.password ? {} : { password: undefined, confirmPassword: undefined }),
+    })) as any,
+    onSuccess: () => users.mutate(),
+    successMessage: 'Usuário salvo com sucesso!',
+  });
+
   const columns = useTableColumnsWithActions<User>(
     [
       {
@@ -155,86 +162,26 @@ export default function UserPage() {
     },
   );
 
-  // Submit do formulário
-  const handleSubmit = async (values: UserFormData) => {
-    const action = async (): Promise<ActionResult<User>> => {
-      const result = controller.editingItem?.id
-        ? await updateUser({
-          ...values,
-          id: controller.editingItem.id,
-            // Se estamos editando e as senhas estão vazias, não incluí-las
-            ...(values.password ? {} : { password: undefined, confirmPassword: undefined }),
-          })
-        : await createUser(values);
-
-      return result;
-    };
-
-    controller.exec(action, 'Usuário salvo com sucesso!').finally(() => {
-      users.mutate();
-    });
-  };
-
-  if (users.error) {
-    return <p style={{ color: 'red' }}>Erro ao carregar usuários.</p>;
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
   }
 
   return (
-    <>
-      <Card
-        title={
-          <Space>
-            <UserOutlined />
-            Gerenciamento de Usuários
-          </Space>
-        }
-        extra={
-          <Button
-            type="primary"
-            icon={<UserOutlined />}
-            onClick={() => controller.open()}
-          >
-            Novo Usuário
-          </Button>
-        }
-      >
-        <Table<User>
-          columns={columns}
-          dataSource={users.data}
-          loading={users.isLoading}
-          rowKey="id"
-          pagination={users.pagination}
-          onChange={users.handleTableChange}
-          scroll={{ x: 1000 }}
-        />
-      </Card>
-
-      <Modal
-        title={
-          <Space>
-            <UserOutlined />
-            {controller.editingItem ? 'Editar Usuário' : 'Novo Usuário'}
-          </Space>
-        }
-        open={controller.isOpen}
-        onCancel={controller.close}
-        footer={null}
-        destroyOnHidden
-        width={600}
-        maskClosable={false}
-      >
-        <UserForm
-          initialValues={controller.editingItem ? {
-            nome: controller.editingItem.nome,
-            email: controller.editingItem.email,
-            username: controller.editingItem.username,
-            // Não incluir senhas para edição
-          } : undefined}
-          onSubmit={handleSubmit}
-          loading={controller.loading}
-          isEditing={!!controller.editingItem}
-        />
-      </Modal>
-    </>
+    <CrudPage
+      title="Usuários"
+      entityKey="usuarios"
+      controller={controller}
+      entityData={users}
+      columns={columns}
+      formComponent={UserForm}
+      onSubmit={handleSubmit}
+      modalWidth={600}
+    />
   );
 }

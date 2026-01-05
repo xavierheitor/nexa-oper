@@ -8,7 +8,7 @@
 import { handleServerAction } from '../common/actionHandler';
 import { faltaFilterSchema } from '../../schemas/turnoRealizadoSchema';
 import { container } from '../../services/common/registerServices';
-import type { FaltaService } from '../../services/FaltaService';
+import type { FaltaService } from '../../services/turnos/FaltaService';
 
 /**
  * Lista faltas com filtros e paginação

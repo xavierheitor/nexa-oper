@@ -34,6 +34,39 @@
  * ```
  */
 
+import { ERROR_MESSAGES } from '@common/constants/errors';
+import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
+import {
+  getDefaultUserContext,
+  createAuditData,
+  updateAuditData,
+  deleteAuditData,
+} from '@common/utils/audit';
+import { handleCrudError } from '@common/utils/error-handler';
+import { handlePrismaUniqueError } from '@common/utils/error-handler';
+import {
+  buildPagination,
+  buildPagedResponse,
+  validatePaginationParams,
+  buildPaginationMeta,
+} from '@common/utils/pagination';
+import {
+  validateId,
+  validateOptionalId,
+  ensureContratoExists,
+  ensureTipoVeiculoExists,
+} from '@common/utils/validation';
+import {
+  buildSearchWhereClause,
+  buildContractFilter,
+  buildBaseWhereClause,
+} from '@common/utils/where-clause';
+import { DatabaseService } from '@database/database.service';
+import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import {
+  extractAllowedContractIds,
+  ensureContractPermission,
+} from '@modules/engine/auth/utils/contract-helpers';
 import {
   BadRequestException,
   ConflictException,
@@ -42,33 +75,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { DatabaseService } from '@database/database.service';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import {
-  extractAllowedContractIds,
-  ensureContractPermission,
-} from '@modules/engine/auth/utils/contract-helpers';
-import {
-  buildPagination,
-  buildPagedResponse,
-  validatePaginationParams,
-  buildPaginationMeta,
-} from '@common/utils/pagination';
-import { handleCrudError } from '@common/utils/error-handler';
-import { handlePrismaUniqueError } from '@common/utils/error-handler';
-import { validateId, validateOptionalId, ensureContratoExists, ensureTipoVeiculoExists } from '@common/utils/validation';
-import {
-  buildSearchWhereClause,
-  buildContractFilter,
-  buildBaseWhereClause,
-} from '@common/utils/where-clause';
-import {
-  getDefaultUserContext,
-  createAuditData,
-  updateAuditData,
-  deleteAuditData,
-} from '@common/utils/audit';
-import { ERROR_MESSAGES } from '@common/constants/errors';
+
 import { ORDER_CONFIG } from '../constants/veiculo.constants';
 import {
   CreateVeiculoDto,
@@ -77,7 +84,6 @@ import {
   VeiculoResponseDto,
   VeiculoSyncDto,
 } from '../dto';
-import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
 
 /**
  * Interface de parâmetros para consulta paginada interna
@@ -107,7 +113,6 @@ export class VeiculoService {
   private readonly logger = new Logger(VeiculoService.name);
 
   constructor(private readonly db: DatabaseService) {}
-
 
   /**
    * Constrói filtros de consulta considerando busca, filtros e permissões
@@ -142,7 +147,6 @@ export class VeiculoService {
 
     return whereClause;
   }
-
 
   /**
    * Lista veículos com paginação e filtros, respeitando permissões
@@ -198,7 +202,12 @@ export class VeiculoService {
         allowedContractIds
       );
 
-      const { skip, take, page: currPage, pageSize } = buildPagination({ page, pageSize: limit });
+      const {
+        skip,
+        take,
+        page: currPage,
+        pageSize,
+      } = buildPagination({ page, pageSize: limit });
 
       const [data, total] = await Promise.all([
         this.db.getPrisma().veiculo.findMany({
@@ -237,7 +246,11 @@ export class VeiculoService {
         this.db.getPrisma().veiculo.count({ where: whereClause }),
       ]);
 
-      const meta: PaginationMetaDto = buildPaginationMeta(total, currPage, pageSize);
+      const meta: PaginationMetaDto = buildPaginationMeta(
+        total,
+        currPage,
+        pageSize
+      );
       return {
         data: data as VeiculoResponseDto[],
         meta,
@@ -517,10 +530,10 @@ export class VeiculoService {
 
       if (contratoId && contratoId !== existingVeiculo.contratoId) {
         ensureContractPermission(
-        contratoId,
-        allowedContractIds,
-        ERROR_MESSAGES.FORBIDDEN_CONTRACT
-      );
+          contratoId,
+          allowedContractIds,
+          ERROR_MESSAGES.FORBIDDEN_CONTRACT
+        );
         await ensureContratoExists(this.db.getPrisma(), contratoId);
       }
 

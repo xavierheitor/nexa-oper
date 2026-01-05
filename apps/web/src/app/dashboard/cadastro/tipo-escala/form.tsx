@@ -20,27 +20,36 @@ interface TipoEscalaFormProps {
     observacoes?: string;
   };
   onSubmit: (values: unknown) => Promise<void>;
-  onCancel: () => void;
+  onCancel?: () => void; // Opcional, CrudPage gerencia o fechamento do modal
+  loading?: boolean;
 }
 
 export default function TipoEscalaForm({
   initialValues,
   onSubmit,
   onCancel,
+  loading: propLoading,
 }: TipoEscalaFormProps) {
   const [form] = Form.useForm();
-  const [loading, setLoading] = React.useState(false);
+  const [internalLoading, setInternalLoading] = React.useState(false);
+  const loading = propLoading ?? internalLoading;
   const [modoRepeticao, setModoRepeticao] = React.useState<string | undefined>(
     initialValues?.modoRepeticao || 'CICLO_DIAS'
   );
 
   const handleSubmit = async (values: unknown) => {
-    setLoading(true);
+    if (!propLoading) {
+      setInternalLoading(true);
+    }
     try {
       await onSubmit(values);
-      form.resetFields();
+      if (!propLoading) {
+        form.resetFields();
+      }
     } finally {
-      setLoading(false);
+      if (!propLoading) {
+        setInternalLoading(false);
+      }
     }
   };
 
@@ -73,10 +82,10 @@ export default function TipoEscalaForm({
         label="Nome do Tipo"
         rules={[
           { required: true, message: 'Nome é obrigatório' },
-          { max: 255, message: 'Máximo 255 caracteres' },
+          { min: 1, max: 255, message: 'Nome deve ter entre 1 e 255 caracteres' },
         ]}
       >
-        <Input placeholder="Ex: 4x2, 5x1, Espanhola" />
+        <Input placeholder="Ex: 4x2, 5x1, Espanhola" maxLength={255} />
       </Form.Item>
 
       <Form.Item
@@ -150,6 +159,9 @@ export default function TipoEscalaForm({
       <Form.Item
         name="observacoes"
         label="Observações"
+        rules={[
+          { max: 1000, message: 'Observações deve ter no máximo 1000 caracteres' }
+        ]}
       >
         <Input.TextArea
           rows={3}

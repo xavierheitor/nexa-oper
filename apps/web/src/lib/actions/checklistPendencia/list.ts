@@ -1,6 +1,6 @@
 'use server';
 
-import type { ChecklistPendenciaService } from '@/lib/services/ChecklistPendenciaService';
+import type { ChecklistPendenciaService } from '@/lib/services/checklist/ChecklistPendenciaService';
 import { container } from '@/lib/services/common/registerServices';
 import { checklistPendenciaFilterSchema } from '../../schemas/checklistPendenciaSchema';
 import { handleServerAction } from '../common/actionHandler';

@@ -29,9 +29,10 @@
  * ```
  */
 
-import { Injectable, Logger } from '@nestjs/common';
-import { AppInfoResponse, HealthCheckResponse } from './app.controller';
 import { DatabaseService } from '@database/database.service';
+import { Injectable, Logger } from '@nestjs/common';
+
+import { AppInfoResponse, HealthCheckResponse } from './app.controller';
 
 /**
  * Serviço principal da aplicação

@@ -50,6 +50,17 @@
  * ```
  */
 
+import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
+import { handleCrudError } from '@common/utils/error-handler';
+import {
+  buildPagination,
+  buildPagedResponse,
+  buildPaginationMeta,
+  validatePaginationParams,
+} from '@common/utils/pagination';
+import { validateId, validateOptionalId } from '@common/utils/validation';
+import { buildWhereClause as buildWhereClauseHelper } from '@common/utils/where-clause';
+import { DatabaseService } from '@database/database.service';
 import {
   BadRequestException,
   ConflictException,
@@ -57,7 +68,13 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { DatabaseService } from '@database/database.service';
+
+import {
+  AUDIT_CONFIG,
+  ERROR_MESSAGES,
+  CHECKLIST_ORDER_CONFIG_COMPAT,
+  ORDER_CONFIG,
+} from '../constants/checklist.constants';
 import {
   ChecklistListResponseDto,
   ChecklistOpcaoRespostaRelacaoSyncDto,
@@ -70,22 +87,6 @@ import {
   CreateChecklistDto,
   UpdateChecklistDto,
 } from '../dto';
-import {
-  buildPagination,
-  buildPagedResponse,
-  buildPaginationMeta,
-  validatePaginationParams,
-} from '@common/utils/pagination';
-import { validateId, validateOptionalId } from '@common/utils/validation';
-import { handleCrudError } from '@common/utils/error-handler';
-import { buildWhereClause as buildWhereClauseHelper } from '@common/utils/where-clause';
-import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
-import {
-  AUDIT_CONFIG,
-  ERROR_MESSAGES,
-  CHECKLIST_ORDER_CONFIG_COMPAT,
-  ORDER_CONFIG,
-} from '../constants/checklist.constants';
 
 /**
  * Interface para parâmetros de consulta interna
@@ -127,7 +128,6 @@ export class ChecklistService {
 
   constructor(private readonly db: DatabaseService) {}
 
-
   /**
    * Obtém contexto do usuário atual
    * @private
@@ -160,7 +160,6 @@ export class ChecklistService {
     });
   }
 
-
   /**
    * Lista todos os checklists com paginação e busca
    */
@@ -182,7 +181,12 @@ export class ChecklistService {
       const whereClause = this.buildWhereClause(search, tipoChecklistId);
 
       // Calcular paginação via util compartilhado
-      const { skip, take, page: currPage, pageSize } = buildPagination({ page, pageSize: limit });
+      const {
+        skip,
+        take,
+        page: currPage,
+        pageSize,
+      } = buildPagination({ page, pageSize: limit });
 
       // Executar consultas em paralelo para otimização
       const [data, total] = await Promise.all([
@@ -336,7 +340,12 @@ export class ChecklistService {
       );
       return data as ChecklistPerguntaRelacaoSyncDto[];
     } catch (error) {
-      handleCrudError(error, this.logger, 'sync', 'relações Checklist-Perguntas');
+      handleCrudError(
+        error,
+        this.logger,
+        'sync',
+        'relações Checklist-Perguntas'
+      );
     }
   }
 
@@ -370,7 +379,12 @@ export class ChecklistService {
       );
       return data as ChecklistOpcaoRespostaSyncDto[];
     } catch (error) {
-      handleCrudError(error, this.logger, 'sync', 'opções de resposta de checklist');
+      handleCrudError(
+        error,
+        this.logger,
+        'sync',
+        'opções de resposta de checklist'
+      );
     }
   }
 
@@ -408,7 +422,12 @@ export class ChecklistService {
       );
       return data as ChecklistOpcaoRespostaRelacaoSyncDto[];
     } catch (error) {
-      handleCrudError(error, this.logger, 'sync', 'relações Checklist-Opções de resposta');
+      handleCrudError(
+        error,
+        this.logger,
+        'sync',
+        'relações Checklist-Opções de resposta'
+      );
     }
   }
 
@@ -446,7 +465,12 @@ export class ChecklistService {
       );
       return data as ChecklistTipoVeiculoRelacaoSyncDto[];
     } catch (error) {
-      handleCrudError(error, this.logger, 'sync', 'relações Checklist-Tipo de Veículo');
+      handleCrudError(
+        error,
+        this.logger,
+        'sync',
+        'relações Checklist-Tipo de Veículo'
+      );
     }
   }
 
@@ -484,7 +508,12 @@ export class ChecklistService {
       );
       return data as ChecklistTipoEquipeRelacaoSyncDto[];
     } catch (error) {
-      handleCrudError(error, this.logger, 'sync', 'relações Checklist-Tipo de Equipe');
+      handleCrudError(
+        error,
+        this.logger,
+        'sync',
+        'relações Checklist-Tipo de Equipe'
+      );
     }
   }
 

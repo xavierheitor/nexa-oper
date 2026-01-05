@@ -6,7 +6,8 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Table, Button, Space, Modal, Tag, Tooltip, App } from 'antd';
 import {
   PlusOutlined,
@@ -47,14 +48,29 @@ interface EquipeTurnoHistorico {
   dataInicio: Date;
   dataFim: Date | null;
   motivo: string | null;
+  observacoes: string | null;
 }
 
 export default function EquipeHorarioPage() {
   const { modal } = App.useApp();
+  const searchParams = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<EquipeTurnoHistorico | null>(null);
+  const [initialEquipeId, setInitialEquipeId] = useState<number | null>(null);
 
   const crud = useCrudController<EquipeTurnoHistorico>('equipeTurnoHistorico');
+
+  // Verificar se há equipeId na query string e abrir modal automaticamente
+  useEffect(() => {
+    const equipeId = searchParams.get('equipeId');
+    if (equipeId && !isModalOpen) {
+      const equipeIdNum = parseInt(equipeId, 10);
+      if (!isNaN(equipeIdNum)) {
+        setInitialEquipeId(equipeIdNum);
+        setIsModalOpen(true);
+      }
+    }
+  }, [searchParams, isModalOpen]);
 
   const associacoes = useEntityData({
     key: 'equipeTurnoHistorico',
@@ -175,6 +191,7 @@ export default function EquipeHorarioPage() {
 
   const handleCreate = () => {
     setEditingItem(null);
+    setInitialEquipeId(null);
     setIsModalOpen(true);
   };
 
@@ -185,6 +202,7 @@ export default function EquipeHorarioPage() {
       duracaoHoras: Number(item.duracaoHoras),
       duracaoIntervaloHoras: Number(item.duracaoIntervaloHoras),
     });
+    setInitialEquipeId(null);
     setIsModalOpen(true);
   };
 
@@ -215,6 +233,7 @@ export default function EquipeHorarioPage() {
       () => {
         associacoes.mutate();
         setIsModalOpen(false);
+        setInitialEquipeId(null);
       }
     );
   };
@@ -244,14 +263,41 @@ export default function EquipeHorarioPage() {
       <Modal
         title={editingItem ? 'Editar Associação' : 'Nova Associação'}
         open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
+        onCancel={() => {
+          setIsModalOpen(false);
+          setInitialEquipeId(null);
+        }}
         footer={null}
         width={700}
       >
         <EquipeTurnoHistoricoForm
-          initialValues={editingItem || undefined}
+          initialValues={
+            editingItem
+              ? {
+                id: editingItem.id,
+                equipeId: editingItem.equipeId,
+                horarioAberturaCatalogoId: editingItem.horarioAberturaCatalogoId,
+                dataInicio: editingItem.dataInicio,
+                dataFim: editingItem.dataFim,
+                inicioTurnoHora: editingItem.inicioTurnoHora,
+                duracaoHoras: editingItem.duracaoHoras,
+                duracaoIntervaloHoras: editingItem.duracaoIntervaloHoras,
+                motivo: editingItem.motivo,
+                observacoes: editingItem.observacoes,
+              }
+              : initialEquipeId
+                ? {
+                  equipeId: initialEquipeId,
+                  dataInicio: new Date(),
+                  dataFim: null,
+                }
+                : undefined
+          }
           onSubmit={handleSave}
-          onCancel={() => setIsModalOpen(false)}
+          onCancel={() => {
+            setIsModalOpen(false);
+            setInitialEquipeId(null);
+          }}
         />
       </Modal>
     </div>

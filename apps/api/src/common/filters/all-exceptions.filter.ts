@@ -48,6 +48,7 @@
  * @since 1.0.0
  */
 
+import { StandardLogger, sanitizeData } from '@common/utils/logger';
 import {
   ArgumentsHost,
   Catch,
@@ -55,7 +56,6 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { StandardLogger, sanitizeData } from '@common/utils/logger';
 import { Request, Response } from 'express';
 
 /**
@@ -130,7 +130,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       if (typeof resp === 'object' && resp !== null) {
         // Se tem message, extrair para compatibilidade
         const msg = resp.message;
-        safeMessage = Array.isArray(msg) ? msg : msg ?? exception.message;
+        safeMessage = Array.isArray(msg) ? msg : (msg ?? exception.message);
 
         // Preservar todos os campos do objeto original (status, closedAt, kmFinal, etc.)
         // mas sobrescrever com campos padrão se necessário
@@ -146,7 +146,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
         safeMessage = resp ?? exception.message;
         responseBody.message = safeMessage;
       }
-    } else if (process.env.NODE_ENV !== 'production' && exception instanceof Error) {
+    } else if (
+      process.env.NODE_ENV !== 'production' &&
+      exception instanceof Error
+    ) {
       safeMessage = exception.message;
       responseBody.message = safeMessage;
     } else {
@@ -166,9 +169,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // Registra log com severidade baseada no status HTTP usando Logger
     if (status >= 500) {
-      const errorMessage = exception instanceof Error ? exception.message : 'Internal Server Error';
-      const errorStack = exception instanceof Error ? exception.stack : undefined;
-      this.logger.error(`[500] ${request.method} ${request.url} - ${errorMessage}`, errorStack);
+      const errorMessage =
+        exception instanceof Error
+          ? exception.message
+          : 'Internal Server Error';
+      const errorStack =
+        exception instanceof Error ? exception.stack : undefined;
+      this.logger.error(
+        `[500] ${request.method} ${request.url} - ${errorMessage}`,
+        errorStack
+      );
     } else if (status >= 400) {
       // Casos especiais que são comportamentos esperados, não erros
       // HTTP 409 com status 'already_closed' é comportamento esperado para sincronização mobile
@@ -184,7 +194,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
           `[409] Sincronização mobile - turno já fechado: ${responseBody.remoteId || 'N/A'}`
         );
       } else {
-        this.logger.warn(`[${status}] ${request.method} ${request.url} - ${JSON.stringify(safeMessage)}`);
+        this.logger.warn(
+          `[${status}] ${request.method} ${request.url} - ${JSON.stringify(safeMessage)}`
+        );
       }
     }
 

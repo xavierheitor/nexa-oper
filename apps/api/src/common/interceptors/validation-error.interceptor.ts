@@ -6,6 +6,10 @@
  */
 
 import {
+  handleValidationError,
+  createStandardErrorResponse,
+} from '@common/utils/error-response';
+import {
   Injectable,
   NestInterceptor,
   ExecutionContext,
@@ -15,18 +19,20 @@ import {
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { handleValidationError, createStandardErrorResponse } from '@common/utils/error-response';
 
 @Injectable()
 export class ValidationErrorInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
-      catchError((error) => {
+      catchError(error => {
         const request = context.switchToHttp().getRequest();
         const path = request.url;
 
         // Se é um erro de validação do class-validator
-        if (error.status === HttpStatus.BAD_REQUEST && error.response?.message) {
+        if (
+          error.status === HttpStatus.BAD_REQUEST &&
+          error.response?.message
+        ) {
           const validationError = handleValidationError(error, path);
           return throwError(() => validationError);
         }

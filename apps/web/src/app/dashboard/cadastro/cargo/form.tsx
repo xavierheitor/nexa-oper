@@ -12,7 +12,7 @@ export interface CargoFormData {
 }
 
 interface CargoFormProps {
-  initialValues?: CargoFormData;
+  initialValues?: Partial<CargoFormData>;
   onSubmit: (values: CargoFormData) => void;
   loading?: boolean;
 }
@@ -32,10 +32,10 @@ export default function CargoForm({ initialValues, onSubmit, loading = false }: 
         label="Nome do Cargo"
         rules={[
           { required: true, message: 'Nome é obrigatório' },
-          { max: 255, message: 'Máximo 255 caracteres' },
+          { min: 1, max: 255, message: 'Nome deve ter entre 1 e 255 caracteres' },
         ]}
       >
-        <Input placeholder="Ex: Eletricista, Técnico, Auxiliar..." autoFocus />
+        <Input placeholder="Ex: Eletricista, Técnico, Auxiliar..." autoFocus maxLength={255} />
       </Form.Item>
 
       <Form.Item
@@ -43,6 +43,7 @@ export default function CargoForm({ initialValues, onSubmit, loading = false }: 
         label="Salário Base (R$)"
         rules={[
           { required: true, message: 'Salário base é obrigatório' },
+          { type: 'number', min: 0, message: 'Salário deve ser maior ou igual a 0' },
         ]}
         tooltip="Valor base de referência para este cargo"
       >

@@ -21,43 +21,42 @@
  * ```
  */
 
-import { AprOpcaoRespostaService } from '../AprOpcaoRespostaService';
-import { AprPerguntaService } from '../AprPerguntaService';
-import { AprService } from '../AprService';
-import { AprTipoAtividadeVinculoService } from '../AprTipoAtividadeVinculoService';
-import { ChecklistOpcaoRespostaService } from '../ChecklistOpcaoRespostaService';
-import { ChecklistPerguntaService } from '../ChecklistPerguntaService';
-import { ChecklistService } from '../ChecklistService';
-import { ChecklistTipoEquipeVinculoService } from '../ChecklistTipoEquipeVinculoService';
-import { ChecklistTipoVeiculoVinculoService } from '../ChecklistTipoVeiculoVinculoService';
-import { ChecklistPendenciaService } from '../ChecklistPendenciaService';
-import { ContratoService } from '../ContratoService';
-import { EletricistaService } from '../EletricistaService';
-// import { EscalaService } from '../EscalaService'; // COMENTADO - Substituído pelo novo módulo de Escalas
-import { EquipeService } from '../EquipeService';
-import { EquipeSupervisorService } from '../EquipeSupervisorService';
-import { MobileUserService } from '../MobileUserService';
-import { SupervisorService } from '../SupervisorService';
-import { TipoAtividadeService } from '../TipoAtividadeService';
-import { BaseService } from '../BaseService';
-import { CargoService } from '../CargoService';
-import { TipoChecklistService } from '../TipoChecklistService';
-import { TipoEquipeService } from '../TipoEquipeService';
-import { TipoVeiculoService } from '../TipoVeiculoService';
-import { UserService } from '../UserService';
-import { VeiculoService } from '../VeiculoService';
+import { AprOpcaoRespostaService } from '../apr/AprOpcaoRespostaService';
+import { AprPerguntaService } from '../apr/AprPerguntaService';
+import { AprService } from '../apr/AprService';
+import { AprTipoAtividadeVinculoService } from '../apr/AprTipoAtividadeVinculoService';
+import { ChecklistOpcaoRespostaService } from '../checklist/ChecklistOpcaoRespostaService';
+import { ChecklistPerguntaService } from '../checklist/ChecklistPerguntaService';
+import { ChecklistService } from '../checklist/ChecklistService';
+import { ChecklistTipoEquipeVinculoService } from '../checklist/ChecklistTipoEquipeVinculoService';
+import { ChecklistTipoVeiculoVinculoService } from '../checklist/ChecklistTipoVeiculoVinculoService';
+import { ChecklistPendenciaService } from '../checklist/ChecklistPendenciaService';
+import { ContratoService } from '../catalogo/ContratoService';
+import { TipoAtividadeService } from '../catalogo/TipoAtividadeService';
+import { BaseService } from '../infraestrutura/BaseService';
+import { EquipeService } from '../infraestrutura/EquipeService';
+import { EquipeSupervisorService } from '../infraestrutura/EquipeSupervisorService';
+import { TipoEquipeService } from '../infraestrutura/TipoEquipeService';
+import { TipoVeiculoService } from '../infraestrutura/TipoVeiculoService';
+import { VeiculoService } from '../infraestrutura/VeiculoService';
+import { CargoService } from '../pessoas/CargoService';
+import { EletricistaService } from '../pessoas/EletricistaService';
+import { SupervisorService } from '../pessoas/SupervisorService';
+import { MobileUserService } from '../auth/MobileUserService';
+import { UserService } from '../auth/UserService';
+import { TipoChecklistService } from '../checklist/TipoChecklistService';
 // Módulo de Escalas
 import { TipoEscalaService } from '../escala/TipoEscalaService';
 import { EscalaEquipePeriodoService } from '../escala/EscalaEquipePeriodoService';
 import { EquipeHorarioVigenciaService } from '../escala/EquipeHorarioVigenciaService';
 import { HorarioAberturaCatalogoService } from '../escala/HorarioAberturaCatalogoService';
 import { EquipeTurnoHistoricoService } from '../escala/EquipeTurnoHistoricoService';
-import { TurnoService } from '../TurnoService';
-import { JustificativaEquipeService } from '../JustificativaEquipeService';
-import { JustificativaService } from '../JustificativaService';
-import { TipoJustificativaService } from '../TipoJustificativaService';
-import { FaltaService } from '../FaltaService';
-import { HoraExtraService } from '../HoraExtraService';
+import { TurnoService } from '../turnos/TurnoService';
+import { JustificativaEquipeService } from '../justificativas/JustificativaEquipeService';
+import { JustificativaService } from '../justificativas/JustificativaService';
+import { TipoJustificativaService } from '../justificativas/TipoJustificativaService';
+import { FaltaService } from '../turnos/FaltaService';
+import { HoraExtraService } from '../turnos/HoraExtraService';
 import { container } from './ServiceContainer';
 
 /**
@@ -76,7 +75,6 @@ export function registerServices(): void {
   container.register('tipoVeiculoService', () => new TipoVeiculoService());
   container.register('veiculoService', () => new VeiculoService());
   container.register('eletricistaService', () => new EletricistaService());
-  // container.register('escalaService', () => new EscalaService()); // COMENTADO - Substituído pelo novo módulo
   container.register('supervisorService', () => new SupervisorService());
   container.register(
     'equipeSupervisorService',

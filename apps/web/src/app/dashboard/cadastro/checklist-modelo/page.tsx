@@ -6,6 +6,7 @@ import { getChecklist } from '@/lib/actions/checklist/get';
 import { listChecklists } from '@/lib/actions/checklist/list';
 import { updateChecklist } from '@/lib/actions/checklist/update';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
@@ -118,6 +119,17 @@ export default function ChecklistPage() {
     };
     controller.exec(action, 'Checklist salvo com sucesso!').finally(() => checklists.mutate());
   };
+
+  // Check de hidratação DEPOIS de todos os hooks, mas ANTES de qualquer return condicional
+  const hydrated = useHydrated();
+
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   if (checklists.error) return <p style={{ color: 'red' }}>Erro ao carregar checklists.</p>;
   if (tvVinculos.error) return <p style={{ color: 'red' }}>Erro ao carregar vínculos por tipo de veículo.</p>;

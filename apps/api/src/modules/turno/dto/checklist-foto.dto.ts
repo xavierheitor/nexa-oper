@@ -5,8 +5,14 @@
  * relacionados ao upload e sincronização de fotos de checklists.
  */
 
-import { IsNotEmpty, IsInt, IsString, IsOptional, IsObject } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsNotEmpty,
+  IsInt,
+  IsString,
+  IsOptional,
+  IsObject,
+} from 'class-validator';
 
 /**
  * DTO para sincronizar uma foto individual
@@ -14,7 +20,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class SincronizarFotoDto {
   @ApiProperty({
     description: 'ID da resposta do checklist que gerou a pendência',
-    example: 45
+    example: 45,
   })
   @IsNotEmpty()
   @IsInt()
@@ -23,7 +29,7 @@ export class SincronizarFotoDto {
   @ApiProperty({
     description: 'ID do turno (para validação)',
     example: 16,
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsInt()
@@ -31,8 +37,12 @@ export class SincronizarFotoDto {
 
   @ApiProperty({
     description: 'Metadados da foto (EXIF, geolocalização, etc)',
-    example: { latitude: -23.5505, longitude: -46.6333, timestamp: '2025-10-22T20:15:00Z' },
-    required: false
+    example: {
+      latitude: -23.5505,
+      longitude: -46.6333,
+      timestamp: '2025-10-22T20:15:00Z',
+    },
+    required: false,
   })
   @IsOptional()
   @IsObject()
@@ -77,7 +87,7 @@ export class FotoResponseDto {
 export class SincronizarFotoLoteDto {
   @ApiProperty({
     description: 'Lista de fotos para sincronizar',
-    type: [SincronizarFotoDto]
+    type: [SincronizarFotoDto],
   })
   @IsNotEmpty()
   fotos: SincronizarFotoDto[];

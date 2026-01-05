@@ -37,6 +37,8 @@
  * ```
  */
 
+import { SyncAuditRemoverInterceptor } from '@common/interceptors';
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import {
   Controller,
   Get,
@@ -51,9 +53,7 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { SyncAuditRemoverInterceptor } from '@common/interceptors';
-import { AprService } from '../services/apr.service';
+
 import {
   AprOpcaoRespostaRelacaoSyncDto,
   AprOpcaoRespostaSyncDto,
@@ -62,6 +62,7 @@ import {
   AprResponseDto,
   AprTipoAtividadeRelacaoSyncDto,
 } from '../dto';
+import { AprService } from '../services/apr.service';
 
 /**
  * Controlador de Sincronização APR (Análise Preliminar de Risco)

@@ -1,4 +1,5 @@
 import { ForbiddenException } from '@nestjs/common';
+
 import { ContractPermission } from '../services/contract-permissions.service';
 
 /**

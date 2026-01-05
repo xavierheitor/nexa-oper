@@ -173,6 +173,8 @@ model EscalaEquipePeriodo {
 
   Slots SlotEscala[]
 
+  AderenciaEscalaSnapshot AderenciaEscalaSnapshot[]
+
   @@index([equipeId, periodoInicio])
   @@index([tipoEscalaId])
 }

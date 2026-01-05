@@ -3,10 +3,10 @@
 import { Base, Cargo, Contrato } from '@nexa-oper/db';
 import { Button, DatePicker, Form, Input, Select, Spin, App } from 'antd';
 import { useEffect, useState } from 'react';
-import { listBases } from '../../../../lib/actions/base/list';
-import { listContratos } from '../../../../lib/actions/contrato/list';
-import { listCargos } from '../../../../lib/actions/cargo/list';
-import { StatusEletricistaLabels } from '../../../../lib/schemas/eletricistaStatusSchema';
+import { listBases } from '@/lib/actions/base/list';
+import { listContratos } from '@/lib/actions/contrato/list';
+import { listCargos } from '@/lib/actions/cargo/list';
+import { StatusEletricistaLabels } from '@/lib/schemas/eletricistaStatusSchema';
 import { errorHandler } from '@/lib/utils/errorHandler';
 import dayjs from 'dayjs';
 

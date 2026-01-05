@@ -4,6 +4,7 @@
 
 import { ExecutionContext, CallHandler } from '@nestjs/common';
 import { of } from 'rxjs';
+
 import { SyncAuditRemoverInterceptor } from './sync-audit-remover.interceptor';
 
 describe('SyncAuditRemoverInterceptor', () => {

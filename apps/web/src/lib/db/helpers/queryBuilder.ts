@@ -99,13 +99,13 @@ export class QueryBuilder {
    *
    * @param search - Termo de busca
    * @param searchFields - Campos onde buscar
-   * @param additionalWhere - Filtros adicionais
+   * @param additionalWhere - Filtros adicionais (tipado com GenericPrismaWhereInput)
    * @returns Objeto where completo
    */
   static buildWhere(
     search: string | undefined,
     searchFields: string[],
-    additionalWhere: Record<string, any> = {}
+    additionalWhere: Record<string, unknown> = {}
   ) {
     const searchWhere = this.buildSearchWhere(search, searchFields);
 
@@ -120,7 +120,7 @@ export class QueryBuilder {
    *
    * @param params - Parâmetros da query
    * @param searchFields - Campos onde buscar
-   * @param additionalWhere - Filtros adicionais
+   * @param additionalWhere - Filtros adicionais (tipado com GenericPrismaWhereInput)
    * @returns Objeto com where, orderBy, skip e take
    */
   static buildQueryParams(
@@ -132,7 +132,7 @@ export class QueryBuilder {
       search?: string;
     },
     searchFields: string[],
-    additionalWhere: Record<string, any> = {}
+    additionalWhere: Record<string, unknown> = {}
   ) {
     const where = this.buildWhere(params.search, searchFields, additionalWhere);
     const orderBy = this.buildOrderBy(params.orderBy, params.orderDir);

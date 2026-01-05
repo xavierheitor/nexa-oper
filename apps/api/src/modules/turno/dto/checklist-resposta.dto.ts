@@ -5,8 +5,8 @@
  * relacionados às respostas individuais de perguntas de checklist.
  */
 
-import { IsNotEmpty, IsInt, IsString, IsDateString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsInt, IsString, IsDateString } from 'class-validator';
 
 /**
  * DTO para resposta individual de uma pergunta do checklist
@@ -14,7 +14,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class ChecklistRespostaDto {
   @ApiProperty({
     description: 'ID da pergunta respondida',
-    example: 1
+    example: 1,
   })
   @IsNotEmpty()
   @IsInt()
@@ -22,7 +22,7 @@ export class ChecklistRespostaDto {
 
   @ApiProperty({
     description: 'ID da opção de resposta escolhida',
-    example: 2
+    example: 2,
   })
   @IsNotEmpty()
   @IsInt()
@@ -30,7 +30,7 @@ export class ChecklistRespostaDto {
 
   @ApiProperty({
     description: 'Data e hora da resposta',
-    example: '2025-10-22T20:10:27.000Z'
+    example: '2025-10-22T20:10:27.000Z',
   })
   @IsNotEmpty()
   @IsDateString()

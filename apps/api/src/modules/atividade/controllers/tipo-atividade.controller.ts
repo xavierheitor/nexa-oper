@@ -38,6 +38,9 @@
  * ```
  */
 
+import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
 import {
   Controller,
   Get,
@@ -60,10 +63,7 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
-import { TipoAtividadeService } from '../services/tipo-atividade.service';
+
 import {
   CreateTipoAtividadeDto,
   UpdateTipoAtividadeDto,
@@ -71,6 +71,7 @@ import {
   TipoAtividadeListResponseDto,
   TipoAtividadeQueryDto,
 } from '../dto';
+import { TipoAtividadeService } from '../services/tipo-atividade.service';
 
 /**
  * Controlador responsável pelas operações CRUD de tipos de atividade
@@ -106,7 +107,8 @@ export class TipoAtividadeController {
   @Get()
   @ApiOperation({
     summary: 'Lista tipos de atividade',
-    description: 'Retorna uma lista paginada de tipos de atividade com opção de busca',
+    description:
+      'Retorna uma lista paginada de tipos de atividade com opção de busca',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -145,14 +147,17 @@ export class TipoAtividadeController {
   })
   async findAll(
     @Query() query: TipoAtividadeQueryDto,
-    @GetUserContracts() allowedContracts: ContractPermission[],
+    @GetUserContracts() allowedContracts: ContractPermission[]
   ): Promise<TipoAtividadeListResponseDto> {
     this.logger.log('Listando tipos de atividade');
-    return this.tipoAtividadeService.findAll({
-      page: query.page || 1,
-      limit: query.limit || 10,
-      search: query.search,
-    }, allowedContracts);
+    return this.tipoAtividadeService.findAll(
+      {
+        page: query.page || 1,
+        limit: query.limit || 10,
+        search: query.search,
+      },
+      allowedContracts
+    );
   }
 
   /**
@@ -194,7 +199,7 @@ export class TipoAtividadeController {
   })
   async create(
     @Body() createDto: CreateTipoAtividadeDto,
-    @GetUserContracts() allowedContracts: ContractPermission[],
+    @GetUserContracts() allowedContracts: ContractPermission[]
   ): Promise<TipoAtividadeResponseDto> {
     this.logger.log(`Criando tipo de atividade: ${createDto.nome}`);
     return this.tipoAtividadeService.create(createDto, allowedContracts);
@@ -240,7 +245,7 @@ export class TipoAtividadeController {
   })
   async findOne(
     @Param('id', ParseIntPipe) id: number,
-    @GetUserContracts() allowedContracts: ContractPermission[],
+    @GetUserContracts() allowedContracts: ContractPermission[]
   ): Promise<TipoAtividadeResponseDto> {
     this.logger.log(`Buscando tipo de atividade com ID: ${id}`);
     return this.tipoAtividadeService.findOne(id, allowedContracts);
@@ -296,7 +301,7 @@ export class TipoAtividadeController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDto: UpdateTipoAtividadeDto,
-    @GetUserContracts() allowedContracts: ContractPermission[],
+    @GetUserContracts() allowedContracts: ContractPermission[]
   ): Promise<TipoAtividadeResponseDto> {
     this.logger.log(`Atualizando tipo de atividade com ID: ${id}`);
     return this.tipoAtividadeService.update(id, updateDto, allowedContracts);
@@ -346,7 +351,7 @@ export class TipoAtividadeController {
   })
   async remove(
     @Param('id', ParseIntPipe) id: number,
-    @GetUserContracts() allowedContracts: ContractPermission[],
+    @GetUserContracts() allowedContracts: ContractPermission[]
   ): Promise<TipoAtividadeResponseDto> {
     this.logger.log(`Removendo tipo de atividade com ID: ${id}`);
     return this.tipoAtividadeService.remove(id, allowedContracts);

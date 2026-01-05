@@ -5,22 +5,24 @@
  * gerenciar storage e gerar URLs públicas para acesso às fotos.
  */
 
+import { randomUUID } from 'crypto';
+import { createWriteStream, mkdirSync, existsSync } from 'fs';
+import { join } from 'path';
+
+import { DatabaseService } from '@database/database.service';
 import {
   Injectable,
   Logger,
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { DatabaseService } from '@database/database.service';
+
 import {
   SincronizarFotoDto,
   FotoResponseDto,
   ListarFotosRespostaDto,
   ListarFotosPendenciaDto,
 } from '../dto';
-import { createWriteStream, mkdirSync, existsSync } from 'fs';
-import { join } from 'path';
-import { randomUUID } from 'crypto';
 
 @Injectable()
 export class ChecklistFotoService {

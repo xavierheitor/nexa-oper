@@ -5,6 +5,8 @@
  * de fotos de checklists de forma assíncrona.
  */
 
+import { GetUsuarioMobileId } from '@modules/engine/auth/decorators/get-user-id-decorator';
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import {
   Controller,
   Post,
@@ -19,6 +21,7 @@ import {
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiOperation,
   ApiResponse,
@@ -27,16 +30,14 @@ import {
   ApiConsumes,
   ApiBody,
 } from '@nestjs/swagger';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { GetUsuarioMobileId } from '@modules/engine/auth/decorators/get-user-id-decorator';
-import { ChecklistFotoService } from '../services/checklist-foto.service';
+
 import {
   FotoResponseDto,
   FotoLoteResponseDto,
   ListarFotosRespostaDto,
   ListarFotosPendenciaDto,
 } from '../dto';
+import { ChecklistFotoService } from '../services/checklist-foto.service';
 
 /**
  * Controller responsável pela sincronização de fotos de checklist

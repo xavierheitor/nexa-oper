@@ -25,12 +25,16 @@ import {
   Form,
   App,
 } from 'antd';
-import { CalendarOutlined, SearchOutlined, SwapOutlined } from '@ant-design/icons';
+import { CalendarOutlined, SearchOutlined, SwapOutlined, EditOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { getEscalasPublicadas } from '@/lib/actions/escala/edicaoEmCurso';
-import { transferirEscala } from '@/lib/actions/escala/escalaEquipePeriodo';
+import { transferirEscala, updateSlotEscala } from '@/lib/actions/escala/escalaEquipePeriodo';
 import { listEletricistas } from '@/lib/actions/eletricista/list';
+import { createEquipeTurnoHistorico } from '@/lib/actions/escala/equipeTurnoHistorico';
+import { TimePicker } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useCrudController } from '@/lib/hooks/useCrudController';
+import EquipeTurnoHistoricoForm from '@/app/dashboard/cadastro/equipe-horario/form';
 import type { ColumnsType } from 'antd/es/table';
 
 const { RangePicker } = DatePicker;
@@ -41,6 +45,9 @@ interface Slot {
   data: Date;
   estado: 'TRABALHO' | 'FOLGA' | 'FALTA' | 'EXCECAO';
   eletricistaId: number;
+  inicioPrevisto?: string | null;
+  fimPrevisto?: string | null;
+  anotacoesDia?: string | null;
   eletricista: {
     id: number;
     nome: string;
@@ -72,6 +79,27 @@ export default function EdicaoEmCursoPage() {
   } | null>(null);
   const [formTransferencia] = Form.useForm();
   const [loadingTransferencia, setLoadingTransferencia] = useState(false);
+
+  // Estados para modal de horário
+  const [modalHorarioOpen, setModalHorarioOpen] = useState(false);
+  const [equipeIdParaHorario, setEquipeIdParaHorario] = useState<number | null>(null);
+  const crudHorario = useCrudController<any>('equipeTurnoHistorico');
+
+  // Estados para modal de edição de slot
+  const [modalSlotOpen, setModalSlotOpen] = useState(false);
+  const [slotEditando, setSlotEditando] = useState<{
+    slotId: number;
+    escalaId: number;
+    eletricistaId: number;
+    eletricistaNome: string;
+    data: Date;
+    estado: 'TRABALHO' | 'FOLGA' | 'FALTA' | 'EXCECAO';
+    inicioPrevisto?: string | null;
+    fimPrevisto?: string | null;
+    anotacoesDia?: string | null;
+  } | null>(null);
+  const [formSlot] = Form.useForm();
+  const [loadingSlot, setLoadingSlot] = useState(false);
 
   // Buscar eletricistas para o select
   const { data: eletricistasData } = useDataFetch(
@@ -118,7 +146,7 @@ export default function EdicaoEmCursoPage() {
     const fim = periodo[1].toDate();
     const listaDias: Date[] = [];
 
-    let currentDate = new Date(inicio);
+    const currentDate = new Date(inicio);
     while (currentDate <= fim) {
       listaDias.push(new Date(currentDate));
       currentDate.setDate(currentDate.getDate() + 1);
@@ -181,10 +209,12 @@ export default function EdicaoEmCursoPage() {
         const row: any = {
           key: `${escala.id}-${eletricistaId}`,
           escalaId: escala.id,
+          equipeId: escala.equipe.id,
           eletricistaId,
           base: escala.base?.nome || '-',
           prefixo: escala.equipe.nome.substring(0, 10) || '-', // Usa parte do nome como prefixo
           horario: horarioStr,
+          temHorario: !!escala.horario,
           eletricista: eletricista.nome,
           matricula: eletricista.matricula,
           // Primeira linha da escala terá rowSpan igual ao número de eletricistas
@@ -200,6 +230,10 @@ export default function EdicaoEmCursoPage() {
             return slotDate.toISOString().split('T')[0] === diaKey;
           });
           row[diaKey] = slot ? slot.estado : null;
+          // Armazenar o slot completo para acesso posterior na edição
+          if (slot) {
+            row[`${diaKey}_slot`] = slot;
+          }
         });
 
         dados.push(row);
@@ -264,10 +298,28 @@ export default function EdicaoEmCursoPage() {
         title: 'Horário',
         dataIndex: 'horario',
         key: 'horario',
-        width: 150,
+        width: 200,
         onCell: (record: any) => ({
           rowSpan: record.rowSpan,
         }),
+        render: (horario: string, record: any) => (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>{horario}</span>
+            {!record.temHorario && (
+              <Button
+                type="link"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setEquipeIdParaHorario(record.equipeId);
+                  setModalHorarioOpen(true);
+                }}
+                title="Definir horário da equipe"
+                style={{ padding: 0, height: 'auto', minWidth: 'auto' }}
+              />
+            )}
+          </div>
+        ),
       },
       {
         title: 'Eletricista',
@@ -317,7 +369,7 @@ export default function EdicaoEmCursoPage() {
           key: diaKey,
           width: 50,
           align: 'center' as const,
-          render: (estado: string | null) => {
+          render: (estado: string | null, record: any) => {
             if (!estado) {
               return <span style={{ color: '#ccc' }}>-</span>;
             }
@@ -329,11 +381,61 @@ export default function EdicaoEmCursoPage() {
               EXCECAO: { color: 'blue', label: 'E', title: 'Exceção' },
             }[estado] || { color: 'default', label: '?', title: estado };
 
+            // Encontrar o slot completo para edição
+            const slotCompleto = record[`${diaKey}_slot`] as Slot | undefined;
+
+            // Se não encontrou no record, buscar nas escalas
+            const slotFinal = slotCompleto || escalas
+              .find((e: any) => e.id === record.escalaId)
+              ?.Slots?.find((s: Slot) => {
+                const slotDate = new Date(s.data);
+                const slotDateKey = slotDate.toISOString().split('T')[0];
+                return (
+                  slotDateKey === diaKey &&
+                  s.eletricistaId === record.eletricistaId
+                );
+              });
+
             return (
               <Tag
                 color={config.color}
-                style={{ margin: 0, width: '100%', cursor: 'help' }}
-                title={config.title}
+                style={{
+                  margin: 0,
+                  width: '100%',
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                }}
+                title={`${config.title} - Clique para editar`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (slotFinal) {
+                    const slotDate = new Date(slotFinal.data);
+                    setSlotEditando({
+                      slotId: slotFinal.id,
+                      escalaId: record.escalaId,
+                      eletricistaId: record.eletricistaId,
+                      eletricistaNome: record.eletricista,
+                      data: slotDate,
+                      estado: slotFinal.estado,
+                      inicioPrevisto: slotFinal.inicioPrevisto || null,
+                      fimPrevisto: slotFinal.fimPrevisto || null,
+                      anotacoesDia: slotFinal.anotacoesDia || null,
+                    });
+                    formSlot.setFieldsValue({
+                      estado: slotFinal.estado,
+                      inicioPrevisto: slotFinal.inicioPrevisto
+                        ? dayjs(slotFinal.inicioPrevisto, 'HH:mm:ss')
+                        : null,
+                      fimPrevisto: slotFinal.fimPrevisto
+                        ? dayjs(slotFinal.fimPrevisto, 'HH:mm:ss')
+                        : null,
+                      anotacoesDia: slotFinal.anotacoesDia || '',
+                    });
+                    setModalSlotOpen(true);
+                  } else {
+                    console.error('Slot não encontrado:', { record, diaKey, escalas });
+                  }
+                }}
               >
                 {config.label}
               </Tag>
@@ -639,6 +741,231 @@ export default function EdicaoEmCursoPage() {
             />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* Modal para definir/alterar horário da equipe */}
+      <Modal
+        title="Definir Horário da Equipe"
+        open={modalHorarioOpen}
+        onCancel={() => {
+          setModalHorarioOpen(false);
+          setEquipeIdParaHorario(null);
+        }}
+        footer={null}
+        width={700}
+        destroyOnHidden={true}
+      >
+        {equipeIdParaHorario && (
+          <EquipeTurnoHistoricoForm
+            key={`horario-form-${equipeIdParaHorario}`}
+            initialValues={{
+              equipeId: equipeIdParaHorario,
+              dataInicio: new Date(),
+              dataFim: null,
+            }}
+            disableEquipeSelect={true}
+            onSubmit={async (values: unknown) => {
+              await crudHorario.exec(
+                () => createEquipeTurnoHistorico(values),
+                'Horário definido com sucesso!',
+                () => {
+                  setModalHorarioOpen(false);
+                  setEquipeIdParaHorario(null);
+                  // Recarregar escalas para atualizar os horários
+                  const carregarEscalas = async () => {
+                    if (!periodo[0] || !periodo[1]) return;
+                    setLoading(true);
+                    try {
+                      const result = await getEscalasPublicadas({
+                        periodoInicio: periodo[0].toDate(),
+                        periodoFim: periodo[1].toDate(),
+                      });
+                      if (result.success && result.data) {
+                        setEscalas(result.data as any);
+                      }
+                    } catch (error) {
+                      console.error('Erro ao carregar escalas:', error);
+                    } finally {
+                      setLoading(false);
+                    }
+                  };
+                  carregarEscalas();
+                }
+              );
+            }}
+            onCancel={() => {
+              setModalHorarioOpen(false);
+              setEquipeIdParaHorario(null);
+            }}
+          />
+        )}
+      </Modal>
+
+      {/* Modal de Edição de Slot */}
+      <Modal
+        title="Editar Slot"
+        open={modalSlotOpen}
+        onCancel={() => {
+          setModalSlotOpen(false);
+          setSlotEditando(null);
+          formSlot.resetFields();
+        }}
+        onOk={async () => {
+          try {
+            const values = await formSlot.validateFields();
+            if (!slotEditando) return;
+
+            setLoadingSlot(true);
+            const result = await updateSlotEscala({
+              id: slotEditando.slotId,
+              escalaEquipePeriodoId: slotEditando.escalaId,
+              data: slotEditando.data,
+              estado: values.estado,
+              inicioPrevisto:
+                values.estado === 'TRABALHO' && values.inicioPrevisto
+                  ? values.inicioPrevisto.format('HH:mm:ss')
+                  : undefined,
+              fimPrevisto:
+                values.estado === 'TRABALHO' && values.fimPrevisto
+                  ? values.fimPrevisto.format('HH:mm:ss')
+                  : undefined,
+              anotacoesDia: values.anotacoesDia || undefined,
+            });
+
+            if (result.success) {
+              message.success('Slot atualizado com sucesso!');
+              setModalSlotOpen(false);
+              setSlotEditando(null);
+              formSlot.resetFields();
+
+              // Recarregar escalas
+              const resultEscalas = await getEscalasPublicadas({
+                periodoInicio: periodo[0].toDate(),
+                periodoFim: periodo[1].toDate(),
+              });
+              if (resultEscalas.success && resultEscalas.data) {
+                setEscalas(resultEscalas.data as any);
+              }
+            } else {
+              message.error(result.error || 'Erro ao atualizar slot');
+            }
+          } catch (error: any) {
+            if (error?.errorFields) {
+              // Erro de validação do formulário
+              return;
+            }
+            message.error(error?.message || 'Erro ao atualizar slot');
+          } finally {
+            setLoadingSlot(false);
+          }
+        }}
+        confirmLoading={loadingSlot}
+        okText="Salvar"
+        cancelText="Cancelar"
+        width={600}
+      >
+        {slotEditando && (
+          <Form form={formSlot} layout="vertical">
+            <Form.Item label="Eletricista">
+              <Input value={slotEditando.eletricistaNome} disabled />
+            </Form.Item>
+
+            <Form.Item label="Data">
+              <Input
+                value={dayjs(slotEditando.data).format('DD/MM/YYYY')}
+                disabled
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Estado"
+              name="estado"
+              rules={[{ required: true, message: 'Selecione o estado' }]}
+            >
+              <Select>
+                <Select.Option value="TRABALHO">
+                  <Tag color="green">Trabalho</Tag>
+                </Select.Option>
+                <Select.Option value="FOLGA">
+                  <Tag color="red">Folga</Tag>
+                </Select.Option>
+                <Select.Option value="FALTA">
+                  <Tag color="orange">Falta</Tag>
+                </Select.Option>
+                <Select.Option value="EXCECAO">
+                  <Tag color="blue">Exceção</Tag>
+                </Select.Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              noStyle
+              shouldUpdate={(prevValues, currentValues) =>
+                prevValues.estado !== currentValues.estado
+              }
+            >
+              {({ getFieldValue }) => {
+                const estado = getFieldValue('estado');
+                const isTrabalho = estado === 'TRABALHO';
+
+                return (
+                  <>
+                    <Form.Item
+                      label="Início Previsto"
+                      name="inicioPrevisto"
+                      rules={[
+                        {
+                          required: isTrabalho,
+                          message: 'Horário de início é obrigatório para trabalho',
+                        },
+                      ]}
+                    >
+                      <TimePicker
+                        style={{ width: '100%' }}
+                        format="HH:mm"
+                        disabled={!isTrabalho}
+                        placeholder="Selecione o horário de início"
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Fim Previsto"
+                      name="fimPrevisto"
+                      rules={[
+                        {
+                          required: isTrabalho,
+                          message: 'Horário de fim é obrigatório para trabalho',
+                        },
+                      ]}
+                    >
+                      <TimePicker
+                        style={{ width: '100%' }}
+                        format="HH:mm"
+                        disabled={!isTrabalho}
+                        placeholder="Selecione o horário de fim"
+                      />
+                    </Form.Item>
+                  </>
+                );
+              }}
+            </Form.Item>
+
+            <Form.Item
+              label="Anotações do Dia"
+              name="anotacoesDia"
+              rules={[
+                { max: 1000, message: 'Máximo de 1000 caracteres' },
+              ]}
+            >
+              <Input.TextArea
+                rows={4}
+                placeholder="Anotações sobre este dia (opcional)"
+                maxLength={1000}
+                showCount
+              />
+            </Form.Item>
+          </Form>
+        )}
       </Modal>
     </div>
   );

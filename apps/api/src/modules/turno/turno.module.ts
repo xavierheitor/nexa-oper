@@ -25,20 +25,35 @@
  * - AuthModule: Autenticação e permissões
  */
 
-import { Module } from '@nestjs/common';
-import { MulterModule } from '@nestjs/platform-express';
+import { CircuitBreakerModule } from '@common/circuit-breaker';
 import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@modules/engine/auth/auth.module';
 import { TurnoRealizadoModule } from '@modules/turno-realizado/turno-realizado.module';
-import { TurnoService } from './services/turno.service';
-import { ChecklistPreenchidoService } from './services/checklist-preenchido.service';
-import { ChecklistFotoService } from './services/checklist-foto.service';
+import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { MulterModule } from '@nestjs/platform-express';
+
 import {
   TurnoController,
   TurnoSyncController,
   TurnoMobileController,
   ChecklistFotoController,
 } from './controllers';
+import {
+  CreateTurnoHandler,
+  CloseTurnoHandler,
+  DeleteTurnoHandler,
+  GetTurnosHandler,
+  GetTurnoByIdHandler,
+  GetTurnosForSyncHandler,
+} from './cqrs';
+import { TurnoEventHandler } from './events/handlers/turno-event.handler';
+import { ChecklistFotoService } from './services/checklist-foto.service';
+import { ChecklistPreenchidoService } from './services/checklist-preenchido.service';
+import { TurnoService } from './services/turno.service';
+// CQRS Handlers
+// Event Handlers
 
 /**
  * Módulo responsável pelas operações de turnos
@@ -50,11 +65,38 @@ import {
  * - Declara services para lógica de negócio
  * - Exporta services para uso em outros módulos
  */
+/**
+ * Módulo responsável pelas operações de turnos
+ *
+ * CONFIGURAÇÃO:
+ * - Importa DatabaseModule para acesso ao Prisma
+ * - Importa AuthModule para autenticação e permissões
+ * - Importa CqrsModule para padrão CQRS (Commands/Queries)
+ * - Importa EventEmitterModule para Event Sourcing
+ * - Importa CircuitBreakerModule para proteção contra falhas
+ * - Declara controllers para endpoints HTTP
+ * - Declara services para lógica de negócio
+ * - Declara CQRS handlers para Commands e Queries
+ * - Declara Event handlers para Event Sourcing
+ * - Exporta services para uso em outros módulos
+ */
 @Module({
   imports: [
+    // Módulos básicos
     DatabaseModule,
     AuthModule,
     TurnoRealizadoModule, // Para criar TurnoRealizado quando Turno é aberto
+
+    // CQRS para separação de Commands e Queries
+    CqrsModule,
+
+    // Event Emitter para Event Sourcing
+    EventEmitterModule,
+
+    // Circuit Breaker para proteção contra falhas
+    CircuitBreakerModule,
+
+    // Multer para upload de arquivos
     MulterModule.register({
       dest: './uploads/checklists',
       limits: {
@@ -68,7 +110,25 @@ import {
     TurnoMobileController,
     ChecklistFotoController,
   ],
-  providers: [TurnoService, ChecklistPreenchidoService, ChecklistFotoService],
+  providers: [
+    // Services
+    TurnoService,
+    ChecklistPreenchidoService,
+    ChecklistFotoService,
+
+    // CQRS Command Handlers
+    CreateTurnoHandler,
+    CloseTurnoHandler,
+    DeleteTurnoHandler,
+
+    // CQRS Query Handlers
+    GetTurnosHandler,
+    GetTurnoByIdHandler,
+    GetTurnosForSyncHandler,
+
+    // Event Handlers para Event Sourcing
+    TurnoEventHandler,
+  ],
   exports: [TurnoService, ChecklistPreenchidoService, ChecklistFotoService],
 })
 export class TurnoModule {}

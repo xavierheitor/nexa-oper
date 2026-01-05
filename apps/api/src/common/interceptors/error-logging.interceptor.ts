@@ -22,7 +22,12 @@ import {
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { logErrorStructured, LogContext, StandardLogger } from '../utils/logger';
+
+import {
+  logErrorStructured,
+  LogContext,
+  StandardLogger,
+} from '../utils/logger';
 
 @Injectable()
 export class ErrorLoggingInterceptor implements NestInterceptor {
@@ -46,7 +51,7 @@ export class ErrorLoggingInterceptor implements NestInterceptor {
     };
 
     return next.handle().pipe(
-      catchError((error) => {
+      catchError(error => {
         // Enriquecer contexto com dados do usuário se disponível
         if (request.user) {
           logContext.userId = request.user.id || request.user.sub;

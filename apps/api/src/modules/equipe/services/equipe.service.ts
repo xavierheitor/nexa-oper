@@ -34,30 +34,8 @@
  * ```
  */
 
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
-import { DatabaseService } from '@database/database.service';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import {
-  extractAllowedContractIds,
-  ensureContractPermission,
-} from '@modules/engine/auth/utils/contract-helpers';
-import {
-  buildPaginationMeta,
-  validatePaginationParams,
-} from '@common/utils/pagination';
-import {
-  buildSearchWhereClause,
-  buildContractFilter,
-  buildBaseWhereClause,
-} from '@common/utils/where-clause';
-import { validateId, validateOptionalId, ensureContratoExists, ensureTipoEquipeExists } from '@common/utils/validation';
+import { ERROR_MESSAGES } from '@common/constants/errors';
+import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
 import {
   getDefaultUserContext,
   createAuditData,
@@ -66,7 +44,36 @@ import {
 } from '@common/utils/audit';
 import { handleCrudError } from '@common/utils/error-handler';
 import { handlePrismaUniqueError } from '@common/utils/error-handler';
-import { ERROR_MESSAGES } from '@common/constants/errors';
+import {
+  buildPaginationMeta,
+  validatePaginationParams,
+} from '@common/utils/pagination';
+import {
+  validateId,
+  validateOptionalId,
+  ensureContratoExists,
+  ensureTipoEquipeExists,
+} from '@common/utils/validation';
+import {
+  buildSearchWhereClause,
+  buildContractFilter,
+  buildBaseWhereClause,
+} from '@common/utils/where-clause';
+import { DatabaseService } from '@database/database.service';
+import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import {
+  extractAllowedContractIds,
+  ensureContractPermission,
+} from '@modules/engine/auth/utils/contract-helpers';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+
 import { ORDER_CONFIG } from '../constants/equipe.constants';
 import {
   CreateEquipeDto,
@@ -75,7 +82,6 @@ import {
   EquipeResponseDto,
   EquipeSyncDto,
 } from '../dto';
-import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
 
 /**
  * Interface de parâmetros para consulta paginada interna
@@ -105,7 +111,6 @@ export class EquipeService {
   private readonly logger = new Logger(EquipeService.name);
 
   constructor(private readonly db: DatabaseService) {}
-
 
   /**
    * Constrói filtros de consulta considerando busca, filtros e permissões
@@ -139,7 +144,6 @@ export class EquipeService {
 
     return whereClause;
   }
-
 
   /**
    * Lista equipes com paginação e filtros, respeitando permissões
@@ -500,10 +504,10 @@ export class EquipeService {
 
       if (contratoId && contratoId !== existingEquipe.contratoId) {
         ensureContractPermission(
-        contratoId,
-        allowedContractIds,
-        ERROR_MESSAGES.FORBIDDEN_CONTRACT
-      );
+          contratoId,
+          allowedContractIds,
+          ERROR_MESSAGES.FORBIDDEN_CONTRACT
+        );
         await ensureContratoExists(this.db.getPrisma(), contratoId);
       }
 

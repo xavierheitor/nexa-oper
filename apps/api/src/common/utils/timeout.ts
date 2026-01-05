@@ -15,10 +15,7 @@ export const TIMEOUT_CONFIG = {
    * Timeout para transações de banco de dados
    * Padrão: 30 segundos
    */
-  TRANSACTION: parseInt(
-    process.env.TIMEOUT_TRANSACTION_MS || '30000',
-    10
-  ),
+  TRANSACTION: parseInt(process.env.TIMEOUT_TRANSACTION_MS || '30000', 10),
 
   /**
    * Timeout para operações de sincronização
@@ -163,4 +160,3 @@ export async function withSyncTimeout<T>(
     `Sincronização excedeu o tempo limite de ${timeoutMs / 1000}s`
   );
 }
-

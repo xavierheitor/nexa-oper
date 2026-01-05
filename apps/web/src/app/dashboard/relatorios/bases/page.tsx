@@ -1,18 +1,25 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Button, Card, Col, Row, Select, Space, Typography } from 'antd';
+import React, { useMemo, useCallback } from 'react';
+import { Card, Col, Row, Spin, Typography } from 'antd';
 import ConsolidacaoPorBase from './components/ConsolidacaoPorBase';
 import ComparacaoEntreBases from './components/ComparacaoEntreBases';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { useHydrated } from '@/lib/hooks/useHydrated';
+import { useSelectOptions } from '@/lib/hooks/useSelectOptions';
+import { useTableFilters } from '@/lib/hooks/useTableFilters';
+import FilterBar from '@/ui/components/FilterBar';
 import { listBases } from '@/lib/actions/base/list';
 import { listContratos } from '@/lib/actions/contrato/list';
 
 const { Title } = Typography;
 
 export default function RelatoriosBasesPage() {
-  const [filtros, setFiltros] = useState({
+  const { filters, handleFilterChange, clearFilters } = useTableFilters<{
+    contratoId: number | undefined;
+    baseId: number | undefined;
+  }>({
     contratoId: undefined,
     baseId: undefined,
   });
@@ -31,57 +38,58 @@ export default function RelatoriosBasesPage() {
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
-  const handleFilterChange = (key: string, value: any) => {
-    setFiltros((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleClearFilters = () => {
-    setFiltros({
-      contratoId: undefined,
-      baseId: undefined,
-    });
-  };
+  // Transforma dados em opções de Select usando hook reutilizável
+  const contratosOptions = useSelectOptions(contratos, { labelKey: 'nome', valueKey: 'id' });
+  const basesOptions = useSelectOptions(bases, { labelKey: 'nome', valueKey: 'id' });
 
   // Memoiza o objeto filtros para evitar recriações desnecessárias
-  const filtrosMemoizados = useMemo(() => filtros, [filtros.contratoId, filtros.baseId]);
+  const filtrosMemoizados = useMemo(() => filters, [filters]);
 
-  // Memoiza as opções dos Selects para evitar recriações desnecessárias
-  const contratosOptions = useMemo(
-    () => contratos?.map((c: any) => ({ label: c.nome, value: c.id })) || [],
-    [contratos]
-  );
+  // Wrapper para converter o tipo do FilterBar para o tipo esperado pelo useTableFilters
+  const handleFilterBarChange = useCallback((key: string, value: unknown) => {
+    if (key === 'contratoId' || key === 'baseId') {
+      handleFilterChange(key as 'contratoId' | 'baseId', value as number | undefined);
+    }
+  }, [handleFilterChange]);
 
-  const basesOptions = useMemo(
-    () => bases?.map((b: any) => ({ label: b.nome, value: b.id })) || [],
-    [bases]
-  );
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '24px' }}>
       <Title level={2}>Relatórios - Bases</Title>
 
       <Card style={{ marginBottom: 24 }}>
-        <Space wrap size='middle'>
-          <Select
-            placeholder='Filtrar por Contrato'
-            style={{ width: 250 }}
-            allowClear
-            loading={loadingContratos}
-            value={filtros.contratoId}
-            onChange={(value) => handleFilterChange('contratoId', value)}
-            options={contratosOptions}
-          />
-          <Select
-            placeholder='Filtrar por Base'
-            style={{ width: 250 }}
-            allowClear
-            loading={loadingBases}
-            value={filtros.baseId}
-            onChange={(value) => handleFilterChange('baseId', value)}
-            options={basesOptions}
-          />
-          <Button onClick={handleClearFilters}>Limpar Filtros</Button>
-        </Space>
+        <FilterBar
+          filters={[
+            {
+              type: 'select',
+              key: 'contratoId',
+              placeholder: 'Filtrar por Contrato',
+              options: contratosOptions,
+              loading: loadingContratos,
+              width: 250,
+            },
+            {
+              type: 'select',
+              key: 'baseId',
+              placeholder: 'Filtrar por Base',
+              options: basesOptions,
+              loading: loadingBases,
+              width: 250,
+            },
+          ]}
+          values={filters}
+          onChange={handleFilterBarChange}
+          onClear={clearFilters}
+        />
       </Card>
 
       <Row gutter={[16, 16]}>

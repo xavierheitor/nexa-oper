@@ -39,7 +39,7 @@ export class HorarioAberturaCatalogoService extends AbstractCrudService<
 
   constructor() {
     const repo = new HorarioAberturaCatalogoRepository();
-    // @ts-ignore - Compatibilidade de tipos do repositório
+    // @ts-expect-error - Diferenças sutis entre tipos de input (Decimal vs number) são tratadas no runtime
     super(repo);
     this.horarioRepo = repo;
   }
@@ -69,7 +69,6 @@ export class HorarioAberturaCatalogoService extends AbstractCrudService<
       throw new Error('Horário não encontrado');
     }
 
-    // @ts-ignore - Compatibilidade de tipos
     const updateInput: HorarioAberturaCatalogoUpdateInput = {
       id: data.id,
       nome: data.nome,
@@ -112,4 +111,3 @@ export class HorarioAberturaCatalogoService extends AbstractCrudService<
     return `${String(horasFim).padStart(2, '0')}:${String(minutosFim).padStart(2, '0')}:${String(segundos || 0).padStart(2, '0')}`;
   }
 }
-

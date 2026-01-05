@@ -16,7 +16,11 @@
  */
 export function parseMobileDate(dateString: string): Date {
   // Se a string não tem timezone, assumir UTC
-  if (!dateString.includes('Z') && !dateString.includes('+') && !dateString.includes('-', 10)) {
+  if (
+    !dateString.includes('Z') &&
+    !dateString.includes('+') &&
+    !dateString.includes('-', 10)
+  ) {
     // Adicionar 'Z' para indicar UTC se não tiver timezone
     dateString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
   }
@@ -57,7 +61,7 @@ export function toISOStringUTC(date: Date): string {
  */
 export function toISOStringLocal(date: Date): string {
   const offset = date.getTimezoneOffset();
-  const localDate = new Date(date.getTime() - (offset * 60000));
+  const localDate = new Date(date.getTime() - offset * 60000);
   return localDate.toISOString().slice(0, -1);
 }
 

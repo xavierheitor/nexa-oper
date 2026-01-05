@@ -2,6 +2,7 @@
  * Controller responsável pelos uploads de localizações enviados pelo aplicativo mobile.
  */
 
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import {
   Body,
   Controller,
@@ -18,13 +19,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Response } from 'express';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import {
-  LocationUploadDto,
-  LocationUploadResponseDto,
-} from '../dto';
+
+import { LocationUploadDto, LocationUploadResponseDto } from '../dto';
 import { MobileLocationUploadService } from '../services';
+
+import type { Response } from 'express';
 
 /**
  * Controller para upload de localizações mobile.
@@ -72,9 +71,7 @@ export class MobileLocationUploadController {
 
     const result = await this.mobileLocationUploadService.handleUpload(body);
 
-    res.status(
-      result.alreadyExisted ? HttpStatus.OK : HttpStatus.CREATED
-    );
+    res.status(result.alreadyExisted ? HttpStatus.OK : HttpStatus.CREATED);
 
     return result;
   }

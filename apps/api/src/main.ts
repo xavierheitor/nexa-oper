@@ -5,13 +5,14 @@
  * para módulos de configuração dedicados.
  */
 
-import { Logger } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import { Express } from 'express';
-import { AppModule } from './app.module';
 import { AllExceptionsFilter } from '@common/filters/all-exceptions.filter';
 import { StandardLogger } from '@common/utils/logger';
 import { ensurePortFree } from '@common/utils/ports';
+import { Logger } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { Express } from 'express';
+
+import { AppModule } from './app.module';
 
 // Configurações
 import {

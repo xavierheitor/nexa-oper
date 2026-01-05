@@ -32,7 +32,7 @@
 
 'use server';
 
-import type { TipoVeiculoService } from '@/lib/services/TipoVeiculoService';
+import type { TipoVeiculoService } from '@/lib/services/infraestrutura/TipoVeiculoService';
 import { container } from '@/lib/services/common/registerServices';
 import { tipoVeiculoFilterSchema } from '../../schemas/tipoVeiculoSchema';
 import { handleServerAction } from '../common/actionHandler';

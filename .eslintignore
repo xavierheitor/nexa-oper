@@ -79,6 +79,10 @@ package-lock.json
 *.d.ts
 next-env.d.ts
 
+# Prisma schema files (warnings são falsos positivos)
+*.prisma
+**/*.prisma
+
 # Public assets
 public/
 **/public/

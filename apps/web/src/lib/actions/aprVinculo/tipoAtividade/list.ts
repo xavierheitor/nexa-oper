@@ -35,7 +35,7 @@
  *     tipoAtividade: true
  *   }
  * });
- * 
+ *
  * if (result.success) {
  *   console.log(`${result.data.total} vínculos encontrados`);
  *   console.log('Vínculos:', result.data.data);
@@ -47,7 +47,7 @@
 
 import { handleServerAction } from '@/lib/actions/common/actionHandler';
 import { aprTipoAtividadeVinculoFilterSchema } from '@/lib/schemas/aprTipoAtividadeVinculoSchema';
-import type { AprTipoAtividadeVinculoService } from '@/lib/services/AprTipoAtividadeVinculoService';
+import type { AprTipoAtividadeVinculoService } from '@/lib/services/apr/AprTipoAtividadeVinculoService';
 import { container } from '@/lib/services/common/registerServices';
 
 

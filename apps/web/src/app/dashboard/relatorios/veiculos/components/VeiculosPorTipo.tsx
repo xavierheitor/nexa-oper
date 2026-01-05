@@ -3,14 +3,17 @@
 import { Pie } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 
 interface DadosTipo {
   tipo: string;
   quantidade: number;
 }
 
+import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
+
 interface VeiculosPorTipoProps {
-  filtros?: any;
+  filtros?: FiltrosRelatorioBase;
 }
 
 export default function VeiculosPorTipo({ filtros }: VeiculosPorTipoProps) {
@@ -28,6 +31,18 @@ export default function VeiculosPorTipo({ filtros }: VeiculosPorTipoProps) {
     },
     [filtros]
   );
+
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <Card title="Veículos por Tipo">
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Spin size="large" />
+        </div>
+      </Card>
+    );
+  }
 
   if (loading) {
     return (

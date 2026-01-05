@@ -29,6 +29,10 @@
  * ```
  */
 
+import { SyncAuditRemoverInterceptor } from '@common/interceptors';
+import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
 import {
   Controller,
   Get,
@@ -43,12 +47,9 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
-import { SyncAuditRemoverInterceptor } from '@common/interceptors';
-import { TurnoService } from '../services/turno.service';
+
 import { TurnoSyncDto } from '../dto';
+import { TurnoService } from '../services/turno.service';
 
 /**
  * Controlador de Sincronização de Turnos
@@ -89,8 +90,7 @@ export class TurnoSyncController {
   @Get()
   @ApiOperation({
     summary: 'Sincronizar turnos',
-    description:
-      'Retorna todos os turnos ativos para sincronização mobile',
+    description: 'Retorna todos os turnos ativos para sincronização mobile',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -106,7 +106,7 @@ export class TurnoSyncController {
     description: 'Erro interno do servidor',
   })
   async syncTurnos(
-    @GetUserContracts() allowedContracts: ContractPermission[],
+    @GetUserContracts() allowedContracts: ContractPermission[]
   ): Promise<TurnoSyncDto[]> {
     this.logger.log('Iniciando sincronização de turnos');
     return this.turnoService.findAllForSync(allowedContracts);

@@ -4,8 +4,9 @@
  * Carrega o arquivo .env do diretório raiz do projeto API.
  */
 
-import * as dotenv from 'dotenv';
 import { resolve } from 'path';
+
+import * as dotenv from 'dotenv';
 
 /**
  * Carrega o arquivo .env do diretório raiz do projeto API
@@ -47,4 +48,3 @@ export function loadEnvironmentVariables(): void {
   // Se nenhum arquivo foi encontrado, tentar carregar do padrão (process.cwd())
   dotenv.config();
 }
-

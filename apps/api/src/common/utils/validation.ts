@@ -5,10 +5,11 @@
  * entre diferentes módulos da aplicação.
  */
 
-import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { VALIDATION_ERRORS, ERROR_MESSAGES } from '../constants/errors';
-import { PrismaClient } from '@nexa-oper/db';
 import { PrismaTransactionClient } from '@common/types/prisma';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { PrismaClient } from '@nexa-oper/db';
+
+import { VALIDATION_ERRORS, ERROR_MESSAGES } from '../constants/errors';
 
 /**
  * Valida se um ID é válido (número inteiro positivo)
@@ -162,7 +163,13 @@ export function validateEnumValue<T>(
  */
 export async function ensureEntityExists(
   prisma: PrismaClient | PrismaTransactionClient,
-  modelName: 'contrato' | 'tipoVeiculo' | 'tipoEquipe' | 'veiculo' | 'equipe' | 'eletricista',
+  modelName:
+    | 'contrato'
+    | 'tipoVeiculo'
+    | 'tipoEquipe'
+    | 'veiculo'
+    | 'equipe'
+    | 'eletricista',
   id: number,
   errorMessage: string
 ): Promise<void> {

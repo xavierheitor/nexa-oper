@@ -32,7 +32,7 @@
  * ```typescript
  * // No frontend
  * const result = await deleteAprOpcaoResposta({ id: 1 });
- * 
+ *
  * if (result.success) {
  *   console.log('Opção de resposta excluída:', result.data);
  * } else {
@@ -43,7 +43,7 @@
 
 'use server';
 
-import type { AprOpcaoRespostaService } from '@/lib/services/AprOpcaoRespostaService';
+import type { AprOpcaoRespostaService } from '@/lib/services/apr/AprOpcaoRespostaService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
@@ -78,9 +78,9 @@ const deleteAprOpcaoRespostaSchema = z.object({
  * const handleDelete = async (opcaoId) => {
  *   const confirmed = await confirm('Deseja excluir esta opção de resposta?');
  *   if (!confirmed) return;
- *   
+ *
  *   const result = await deleteAprOpcaoResposta({ id: opcaoId });
- *   
+ *
  *   if (result.success) {
  *     message.success('Opção de resposta excluída com sucesso!');
  *     refreshList();
@@ -88,28 +88,28 @@ const deleteAprOpcaoRespostaSchema = z.object({
  *     message.error(result.error);
  *   }
  * };
- * 
+ *
  * // Uso em operação batch
  * const deleteMultiple = async (opcaoIds) => {
  *   const results = await Promise.allSettled(
  *     opcaoIds.map(id => deleteAprOpcaoResposta({ id }))
  *   );
- *   
- *   const successful = results.filter(r => 
+ *
+ *   const successful = results.filter(r =>
  *     r.status === 'fulfilled' && r.value.success
  *   ).length;
- *   
+ *
  *   message.info(`${successful} opções de resposta excluídas`);
  * };
- * 
+ *
  * // Uso em componente de tabela
  * const columns = [
  *   // ... outras colunas
  *   {
  *     title: 'Ações',
  *     render: (_, opcao) => (
- *       <Button 
- *         danger 
+ *       <Button
+ *         danger
  *         onClick={() => handleDelete(opcao.id)}
  *       >
  *         Excluir
@@ -123,22 +123,24 @@ export const deleteAprOpcaoResposta = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação para ID
     deleteAprOpcaoRespostaSchema,
-    
+
     // Lógica de negócio
     async (validatedData, session) => {
       // Obtém instância do service via container de DI
-      const service = container.get<AprOpcaoRespostaService>('aprOpcaoRespostaService');
-      
+      const service = container.get<AprOpcaoRespostaService>(
+        'aprOpcaoRespostaService'
+      );
+
       // Executa soft delete com ID do usuário autenticado
       return service.delete(validatedData.id, session.user.id);
     },
-    
+
     // Dados brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'AprOpcaoResposta', 
-      actionType: 'delete' 
+    {
+      entityName: 'AprOpcaoResposta',
+      actionType: 'delete',
     }
   );

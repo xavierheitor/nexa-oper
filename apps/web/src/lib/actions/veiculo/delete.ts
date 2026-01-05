@@ -28,7 +28,7 @@
 
 'use server';
 
-import type { VeiculoService } from '@/lib/services/VeiculoService';
+import type { VeiculoService } from '@/lib/services/infraestrutura/VeiculoService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';

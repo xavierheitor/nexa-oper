@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsInt, Min, IsOptional, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsInt,
+  Min,
+  IsOptional,
+  IsBoolean,
+} from 'class-validator';
 
 export class ReconciliarManualDto {
   @ApiProperty({
@@ -11,7 +18,8 @@ export class ReconciliarManualDto {
   dataReferencia: string;
 
   @ApiProperty({
-    description: 'ID da equipe para reconciliar (opcional se todasEquipes = true)',
+    description:
+      'ID da equipe para reconciliar (opcional se todasEquipes = true)',
     example: 1,
     required: false,
   })
@@ -21,7 +29,8 @@ export class ReconciliarManualDto {
   equipeId?: number;
 
   @ApiProperty({
-    description: 'Se true, executa reconciliação para todas as equipes com escala publicada na data',
+    description:
+      'Se true, executa reconciliação para todas as equipes com escala publicada na data',
     example: false,
     required: false,
   })
@@ -29,4 +38,3 @@ export class ReconciliarManualDto {
   @IsOptional()
   todasEquipes?: boolean;
 }
-

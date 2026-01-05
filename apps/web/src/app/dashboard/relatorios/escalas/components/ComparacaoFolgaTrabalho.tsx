@@ -3,6 +3,8 @@
 import { Column } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useHydrated } from '@/lib/hooks/useHydrated';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 
 interface DadosComparacao {
   tipo: string;
@@ -16,7 +18,7 @@ interface ComparacaoFolgaTrabalhoProps {
 export default function ComparacaoFolgaTrabalho({
   filtros,
 }: ComparacaoFolgaTrabalhoProps) {
-  const { data: dados = [], loading } = useDataFetch<DadosComparacao[]>(
+  const { data: dados = [], loading, error, refetch } = useDataFetch<DadosComparacao[]>(
     async () => {
       const { getComparacaoFolgaTrabalho } = await import(
         '@/lib/actions/relatorios/relatoriosEscalas'
@@ -31,6 +33,18 @@ export default function ComparacaoFolgaTrabalho({
     [filtros]
   );
 
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <Card title="Comparação Folga vs Trabalho">
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Spin size="large" />
+        </div>
+      </Card>
+    );
+  }
+
   if (loading) {
     return (
       <Card title="Comparação: Trabalho vs Folga vs Falta">
@@ -41,16 +55,16 @@ export default function ComparacaoFolgaTrabalho({
     );
   }
 
-  if (!dados?.length) {
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
+  if (!dadosSeguros?.length && !error) {
     return (
       <Card title="Comparação: Trabalho vs Folga vs Falta">
         <Empty description="Nenhum dado disponível" />
       </Card>
     );
   }
-
-  // Garante que dados não é null após a verificação
-  const dadosSeguros = dados;
 
   const config = {
     data: dadosSeguros,
@@ -74,7 +88,8 @@ export default function ComparacaoFolgaTrabalho({
 
   return (
     <Card title="Comparação: Trabalho vs Folga vs Falta">
-      <Column {...config} />
+      <ErrorAlert error={error} onRetry={refetch} message="Erro ao carregar dados de comparação" />
+      {dadosSeguros && dadosSeguros.length > 0 && <Column {...config} />}
     </Card>
   );
 }

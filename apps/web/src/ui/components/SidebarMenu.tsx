@@ -24,10 +24,11 @@
  *   - APR (submenu: Perguntas, Opções, Modelo)
  *   - Checklist (submenu: Tipo, Perguntas, Opções, Modelo)
  *   - Usuários (submenu: Web, Móveis)
- * - Relatórios (submenu com vários relatórios)
  * - Turnos (submenu: Visão Geral, Histórico)
  * - Frequência (submenu: Visão Geral, Faltas, Horas Extras, Justificativas de Equipe)
  * - Escalas (submenu: Gestão de Escala, Associar Horário)
+ * - Segurança (submenu: Consulta Checklists, Tratamento de Pendências, Relatório)
+ * - Relatórios (submenu com vários relatórios)
  * - Logout
  *
  * COMPORTAMENTO DE EXPANSÃO:
@@ -177,7 +178,6 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       '/dashboard/frequencia/eletricista': 'frequencia-menu',
       '/dashboard/frequencia/equipe': 'frequencia-menu',
       '/dashboard/frequencia/faltas': 'frequencia-menu',
-      '/dashboard/frequencia/horas-extras': 'frequencia-menu',
       '/dashboard/frequencia/justificativas-equipe': 'frequencia-menu',
       '/dashboard/frequencia/reconciliacao-manual': 'frequencia-menu',
 
@@ -378,45 +378,6 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       ],
     },
     {
-      key: 'relatorios',
-      icon: <BarChartOutlined />,
-      label: 'Relatórios',
-      children: [
-        {
-          key: '/dashboard/relatorios/bases',
-          label: <Link href='/dashboard/relatorios/bases'>Bases</Link>,
-        },
-        {
-          key: '/dashboard/relatorios/veiculos',
-          label: <Link href='/dashboard/relatorios/veiculos'>Veículos</Link>,
-        },
-        {
-          key: '/dashboard/relatorios/equipes',
-          label: <Link href='/dashboard/relatorios/equipes'>Equipes</Link>,
-        },
-        {
-          key: '/dashboard/relatorios/eletricistas',
-          label: <Link href='/dashboard/relatorios/eletricistas'>Eletricistas</Link>,
-        },
-        {
-          key: '/dashboard/relatorios/escalas',
-          label: <Link href='/dashboard/relatorios/escalas'>Escalas</Link>,
-        },
-        {
-          key: '/dashboard/relatorios/turnos-por-periodo',
-          label: <Link href='/dashboard/relatorios/turnos-por-periodo'>Turnos por Período</Link>,
-        },
-        {
-          key: '/dashboard/relatorios/aderencia-equipe',
-          label: <Link href='/dashboard/relatorios/aderencia-equipe'>Aderência de Equipes</Link>,
-        },
-        {
-          key: '/dashboard/relatorios/localizacao',
-          label: <Link href='/dashboard/relatorios/localizacao'>Localização</Link>,
-        },
-      ],
-    },
-    {
       key: 'turnos-menu',
       icon: <ClockCircleOutlined />,
       label: 'Turnos',
@@ -445,16 +406,16 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           label: <Link href='/dashboard/frequencia/faltas'>Faltas</Link>,
         },
         {
-          key: '/dashboard/frequencia/horas-extras',
-          label: <Link href='/dashboard/frequencia/horas-extras'>Horas Extras</Link>,
-        },
-        {
           key: '/dashboard/frequencia/justificativas-equipe',
           label: <Link href='/dashboard/frequencia/justificativas-equipe'>Justificativas de Equipe</Link>,
         },
         {
           key: '/dashboard/frequencia/reconciliacao-manual',
           label: <Link href='/dashboard/frequencia/reconciliacao-manual'>Reconciliação Manual</Link>,
+        },
+        {
+          key: '/dashboard/frequencia/aderencia-escala',
+          label: <Link href='/dashboard/frequencia/aderencia-escala'>Aderência de Escala</Link>,
         },
       ],
     },
@@ -493,6 +454,45 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
         {
           key: '/dashboard/seguranca/relatorio',
           label: <Link href='/dashboard/seguranca/relatorio'>Relatório</Link>,
+        },
+      ],
+    },
+    {
+      key: 'relatorios',
+      icon: <BarChartOutlined />,
+      label: 'Relatórios',
+      children: [
+        {
+          key: '/dashboard/relatorios/bases',
+          label: <Link href='/dashboard/relatorios/bases'>Bases</Link>,
+        },
+        {
+          key: '/dashboard/relatorios/veiculos',
+          label: <Link href='/dashboard/relatorios/veiculos'>Veículos</Link>,
+        },
+        {
+          key: '/dashboard/relatorios/equipes',
+          label: <Link href='/dashboard/relatorios/equipes'>Equipes</Link>,
+        },
+        {
+          key: '/dashboard/relatorios/eletricistas',
+          label: <Link href='/dashboard/relatorios/eletricistas'>Eletricistas</Link>,
+        },
+        {
+          key: '/dashboard/relatorios/escalas',
+          label: <Link href='/dashboard/relatorios/escalas'>Escalas</Link>,
+        },
+        {
+          key: '/dashboard/relatorios/turnos-por-periodo',
+          label: <Link href='/dashboard/relatorios/turnos-por-periodo'>Turnos por Período</Link>,
+        },
+        {
+          key: '/dashboard/relatorios/aderencia-equipe',
+          label: <Link href='/dashboard/relatorios/aderencia-equipe'>Aderência de Equipes</Link>,
+        },
+        {
+          key: '/dashboard/relatorios/localizacao',
+          label: <Link href='/dashboard/relatorios/localizacao'>Localização</Link>,
         },
       ],
     },

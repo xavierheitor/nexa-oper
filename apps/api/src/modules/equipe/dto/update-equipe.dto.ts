@@ -5,8 +5,15 @@
  * uma equipe existente no sistema. Todos os campos são opcionais.
  */
 
-import { IsOptional, IsString, IsNumber, MinLength, MaxLength } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
+
 import { EQUIPE_VALIDATION_CONFIG } from '../constants/equipe.constants';
 
 /**

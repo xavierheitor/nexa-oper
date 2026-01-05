@@ -29,7 +29,7 @@
  * ```typescript
  * // No frontend
  * const result = await getAprPergunta({ id: 1 });
- * 
+ *
  * if (result.success && result.data) {
  *   console.log('Pergunta encontrada:', result.data);
  * } else if (result.success && !result.data) {
@@ -42,7 +42,7 @@
 
 'use server';
 
-import type { AprPerguntaService } from '@/lib/services/AprPerguntaService';
+import type { AprPerguntaService } from '@/lib/services/apr/AprPerguntaService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
@@ -75,7 +75,7 @@ const getAprPerguntaSchema = z.object({
  * // Uso para carregamento de dados de edição
  * const loadPerguntaForEdit = async (perguntaId) => {
  *   const result = await getAprPergunta({ id: perguntaId });
- *   
+ *
  *   if (result.success && result.data) {
  *     setFormData({
  *       id: result.data.id,
@@ -88,29 +88,29 @@ const getAprPerguntaSchema = z.object({
  *     message.error(result.error);
  *   }
  * };
- * 
+ *
  * // Uso para validação de existência
  * const validatePerguntaExists = async (perguntaId) => {
  *   const result = await getAprPergunta({ id: perguntaId });
  *   return result.success && result.data !== null;
  * };
- * 
+ *
  * // Uso em modal de detalhes
  * const showPerguntaDetails = async (perguntaId) => {
  *   setLoading(true);
- *   
+ *
  *   const result = await getAprPergunta({ id: perguntaId });
- *   
+ *
  *   if (result.success && result.data) {
  *     setSelectedPergunta(result.data);
  *     setModalVisible(true);
  *   } else {
  *     message.error('Não foi possível carregar os detalhes');
  *   }
- *   
+ *
  *   setLoading(false);
  * };
- * 
+ *
  * // Uso com React Query para cache
  * const { data: pergunta, isLoading, error } = useQuery({
  *   queryKey: ['apr-pergunta', perguntaId],
@@ -123,22 +123,22 @@ export const getAprPergunta = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação para ID
     getAprPerguntaSchema,
-    
+
     // Lógica de negócio
     async (validatedData, session) => {
       // Obtém instância do service via container de DI
       const service = container.get<AprPerguntaService>('aprPerguntaService');
-      
+
       // Executa busca por ID
       return service.getById(validatedData.id);
     },
-    
+
     // Dados brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'AprPergunta', 
-      actionType: 'get' 
+    {
+      entityName: 'AprPergunta',
+      actionType: 'get',
     }
   );

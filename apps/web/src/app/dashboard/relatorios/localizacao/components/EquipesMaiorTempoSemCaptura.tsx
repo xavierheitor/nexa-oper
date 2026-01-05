@@ -3,6 +3,8 @@
 import { Table, Card, Empty, Spin, Tag, Typography } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
+import { useHydrated } from '@/lib/hooks/useHydrated';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import type { EquipeLocalizacaoStats } from '@/lib/actions/relatorios/relatoriosLocalizacao';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -21,7 +23,7 @@ export default function EquipesMaiorTempoSemCaptura({
     showTotal: (total) => `Total de ${total} equipe${total !== 1 ? 's' : ''}`,
   });
 
-  const { data: dados = [], loading } = useDataFetch<EquipeLocalizacaoStats[]>(
+  const { data: dados = [], loading, error, refetch } = useDataFetch<EquipeLocalizacaoStats[]>(
     async () => {
       const { getEquipesMaiorTempoSemCaptura } = await import(
         '@/lib/actions/relatorios/relatoriosLocalizacao'
@@ -35,6 +37,18 @@ export default function EquipesMaiorTempoSemCaptura({
     },
     [filtros]
   );
+
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <Card title="Equipes com Maior Tempo sem Captura">
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Spin size="large" />
+        </div>
+      </Card>
+    );
+  }
 
   // Formatar tempo sem captura
   const formatarTempoSemCaptura = (minutos: number | null): string => {
@@ -179,7 +193,7 @@ export default function EquipesMaiorTempoSemCaptura({
     );
   }
 
-  if (!dados?.length) {
+  if (!dados?.length && !error) {
     return (
       <Card title="Equipes com Maior Tempo Sem Captura de Localização">
         <Empty description="Nenhum dado disponível" />
@@ -189,13 +203,16 @@ export default function EquipesMaiorTempoSemCaptura({
 
   return (
     <Card title="Equipes com Maior Tempo Sem Captura de Localização">
-      <Table
-        columns={columns}
-        dataSource={dados}
-        rowKey="equipeId"
-        pagination={pagination}
-        scroll={{ x: 'max-content' }}
-      />
+      <ErrorAlert error={error} onRetry={refetch} message="Erro ao carregar dados de equipes com maior tempo sem captura" />
+      {dados && dados.length > 0 && (
+        <Table
+          columns={columns}
+          dataSource={dados}
+          rowKey="equipeId"
+          pagination={pagination}
+          scroll={{ x: 'max-content' }}
+        />
+      )}
     </Card>
   );
 }

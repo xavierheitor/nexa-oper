@@ -26,7 +26,7 @@
  * const result = await createAprPergunta({
  *   nome: "Você verificou os EPIs?"
  * });
- * 
+ *
  * if (result.success) {
  *   console.log('Pergunta criada:', result.data);
  * } else {
@@ -37,7 +37,7 @@
 
 'use server';
 
-import type { AprPerguntaService } from '@/lib/services/AprPerguntaService';
+import type { AprPerguntaService } from '@/lib/services/apr/AprPerguntaService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprPerguntaCreateSchema } from '../../schemas/aprPerguntaSchema';
 import { handleServerAction } from '../common/actionHandler';
@@ -62,7 +62,7 @@ import { handleServerAction } from '../common/actionHandler';
  *   const result = await createAprPergunta({
  *     nome: formData.nome
  *   });
- *   
+ *
  *   if (result.success) {
  *     message.success('Pergunta criada com sucesso!');
  *     // Atualizar lista ou fechar modal
@@ -76,22 +76,22 @@ export const createAprPergunta = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação Zod
     aprPerguntaCreateSchema,
-    
+
     // Lógica de negócio
     async (validatedData, session) => {
       // Obtém instância do service via container de DI
       const service = container.get<AprPerguntaService>('aprPerguntaService');
-      
+
       // Executa criação com ID do usuário autenticado
       return service.create(validatedData, session.user.id);
     },
-    
+
     // Dados brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'AprPergunta', 
-      actionType: 'create' 
+    {
+      entityName: 'AprPergunta',
+      actionType: 'create',
     }
   );

@@ -70,7 +70,7 @@
 'use server';
 
 import { contratoUpdateSchema } from '@/lib/schemas/contratoSchema';
-import type { ContratoService } from '@/lib/services/ContratoService';
+import type { ContratoService } from '@/lib/services/catalogo/ContratoService';
 import { container } from '@/lib/services/common/registerServices';
 import { handleServerAction } from '../common/actionHandler';
 

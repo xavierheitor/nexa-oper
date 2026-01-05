@@ -7,6 +7,7 @@
 
 import { applyDecorators, UseInterceptors } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+
 import { SyncAuditRemoverInterceptor } from '../interceptors/sync-audit-remover.interceptor';
 
 /**

@@ -32,7 +32,7 @@
  *   id: 1,
  *   nome: "Você verificou todos os EPIs necessários?"
  * });
- * 
+ *
  * if (result.success) {
  *   console.log('Pergunta atualizada:', result.data);
  * } else {
@@ -43,7 +43,7 @@
 
 'use server';
 
-import type { AprPerguntaService } from '@/lib/services/AprPerguntaService';
+import type { AprPerguntaService } from '@/lib/services/apr/AprPerguntaService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprPerguntaUpdateSchema } from '../../schemas/aprPerguntaSchema';
 import { handleServerAction } from '../common/actionHandler';
@@ -70,7 +70,7 @@ import { handleServerAction } from '../common/actionHandler';
  *     id: editingPergunta.id,
  *     nome: formData.nome
  *   });
- *   
+ *
  *   if (result.success) {
  *     message.success('Pergunta atualizada com sucesso!');
  *     closeModal();
@@ -79,17 +79,17 @@ import { handleServerAction } from '../common/actionHandler';
  *     message.error(result.error);
  *   }
  * };
- * 
+ *
  * // Uso em operação batch
  * const updateMultiple = async (perguntas) => {
  *   const results = await Promise.allSettled(
  *     perguntas.map(p => updateAprPergunta(p))
  *   );
- *   
- *   const successful = results.filter(r => 
+ *
+ *   const successful = results.filter(r =>
  *     r.status === 'fulfilled' && r.value.success
  *   ).length;
- *   
+ *
  *   message.info(`${successful} perguntas atualizadas`);
  * };
  * ```
@@ -98,22 +98,22 @@ export const updateAprPergunta = async (rawData: unknown) =>
   handleServerAction(
     // Schema de validação Zod (inclui ID obrigatório)
     aprPerguntaUpdateSchema,
-    
+
     // Lógica de negócio
     async (validatedData, session) => {
       // Obtém instância do service via container de DI
       const service = container.get<AprPerguntaService>('aprPerguntaService');
-      
+
       // Executa atualização com ID do usuário autenticado
       return service.update(validatedData, session.user.id);
     },
-    
+
     // Dados brutos para validação
     rawData,
-    
+
     // Metadados para logging e auditoria
-    { 
-      entityName: 'AprPergunta', 
-      actionType: 'update' 
+    {
+      entityName: 'AprPergunta',
+      actionType: 'update',
     }
   );

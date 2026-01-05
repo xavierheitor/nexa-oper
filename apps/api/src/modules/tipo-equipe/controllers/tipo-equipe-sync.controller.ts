@@ -29,6 +29,8 @@
  * ```
  */
 
+import { SyncAuditRemoverInterceptor } from '@common/interceptors';
+import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import {
   Controller,
   Get,
@@ -43,10 +45,9 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { SyncAuditRemoverInterceptor } from '@common/interceptors';
-import { TipoEquipeService } from '../services/tipo-equipe.service';
+
 import { TipoEquipeSyncDto } from '../dto';
+import { TipoEquipeService } from '../services/tipo-equipe.service';
 
 /**
  * Controlador de Sincronização de Tipos de Equipe
@@ -107,7 +108,9 @@ export class TipoEquipeSyncController {
 
     try {
       const result = await this.tipoEquipeService.findAllForSync();
-      this.logger.log(`Sincronização concluída com ${result.length} tipos de equipe`);
+      this.logger.log(
+        `Sincronização concluída com ${result.length} tipos de equipe`
+      );
       return result;
     } catch (error) {
       this.logger.error('Erro na sincronização de tipos de equipe:', error);

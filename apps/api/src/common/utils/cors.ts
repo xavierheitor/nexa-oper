@@ -1,4 +1,6 @@
-export function getCorsOrigins(): (string | boolean)[] | ((origin: string | undefined) => boolean) {
+export function getCorsOrigins():
+  | (string | boolean)[]
+  | ((origin: string | undefined) => boolean) {
   const corsOriginsEnv = process.env.CORS_ORIGINS;
 
   if (!corsOriginsEnv || corsOriginsEnv.trim() === '') {
@@ -28,5 +30,3 @@ export function getCorsOrigins(): (string | boolean)[] | ((origin: string | unde
 
   return origins.length > 0 ? origins : () => true;
 }
-
-

@@ -20,7 +20,10 @@ export class TipoEquipeInfoDto {
   /**
    * Nome do tipo de equipe
    */
-  @ApiProperty({ description: 'Nome do tipo de equipe', example: 'Operacional' })
+  @ApiProperty({
+    description: 'Nome do tipo de equipe',
+    example: 'Operacional',
+  })
   nome: string;
 }
 
@@ -72,7 +75,10 @@ export class EquipeResponseDto {
   /**
    * Informações do tipo de equipe
    */
-  @ApiProperty({ description: 'Informações do tipo de equipe', type: TipoEquipeInfoDto })
+  @ApiProperty({
+    description: 'Informações do tipo de equipe',
+    type: TipoEquipeInfoDto,
+  })
   tipoEquipe: TipoEquipeInfoDto;
 
   /**
@@ -84,13 +90,19 @@ export class EquipeResponseDto {
   /**
    * Informações do contrato
    */
-  @ApiProperty({ description: 'Informações do contrato', type: ContratoInfoDto })
+  @ApiProperty({
+    description: 'Informações do contrato',
+    type: ContratoInfoDto,
+  })
   contrato: ContratoInfoDto;
 
   /**
    * Data de criação
    */
-  @ApiProperty({ description: 'Data de criação', example: '2024-01-01T00:00:00.000Z' })
+  @ApiProperty({
+    description: 'Data de criação',
+    example: '2024-01-01T00:00:00.000Z',
+  })
   createdAt: Date;
 
   /**
@@ -102,7 +114,10 @@ export class EquipeResponseDto {
   /**
    * Data de atualização
    */
-  @ApiProperty({ description: 'Data de atualização', example: '2024-01-01T00:00:00.000Z' })
+  @ApiProperty({
+    description: 'Data de atualização',
+    example: '2024-01-01T00:00:00.000Z',
+  })
   updatedAt: Date;
 
   /**
@@ -114,12 +129,20 @@ export class EquipeResponseDto {
   /**
    * Data de exclusão (soft delete)
    */
-  @ApiProperty({ description: 'Data de exclusão', example: null, nullable: true })
+  @ApiProperty({
+    description: 'Data de exclusão',
+    example: null,
+    nullable: true,
+  })
   deletedAt: Date | null;
 
   /**
    * Usuário que excluiu
    */
-  @ApiProperty({ description: 'Usuário que excluiu', example: null, nullable: true })
+  @ApiProperty({
+    description: 'Usuário que excluiu',
+    example: null,
+    nullable: true,
+  })
   deletedBy: string | null;
 }

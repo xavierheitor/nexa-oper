@@ -4,7 +4,7 @@
 
 'use server';
 
-import type { SupervisorService } from '@/lib/services/SupervisorService';
+import type { SupervisorService } from '@/lib/services/pessoas/SupervisorService';
 import { container } from '@/lib/services/common/registerServices';
 import { supervisorUpdateSchema } from '../../schemas/supervisorSchema';
 import { handleServerAction } from '../common/actionHandler';

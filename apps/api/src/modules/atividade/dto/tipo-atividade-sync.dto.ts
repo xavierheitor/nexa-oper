@@ -21,13 +21,19 @@ export class TipoAtividadeSyncDto {
   /**
    * Nome do tipo de atividade
    */
-  @ApiProperty({ description: 'Nome do tipo de atividade', example: 'Soldagem' })
+  @ApiProperty({
+    description: 'Nome do tipo de atividade',
+    example: 'Soldagem',
+  })
   nome: string;
 
   /**
    * Data de criação
    */
-  @ApiProperty({ description: 'Data de criação', example: '2024-01-01T00:00:00.000Z' })
+  @ApiProperty({
+    description: 'Data de criação',
+    example: '2024-01-01T00:00:00.000Z',
+  })
   createdAt: Date;
 
   /**
@@ -39,7 +45,10 @@ export class TipoAtividadeSyncDto {
   /**
    * Data de atualização
    */
-  @ApiProperty({ description: 'Data de atualização', example: '2024-01-01T00:00:00.000Z' })
+  @ApiProperty({
+    description: 'Data de atualização',
+    example: '2024-01-01T00:00:00.000Z',
+  })
   updatedAt: Date;
 
   /**
@@ -51,12 +60,20 @@ export class TipoAtividadeSyncDto {
   /**
    * Data de exclusão (soft delete)
    */
-  @ApiProperty({ description: 'Data de exclusão', example: null, nullable: true })
+  @ApiProperty({
+    description: 'Data de exclusão',
+    example: null,
+    nullable: true,
+  })
   deletedAt: Date | null;
 
   /**
    * Usuário que excluiu
    */
-  @ApiProperty({ description: 'Usuário que excluiu', example: null, nullable: true })
+  @ApiProperty({
+    description: 'Usuário que excluiu',
+    example: null,
+    nullable: true,
+  })
   deletedBy: string | null;
 }
