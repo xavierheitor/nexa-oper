@@ -11,13 +11,12 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { ChecklistPendencia, StatusPendencia } from '@nexa-oper/db';
-import { App, Button, Card, Modal, Spin, Table, Tag, Image, Space, Typography } from 'antd';
+import { Button, Card, Modal, Spin, Table, Tag, Image, Space, Typography } from 'antd';
 import ChecklistPendenciaForm from './form';
 
 const { Text } = Typography;
 
 export default function ChecklistPendenciasPage() {
-  const { message } = App.useApp();
   const controller = useCrudController<ChecklistPendencia>('checklist-pendencias');
 
   const pendencias = useEntityData<ChecklistPendencia>({

@@ -1,14 +1,12 @@
 'use client';
 
-import { Table, Card, Empty, Spin, Tag, Typography } from 'antd';
+import { Table, Card, Empty, Spin, Tag } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import type { EquipeLocalizacaoStats } from '@/lib/actions/relatorios/relatoriosLocalizacao';
 import type { ColumnsType } from 'antd/es/table';
-
-const { Text } = Typography;
 
 interface EquipesMenosLocalizacoesProps {
   filtros?: any;

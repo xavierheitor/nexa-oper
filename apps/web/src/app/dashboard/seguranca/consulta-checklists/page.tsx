@@ -13,10 +13,10 @@
  * - Tipo de checklist
  */
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, DatePicker, Space, Typography, Button, Select, Table, Tag, Row, Col } from 'antd';
-import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
+import { EyeOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { listChecklistsPreenchidos } from '@/lib/actions/checklist/listPreenchidos';

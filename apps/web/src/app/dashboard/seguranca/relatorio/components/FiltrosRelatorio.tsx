@@ -1,7 +1,7 @@
 'use client';
 
 import { DatePicker, Select, Space, Spin } from 'antd';
-import dayjs, { Dayjs } from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import type { Base, TipoEquipe } from '@nexa-oper/db';
 

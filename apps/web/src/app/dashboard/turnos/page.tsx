@@ -136,7 +136,7 @@ export default function TurnosPage() {
   );
 
   // Processar dados dos turnos, aplicar filtros e calcular estatísticas
-  const { turnosAbertos, turnosFiltrados, stats } = useMemo(() => {
+  const { turnosFiltrados, stats } = useMemo(() => {
     const turnos = turnosAbertosResult?.turnosAbertos || [];
     const totalDiarios = turnosAbertosResult?.totalDiarios || 0;
 
@@ -193,7 +193,6 @@ export default function TurnosPage() {
     });
 
     return {
-      turnosAbertos: turnos,
       turnosFiltrados,
       stats: {
         total: turnos.length,
@@ -678,7 +677,7 @@ export default function TurnosPage() {
                 legend={{
                   position: 'top',
                   itemName: {
-                    formatter: (text: string, item: any) => {
+                    formatter: (text: string) => {
                       // Não mostrar na legenda tipos que não têm dados
                       const temDados = dadosGraficoBase?.some(d => d.tipo === text && d.quantidade > 0);
                       return temDados ? text : '';

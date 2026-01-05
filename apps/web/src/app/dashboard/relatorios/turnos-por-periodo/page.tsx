@@ -22,6 +22,16 @@ import TurnosPorPeriodo from './components/TurnosPorPeriodo';
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
 
+/**
+ * Converte erro unknown para string | null para uso com ErrorAlert
+ */
+function errorToString(error: unknown): string | null {
+  if (!error) return null;
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return String(error);
+}
+
 export default function TurnosPorPeriodoPage() {
   const [filtros, setFiltros] = useState({
     periodoInicio: dayjs().startOf('month').startOf('day').toDate(),
@@ -90,8 +100,8 @@ export default function TurnosPorPeriodoPage() {
       <Title level={2}>Relatório - Turnos por Período</Title>
 
       {/* Tratamento de Erros */}
-      <ErrorAlert error={errorContratos?.message} onRetry={refetchContratos} />
-      <ErrorAlert error={errorBases?.message} onRetry={refetchBases} />
+      <ErrorAlert error={errorToString(errorContratos)} onRetry={refetchContratos} />
+      <ErrorAlert error={errorToString(errorBases)} onRetry={refetchBases} />
 
       {/* Filtros de Período */}
       <Card style={{ marginBottom: 24 }}>

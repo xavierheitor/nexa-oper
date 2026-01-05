@@ -1,5 +1,6 @@
 'use client';
 
+import type { Dayjs } from 'dayjs';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { getReprovasPorPergunta } from '@/lib/actions/seguranca/getReprovasPorPergunta';
 import { getReprovasPorEquipe } from '@/lib/actions/seguranca/getReprovasPorEquipe';
@@ -7,7 +8,6 @@ import { getReprovasPorTipoChecklist } from '@/lib/actions/seguranca/getReprovas
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
-import dayjs, { Dayjs } from 'dayjs';
 
 interface ReprovaPorPergunta {
   perguntaId: number;

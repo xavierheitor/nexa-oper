@@ -16,6 +16,16 @@ import type { Contrato, Base } from '@nexa-oper/db';
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
 
+/**
+ * Converte erro unknown para string | null para uso com ErrorAlert
+ */
+function errorToString(error: unknown): string | null {
+  if (!error) return null;
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return String(error);
+}
+
 export default function RelatoriosEquipesPage() {
   const [filtros, setFiltros] = useState({
     periodoInicio: dayjs().subtract(1, 'month').startOf('day').toDate(),
@@ -84,8 +94,8 @@ export default function RelatoriosEquipesPage() {
       <Title level={2}>Relatórios - Equipes</Title>
 
       {/* Tratamento de Erros */}
-      <ErrorAlert error={errorContratos?.message} onRetry={refetchContratos} />
-      <ErrorAlert error={errorBases?.message} onRetry={refetchBases} />
+      <ErrorAlert error={errorToString(errorContratos)} onRetry={refetchContratos} />
+      <ErrorAlert error={errorToString(errorBases)} onRetry={refetchBases} />
 
       <Card style={{ marginBottom: 24 }}>
         <Space wrap size='middle'>
