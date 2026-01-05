@@ -38,19 +38,13 @@ export function DashboardCharts({
 }: DashboardChartsProps) {
   // Check de hidratação
   const hydrated = useHydrated();
-  if (!hydrated) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-        <Spin size="large" />
-      </div>
-    );
-  }
 
   // Normaliza dados para arrays (trata null/undefined)
   const dadosTipoEquipe = dadosGraficoTipoEquipe ?? [];
   const dadosBase = dadosGraficoBase ?? [];
 
   // Gerar array de cores na ordem dos tipos (para usar com colorField e scale)
+  // IMPORTANTE: Todos os hooks devem ser chamados antes de qualquer return condicional
   const coresArray = useMemo(() => {
     const coresDisponiveis = [
       '#1890ff', // Azul
@@ -69,6 +63,15 @@ export function DashboardCharts({
     }
     return [];
   }, [dadosBase]);
+
+  // Renderiza loading enquanto não estiver hidratado
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
