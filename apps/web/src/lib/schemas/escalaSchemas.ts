@@ -235,6 +235,8 @@ export const escalaEquipePeriodoFilterSchema = z.object({
   search: z.string().optional(),
   equipeId: z.number().int().positive().optional(),
   tipoEscalaId: z.number().int().positive().optional(),
+  tipoEquipeId: z.number().int().positive().optional(),
+  baseId: z.number().int().positive().optional(),
   status: StatusEscalaEquipePeriodoEnum.optional(),
   periodoInicio: z.coerce.date().optional(),
   periodoFim: z.coerce.date().optional(),

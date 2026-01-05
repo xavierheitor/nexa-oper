@@ -14,6 +14,8 @@ import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaI
 interface EscalaEquipePeriodoFilter extends PaginationParams {
   equipeId?: number;
   tipoEscalaId?: number;
+  tipoEquipeId?: number;
+  baseId?: number;
   status?: StatusEscalaEquipePeriodo;
   periodoInicio?: Date;
   periodoFim?: Date;
@@ -176,6 +178,8 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
       search,
       equipeId,
       tipoEscalaId,
+      tipoEquipeId,
+      baseId,
       status,
       periodoInicio,
       periodoFim,
@@ -183,9 +187,57 @@ export class EscalaEquipePeriodoRepository extends AbstractCrudRepository<
 
     const skip = (page - 1) * pageSize;
 
+    // Se baseId ou tipoEquipeId for fornecido, precisamos filtrar por equipes primeiro
+    let equipeIds: number[] | undefined;
+    if (baseId !== undefined || tipoEquipeId !== undefined) {
+      const equipeWhere: Prisma.EquipeWhereInput = {
+        deletedAt: null,
+        ...(tipoEquipeId && { tipoEquipeId }),
+      };
+
+      // Filtro de base é especial (relacionamento com histórico)
+      if (baseId !== undefined) {
+        if (baseId === -1) {
+          // Sem lotação
+          const equipesComBase = await prisma.equipeBaseHistorico.findMany({
+            where: { dataFim: null, deletedAt: null },
+            select: { equipeId: true },
+          });
+          const idsComBase = equipesComBase.map(h => h.equipeId);
+          equipeWhere.id = idsComBase.length > 0 ? { notIn: idsComBase } : undefined;
+        } else {
+          // Base específica
+          const equipesNaBase = await prisma.equipeBaseHistorico.findMany({
+            where: {
+              baseId,
+              dataFim: null,
+              deletedAt: null,
+            },
+            select: { equipeId: true },
+          });
+          const idsNaBase = equipesNaBase.map(h => h.equipeId);
+          if (idsNaBase.length === 0) {
+            // Nenhuma equipe na base, retornar vazio
+            return { items: [], total: 0 };
+          }
+          equipeWhere.id = { in: idsNaBase };
+        }
+      }
+
+      const equipes = await prisma.equipe.findMany({
+        where: equipeWhere,
+        select: { id: true },
+      });
+      equipeIds = equipes.map(e => e.id);
+      if (equipeIds.length === 0) {
+        return { items: [], total: 0 };
+      }
+    }
+
     const where: Prisma.EscalaEquipePeriodoWhereInput = {
       deletedAt: null,
       ...(equipeId && { equipeId }),
+      ...(equipeIds && { equipeId: { in: equipeIds } }),
       ...(tipoEscalaId && { tipoEscalaId }),
       ...(status && { status }),
       // Filtro por período: busca escalas que intersectam com o período especificado
