@@ -88,10 +88,28 @@ export default function TurnosPage() {
   const [filtroBase, setFiltroBase] = useState<string | undefined>(undefined);
   const [filtroTipoEquipe, setFiltroTipoEquipe] = useState<string | undefined>(undefined);
 
-  // Hook para paginação client-side
+  // Hook para paginação client-side da tabela principal
   const { pagination } = useTablePagination({
     defaultPageSize: 10,
     showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase || filtroTipoEquipe ? ' (filtrado)' : ''}`,
+  });
+
+  // Hook para paginação da tabela de turnos não abertos
+  const { pagination: paginationNaoAbertos } = useTablePagination({
+    defaultPageSize: 10,
+    showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''} não aberto${total !== 1 ? 's' : ''}`,
+  });
+
+  // Hook para paginação da tabela detalhada de turnos previstos
+  const { pagination: paginationTurnosPrevistos } = useTablePagination({
+    defaultPageSize: 20,
+    showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''} previsto${total !== 1 ? 's' : ''}`,
+  });
+
+  // Hook para paginação da tabela de turnos previstos futuros
+  const { pagination: paginationTurnosFuturos } = useTablePagination({
+    defaultPageSize: 10,
+    showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''} previsto${total !== 1 ? 's' : ''} para o resto do dia`,
   });
 
   // Estados para os modais de checklist
@@ -819,7 +837,7 @@ export default function TurnosPage() {
         />
       </Card>
 
-      {/* Card de Turnos Não Abertos - Para Cobrança */}
+      {/* Card de Turnos Não Abertos - Apenas os que já deveriam ter sido abertos */}
       {loadingTurnosPrevistos ? (
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col xs={24}>
@@ -832,71 +850,158 @@ export default function TurnosPage() {
         </Row>
       ) : turnosPrevistosResult ? (
         (() => {
-          const turnosNaoAbertos = turnosPrevistosResult.filter(
-            (tp) => tp.status === 'NAO_ABERTO'
-          );
+          const agora = new Date();
+          const horaAtual = agora.getHours() * 60 + agora.getMinutes(); // Minutos desde meia-noite
 
-          if (turnosNaoAbertos.length > 0) {
-            return (
-              <Card
-                title={
-                  <Space>
-                    <span>Turnos Previstos Não Abertos</span>
-                    <Tag color="error">{turnosNaoAbertos.length}</Tag>
-                  </Space>
-                }
-                style={{ marginBottom: 24 }}
-                extra={
-                  <Tag color="warning">
-                    Aguardando abertura de turno
-                  </Tag>
-                }
-              >
-                <Table
-                  dataSource={turnosNaoAbertos}
-                  rowKey={(record) => `${record.equipeId}-${record.status}`}
-                  pagination={{ pageSize: 10, showSizeChanger: true }}
-                  size="small"
-                  columns={[
-                    {
-                      title: 'Equipe',
-                      dataIndex: 'equipeNome',
-                      key: 'equipeNome',
-                      width: 200,
-                      fixed: 'left',
-                    },
-                    {
-                      title: 'Tipo de Equipe',
-                      dataIndex: 'tipoEquipeNome',
-                      key: 'tipoEquipeNome',
-                      width: 150,
-                    },
-                    {
-                      title: 'Horário Previsto',
-                      dataIndex: 'horarioPrevisto',
-                      key: 'horarioPrevisto',
-                      width: 140,
-                      render: (horario: string | null) => formatTime(horario) || '-',
-                    },
-                    {
-                      title: 'Eletricistas',
-                      key: 'eletricistas',
-                      render: (_: unknown, record: TurnoPrevisto) => (
-                        <Space direction="vertical" size={0}>
-                          {record.eletricistas.map((el) => (
-                            <span key={el.id}>
-                              {el.nome} ({el.matricula})
-                            </span>
-                          ))}
-                        </Space>
-                      ),
-                    },
-                  ]}
-                />
-              </Card>
-            );
-          }
-          return null;
+          // Função para converter horário "HH:MM:SS" para minutos desde meia-noite
+          const horarioParaMinutos = (horario: string | null): number | null => {
+            if (!horario) return null;
+            const [hora, minuto] = horario.split(':').map(Number);
+            if (isNaN(hora) || isNaN(minuto)) return null;
+            return hora * 60 + minuto;
+          };
+
+          // Filtrar turnos não abertos que já passaram do horário previsto
+          const turnosNaoAbertosAtrasados = turnosPrevistosResult.filter((tp) => {
+            if (tp.status !== 'NAO_ABERTO') return false;
+            if (!tp.horarioPrevisto) return true; // Se não tem horário previsto, considerar atrasado
+            const minutosPrevistos = horarioParaMinutos(tp.horarioPrevisto);
+            if (minutosPrevistos === null) return true;
+            return minutosPrevistos <= horaAtual; // Já passou do horário previsto
+          });
+
+          // Filtrar turnos previstos que ainda não passaram do horário
+          const turnosPrevistosFuturos = turnosPrevistosResult.filter((tp) => {
+            if (tp.status !== 'NAO_ABERTO') return false;
+            if (!tp.horarioPrevisto) return false; // Se não tem horário, não mostrar aqui
+            const minutosPrevistos = horarioParaMinutos(tp.horarioPrevisto);
+            if (minutosPrevistos === null) return false;
+            return minutosPrevistos > horaAtual; // Ainda não passou do horário previsto
+          });
+
+          return (
+            <>
+              {/* Card de Turnos Atrasados (já deveriam ter sido abertos) */}
+              {turnosNaoAbertosAtrasados.length > 0 && (
+                <Card
+                  title={
+                    <Space>
+                      <span>Turnos Previstos Não Abertos (Atrasados)</span>
+                      <Tag color="error">{turnosNaoAbertosAtrasados.length}</Tag>
+                    </Space>
+                  }
+                  style={{ marginBottom: 32 }}
+                  extra={
+                    <Tag color="error">
+                      Deveriam ter sido abertos até agora
+                    </Tag>
+                  }
+                >
+                  <Table
+                    dataSource={turnosNaoAbertosAtrasados}
+                    rowKey={(record) => `${record.equipeId}-${record.status}`}
+                    pagination={paginationNaoAbertos}
+                    size="small"
+                    columns={[
+                      {
+                        title: 'Equipe',
+                        dataIndex: 'equipeNome',
+                        key: 'equipeNome',
+                        width: 200,
+                        fixed: 'left',
+                      },
+                      {
+                        title: 'Tipo de Equipe',
+                        dataIndex: 'tipoEquipeNome',
+                        key: 'tipoEquipeNome',
+                        width: 150,
+                      },
+                      {
+                        title: 'Horário Previsto',
+                        dataIndex: 'horarioPrevisto',
+                        key: 'horarioPrevisto',
+                        width: 140,
+                        render: (horario: string | null) => formatTime(horario) || '-',
+                      },
+                      {
+                        title: 'Eletricistas',
+                        key: 'eletricistas',
+                        render: (_: unknown, record: TurnoPrevisto) => (
+                          <Space direction="vertical" size={0}>
+                            {record.eletricistas.map((el) => (
+                              <span key={el.id}>
+                                {el.nome} ({el.matricula})
+                              </span>
+                            ))}
+                          </Space>
+                        ),
+                      },
+                    ]}
+                  />
+                </Card>
+              )}
+
+              {/* Card de Turnos Previstos para o Resto do Dia */}
+              {turnosPrevistosFuturos.length > 0 && (
+                <Card
+                  title={
+                    <Space>
+                      <span>Turnos Previstos para o Resto do Dia</span>
+                      <Tag color="blue">{turnosPrevistosFuturos.length}</Tag>
+                    </Space>
+                  }
+                  style={{ marginBottom: 24 }}
+                  extra={
+                    <Tag color="processing">
+                      Ainda não passou do horário previsto
+                    </Tag>
+                  }
+                >
+                  <Table
+                    dataSource={turnosPrevistosFuturos}
+                    rowKey={(record) => `${record.equipeId}-${record.status}-futuro`}
+                    pagination={paginationTurnosFuturos}
+                    size="small"
+                    columns={[
+                      {
+                        title: 'Equipe',
+                        dataIndex: 'equipeNome',
+                        key: 'equipeNome',
+                        width: 200,
+                        fixed: 'left',
+                      },
+                      {
+                        title: 'Tipo de Equipe',
+                        dataIndex: 'tipoEquipeNome',
+                        key: 'tipoEquipeNome',
+                        width: 150,
+                      },
+                      {
+                        title: 'Horário Previsto',
+                        dataIndex: 'horarioPrevisto',
+                        key: 'horarioPrevisto',
+                        width: 140,
+                        render: (horario: string | null) => formatTime(horario) || '-',
+                      },
+                      {
+                        title: 'Eletricistas',
+                        key: 'eletricistas',
+                        render: (_: unknown, record: TurnoPrevisto) => (
+                          <Space direction="vertical" size={0}>
+                            {record.eletricistas.map((el) => (
+                              <span key={el.id}>
+                                {el.nome} ({el.matricula})
+                              </span>
+                            ))}
+                          </Space>
+                        ),
+                      },
+                    ]}
+                  />
+                </Card>
+              )}
+            </>
+          );
         })()
       ) : null}
 
@@ -1040,7 +1145,7 @@ export default function TurnosPage() {
               <Table
                 dataSource={turnosPrevistosResult}
                 rowKey={(record) => `${record.equipeId}-${record.status}-${record.turnoId || 'no-turno'}`}
-                pagination={{ pageSize: 20 }}
+                pagination={paginationTurnosPrevistos}
                 columns={[
                   {
                     title: 'Equipe',
