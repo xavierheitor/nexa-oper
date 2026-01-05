@@ -8,6 +8,7 @@ import {
   CarOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import type { RecursosPorBase } from '@/lib/actions/turno/getRecursosPorBase';
 
 const { Title } = Typography;
@@ -27,6 +28,16 @@ export function DashboardResources({
   recursosPorBase,
   loading = false,
 }: DashboardResourcesProps) {
+  // Check de hidratação
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   const recursos = recursosPorBase ?? [];
 
   if (loading) {

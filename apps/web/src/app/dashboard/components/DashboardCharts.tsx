@@ -3,6 +3,7 @@
 import { Card, Col, Row, Spin, Empty } from 'antd';
 import { Column } from '@ant-design/plots';
 import { useMemo } from 'react';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 
 interface DadosGraficoTipoEquipe {
   tipo: string;
@@ -35,6 +36,16 @@ export function DashboardCharts({
   loadingTipoEquipe = false,
   loadingBase = false,
 }: DashboardChartsProps) {
+  // Check de hidratação
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   // Normaliza dados para arrays (trata null/undefined)
   const dadosTipoEquipe = dadosGraficoTipoEquipe ?? [];
   const dadosBase = dadosGraficoBase ?? [];

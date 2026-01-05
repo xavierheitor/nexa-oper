@@ -3,6 +3,7 @@
 import { Column } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 
 interface DadosLotacao {
   base: string;
@@ -30,6 +31,18 @@ export default function VeiculosPorLotacao({ filtros }: VeiculosPorLotacaoProps)
     },
     [filtros]
   );
+
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <Card title="Veículos por Lotação">
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Spin size="large" />
+        </div>
+      </Card>
+    );
+  }
 
   if (loading) {
     return (

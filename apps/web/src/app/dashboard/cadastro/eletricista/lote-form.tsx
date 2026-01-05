@@ -10,7 +10,7 @@ import { DeleteOutlined, PlusOutlined, FileExcelOutlined } from '@ant-design/ico
 import type { Base, Cargo, Contrato } from '@nexa-oper/db';
 import dayjs, { Dayjs } from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { StatusEletricistaLabels } from '../../../../lib/schemas/eletricistaStatusSchema';
+import { StatusEletricistaLabels } from '@/lib/schemas/eletricistaStatusSchema';
 
 dayjs.extend(customParseFormat);
 

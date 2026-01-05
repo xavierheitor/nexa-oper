@@ -3,6 +3,7 @@
 import { Pie } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 
 interface DadosTipo {
   tipo: string;
@@ -32,6 +33,18 @@ export default function EletricistasPorTipoEquipe({
     },
     [filtros]
   );
+
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <Card title="Eletricistas Escalados por Tipo de Equipe">
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Spin size="large" />
+        </div>
+      </Card>
+    );
+  }
 
   // Garante que dados nunca seja null
   const dados: DadosTipo[] = dadosRaw ?? [];

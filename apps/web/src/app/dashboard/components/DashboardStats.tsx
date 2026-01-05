@@ -1,12 +1,13 @@
 'use client';
 
-import { Card, Col, Row, Statistic } from 'antd';
+import { Card, Col, Row, Statistic, Spin } from 'antd';
 import {
   ClockCircleOutlined,
   CalendarOutlined,
   UserOutlined,
   CarOutlined,
 } from '@ant-design/icons';
+import { useHydrated } from '@/lib/hooks/useHydrated';
 import type { RecursosPorBase } from '@/lib/actions/turno/getRecursosPorBase';
 
 interface DashboardStatsProps {
@@ -31,6 +32,16 @@ export function DashboardStats({
   recursosPorBase,
   loading = false,
 }: DashboardStatsProps) {
+  // Check de hidratação
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   // Calcula totais de recursos
   const recursos = recursosPorBase ?? [];
   const totalEletricistas = recursos.reduce((acc, r) => acc + r.eletricistas, 0);
