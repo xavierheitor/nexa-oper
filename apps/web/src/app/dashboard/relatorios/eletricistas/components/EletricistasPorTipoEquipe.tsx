@@ -9,7 +9,7 @@ interface DadosTipo {
   quantidade: number;
 }
 
-import type { FiltrosRelatorioBase } from '../../types';
+import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
 
 interface EletricistasPorTipoEquipeProps {
   filtros?: FiltrosRelatorioBase;

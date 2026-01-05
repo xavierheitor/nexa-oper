@@ -3,6 +3,7 @@
 import { Column } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 
 interface DadosDias {
   eletricista: string;
@@ -16,7 +17,7 @@ interface DiasTrabalhadosPorEletricistaProps {
 export default function DiasTrabalhadosPorEletricista({
   filtros,
 }: DiasTrabalhadosPorEletricistaProps) {
-  const { data: dados = [], loading } = useDataFetch<DadosDias[]>(
+  const { data: dados = [], loading, error, refetch } = useDataFetch<DadosDias[]>(
     async () => {
       const { getDiasTrabalhadosPorEletricista } = await import(
         '@/lib/actions/relatorios/relatoriosEscalas'
@@ -41,16 +42,16 @@ export default function DiasTrabalhadosPorEletricista({
     );
   }
 
-  if (!dados?.length) {
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
+  if (!dadosSeguros?.length && !error) {
     return (
       <Card title="Top 20 - Dias Trabalhados por Eletricista">
         <Empty description="Nenhum dado disponível" />
       </Card>
     );
   }
-
-  // Garante que dados não é null após a verificação
-  const dadosSeguros = dados;
 
   const config = {
     data: dadosSeguros,
@@ -80,7 +81,8 @@ export default function DiasTrabalhadosPorEletricista({
 
   return (
     <Card title="Top 20 - Dias Trabalhados por Eletricista">
-      <Column {...config} />
+      <ErrorAlert error={error} onRetry={refetch} message="Erro ao carregar dados de dias trabalhados" />
+      {dadosSeguros && dadosSeguros.length > 0 && <Column {...config} />}
     </Card>
   );
 }

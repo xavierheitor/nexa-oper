@@ -22,7 +22,7 @@ interface EletricistaDetalhado {
   };
 }
 
-import type { FiltrosRelatorioBase } from '../../types';
+import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
 
 interface EletricistasDetalhadoProps {
   filtros?: FiltrosRelatorioBase;

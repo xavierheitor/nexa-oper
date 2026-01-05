@@ -3,6 +3,7 @@
 import { Line } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 
 interface DadosFaltas {
   data: string;
@@ -14,7 +15,7 @@ interface FaltasPorPeriodoProps {
 }
 
 export default function FaltasPorPeriodo({ filtros }: FaltasPorPeriodoProps) {
-  const { data: dados = [], loading } = useDataFetch<DadosFaltas[]>(
+  const { data: dados = [], loading, error, refetch } = useDataFetch<DadosFaltas[]>(
     async () => {
       const { getFaltasPorPeriodo } = await import(
         '@/lib/actions/relatorios/relatoriosEscalas'
@@ -39,16 +40,16 @@ export default function FaltasPorPeriodo({ filtros }: FaltasPorPeriodoProps) {
     );
   }
 
-  if (!dados?.length) {
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
+  if (!dadosSeguros?.length && !error) {
     return (
       <Card title="Evolução de Faltas por Período">
         <Empty description="Nenhum dado disponível" />
       </Card>
     );
   }
-
-  // Garante que dados não é null após a verificação
-  const dadosSeguros = dados;
 
   const config = {
     data: dadosSeguros,
@@ -78,7 +79,8 @@ export default function FaltasPorPeriodo({ filtros }: FaltasPorPeriodoProps) {
 
   return (
     <Card title="Evolução de Faltas por Período">
-      <Line {...config} />
+      <ErrorAlert error={error} onRetry={refetch} message="Erro ao carregar dados de faltas por período" />
+      {dadosSeguros && dadosSeguros.length > 0 && <Line {...config} />}
     </Card>
   );
 }

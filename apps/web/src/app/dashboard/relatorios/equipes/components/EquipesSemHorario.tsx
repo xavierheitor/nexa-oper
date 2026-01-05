@@ -14,7 +14,7 @@ interface EquipeSemHorario {
   base: string;
 }
 
-import type { FiltrosRelatorioBase } from '../../types';
+import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
 
 interface EquipesSemHorarioProps {
   filtros?: FiltrosRelatorioBase;

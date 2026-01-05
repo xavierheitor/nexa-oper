@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
-import type { FiltrosRelatorioBase } from '../../types';
+import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
 
 interface DadosBase {
   id: number;

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Card, Empty, Spin, Tag, Typography, Space, Divider, Table, DatePicker } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import { UserOutlined, TeamOutlined, CalendarOutlined, HomeOutlined, FileTextOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
@@ -48,7 +49,7 @@ export default function EscaladosPorDia({ filtros }: EscaladosPorDiaProps) {
     }
   };
 
-  const { data, loading } = useDataFetch<DadosEscaladosPorDia | null>(
+  const { data, loading, error, refetch } = useDataFetch<DadosEscaladosPorDia | null>(
     async () => {
       // Só busca se tiver data selecionada
       if (!dataSelecionada) {
@@ -185,6 +186,7 @@ export default function EscaladosPorDia({ filtros }: EscaladosPorDiaProps) {
         </Space>
       }
     >
+      <ErrorAlert error={error} onRetry={refetch} message="Erro ao carregar dados de escalados por dia" />
       <div style={{ marginBottom: 16 }}>
         <Text strong style={{ fontSize: '16px' }}>
           Data: {dataFormatada}

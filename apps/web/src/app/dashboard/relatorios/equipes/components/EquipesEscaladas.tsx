@@ -3,20 +3,21 @@
 import { Pie } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 
 interface DadosEscaladas {
   status: string;
   quantidade: number;
 }
 
-import type { FiltrosRelatorioBase } from '../../types';
+import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
 
 interface EquipesEscaladasProps {
   filtros?: FiltrosRelatorioBase;
 }
 
 export default function EquipesEscaladas({ filtros }: EquipesEscaladasProps) {
-  const { data: dados = [], loading } = useDataFetch<DadosEscaladas[]>(
+  const { data: dados = [], loading, error, refetch } = useDataFetch<DadosEscaladas[]>(
     async () => {
       const { getEquipesEscaladas } = await import(
         '@/lib/actions/relatorios/relatoriosEquipes'
@@ -41,16 +42,16 @@ export default function EquipesEscaladas({ filtros }: EquipesEscaladasProps) {
     );
   }
 
-  if (!dados?.length) {
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
+  if (!dadosSeguros?.length && !error) {
     return (
       <Card title="Equipes Escaladas vs Não Escaladas">
         <Empty description="Nenhum dado disponível" />
       </Card>
     );
   }
-
-  // Garante que dados não é null após a verificação
-  const dadosSeguros = dados;
 
   const config = {
     data: dadosSeguros,
@@ -76,8 +77,8 @@ export default function EquipesEscaladas({ filtros }: EquipesEscaladasProps) {
 
   return (
     <Card title="Equipes Escaladas vs Não Escaladas">
-      <Pie {...config} />
+      <ErrorAlert error={error} onRetry={refetch} message="Erro ao carregar dados de equipes escaladas" />
+      {dadosSeguros && dadosSeguros.length > 0 && <Pie {...config} />}
     </Card>
   );
 }
-

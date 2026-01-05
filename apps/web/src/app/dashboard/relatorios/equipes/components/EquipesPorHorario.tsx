@@ -3,20 +3,21 @@
 import { Column } from '@ant-design/plots';
 import { Card, Empty, Spin } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { ErrorAlert } from '@/ui/components/ErrorAlert';
 
 interface DadosHorario {
   horario: string;
   quantidade: number;
 }
 
-import type { FiltrosRelatorioBase } from '../../types';
+import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
 
 interface EquipesPorHorarioProps {
   filtros?: FiltrosRelatorioBase;
 }
 
 export default function EquipesPorHorario({ filtros }: EquipesPorHorarioProps) {
-  const { data: dados = [], loading } = useDataFetch<DadosHorario[]>(
+  const { data: dados = [], loading, error, refetch } = useDataFetch<DadosHorario[]>(
     async () => {
       const { getEquipesPorHorario } = await import(
         '@/lib/actions/relatorios/relatoriosEquipes'
@@ -41,16 +42,16 @@ export default function EquipesPorHorario({ filtros }: EquipesPorHorarioProps) {
     );
   }
 
-  if (!dados?.length) {
+  // Garante que dados não é null após a verificação
+  const dadosSeguros = dados;
+
+  if (!dadosSeguros?.length && !error) {
     return (
       <Card title="Equipes por Horário">
         <Empty description="Nenhum dado disponível" />
       </Card>
     );
   }
-
-  // Garante que dados não é null após a verificação
-  const dadosSeguros = dados;
 
   const config = {
     data: dadosSeguros,
@@ -71,8 +72,8 @@ export default function EquipesPorHorario({ filtros }: EquipesPorHorarioProps) {
 
   return (
     <Card title="Equipes por Horário">
-      <Column {...config} />
+      <ErrorAlert error={error} onRetry={refetch} message="Erro ao carregar dados de equipes por horário" />
+      {dadosSeguros && dadosSeguros.length > 0 && <Column {...config} />}
     </Card>
   );
 }
-

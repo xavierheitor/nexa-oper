@@ -13,7 +13,7 @@ interface DadosComparacao {
   equipes: number;
 }
 
-import type { FiltrosRelatorioBase } from '../../types';
+import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
 
 interface ComparacaoEntreBasesProps {
   filtros?: FiltrosRelatorioBase;
