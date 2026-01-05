@@ -13,7 +13,7 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, Typography, List, Tag, Space, Image, Empty, Collapse, Button, Descriptions, Row, Col } from 'antd';
+import { Card, Typography, Tag, Space, Image, Empty, Collapse, Button, Descriptions, Row, Col } from 'antd';
 import {
   ArrowLeftOutlined,
   UserOutlined,

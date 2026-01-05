@@ -26,7 +26,7 @@ export default [
           ignoreDirectives: false,
         },
       ],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off', // Desabilitado conforme solicitado
       '@typescript-eslint/ban-ts-comment': 'off',
       'react-hooks/exhaustive-deps': 'warn',
       // React specific rules

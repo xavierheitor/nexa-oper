@@ -14,6 +14,16 @@ import EquipesMaiorTempoSemCaptura from './components/EquipesMaiorTempoSemCaptur
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
 
+/**
+ * Converte erro unknown para string | null para uso com ErrorAlert
+ */
+function errorToString(error: unknown): string | null {
+  if (!error) return null;
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return String(error);
+}
+
 export default function RelatoriosLocalizacaoPage() {
   const [filtros, setFiltros] = useState({
     periodoInicio: dayjs().subtract(1, 'month').startOf('day').toDate(),
@@ -85,8 +95,8 @@ export default function RelatoriosLocalizacaoPage() {
       <Title level={2}>Relatórios - Localização</Title>
 
       {/* Tratamento de Erros */}
-      <ErrorAlert error={errorTiposEquipe?.message} onRetry={refetchTiposEquipe} />
-      <ErrorAlert error={errorBases?.message} onRetry={refetchBases} />
+      <ErrorAlert error={errorToString(errorTiposEquipe)} onRetry={refetchTiposEquipe} />
+      <ErrorAlert error={errorToString(errorBases)} onRetry={refetchBases} />
 
       <Card style={{ marginBottom: 24 }}>
         <Space wrap size="middle">

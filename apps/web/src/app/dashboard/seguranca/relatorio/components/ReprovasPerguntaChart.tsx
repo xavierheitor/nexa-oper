@@ -30,19 +30,7 @@ export function ReprovasPerguntaChart({
   loading = false,
   periodo,
 }: ReprovasPerguntaChartProps) {
-  // Check de hidratação DEPOIS de todos os hooks
-  const hydrated = useHydrated();
-  if (!hydrated) {
-    return (
-      <div>
-        <Title level={4}>Top 10 Perguntas com Mais Reprovas</Title>
-        <div style={{ textAlign: 'center', padding: '40px' }}>
-          <Spin size="large" />
-        </div>
-      </div>
-    );
-  }
-
+  // IMPORTANTE: Todos os hooks devem ser chamados antes de qualquer return condicional
   const chartConfig = useMemo(() => {
     const dados = data ?? [];
     if (!dados || dados.length === 0) {
@@ -97,6 +85,21 @@ export function ReprovasPerguntaChart({
       },
     };
   }, [data]);
+
+  // Check de hidratação DEPOIS de todos os hooks, mas ANTES de qualquer return condicional
+  const hydrated = useHydrated();
+
+  // Renderiza loading enquanto não estiver hidratado
+  if (!hydrated) {
+    return (
+      <div>
+        <Title level={4}>Top 10 Perguntas com Mais Reprovas</Title>
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Spin size="large" />
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return null; // Loading é tratado no componente pai

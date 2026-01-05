@@ -27,19 +27,7 @@ export function ReprovasEquipeChart({
   data,
   loading = false,
 }: ReprovasEquipeChartProps) {
-  // Check de hidratação DEPOIS de todos os hooks
-  const hydrated = useHydrated();
-  if (!hydrated) {
-    return (
-      <div style={{ marginTop: '40px' }}>
-        <Title level={4}>Top 10 Equipes com Mais Reprovas</Title>
-        <div style={{ textAlign: 'center', padding: '40px' }}>
-          <Spin size="large" />
-        </div>
-      </div>
-    );
-  }
-
+  // IMPORTANTE: Todos os hooks devem ser chamados antes de qualquer return condicional
   const chartConfig = useMemo(() => {
     const dados = data ?? [];
     if (!dados || dados.length === 0) {
@@ -76,6 +64,21 @@ export function ReprovasEquipeChart({
       },
     };
   }, [data]);
+
+  // Check de hidratação DEPOIS de todos os hooks, mas ANTES de qualquer return condicional
+  const hydrated = useHydrated();
+
+  // Renderiza loading enquanto não estiver hidratado
+  if (!hydrated) {
+    return (
+      <div style={{ marginTop: '40px' }}>
+        <Title level={4}>Top 10 Equipes com Mais Reprovas</Title>
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Spin size="large" />
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return null; // Loading é tratado no componente pai

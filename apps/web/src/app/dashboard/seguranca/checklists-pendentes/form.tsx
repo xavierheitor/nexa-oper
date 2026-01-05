@@ -4,7 +4,7 @@ import { ChecklistPendencia, StatusPendencia } from '@nexa-oper/db';
 import { Button, Form, Input, Select, Space, Typography, Image, Descriptions, Tag } from 'antd';
 
 const { TextArea } = Input;
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 interface Props {
   initialValues: ChecklistPendencia & {

@@ -28,7 +28,6 @@ import { Column } from '@ant-design/plots';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import { BarChartOutlined, TeamOutlined, CarOutlined, ClockCircleOutlined, FileExcelOutlined } from '@ant-design/icons';
@@ -36,7 +35,7 @@ import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { getTextFilter, getSelectFilter } from '@/ui/components/tableFilters';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface TurnoData {
   id: number;
@@ -116,6 +115,16 @@ function formatarData(data: Date | string): string {
  */
 function formatarHora(data: Date | string): string {
   return dayjs(data).format('HH:mm');
+}
+
+/**
+ * Converte erro unknown para string | null para uso com ErrorAlert
+ */
+function errorToString(error: unknown): string | null {
+  if (!error) return null;
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return String(error);
 }
 
 export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
@@ -492,7 +501,7 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
       dataIndex: 'equipeNome',
       key: 'equipeNome',
       width: 150,
-      render: (equipeNome: string, record: TurnoDataLinha) => (
+      render: (equipeNome: string) => (
         <Tag color="blue" icon={<TeamOutlined />}>
           {equipeNome}
         </Tag>
@@ -689,7 +698,7 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
   return (
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
       {/* Tratamento de Erros */}
-      <ErrorAlert error={errorTiposEquipe?.message} onRetry={refetchTiposEquipe} />
+      <ErrorAlert error={errorToString(errorTiposEquipe)} onRetry={refetchTiposEquipe} />
       <ErrorAlert error={errorTurnos} onRetry={refetchTurnos} />
 
       {/* Gráfico de Barras Empilhadas */}
