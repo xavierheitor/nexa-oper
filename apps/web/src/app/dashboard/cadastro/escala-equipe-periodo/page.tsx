@@ -112,16 +112,29 @@ export default function EscalaEquipePeriodoPage() {
   }, [mesFiltro]);
 
   // Carregar dados para os filtros
+  // ✅ CORREÇÃO: Garantir que os parâmetros sempre sejam passados mesmo quando paginationEnabled: false
   const { data: bases } = useEntityData({
     key: 'bases-filtro-escala',
-    fetcherAction: unwrapFetcher(listBases),
+    fetcherAction: unwrapFetcher((params) => listBases({
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'nome',
+      orderDir: 'asc',
+      ...params,
+    })),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
   const { data: tiposEquipe } = useEntityData({
     key: 'tipos-equipe-filtro-escala',
-    fetcherAction: unwrapFetcher(listTiposEquipe),
+    fetcherAction: unwrapFetcher((params) => listTiposEquipe({
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'nome',
+      orderDir: 'asc',
+      ...params,
+    })),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
@@ -129,12 +142,12 @@ export default function EscalaEquipePeriodoPage() {
   const { data: tiposEscala } = useEntityData({
     key: 'tipos-escala-filtro-escala',
     fetcherAction: unwrapFetcher((params) => listTiposEscala({
-      ...params,
       page: 1,
       pageSize: 1000,
       orderBy: 'nome',
       orderDir: 'asc',
       ativo: true,
+      ...params,
     })),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
@@ -162,8 +175,15 @@ export default function EscalaEquipePeriodoPage() {
     [periodoFiltro, filtroTipoEquipe, filtroBase, filtroTipoEscala, filtroStatus]
   );
 
+  // ✅ CORREÇÃO: Incluir filtros na chave do SWR para garantir revalidação quando os filtros mudarem
+  const escalasKey = useMemo(
+    () =>
+      `escalasEquipePeriodo-${mesFiltro.format('YYYY-MM')}-${filtroTipoEquipe || 'all'}-${filtroBase || 'all'}-${filtroTipoEscala || 'all'}-${filtroStatus || 'all'}`,
+    [mesFiltro, filtroTipoEquipe, filtroBase, filtroTipoEscala, filtroStatus]
+  );
+
   const escalas = useEntityData({
-    key: 'escalasEquipePeriodo',
+    key: escalasKey,
     fetcherAction: escalasFetcher,
     paginationEnabled: true,
     initialParams: {
@@ -173,6 +193,26 @@ export default function EscalaEquipePeriodoPage() {
       orderDir: 'desc',
     },
   });
+
+  // ✅ CORREÇÃO: Resetar para página 1 quando os filtros mudarem (mas não quando a página mudar pelo usuário)
+  const prevFiltersRef = React.useRef({ mesFiltro, filtroTipoEquipe, filtroBase, filtroTipoEscala, filtroStatus });
+  useEffect(() => {
+    const filtersChanged =
+      prevFiltersRef.current.mesFiltro !== mesFiltro ||
+      prevFiltersRef.current.filtroTipoEquipe !== filtroTipoEquipe ||
+      prevFiltersRef.current.filtroBase !== filtroBase ||
+      prevFiltersRef.current.filtroTipoEscala !== filtroTipoEscala ||
+      prevFiltersRef.current.filtroStatus !== filtroStatus;
+
+    if (filtersChanged) {
+      escalas.setParams((prev) => ({
+        ...prev,
+        page: 1,
+      }));
+      prevFiltersRef.current = { mesFiltro, filtroTipoEquipe, filtroBase, filtroTipoEscala, filtroStatus };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mesFiltro, filtroTipoEquipe, filtroBase, filtroTipoEscala, filtroStatus]);
 
   const handleGerarSlots = async (record: EscalaEquipePeriodo) => {
     const isPublicada = record.status === 'PUBLICADA';
@@ -701,7 +741,10 @@ export default function EscalaEquipePeriodoPage() {
       <Modal
         title="Nova Escala - Assistente"
         open={isWizardOpen}
-        onCancel={() => setIsWizardOpen(false)}
+        onCancel={async () => {
+          setIsWizardOpen(false);
+          await escalas.mutate();
+        }}
         footer={null}
         width={800}
         destroyOnHidden
@@ -714,7 +757,10 @@ export default function EscalaEquipePeriodoPage() {
             setIsWizardOpen(false);
             await escalas.mutate();
           }}
-          onCancel={() => setIsWizardOpen(false)}
+          onCancel={async () => {
+            setIsWizardOpen(false);
+            await escalas.mutate();
+          }}
         />
       </Modal>
 
@@ -723,9 +769,10 @@ export default function EscalaEquipePeriodoPage() {
         <Modal
           title="Editar Escala - Assistente"
           open={isEditWizardOpen}
-          onCancel={() => {
+          onCancel={async () => {
             setIsEditWizardOpen(false);
             setEditingItem(null);
+            await escalas.mutate();
           }}
           footer={null}
           width={800}
@@ -741,9 +788,10 @@ export default function EscalaEquipePeriodoPage() {
               setEditingItem(null);
               await escalas.mutate();
             }}
-            onCancel={() => {
+            onCancel={async () => {
               setIsEditWizardOpen(false);
               setEditingItem(null);
+              await escalas.mutate();
             }}
           />
         </Modal>
@@ -753,21 +801,30 @@ export default function EscalaEquipePeriodoPage() {
       <Modal
         title={editingItem ? 'Editar Período de Escala' : 'Novo Período de Escala'}
         open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
+        onCancel={async () => {
+          setIsModalOpen(false);
+          await escalas.mutate();
+        }}
         footer={null}
         width={700}
       >
         <EscalaEquipePeriodoForm
           initialValues={editingItem || undefined}
           onSubmit={handleSave}
-          onCancel={() => setIsModalOpen(false)}
+          onCancel={async () => {
+            setIsModalOpen(false);
+            await escalas.mutate();
+          }}
         />
       </Modal>
 
       {/* Modal de Visualização Geral (Agrupada por Base) */}
       <VisualizacaoGeral
         open={isVisualizacaoGeralOpen && !isVisualizarOpen}
-        onClose={() => setIsVisualizacaoGeralOpen(false)}
+        onClose={async () => {
+          setIsVisualizacaoGeralOpen(false);
+          await escalas.mutate();
+        }}
         onVisualizarEscala={(escalaId) => {
           setVisualizarEscalaId(escalaId);
           setIsVisualizarOpen(true);
@@ -780,9 +837,10 @@ export default function EscalaEquipePeriodoPage() {
         <VisualizarEscala
           escalaId={visualizarEscalaId}
           open={isVisualizarOpen}
-          onClose={() => {
+          onClose={async () => {
             setIsVisualizarOpen(false);
             setVisualizarEscalaId(null);
+            await escalas.mutate();
             // Ao fechar, volta para a visualização geral se ela estava aberta
             // O estado isVisualizacaoGeralOpen permanece true, então ela reaparece
           }}
@@ -794,10 +852,11 @@ export default function EscalaEquipePeriodoPage() {
         title="Prolongar Escala"
         open={isProlongarOpen}
         onOk={handleConfirmarProlongar}
-        onCancel={() => {
+        onCancel={async () => {
           setIsProlongarOpen(false);
           setEscalaParaProlongar(null);
           formProlongar.resetFields();
+          await escalas.mutate();
         }}
         okText="Prolongar"
         cancelText="Cancelar"
