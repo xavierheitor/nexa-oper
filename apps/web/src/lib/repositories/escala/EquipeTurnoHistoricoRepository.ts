@@ -14,6 +14,9 @@ import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaI
 interface EquipeTurnoHistoricoFilter extends PaginationParams {
   equipeId?: number;
   vigente?: boolean;
+  baseId?: number;
+  tipoEquipeId?: number;
+  horarioAberturaCatalogoId?: number;
 }
 
 export type EquipeTurnoHistoricoCreateInput = {

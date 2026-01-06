@@ -134,7 +134,7 @@ export class EquipeTurnoHistoricoService extends AbstractCrudService<
   async buscarHorarioVigente(
     equipeId: number,
     data: Date
-  ): Promise<EquipeTurnoHistorico | null> {
-    return this.turnoRepo.findVigenteByEquipeAndData(equipeId, data);
+  ): Promise<(EquipeTurnoHistorico & { horarioAberturaCatalogo?: any | null }) | null> {
+    return this.turnoRepo.findVigenteByEquipeAndData(equipeId, data) as Promise<(EquipeTurnoHistorico & { horarioAberturaCatalogo?: any | null }) | null>;
   }
 }

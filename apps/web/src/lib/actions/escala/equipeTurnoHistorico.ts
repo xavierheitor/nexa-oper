@@ -122,6 +122,7 @@ export const buscarHorarioVigente = async (rawData: { equipeId: number; data?: D
       const dataConsulta = data.data || new Date();
       const result = await service.buscarHorarioVigente(data.equipeId, dataConsulta);
       if (!result) return null;
+
       // Converter Decimals para numbers (incluindo relacionamentos)
       return {
         ...result,
