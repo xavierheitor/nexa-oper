@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { Alert, Button, Card, DatePicker, Form, Input, Select, Space, Table, Tag, App } from 'antd';
 import { DeleteOutlined, PlusOutlined, FileExcelOutlined } from '@ant-design/icons';
 import type { Base, Cargo, Contrato } from '@nexa-oper/db';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { StatusEletricistaLabels } from '@/lib/schemas/eletricistaStatusSchema';
 

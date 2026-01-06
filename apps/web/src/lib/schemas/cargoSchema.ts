@@ -5,6 +5,7 @@
  */
 
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 export const cargoCreateSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório').max(255),
@@ -21,7 +22,7 @@ export const cargoFilterSchema = z.object({
   orderBy: z.string().default('nome'),
   orderDir: z.enum(['asc', 'desc']).default('asc'),
   search: z.string().optional(),
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
 });
 
 export type CargoCreate = z.infer<typeof cargoCreateSchema>;

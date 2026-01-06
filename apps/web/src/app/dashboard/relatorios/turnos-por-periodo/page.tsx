@@ -11,6 +11,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Button, Card, DatePicker, Select, Space, Typography } from 'antd';
+import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
@@ -18,6 +19,7 @@ import { listBases } from '@/lib/actions/base/list';
 import { listContratos } from '@/lib/actions/contrato/list';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import TurnosPorPeriodo from './components/TurnosPorPeriodo';
+import { useSelectOptions } from '@/lib/hooks/useSelectOptions';
 
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
@@ -54,17 +56,20 @@ export default function TurnosPorPeriodoPage() {
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
-  const handleFilterChange = (key: string, value: any) => {
+  const handleFilterChange = (key: string, value: number | undefined) => {
     setFiltros((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handlePeriodChange = (dates: any) => {
-    if (dates && dates.length === 2) {
-      setFiltros((prev) => ({
-        ...prev,
-        periodoInicio: dates[0].startOf('day').toDate(),
-        periodoFim: dates[1].endOf('day').toDate(),
-      }));
+  const handlePeriodChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    if (dates && dates[0] && dates[1]) {
+      const [start, end] = dates;
+      if (start && end) {
+        setFiltros((prev) => ({
+          ...prev,
+          periodoInicio: start.startOf('day').toDate(),
+          periodoFim: end.endOf('day').toDate(),
+        }));
+      }
     } else {
       // Resetar para valores padrão quando não houver datas selecionadas
       setFiltros((prev) => ({
@@ -84,16 +89,9 @@ export default function TurnosPorPeriodoPage() {
     });
   };
 
-  // Memoiza as opções dos Selects para evitar recriações desnecessárias
-  const contratosOptions = useMemo(
-    () => contratos?.map((c: any) => ({ label: c.nome, value: c.id })) || [],
-    [contratos]
-  );
-
-  const basesOptions = useMemo(
-    () => bases?.map((b: any) => ({ label: b.nome, value: b.id })) || [],
-    [bases]
-  );
+  // Usa o hook useSelectOptions para gerar opções tipadas
+  const contratosOptions = useSelectOptions(contratos, { labelKey: 'nome', valueKey: 'id' });
+  const basesOptions = useSelectOptions(bases, { labelKey: 'nome', valueKey: 'id' });
 
   return (
     <div style={{ padding: '24px' }}>

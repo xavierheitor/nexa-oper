@@ -8,8 +8,8 @@
  */
 
 import React, { useState } from 'react';
-import { Modal, Card, Typography, List, Tag, Space, Image, Empty, Collapse, Divider, Alert } from 'antd';
-import { EyeOutlined, UserOutlined, CalendarOutlined, ClockCircleOutlined, CameraOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { Modal, Card, Typography, Tag, Space, Image, Empty, Collapse, Divider } from 'antd';
+import { EyeOutlined, UserOutlined, ClockCircleOutlined, CameraOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { buildPhotoUrl, isValidPhotoPath } from '@/lib/utils/photos';
 import type { ChecklistPreenchido as ChecklistPreenchidoBase } from './ChecklistSelectorModal';
 
@@ -290,6 +290,7 @@ export default function ChecklistViewerModal({
         <Image
           style={{ display: 'none' }}
           src={previewImage}
+          alt=""
           preview={{
             visible: imagePreviewVisible,
             onVisibleChange: setImagePreviewVisible,

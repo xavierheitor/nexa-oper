@@ -50,14 +50,18 @@
 import React from 'react';
 import { Space, Select, Input, DatePicker, Button } from 'antd';
 import { ClearOutlined } from '@ant-design/icons';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
+import type { SelectOption, SelectOptionValue } from '@/lib/types/selectOptions';
+import type { FilterValue } from '@/lib/types/filters';
 
 const { RangePicker } = DatePicker;
 
 /**
  * Configuração de um filtro individual
+ *
+ * @template TValue - Tipo do valor do filtro (para selects)
  */
-export interface FilterConfig {
+export interface FilterConfig<TValue extends SelectOptionValue = SelectOptionValue> {
   /**
    * Tipo do filtro
    */
@@ -76,7 +80,7 @@ export interface FilterConfig {
   /**
    * Opções para select
    */
-  options?: Array<{ label: string; value: any }>;
+  options?: SelectOption<TValue>[];
 
   /**
    * Loading state para select
@@ -111,12 +115,12 @@ export interface FilterBarProps {
   /**
    * Valores atuais dos filtros
    */
-  values: Record<string, any>;
+  values: Record<string, FilterValue>;
 
   /**
    * Handler para mudança de filtro
    */
-  onChange: (key: string, value: any) => void;
+  onChange: (key: string, value: FilterValue) => void;
 
   /**
    * Handler para limpar todos os filtros
@@ -176,8 +180,8 @@ export default function FilterBar({
             style={style}
             allowClear={filter.allowClear ?? true}
             loading={filter.loading}
-            value={value}
-            onChange={(newValue) => onChange(filter.key, newValue)}
+            value={value && value !== null && value !== undefined && typeof value !== 'boolean' ? (value as SelectOptionValue) : undefined}
+            onChange={(newValue) => onChange(filter.key, (newValue ?? null) as FilterValue)}
             options={filter.options}
           />
         );
@@ -189,7 +193,7 @@ export default function FilterBar({
             placeholder={filter.placeholder}
             style={style}
             allowClear={filter.allowClear ?? true}
-            value={value}
+            value={value as string | undefined}
             onChange={(e) => onChange(filter.key, e.target.value)}
           />
         );
@@ -201,7 +205,7 @@ export default function FilterBar({
             placeholder={filter.placeholder}
             style={style}
             allowClear={filter.allowClear ?? true}
-            value={value ? dayjs(value) : null}
+            value={value && (typeof value === 'string' || value instanceof Date) && typeof value !== 'boolean' ? dayjs(value) : null}
             onChange={(date) => onChange(filter.key, date ? date.toISOString() : null)}
           />
         );
@@ -213,12 +217,16 @@ export default function FilterBar({
             style={style}
             value={
               value && Array.isArray(value) && value.length === 2
-                ? [value[0] ? dayjs(value[0]) : null, value[1] ? dayjs(value[1]) : null]
+                ? [
+                  value[0] && (typeof value[0] === 'string' || (typeof value[0] === 'object' && value[0] !== null && !Array.isArray(value[0]) && 'getTime' in value[0])) ? dayjs(value[0] as string | Date) : null,
+                  value[1] && (typeof value[1] === 'string' || (typeof value[1] === 'object' && value[1] !== null && !Array.isArray(value[1]) && 'getTime' in value[1])) ? dayjs(value[1] as string | Date) : null,
+                ]
                 : null
             }
             onChange={(dates) => {
               if (dates && dates[0] && dates[1]) {
-                onChange(filter.key, [dates[0].toISOString(), dates[1].toISOString()]);
+                const dateArray: [string, string] = [dates[0].toISOString(), dates[1].toISOString()];
+                onChange(filter.key, dateArray as unknown as FilterValue);
               } else {
                 onChange(filter.key, null);
               }

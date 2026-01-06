@@ -53,7 +53,13 @@ export default function CargoForm({ initialValues, onSubmit, loading = false }: 
           placeholder="0,00"
           style={{ width: '100%' }}
           formatter={(value) => `R$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
-          parser={(value) => value?.replace(/R\$\s?|(\.*)/g, '') as any}
+          // @ts-ignore - Ant Design InputNumber parser type is too restrictive
+          parser={(value) => {
+            if (!value) return 0;
+            // Remove R$ e pontos, mantém apenas números e vírgula
+            const parsed = value.replace(/R\$\s?|\./g, '').replace(',', '.');
+            return parsed ? Number.parseFloat(parsed) || 0 : 0;
+          }}
         />
       </Form.Item>
 

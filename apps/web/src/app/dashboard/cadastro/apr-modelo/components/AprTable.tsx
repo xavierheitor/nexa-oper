@@ -8,7 +8,6 @@ import type { CrudController } from '@/lib/hooks/useCrudController';
 import { Button, Card, Table, Tag } from 'antd';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 import type { TableProps } from 'antd';
-import type { PaginatedParams } from '@/lib/types/common';
 
 // Tipo helper baseado na estrutura real do useEntityData com paginação habilitada
 type UseEntityDataPaginated<T> = {

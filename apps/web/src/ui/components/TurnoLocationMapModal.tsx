@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react';
 import { Modal, Spin, Empty, Typography, Space, Tag } from 'antd';
-import { EnvironmentOutlined, CloseOutlined } from '@ant-design/icons';
+import { EnvironmentOutlined } from '@ant-design/icons';
 import { getLocalizacoesTurno } from '@/lib/actions/turno/getLocalizacoes';
 import dynamic from 'next/dynamic';
 

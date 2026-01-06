@@ -109,7 +109,7 @@
  * ```
  */
 
-import { ActionResult, PaginatedResult } from '../../types/common';
+import { ActionResult, PaginatedResult, PaginatedParams } from '../../types/common';
 
 /**
  * Cria um wrapper que desempacota respostas de Server Actions
@@ -141,9 +141,9 @@ import { ActionResult, PaginatedResult } from '../../types/common';
  * ```
  */
 export function unwrapFetcher<T>(
-  fetcher: (params?: any) => Promise<ActionResult<T[] | PaginatedResult<T>>>
+  fetcher: (params?: PaginatedParams) => Promise<ActionResult<T[] | PaginatedResult<T>>>
 ) {
-  return async (params?: any): Promise<T[]> => {
+  return async (params?: PaginatedParams): Promise<T[]> => {
     try {
       // Executa o fetcher original
       const res = await fetcher(params);

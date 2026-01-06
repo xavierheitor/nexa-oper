@@ -2,7 +2,7 @@ import { ChecklistTipoVeiculoRelacao } from '@nexa-oper/db';
 import { z } from 'zod';
 import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
 import { ChecklistTipoVeiculoRelacaoRepository } from '../../repositories/checklist/ChecklistTipoVeiculoRelacaoRepository';
-import { PaginatedResult } from '../../types/common';
+import { PaginatedResult, IncludeConfig } from '../../types/common';
 import { prisma } from '../../db/db.service';
 
 export const setChecklistTipoVeiculoSchema = z.object({
@@ -10,25 +10,21 @@ export const setChecklistTipoVeiculoSchema = z.object({
   checklistId: z.number().int(),
 });
 
-type Filter = { page: number; pageSize: number; orderBy: string; orderDir: 'asc' | 'desc'; include?: any };
+type Filter = { page: number; pageSize: number; orderBy: string; orderDir: 'asc' | 'desc'; include?: IncludeConfig };
 
 export class ChecklistTipoVeiculoVinculoService extends AbstractCrudService<
   z.infer<typeof setChecklistTipoVeiculoSchema>,
-  any,
+  z.infer<typeof setChecklistTipoVeiculoSchema> & { id?: number },
   Filter,
   ChecklistTipoVeiculoRelacao
 > {
+  private readonly customRepo: ChecklistTipoVeiculoRelacaoRepository;
+
   constructor() {
     const repo = new ChecklistTipoVeiculoRelacaoRepository();
-    // Cast necessário pois os métodos create/update são sobrescritos nesta classe
-    super(repo as any);
-  }
-
-  /**
-   * Acessa o repository com tipo específico para operações customizadas
-   */
-  private get customRepo(): ChecklistTipoVeiculoRelacaoRepository {
-    return (this as any).repo as unknown as ChecklistTipoVeiculoRelacaoRepository;
+    // @ts-expect-error - O repositório tem tipos de input diferentes (usa objetos Prisma), mas funciona no runtime
+    super(repo);
+    this.customRepo = repo;
   }
 
   async setMapping(data: z.infer<typeof setChecklistTipoVeiculoSchema>, userId: string) {
@@ -61,7 +57,10 @@ export class ChecklistTipoVeiculoVinculoService extends AbstractCrudService<
    * Implementa método update requerido pelo AbstractCrudService
    * Update não é usado neste contexto - delega para setMapping
    */
-  async update(data: any, userId: string): Promise<ChecklistTipoVeiculoRelacao> {
+  async update(
+    data: z.infer<typeof setChecklistTipoVeiculoSchema> & { id?: number },
+    userId: string
+  ): Promise<ChecklistTipoVeiculoRelacao> {
     // Como update não é usado, tratamos como create/setMapping
     if (data.tipoVeiculoId && data.checklistId) {
       return this.setMapping(
@@ -76,7 +75,7 @@ export class ChecklistTipoVeiculoVinculoService extends AbstractCrudService<
   }
 
   async list(params: Filter): Promise<PaginatedResult<ChecklistTipoVeiculoRelacao>> {
-    const { items, total } = await this.customRepo.list(params as any);
+    const { items, total } = await this.customRepo.list(params);
     return { data: items, total, totalPages: Math.ceil(total / params.pageSize), page: params.page, pageSize: params.pageSize };
   }
 

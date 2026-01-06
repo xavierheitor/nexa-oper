@@ -1,5 +1,6 @@
 // src/lib/schemas/contratoSchema.ts
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 export const contratoCreateSchema = z.object({
   nome: z.string().min(1).max(255),
@@ -18,5 +19,5 @@ export const contratoFilterSchema = z.object({
   orderBy: z.string().default('id'),
   orderDir: z.enum(['asc', 'desc']).default('asc'),
   search: z.string().optional(),
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
 });

@@ -1,7 +1,7 @@
 'use client';
 
 import { Modal, Form, Input, Select, Space, Button, Upload, message } from 'antd';
-import { UploadOutlined, DeleteOutlined, PaperClipOutlined } from '@ant-design/icons';
+import { UploadOutlined, PaperClipOutlined } from '@ant-design/icons';
 import { Falta } from '@/lib/schemas/turnoRealizadoSchema';
 import { useEffect, useState } from 'react';
 import type { UploadFile } from 'antd/es/upload/interface';
@@ -39,7 +39,6 @@ export default function JustificarFaltaModal({
 }: JustificarFaltaModalProps) {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (open && falta) {
@@ -195,7 +194,7 @@ export default function JustificarFaltaModal({
 
         <Form.Item>
           <Space>
-            <Button type="primary" htmlType="submit" loading={loading || uploading}>
+            <Button type="primary" htmlType="submit" loading={loading}>
               Justificar
             </Button>
             <Button onClick={handleCancel}>Cancelar</Button>

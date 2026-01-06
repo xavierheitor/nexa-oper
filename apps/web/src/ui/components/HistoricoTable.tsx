@@ -1,6 +1,6 @@
 'use client';
 
-import { Table, Tag, Space } from 'antd';
+import { Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { DetalhamentoDia } from '@/lib/schemas/turnoRealizadoSchema';
 import StatusTag from './StatusTag';
@@ -19,7 +19,6 @@ interface HistoricoTableProps {
 export default function HistoricoTable({
   dados,
   loading = false,
-  onVerDetalhes,
 }: HistoricoTableProps) {
   const columns: ColumnsType<DetalhamentoDia> = [
     {

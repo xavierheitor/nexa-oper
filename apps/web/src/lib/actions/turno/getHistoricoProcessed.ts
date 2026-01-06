@@ -74,7 +74,8 @@ type TurnoFormatted = {
   equipeId: number;
   dispositivo: string | null;
   kmInicio: number;
-  kmFim: number | null; // Já convertido de KmFim pelo repositório
+  KmFim?: number | null; // Campo do Prisma (com K maiúsculo)
+  kmFim?: number | null; // Campo mapeado (com k minúsculo)
   veiculoPlaca?: string;
   veiculoModelo?: string;
   equipeNome?: string;
@@ -108,10 +109,38 @@ export async function getHistoricoProcessed(
         dataFim: params.dataFim,
       });
 
-      const turnos = (result.data || []) as unknown as TurnoFormatted[];
+      // Extrair array de turnos do resultado paginado
+      const turnosArray = result.data || [];
+
+      // Mapear para o tipo esperado, garantindo que campos opcionais estejam presentes
+      const turnos: TurnoFormatted[] = turnosArray.map(turno => ({
+        id: turno.id,
+        dataSolicitacao: turno.dataSolicitacao,
+        dataInicio: turno.dataInicio,
+        dataFim: turno.dataFim,
+        veiculoId: turno.veiculoId,
+        equipeId: turno.equipeId,
+        dispositivo: turno.dispositivo,
+        kmInicio: turno.kmInicio,
+        kmFim: (turno as { KmFim?: number | null }).KmFim ?? null, // Garantir que seja null, não undefined
+        veiculoPlaca: (turno as { veiculoPlaca?: string }).veiculoPlaca,
+        veiculoModelo: (turno as { veiculoModelo?: string }).veiculoModelo,
+        equipeNome: (turno as { equipeNome?: string }).equipeNome,
+        tipoEquipeNome: (turno as { tipoEquipeNome?: string }).tipoEquipeNome,
+        baseNome: (turno as { baseNome?: string }).baseNome,
+        eletricistas: (
+          turno as {
+            eletricistas?: Array<{
+              id: number;
+              nome: string;
+              matricula: string;
+            }>;
+          }
+        ).eletricistas,
+      }));
 
       // Processar e mapear dados
-      const turnosProcessados = turnos.map((turno) => ({
+      const turnosProcessados = turnos.map(turno => ({
         id: turno.id,
         dataSolicitacao: turno.dataSolicitacao,
         dataInicio: turno.dataInicio,
@@ -125,10 +154,10 @@ export async function getHistoricoProcessed(
         baseNome: turno.baseNome || 'N/A',
         dispositivo: turno.dispositivo,
         kmInicio: turno.kmInicio,
-        kmFim: turno.kmFim,
+        kmFim: turno.kmFim ?? null, // Garantir que seja null, não undefined
         status: turno.dataFim ? ('FECHADO' as const) : ('ABERTO' as const),
         eletricistas:
-          turno.eletricistas?.map((e) => ({
+          turno.eletricistas?.map(e => ({
             id: e.id,
             nome: e.nome,
             matricula: e.matricula,
@@ -140,7 +169,7 @@ export async function getHistoricoProcessed(
       let totalAbertos = 0;
       let totalFechados = 0;
 
-      turnos.forEach((turno) => {
+      turnos.forEach(turno => {
         const baseNome = turno.baseNome || 'Não identificada';
         const base = baseNome.split('-')[0] || baseNome;
         porBase[base] = (porBase[base] || 0) + 1;

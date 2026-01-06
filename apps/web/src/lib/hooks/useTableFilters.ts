@@ -37,11 +37,14 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
+import type { FilterValue } from '../types/filters';
 
 /**
  * Opções de configuração do hook
+ *
+ * @template T - Tipo do objeto de filtros (deve ser um Record)
  */
-export interface UseTableFiltersOptions<T extends Record<string, any>> {
+export interface UseTableFiltersOptions<T extends Record<string, FilterValue>> {
   /**
    * Valores iniciais dos filtros
    */
@@ -50,8 +53,10 @@ export interface UseTableFiltersOptions<T extends Record<string, any>> {
 
 /**
  * Retorno do hook
+ *
+ * @template T - Tipo do objeto de filtros
  */
-export interface UseTableFiltersReturn<T extends Record<string, any>> {
+export interface UseTableFiltersReturn<T extends Record<string, FilterValue>> {
   /**
    * Estado atual dos filtros
    */
@@ -79,7 +84,7 @@ export interface UseTableFiltersReturn<T extends Record<string, any>> {
  * @param initialFilters - Valores iniciais dos filtros
  * @returns Objeto com estado e handlers dos filtros
  */
-export function useTableFilters<T extends Record<string, any>>(
+export function useTableFilters<T extends Record<string, FilterValue>>(
   initialFilters: Partial<T> = {}
 ): UseTableFiltersReturn<T> {
   const [filters, setFiltersState] = useState<T>(() => initialFilters as T);

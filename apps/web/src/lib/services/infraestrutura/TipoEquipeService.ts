@@ -58,7 +58,7 @@ export class TipoEquipeService extends AbstractCrudService<
    * @param userId - ID do usuário que está criando
    * @returns Tipo de equipe criado
    */
-  async create(raw: any, userId: string): Promise<TipoEquipe> {
+  async create(raw: any, _userId: string): Promise<TipoEquipe> {
     // Extrai campos de auditoria adicionados pelo handleServerAction
     const { createdBy, createdAt, ...businessData } = raw;
 
@@ -80,7 +80,7 @@ export class TipoEquipeService extends AbstractCrudService<
    * @param userId - ID do usuário que está atualizando
    * @returns Tipo de equipe atualizado
    */
-  async update(raw: any, userId: string): Promise<TipoEquipe> {
+  async update(raw: any, _userId: string): Promise<TipoEquipe> {
     // Extrai campos de auditoria adicionados pelo handleServerAction
     const { updatedBy, updatedAt, ...businessData } = raw;
 

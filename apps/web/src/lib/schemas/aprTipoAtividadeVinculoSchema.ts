@@ -39,6 +39,7 @@
  */
 
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 /**
  * Schema para criação/atualização de vínculo APR-TipoAtividade
@@ -88,7 +89,7 @@ export const aprTipoAtividadeVinculoFilterSchema = z.object({
   search: z.string().optional(),
 
   /** Configuração de includes para relacionamentos (opcional) */
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
 });
 
 // Exportação dos tipos TypeScript gerados automaticamente

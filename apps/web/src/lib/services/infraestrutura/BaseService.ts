@@ -58,7 +58,7 @@ export class BaseService extends AbstractCrudService<
    * @param userId - ID do usuário que está criando
    * @returns Base criada
    */
-  async create(raw: any, userId: string): Promise<Base> {
+  async create(raw: any, _userId: string): Promise<Base> {
     // Extrai campos de auditoria adicionados pelo handleServerAction
     const { createdBy, createdAt, ...businessData } = raw;
 
@@ -81,7 +81,7 @@ export class BaseService extends AbstractCrudService<
    * @param userId - ID do usuário que está atualizando
    * @returns Base atualizada
    */
-  async update(raw: any, userId: string): Promise<Base> {
+  async update(raw: any, _userId: string): Promise<Base> {
     // Extrai campos de auditoria adicionados pelo handleServerAction
     const { updatedBy, updatedAt, ...businessData } = raw;
 

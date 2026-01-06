@@ -13,7 +13,7 @@ import { Modal, List, Card, Typography, Spin, Empty, Tag, Space, Button } from '
 import { EyeOutlined, UserOutlined, CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { getChecklistsByTurno } from '@/lib/actions/checklist/getByTurno';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 export interface ChecklistPreenchido {
   id: number;

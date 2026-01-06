@@ -5,18 +5,17 @@
  */
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Table, Button, Space, Modal, Tag, Tooltip, App, Alert, DatePicker, Form } from 'antd';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Table, Button, Space, Modal, Tag, Tooltip, App, Alert, DatePicker, Form, Select, Card, Row, Col } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-  CalendarOutlined,
   CheckCircleOutlined,
   FileOutlined,
-  TeamOutlined,
   EyeOutlined,
   ClockCircleOutlined,
+  FilterOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
@@ -24,6 +23,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useCrudController } from '@/lib/hooks/useCrudController';
+import { useSelectOptions } from '@/lib/hooks/useSelectOptions';
 import {
   listEscalasEquipePeriodo,
   createEscalaEquipePeriodo,
@@ -35,6 +35,9 @@ import {
   prolongarEscala,
 } from '@/lib/actions/escala/escalaEquipePeriodo';
 import { publicarEscalasEmLote } from '@/lib/actions/escala/publicarEmLote';
+import { listBases } from '@/lib/actions/base/list';
+import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
+import { listTiposEscala } from '@/lib/actions/escala/tipoEscala';
 import EscalaEquipePeriodoForm from './form';
 import EscalaWizard from './wizard';
 import EscalaEditWizard from './edit-wizard';
@@ -95,6 +98,12 @@ export default function EscalaEquipePeriodoPage() {
   // Estado para filtro de período (mês atual por padrão)
   const [mesFiltro, setMesFiltro] = useState<Dayjs>(dayjs());
 
+  // Estados para filtros adicionais
+  const [filtroTipoEquipe, setFiltroTipoEquipe] = useState<number | undefined>(undefined);
+  const [filtroBase, setFiltroBase] = useState<number | undefined>(undefined);
+  const [filtroTipoEscala, setFiltroTipoEscala] = useState<number | undefined>(undefined);
+  const [filtroStatus, setFiltroStatus] = useState<string | undefined>(undefined);
+
   // Calcular período de início e fim do mês selecionado
   const periodoFiltro = useMemo(() => {
     const inicioMes = mesFiltro.startOf('month').toDate();
@@ -102,29 +111,68 @@ export default function EscalaEquipePeriodoPage() {
     return { periodoInicio: inicioMes, periodoFim: fimMes };
   }, [mesFiltro]);
 
+  // Carregar dados para os filtros
+  const { data: bases } = useEntityData({
+    key: 'bases-filtro-escala',
+    fetcherAction: unwrapFetcher(listBases),
+    paginationEnabled: false,
+    initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
+  });
+
+  const { data: tiposEquipe } = useEntityData({
+    key: 'tipos-equipe-filtro-escala',
+    fetcherAction: unwrapFetcher(listTiposEquipe),
+    paginationEnabled: false,
+    initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
+  });
+
+  const { data: tiposEscala } = useEntityData({
+    key: 'tipos-escala-filtro-escala',
+    fetcherAction: unwrapFetcher((params) => listTiposEscala({
+      ...params,
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'nome',
+      orderDir: 'asc',
+      ativo: true,
+    })),
+    paginationEnabled: false,
+    initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
+  });
+
+  const basesOptions = useSelectOptions(bases, { labelKey: 'nome', valueKey: 'id' });
+  const tiposEquipeOptions = useSelectOptions(tiposEquipe, { labelKey: 'nome', valueKey: 'id' });
+  const tiposEscalaOptions = useSelectOptions(tiposEscala, { labelKey: 'nome', valueKey: 'id' });
+
   const crud = useCrudController<EscalaEquipePeriodo>('escalaEquipePeriodo');
+
+  // Criar fetcher que inclui os filtros customizados
+  const escalasFetcher = useMemo(
+    () =>
+      unwrapFetcher((params) =>
+        listEscalasEquipePeriodo({
+          ...params,
+          ...periodoFiltro,
+          tipoEquipeId: filtroTipoEquipe,
+          baseId: filtroBase,
+          tipoEscalaId: filtroTipoEscala,
+          status: filtroStatus as 'RASCUNHO' | 'EM_APROVACAO' | 'PUBLICADA' | 'ARQUIVADA' | undefined,
+        })
+      ),
+    [periodoFiltro, filtroTipoEquipe, filtroBase, filtroTipoEscala, filtroStatus]
+  );
 
   const escalas = useEntityData({
     key: 'escalasEquipePeriodo',
-    fetcherAction: unwrapFetcher(listEscalasEquipePeriodo),
+    fetcherAction: escalasFetcher,
     paginationEnabled: true,
     initialParams: {
       page: 1,
       pageSize: 10,
       orderBy: 'periodoInicio',
       orderDir: 'desc',
-      ...periodoFiltro,
     },
   });
-
-  // Atualizar parâmetros quando o período mudar
-  React.useEffect(() => {
-    escalas.setParams((prev: any) => ({
-      ...prev,
-      page: 1, // Resetar para primeira página ao mudar filtro
-      ...periodoFiltro,
-    }));
-  }, [periodoFiltro]);
 
   const handleGerarSlots = async (record: EscalaEquipePeriodo) => {
     const isPublicada = record.status === 'PUBLICADA';
@@ -156,7 +204,7 @@ export default function EscalaEquipePeriodoPage() {
 
           if (result.success && result.data) {
             message.success(`${result.data.slotsGerados} slots gerados com sucesso!`);
-            escalas.mutate();
+            await escalas.mutate();
           } else {
             message.error(result.error || 'Erro ao gerar slots');
           }
@@ -190,7 +238,7 @@ export default function EscalaEquipePeriodoPage() {
 
           if (result.success) {
             message.success('Escala publicada com sucesso!');
-            escalas.mutate();
+            await escalas.mutate();
           } else {
             message.error(result.error || 'Erro ao publicar escala');
           }
@@ -215,7 +263,7 @@ export default function EscalaEquipePeriodoPage() {
 
           if (result.success) {
             message.success('Escala arquivada com sucesso!');
-            escalas.mutate();
+            await escalas.mutate();
           } else {
             message.error(result.error || 'Erro ao arquivar escala');
           }
@@ -246,7 +294,7 @@ export default function EscalaEquipePeriodoPage() {
 
       if (result.success) {
         message.success('Escala prolongada com sucesso! A escala voltou para status RASCUNHO e pode ser publicada novamente.');
-        escalas.mutate();
+        await escalas.mutate();
         setIsProlongarOpen(false);
         setEscalaParaProlongar(null);
         formProlongar.resetFields();
@@ -263,9 +311,11 @@ export default function EscalaEquipePeriodoPage() {
   };
 
   const handlePublicarTodas = async () => {
-    // @ts-ignore - escalas.data não possui tipagem completa no runtime
-    const escalasRascunho: EscalaEquipePeriodo[] = (escalas.data as unknown as EscalaEquipePeriodo[]).filter(
-      e => e.status === 'RASCUNHO'
+    // Filtrar escalas em rascunho
+    // escalas.data pode não ter equipe e tipoEscala incluídos, então fazemos cast
+    const escalasData = (escalas.data || []) as Array<EscalaEquipePeriodo | Omit<EscalaEquipePeriodo, 'equipe' | 'tipoEscala'>>;
+    const escalasRascunho = escalasData.filter(
+      (e) => e.status === 'RASCUNHO'
     );
 
     if (escalasRascunho.length === 0) {
@@ -282,11 +332,14 @@ export default function EscalaEquipePeriodoPage() {
             Escalas que serão publicadas:
           </p>
           <ul style={{ fontSize: '12px', maxHeight: '200px', overflowY: 'auto' }}>
-            {escalasRascunho.map(e => (
-              <li key={e.id}>
-                <strong>{e.equipe.nome}</strong> - {e.tipoEscala.nome}
-              </li>
-            ))}
+            {escalasRascunho.map(e => {
+              const escala = e as EscalaEquipePeriodo;
+              return (
+                <li key={e.id}>
+                  <strong>{escala.equipe?.nome || 'N/A'}</strong> - {escala.tipoEscala?.nome || 'N/A'}
+                </li>
+              );
+            })}
           </ul>
         </div>
       ),
@@ -317,7 +370,7 @@ export default function EscalaEquipePeriodoPage() {
               });
             }
 
-            escalas.mutate();
+            await escalas.mutate();
           } else {
             message.error(result.error || 'Erro ao publicar escalas');
           }
@@ -490,7 +543,7 @@ export default function EscalaEquipePeriodoPage() {
         await crud.exec(
           () => deleteEscalaEquipePeriodo(id),
           'Período de escala excluído com sucesso!',
-          () => escalas.mutate()
+          async () => await escalas.mutate()
         );
       },
     });
@@ -504,8 +557,8 @@ export default function EscalaEquipePeriodoPage() {
     await crud.exec(
       action,
       editingItem ? 'Período de escala atualizado com sucesso!' : 'Período de escala criado com sucesso!',
-      () => {
-        escalas.mutate();
+      async () => {
+        await escalas.mutate();
         setIsModalOpen(false);
       }
     );
@@ -513,53 +566,131 @@ export default function EscalaEquipePeriodoPage() {
 
   return (
     <div style={{ padding: '24px' }}>
-      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Períodos de Escala</h1>
-        <Space>
-          <DatePicker
-            picker="month"
-            format="MM/YYYY"
-            value={mesFiltro}
-            onChange={(date) => {
-              if (date) {
-                setMesFiltro(date);
+      <div style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h1>Períodos de Escala</h1>
+          <Space>
+            <Button
+              icon={<EyeOutlined />}
+              onClick={() => setIsVisualizacaoGeralOpen(true)}
+            >
+              Visualização Geral
+            </Button>
+            <Button
+              icon={<CheckCircleOutlined />}
+              onClick={handlePublicarTodas}
+              disabled={
+                !escalas.data ||
+                // @ts-ignore - escalas.data não possui tipagem completa no runtime
+                ((escalas.data || []).filter(e => e.status === 'RASCUNHO').length === 0)
               }
-            }}
-            placeholder="Selecione o mês"
-            style={{ width: 150 }}
-          />
-          <Button
-            icon={<EyeOutlined />}
-            onClick={() => setIsVisualizacaoGeralOpen(true)}
-          >
-            Visualização Geral
-          </Button>
-          <Button
-            icon={<CheckCircleOutlined />}
-            onClick={handlePublicarTodas}
-            disabled={
-              !escalas.data ||
-              // @ts-ignore - escalas.data não possui tipagem completa no runtime
-              ((escalas.data as unknown as EscalaEquipePeriodo[]).filter(e => e.status === 'RASCUNHO').length === 0)
-            }
-          >
-            Publicar Todas
-          </Button>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleCreate}
-          >
-            Nova Escala
-          </Button>
-        </Space>
+            >
+              Publicar Todas
+            </Button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleCreate}
+            >
+              Nova Escala
+            </Button>
+          </Space>
+        </div>
+
+        {/* Card de Filtros */}
+        <Card
+          size="small"
+          title={
+            <Space>
+              <FilterOutlined />
+              <span>Filtros</span>
+            </Space>
+          }
+          style={{ marginBottom: '16px' }}
+        >
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12} md={6}>
+              <div>
+                <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Mês</div>
+                <DatePicker
+                  picker="month"
+                  format="MM/YYYY"
+                  value={mesFiltro}
+                  onChange={(date) => {
+                    if (date) {
+                      setMesFiltro(date);
+                    }
+                  }}
+                  placeholder="Selecione o mês"
+                  style={{ width: '100%' }}
+                />
+              </div>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <div>
+                <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Tipo de Equipe</div>
+                <Select
+                  placeholder="Todos os tipos"
+                  allowClear
+                  value={filtroTipoEquipe}
+                  onChange={(value) => setFiltroTipoEquipe(value || undefined)}
+                  options={tiposEquipeOptions}
+                  style={{ width: '100%' }}
+                />
+              </div>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <div>
+                <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Base</div>
+                <Select
+                  placeholder="Todas as bases"
+                  allowClear
+                  value={filtroBase}
+                  onChange={(value) => setFiltroBase(value || undefined)}
+                  options={basesOptions}
+                  style={{ width: '100%' }}
+                />
+              </div>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <div>
+                <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Tipo de Escala</div>
+                <Select
+                  placeholder="Todos os tipos"
+                  allowClear
+                  value={filtroTipoEscala}
+                  onChange={(value) => setFiltroTipoEscala(value || undefined)}
+                  options={tiposEscalaOptions}
+                  style={{ width: '100%' }}
+                />
+              </div>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <div>
+                <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Status</div>
+                <Select
+                  placeholder="Todos os status"
+                  allowClear
+                  value={filtroStatus}
+                  onChange={(value) => setFiltroStatus(value || undefined)}
+                  style={{ width: '100%' }}
+                >
+                  <Select.Option value="RASCUNHO">Rascunho</Select.Option>
+                  <Select.Option value="EM_APROVACAO">Em Aprovação</Select.Option>
+                  <Select.Option value="PUBLICADA">Publicada</Select.Option>
+                  <Select.Option value="ARQUIVADA">Arquivada</Select.Option>
+                </Select>
+              </div>
+            </Col>
+          </Row>
+        </Card>
       </div>
 
       <Table
         // @ts-ignore - tipagem do Table não cobre o formato de columns usado
         columns={columns}
         // @ts-ignore - tipagem do Table não cobre o formato de dataSource usado
-        dataSource={escalas.data as unknown as EscalaEquipePeriodo[]}
+        dataSource={escalas.data || []}
         loading={escalas.isLoading}
         rowKey="id"
         pagination={escalas.pagination}
@@ -579,9 +710,9 @@ export default function EscalaEquipePeriodoPage() {
         closable={true} // Mantém o botão X (só fecha via botões "Cancelar" ou X)
       >
         <EscalaWizard
-          onFinish={() => {
+          onFinish={async () => {
             setIsWizardOpen(false);
-            escalas.mutate();
+            await escalas.mutate();
           }}
           onCancel={() => setIsWizardOpen(false)}
         />
@@ -605,10 +736,10 @@ export default function EscalaEquipePeriodoPage() {
         >
           <EscalaEditWizard
             escalaId={editingItem.id}
-            onFinish={() => {
+            onFinish={async () => {
               setIsEditWizardOpen(false);
               setEditingItem(null);
-              escalas.mutate();
+              await escalas.mutate();
             }}
             onCancel={() => {
               setIsEditWizardOpen(false);

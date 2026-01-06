@@ -10,7 +10,6 @@ import { TipoJustificativaRepository } from '../../repositories/justificativas/T
 import {
   criarTipoJustificativaSchema,
   atualizarTipoJustificativaSchema,
-  listarTiposJustificativaSchema,
   type CriarTipoJustificativaInput,
   type AtualizarTipoJustificativaInput,
   type ListarTiposJustificativaInput,
@@ -34,8 +33,11 @@ export class TipoJustificativaService extends AbstractCrudService<
    * Cria um novo tipo de justificativa
    * Valida se já existe tipo com o mesmo nome
    */
-  async create(raw: any, userId: string): Promise<TipoJustificativa> {
-    const { createdBy, createdAt, ...businessData } = raw;
+  async create(
+    raw: CriarTipoJustificativaInput & { createdBy?: string; createdAt?: Date },
+    userId: string
+  ): Promise<TipoJustificativa> {
+    const { ...businessData } = raw;
     const data = criarTipoJustificativaSchema.parse(businessData);
 
     // Validar se já existe tipo com o mesmo nome
@@ -57,8 +59,11 @@ export class TipoJustificativaService extends AbstractCrudService<
    * Atualiza um tipo de justificativa existente
    * Valida se o novo nome não está em uso por outro tipo
    */
-  async update(raw: any, userId: string): Promise<TipoJustificativa> {
-    const { updatedBy, updatedAt, ...businessData } = raw;
+  async update(
+    raw: AtualizarTipoJustificativaInput & { updatedBy?: string; updatedAt?: Date },
+    _userId: string
+  ): Promise<TipoJustificativa> {
+    const { ...businessData } = raw;
     const data = atualizarTipoJustificativaSchema.parse(businessData);
 
     // Validar se novo nome não está em uso

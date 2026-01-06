@@ -40,7 +40,6 @@
 
 import React from 'react';
 import { Card, Row, Col, Statistic } from 'antd';
-import type { StatisticProps } from 'antd';
 
 /**
  * Configuração de uma estatística

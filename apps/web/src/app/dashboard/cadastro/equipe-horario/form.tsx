@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Form, Select, DatePicker, Button, Space, Alert, Card, Input } from 'antd';
 import { ClockCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -95,6 +95,16 @@ export default function EquipeTurnoHistoricoForm({
   const handleSubmit = async (values: FormValues) => {
     setLoading(true);
     try {
+      // Validar que a data início existe e é válida
+      if (!values.vigencia || !values.vigencia[0] || !values.vigencia[0].isValid()) {
+        form.setFields([{
+          name: 'vigencia',
+          errors: ['Data de início é obrigatória e deve ser válida']
+        }]);
+        setLoading(false);
+        return;
+      }
+
       // Se selecionou um horário do catálogo, pega os dados dele
       const horario = horarioSelecionado || {
         inicioTurnoHora: '08:00:00',
@@ -102,11 +112,26 @@ export default function EquipeTurnoHistoricoForm({
         duracaoIntervaloHoras: 1,
       };
 
+      const dataInicio = values.vigencia[0].toDate();
+      const dataFim = values.vigencia[1] && values.vigencia[1].isValid()
+        ? values.vigencia[1].toDate()
+        : null;
+
+      // Validar que dataFim é maior ou igual a dataInicio se ambas existirem
+      if (dataFim && dataFim < dataInicio) {
+        form.setFields([{
+          name: 'vigencia',
+          errors: ['Data fim deve ser maior ou igual à data início']
+        }]);
+        setLoading(false);
+        return;
+      }
+
       const submitData = {
         equipeId: values.equipeId,
         horarioAberturaCatalogoId: values.horarioAberturaCatalogoId,
-        dataInicio: values.vigencia[0].toDate(),
-        dataFim: values.vigencia[1] ? values.vigencia[1].toDate() : null,
+        dataInicio,
+        dataFim,
         inicioTurnoHora: horario.inicioTurnoHora,
         duracaoHoras: Number(horario.duracaoHoras),
         duracaoIntervaloHoras: Number(horario.duracaoIntervaloHoras || 0),

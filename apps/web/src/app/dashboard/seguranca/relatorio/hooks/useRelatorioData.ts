@@ -62,7 +62,7 @@ export function useRelatorioData(
         dataFim: periodo[1].toDate(),
         ...(baseId && { baseId }),
         ...(tipoEquipeId && { tipoEquipeId }),
-      }),
+      } as any),
     [periodo, baseId, tipoEquipeId]
   );
 
@@ -75,11 +75,13 @@ export function useRelatorioData(
   } = useDataFetch<ReprovaPorEquipe[]>(
     () =>
       unwrapFetcher(getReprovasPorEquipe)({
+        page: 1,
+        pageSize: 1000,
         dataInicio: periodo[0].toDate(),
         dataFim: periodo[1].toDate(),
         ...(baseId && { baseId }),
         ...(tipoEquipeId && { tipoEquipeId }),
-      }),
+      } as any),
     [periodo, baseId, tipoEquipeId]
   );
 
@@ -92,11 +94,13 @@ export function useRelatorioData(
   } = useDataFetch<ReprovaPorTipoChecklist[]>(
     () =>
       unwrapFetcher(getReprovasPorTipoChecklist)({
+        page: 1,
+        pageSize: 1000,
         dataInicio: periodo[0].toDate(),
         dataFim: periodo[1].toDate(),
         ...(baseId && { baseId }),
         ...(tipoEquipeId && { tipoEquipeId }),
-      }),
+      } as any),
     [periodo, baseId, tipoEquipeId]
   );
 

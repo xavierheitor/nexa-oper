@@ -59,7 +59,6 @@ export class EletricistaService extends AbstractCrudService<
     // Por isso fazemos cast para compatibilidade com AbstractCrudService
     // O cast é necessário porque o AbstractCrudService espera um ICrudRepository genérico
     // mas EletricistaRepository implementa métodos com assinaturas específicas
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     super(repo as any);
     this.eletricistaRepo = repo;
   }

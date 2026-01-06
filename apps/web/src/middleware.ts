@@ -28,7 +28,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export default withAuth(
-  function middleware(req: NextRequest & { nextauth?: { token?: any } }) {
+  function middleware(_req: NextRequest & { nextauth?: { token?: any } }) {
     // Aqui podemos adicionar verificações de permissões no futuro
     // Por enquanto, apenas verifica autenticação
     // TODO: adicionar verificação de permissões por rota quando disponível

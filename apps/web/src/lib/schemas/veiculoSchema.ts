@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 export const veiculoCreateSchema = z.object({
   placa: z.string().min(1).max(255),
@@ -19,7 +20,7 @@ export const veiculoFilterSchema = z.object({
   orderBy: z.string(),
   orderDir: z.enum(['asc', 'desc']),
   search: z.string().optional(),
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
   // Filtros server-side para relacionamentos
   contratoId: z.number().int().optional(),
   tipoVeiculoId: z.number().int().optional(),

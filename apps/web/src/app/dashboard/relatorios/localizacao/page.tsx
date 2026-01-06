@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Button, Card, Col, DatePicker, Row, Select, Space, Typography } from 'antd';
+import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
@@ -10,6 +11,7 @@ import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import EquipesMenosLocalizacoes from './components/EquipesMenosLocalizacoes';
 import EquipesMaiorTempoSemCaptura from './components/EquipesMaiorTempoSemCaptura';
+import { useSelectOptions } from '@/lib/hooks/useSelectOptions';
 
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
@@ -46,16 +48,16 @@ export default function RelatoriosLocalizacaoPage() {
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });
 
-  const handleFilterChange = (key: string, value: any) => {
+  const handleFilterChange = (key: string, value: number | Date | undefined) => {
     setFiltros((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handlePeriodChange = (dates: any) => {
-    if (dates && dates.length === 2) {
+  const handlePeriodChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    if (dates && dates[0] && dates[1]) {
       setFiltros((prev) => ({
         ...prev,
-        periodoInicio: dates[0].startOf('day').toDate(),
-        periodoFim: dates[1].endOf('day').toDate(),
+        periodoInicio: dates[0]!.startOf('day').toDate(),
+        periodoFim: dates[1]!.endOf('day').toDate(),
       }));
     } else {
       // Resetar para valores padrão quando não houver datas selecionadas
@@ -76,16 +78,9 @@ export default function RelatoriosLocalizacaoPage() {
     });
   };
 
-  // Memoiza as opções dos Selects para evitar recriações desnecessárias
-  const tiposEquipeOptions = useMemo(
-    () => tiposEquipe?.map((t: any) => ({ label: t.nome, value: t.id })) || [],
-    [tiposEquipe]
-  );
-
-  const basesOptions = useMemo(
-    () => bases?.map((b: any) => ({ label: b.nome, value: b.id })) || [],
-    [bases]
-  );
+  // Memoiza as opções dos Selects usando o hook useSelectOptions
+  const tiposEquipeOptions = useSelectOptions(tiposEquipe, { labelKey: 'nome', valueKey: 'id' });
+  const basesOptions = useSelectOptions(bases, { labelKey: 'nome', valueKey: 'id' });
 
   // Memoiza os filtros para evitar recriações desnecessárias
   const filtrosMemoizados = useMemo(() => filtros, [filtros]);

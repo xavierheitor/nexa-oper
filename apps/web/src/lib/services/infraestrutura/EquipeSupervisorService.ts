@@ -10,8 +10,6 @@ import {
   equipeSupervisorFilterSchema,
   equipeSupervisorUpdateSchema,
 } from '../../schemas/equipeSupervisorSchema';
-import { PaginatedResult } from '../../types/common';
-
 type ESCreate = z.infer<typeof equipeSupervisorCreateSchema>;
 type ESUpdate = z.infer<typeof equipeSupervisorUpdateSchema>;
 type ESFilter = z.infer<typeof equipeSupervisorFilterSchema>;

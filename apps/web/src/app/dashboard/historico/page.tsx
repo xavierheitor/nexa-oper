@@ -18,7 +18,7 @@ import { getStatsByHoraETipoEquipe } from '@/lib/actions/turno/getStatsByHoraETi
 import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { listBases } from '@/lib/actions/base/list';
-import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
+import ChecklistSelectorModal, { type ChecklistPreenchido } from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 import TurnoLocationMapModal from '@/ui/components/TurnoLocationMapModal';
 import FecharTurnoModal from '@/ui/components/FecharTurnoModal';
@@ -75,6 +75,32 @@ interface TurnoData {
   }>;
 }
 
+/**
+ * Tipo para turno formatado pelo repository (com campos adicionais)
+ */
+type TurnoFormatted = {
+  id: number;
+  dataSolicitacao: Date | string;
+  dataInicio: Date | string;
+  dataFim?: Date | string | null;
+  veiculoId: number;
+  equipeId: number;
+  dispositivo: string | null;
+  kmInicio: number;
+  kmFim?: number | null;
+  veiculoPlaca?: string;
+  veiculoModelo?: string;
+  equipeNome?: string;
+  tipoEquipeNome?: string;
+  baseNome?: string;
+  eletricistas?: Array<{
+    id: number;
+    nome: string;
+    matricula: string;
+    motorista?: boolean;
+  }>;
+};
+
 export default function HistoricoPage() {
   // Estados para os filtros
   const [filtroVeiculo, setFiltroVeiculo] = useState<string>('');
@@ -110,7 +136,7 @@ export default function HistoricoPage() {
   const [checklistSelectorVisible, setChecklistSelectorVisible] = useState(false);
   const [checklistViewerVisible, setChecklistViewerVisible] = useState(false);
   const [selectedTurno, setSelectedTurno] = useState<TurnoData | null>(null);
-  const [selectedChecklist, setSelectedChecklist] = useState<any>(null);
+  const [selectedChecklist, setSelectedChecklist] = useState<ChecklistPreenchido | null>(null);
 
   // Estados para o modal de localização
   const [locationMapVisible, setLocationMapVisible] = useState(false);
@@ -137,11 +163,18 @@ export default function HistoricoPage() {
 
       if (result.success && result.data) {
         const turnos = result.data.data || [];
-        const turnosMapeados: TurnoData[] = turnos.map((turno: any) => ({
+
+        const turnosMapeados: TurnoData[] = turnos.map((turno: TurnoFormatted) => ({
           id: turno.id,
-          dataSolicitacao: turno.dataSolicitacao,
-          dataInicio: turno.dataInicio,
-          dataFim: turno.dataFim,
+          dataSolicitacao: turno.dataSolicitacao instanceof Date
+            ? turno.dataSolicitacao.toISOString()
+            : String(turno.dataSolicitacao),
+          dataInicio: turno.dataInicio instanceof Date
+            ? turno.dataInicio.toISOString()
+            : String(turno.dataInicio),
+          dataFim: turno.dataFim
+            ? (turno.dataFim instanceof Date ? turno.dataFim.toISOString() : String(turno.dataFim))
+            : undefined,
           veiculoId: turno.veiculoId,
           veiculoPlaca: turno.veiculoPlaca || 'N/A',
           veiculoModelo: turno.veiculoModelo || 'N/A',
@@ -149,9 +182,9 @@ export default function HistoricoPage() {
           equipeNome: turno.equipeNome || 'N/A',
           tipoEquipeNome: turno.tipoEquipeNome || 'N/A',
           baseNome: turno.baseNome || 'N/A',
-          dispositivo: turno.dispositivo,
+          dispositivo: turno.dispositivo || '',
           kmInicio: turno.kmInicio,
-          kmFim: turno.kmFim,
+          kmFim: turno.kmFim || undefined,
           status: turno.dataFim ? 'FECHADO' : 'ABERTO',
           eletricistas: turno.eletricistas || [],
         }));
@@ -162,7 +195,7 @@ export default function HistoricoPage() {
         let totalAbertos = 0;
         let totalFechados = 0;
 
-        turnos.forEach((turno: any) => {
+        turnos.forEach((turno: TurnoFormatted) => {
           const base = turno.equipeNome?.split('-')[0] || 'Não identificada';
           porBase[base] = (porBase[base] || 0) + 1;
 
@@ -212,7 +245,7 @@ export default function HistoricoPage() {
         throw new Error('Erro ao buscar tipos de equipe');
       }
 
-      const todosOsTipos = resultTipos.data.data?.map((tipo: any) => tipo.nome) || [];
+      const todosOsTipos = (resultTipos.data.data || []).map((tipo) => tipo.nome);
 
       // Buscar turnos da data específica para calcular estatísticas
       const result = await listTurnos({
@@ -223,18 +256,20 @@ export default function HistoricoPage() {
       });
 
       if (result.success && result.data) {
-        const turnos = result.data.data || [];
+        // Tipar explicitamente o array de turnos
+        const turnosArray = result.data.data || [];
+        const turnos = turnosArray as TurnoFormatted[];
 
         // Calcular estatísticas por tipo de equipe - sempre mostrar todos os tipos
         const statsPorTipo: Record<string, number> = {};
 
         // Inicializar todos os tipos com quantidade 0
-        todosOsTipos.forEach(tipo => {
+        todosOsTipos.forEach((tipo: string) => {
           statsPorTipo[tipo] = 0;
         });
 
         // Processar turnos existentes
-        turnos.forEach((turno: any) => {
+        turnos.forEach((turno: TurnoFormatted) => {
           const tipo = turno.tipoEquipeNome || 'Não identificado';
           if (statsPorTipo[tipo] !== undefined) {
             statsPorTipo[tipo] = (statsPorTipo[tipo] || 0) + 1;
@@ -252,14 +287,14 @@ export default function HistoricoPage() {
 
         // Inicializar todas as horas de 0 a 23
         for (let i = 0; i < 24; i++) {
-          statsPorHora[i] = {};
+          statsPorHora[String(i)] = {};
         }
 
         // Processar turnos existentes
-        turnos.forEach((turno: any) => {
+        turnos.forEach((turno: TurnoFormatted) => {
           const hora = new Date(turno.dataInicio).getHours();
           const tipo = turno.tipoEquipeNome || 'Não identificado';
-          statsPorHora[hora][tipo] = (statsPorHora[hora][tipo] || 0) + 1;
+          statsPorHora[String(hora)][tipo] = (statsPorHora[String(hora)][tipo] || 0) + 1;
         });
 
         // Usar todos os tipos de equipe do banco de dados
@@ -290,18 +325,18 @@ export default function HistoricoPage() {
 
         // Primeiro, obter todas as bases únicas do banco de dados
         // Para garantir que mostramos todas as bases, mesmo as sem turnos
-        const todasAsBases = [...new Set(turnos.map((turno: any) => turno.baseNome || 'Não identificada'))];
+        const todasAsBases = [...new Set(turnos.map((turno: TurnoFormatted) => turno.baseNome || 'Não identificada'))];
 
         // Inicializar todas as bases com todos os tipos de equipe com quantidade 0
-        todasAsBases.forEach(base => {
+        todasAsBases.forEach((base: string) => {
           statsPorBase[base] = {};
-          todosOsTipos.forEach(tipo => {
+          todosOsTipos.forEach((tipo: string) => {
             statsPorBase[base][tipo] = 0;
           });
         });
 
         // Processar turnos existentes
-        turnos.forEach((turno: any) => {
+        turnos.forEach((turno: TurnoFormatted) => {
           const base = turno.baseNome || 'Não identificada';
           const tipo = turno.tipoEquipeNome || 'Não identificado';
 
@@ -429,17 +464,7 @@ export default function HistoricoPage() {
     return [];
   }, [dadosGraficoBase]);
 
-  // Check de hidratação DEPOIS de todos os hooks
-  const hydrated = useHydrated();
-  if (!hydrated) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-        <Spin size="large" />
-      </div>
-    );
-  }
-
-  // Aplicar filtros aos turnos do histórico
+  // Aplicar filtros aos turnos do histórico (ANTES do check de hidratação para seguir regras dos Hooks)
   const turnosFiltrados = useMemo(() => {
     let turnos = turnosHistorico;
 
@@ -480,6 +505,16 @@ export default function HistoricoPage() {
 
     return turnos;
   }, [turnosHistorico, filtroVeiculo, filtroEquipe, filtroEletricista, filtroBase]);
+
+  // Check de hidratação DEPOIS de todos os hooks
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   const columns: ColumnsType<TurnoData> = [
 

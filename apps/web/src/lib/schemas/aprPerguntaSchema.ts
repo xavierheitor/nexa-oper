@@ -38,6 +38,7 @@
  */
 
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 /**
  * Schema para criação de nova pergunta APR
@@ -71,21 +72,21 @@ export const aprPerguntaUpdateSchema = aprPerguntaCreateSchema.extend({
 export const aprPerguntaFilterSchema = z.object({
   /** Número da página para paginação (obrigatório) */
   page: z.number().int().positive('Página deve ser um número positivo'),
-  
+
   /** Quantidade de itens por página (obrigatório) */
   pageSize: z.number().int().positive('Tamanho da página deve ser um número positivo'),
-  
+
   /** Campo para ordenação (obrigatório) */
   orderBy: z.string().min(1, 'Campo de ordenação é obrigatório'),
-  
+
   /** Direção da ordenação (obrigatório) */
   orderDir: z.enum(['asc', 'desc']),
-  
+
   /** Termo de busca para filtrar perguntas (opcional) */
   search: z.string().optional(),
-  
+
   /** Configuração de includes para relacionamentos (opcional) */
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
 });
 
 // Exportação dos tipos TypeScript gerados automaticamente

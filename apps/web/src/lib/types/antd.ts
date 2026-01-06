@@ -134,6 +134,7 @@ export interface SelectOption<T = string | number> {
 
 /**
  * Tipo para função render de coluna de tabela
+ * @deprecated Use TableColumnRender de './table' instead
  */
 export type TableRenderFunction<T = unknown> = (
   value: unknown,

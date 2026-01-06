@@ -31,7 +31,7 @@ export interface ActionResult<T = unknown> {
 export type OrderDir = 'asc' | 'desc';
 
 // Tipos para includes/relacionamentos
-export type IncludeConfig = Record<string, boolean | Record<string, any>>;
+export type IncludeConfig = Record<string, boolean | Record<string, unknown>>;
 
 // Tipos para paginação
 export interface PaginationParams {
@@ -50,7 +50,7 @@ export interface PaginatedParams {
   orderBy?: string;
   orderDir?: OrderDir;
   search?: string;
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
   include?: IncludeConfig;
 }
 
@@ -79,7 +79,7 @@ export interface BaseFilter extends PaginationParams {
 }
 
 // Tipos para resultados de operações
-export interface OperationResult<T = any> {
+export interface OperationResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -96,7 +96,7 @@ export interface ValidationError {
 // Tipos para resultados de validação
 export interface ValidationResult {
   success: boolean;
-  data?: any;
+  data?: unknown;
   errors?: ValidationError[];
 }
 

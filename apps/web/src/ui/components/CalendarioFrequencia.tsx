@@ -100,7 +100,7 @@ export default function CalendarioFrequencia({
   };
 
   // Customizar apenas o conteúdo da célula (não o número do dia, que já é renderizado pelo calendário)
-  const cellRender = (current: Dayjs, info: any) => {
+  const cellRender = (current: Dayjs) => {
     const dataStr = current.format('YYYY-MM-DD');
     const dia = dadosPorData.get(dataStr);
     const listData = getListData(current);
@@ -200,7 +200,7 @@ export default function CalendarioFrequencia({
         defaultValue={mesInicial}
         cellRender={cellRender}
         disabledDate={disabledDate}
-        headerRender={({ value, type, onChange, onTypeChange }) => {
+        headerRender={({ value }) => {
           // Customizar header para mostrar apenas o período selecionado
           return (
             <div style={{ padding: '8px', textAlign: 'center', fontWeight: 'bold' }}>

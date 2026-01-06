@@ -14,7 +14,7 @@ import { ActionResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { Checklist, ChecklistTipoVeiculoRelacao, ChecklistTipoEquipeRelacao } from '@nexa-oper/db';
 import type { CrudController } from '@/lib/hooks/useCrudController';
-import { Button, Card, Modal, Table, Form, Select, Spin, App, message } from 'antd';
+import { Button, Card, Modal, Table, Form, Select, Spin, App } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import ChecklistForm, { ChecklistFormData } from './form';
 import { listChecklistTipoVeiculoVinculos } from '@/lib/actions/checklistVinculo/tipoVeiculo/list';
@@ -186,6 +186,7 @@ interface VinculoTVFormValues {
 }
 
 function VinculoTVModal({ onSaved, controllerExec }: { onSaved: () => void; controllerExec: CrudController<unknown>['exec'] }) {
+  const { message } = App.useApp();
   const [form] = Form.useForm<VinculoTVFormValues>();
 
   // Carregar tipos de veículo e checklists
@@ -249,6 +250,7 @@ interface VinculoTEFormValues {
 }
 
 function VinculoTEModal({ onSaved, controllerExec }: { onSaved: () => void; controllerExec: CrudController<unknown>['exec'] }) {
+  const { message } = App.useApp();
   const [form] = Form.useForm<VinculoTEFormValues>();
 
   // Carregar tipos de equipe e checklists

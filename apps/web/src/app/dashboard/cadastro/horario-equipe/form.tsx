@@ -82,7 +82,16 @@ export default function HorarioAberturaCatalogoForm({
     return `${String(horasFim).padStart(2, '0')}:${String(minutosFim).padStart(2, '0')}`;
   };
 
-  const handleSubmit = async (values: any) => {
+  interface FormValues {
+    nome: string;
+    inicioTurnoHora: dayjs.Dayjs;
+    duracaoHoras: number;
+    duracaoIntervaloHoras?: number;
+    ativo?: boolean;
+    observacoes?: string;
+  }
+
+  const handleSubmit = async (values: FormValues) => {
     if (!propLoading) {
       setInternalLoading(true);
     }

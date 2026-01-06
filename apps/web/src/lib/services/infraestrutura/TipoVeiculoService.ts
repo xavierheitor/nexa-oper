@@ -58,7 +58,7 @@ export class TipoVeiculoService extends AbstractCrudService<
    * @param userId - ID do usuário que está criando
    * @returns Tipo de veículo criado
    */
-  async create(raw: any, userId: string): Promise<TipoVeiculo> {
+  async create(raw: any, _userId: string): Promise<TipoVeiculo> {
     // Extrai campos de auditoria adicionados pelo handleServerAction
     const { createdBy, createdAt, ...businessData } = raw;
 
@@ -80,7 +80,7 @@ export class TipoVeiculoService extends AbstractCrudService<
    * @param userId - ID do usuário que está atualizando
    * @returns Tipo de veículo atualizado
    */
-  async update(raw: any, userId: string): Promise<TipoVeiculo> {
+  async update(raw: any, _userId: string): Promise<TipoVeiculo> {
     // Extrai campos de auditoria adicionados pelo handleServerAction
     const { updatedBy, updatedAt, ...businessData } = raw;
 

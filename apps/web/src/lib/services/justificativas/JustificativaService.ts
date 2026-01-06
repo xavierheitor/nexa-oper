@@ -9,7 +9,6 @@ import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
 import { JustificativaRepository } from '../../repositories/justificativas/JustificativaRepository';
 import type {
   CriarJustificativaInput,
-  ListarJustificativasInput,
 } from '../../schemas/justificativaSchema';
 import { PaginatedResult } from '../../types/common';
 import type { PaginationParams } from '../../types/common';
@@ -53,7 +52,7 @@ export class JustificativaService extends AbstractCrudService<
     });
   }
 
-  async update(data: { id: number }, userId: string): Promise<Justificativa> {
+  async update(_data: { id: number }, _userId: string): Promise<Justificativa> {
     throw new Error(
       'Justificativas individuais não podem ser atualizadas diretamente pelo service. Use aprovar/rejeitar.'
     );

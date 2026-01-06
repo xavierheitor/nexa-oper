@@ -33,7 +33,6 @@ import {
   veiculoFilterSchema,
   veiculoUpdateSchema,
 } from '../../schemas/veiculoSchema';
-import { PaginatedResult } from '../../types/common';
 
 // Tipos derivados dos schemas
 type VeiculoCreate = z.infer<typeof veiculoCreateSchema>;

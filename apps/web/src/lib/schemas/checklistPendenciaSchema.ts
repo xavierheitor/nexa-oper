@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 /**
  * Schema para filtro de ChecklistPendencia
@@ -9,7 +10,7 @@ export const checklistPendenciaFilterSchema = z.object({
   orderBy: z.string(),
   orderDir: z.enum(['asc', 'desc']),
   search: z.string().optional(),
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
   status: z.enum(['AGUARDANDO_TRATAMENTO', 'EM_TRATAMENTO', 'TRATADA', 'REGISTRO_INCORRETO']).optional(),
   turnoId: z.number().int().positive().optional(),
   checklistPreenchidoId: z.number().int().positive().optional(),

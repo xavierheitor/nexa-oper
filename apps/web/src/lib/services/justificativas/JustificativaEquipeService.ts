@@ -10,7 +10,6 @@ import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
 import { JustificativaEquipeRepository } from '../../repositories/justificativas/JustificativaEquipeRepository';
 import type {
   CriarJustificativaEquipeInput,
-  ListarJustificativasEquipeInput,
 } from '../../schemas/justificativaEquipeSchema';
 import { PaginatedResult } from '../../types/common';
 import type { PaginationParams } from '../../types/common';
@@ -69,8 +68,8 @@ export class JustificativaEquipeService extends AbstractCrudService<
   }
 
   async update(
-    data: { id: number },
-    userId: string
+    _data: { id: number },
+    _userId: string
   ): Promise<JustificativaEquipe> {
     throw new Error(
       'Justificativas de equipe não podem ser atualizadas diretamente pelo service. Use aprovar/rejeitar.'

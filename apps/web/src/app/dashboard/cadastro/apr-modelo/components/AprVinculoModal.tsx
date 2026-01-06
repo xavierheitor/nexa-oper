@@ -3,9 +3,8 @@
 import { setAprTipoAtividade } from '@/lib/actions/aprVinculo/tipoAtividade/set';
 import { listAprs } from '@/lib/actions/apr/list';
 import { listTiposAtividade } from '@/lib/actions/tipoAtividade/list';
-import { AprTipoAtividadeRelacao } from '@nexa-oper/db';
 import type { CrudController } from '@/lib/hooks/useCrudController';
-import { Button, Form, Select, Spin, App, message } from 'antd';
+import { Button, Form, Select, Spin, App } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 interface AprVinculoModalProps {

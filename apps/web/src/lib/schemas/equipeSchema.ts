@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
 
 export const equipeCreateSchema = z.object({
   nome: z.string().min(1).max(255),
@@ -16,7 +17,7 @@ export const equipeFilterSchema = z.object({
   orderBy: z.string().default('nome'),
   orderDir: z.enum(['asc', 'desc']).default('asc'),
   search: z.string().optional(),
-  include: z.any().optional(),
+  include: z.custom<IncludeConfig>().optional(),
   // Filtros server-side para relacionamentos
   contratoId: z.number().int().optional(),
   tipoEquipeId: z.number().int().optional(),
