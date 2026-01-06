@@ -205,10 +205,21 @@ export function useCrudController<T>(
    * Fecha o modal e limpa todos os estados
    *
    * Reseta item em edição e fecha o modal.
+   * Se uma mutateKey foi fornecida, também revalida o cache automaticamente.
    */
-  const close = () => {
+  const close = async () => {
     setIsOpen(false);
     setEditingItem(null);
+
+    // ✅ CORREÇÃO: Revalidar cache automaticamente ao fechar modal
+    // Isso garante que a tabela seja atualizada mesmo quando o modal é fechado sem salvar
+    if (mutateKey) {
+      if (Array.isArray(mutateKey)) {
+        await Promise.all(mutateKey.map(key => mutate(key)));
+      } else {
+        await mutate(mutateKey);
+      }
+    }
   };
 
   /**
