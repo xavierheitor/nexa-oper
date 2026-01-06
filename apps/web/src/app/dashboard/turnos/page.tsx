@@ -1166,15 +1166,49 @@ export default function TurnosPage() {
                   {
                     title: 'Eletricistas',
                     key: 'eletricistas',
-                    render: (_: unknown, record: TurnoPrevisto) => (
-                      <Space direction="vertical" size={0}>
-                        {record.eletricistas.map((el) => (
-                          <span key={el.id}>
-                            {el.nome} ({el.matricula})
-                          </span>
-                        ))}
-                      </Space>
-                    ),
+                    render: (_: unknown, record: TurnoPrevisto) => {
+                      // Se for turno extra, não precisa colorir
+                      if (record.status === 'TURNO_EXTRA') {
+                        return (
+                          <Space direction="vertical" size={0}>
+                            {record.eletricistas.map((el) => (
+                              <span key={el.id}>
+                                {el.nome} ({el.matricula})
+                              </span>
+                            ))}
+                          </Space>
+                        );
+                      }
+
+                      // Para turnos previstos, verificar quais abriram
+                      // Se status é NAO_ABERTO, nenhum abriu
+                      // Se status é ADERENTE ou NAO_ADERENTE, verificar quais abriram
+                      const eletricistasQueAbriramIds = new Set(
+                        record.status === 'NAO_ABERTO'
+                          ? []
+                          : record.eletricistasQueAbriram?.map((e) => e.id) || []
+                      );
+
+                      return (
+                        <Space direction="vertical" size={0}>
+                          {record.eletricistas.map((el) => {
+                            const abriu = eletricistasQueAbriramIds.has(el.id);
+                            const style: React.CSSProperties = {
+                              backgroundColor: abriu ? '#f6ffed' : '#fff1f0',
+                              color: abriu ? '#52c41a' : '#ff4d4f',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              display: 'inline-block',
+                            };
+                            return (
+                              <span key={el.id} style={style}>
+                                {el.nome} ({el.matricula})
+                              </span>
+                            );
+                          })}
+                        </Space>
+                      );
+                    },
                   },
                   {
                     title: 'Status',

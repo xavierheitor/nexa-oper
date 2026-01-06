@@ -22,11 +22,13 @@ import {
   Statistic,
   Button,
   App,
+  Input,
 } from 'antd';
 import {
   FileTextOutlined,
   ReloadOutlined,
   SearchOutlined,
+  FilterOutlined,
 } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { getAderenciaAgregada } from '@/lib/actions/turno/getAderenciaAgregada';
@@ -62,6 +64,9 @@ export default function AderenciaEscalaPage() {
   const [filtroTipoEquipe, setFiltroTipoEquipe] = useState<number | undefined>(
     undefined
   );
+  const [filtroBuscaBase, setFiltroBuscaBase] = useState<string>('');
+  const [filtroBuscaTipoEquipe, setFiltroBuscaTipoEquipe] = useState<string>('');
+  const [filtroStatus, setFiltroStatus] = useState<string | undefined>(undefined);
 
   // Buscar bases e tipos de equipe para os filtros
   const { data: basesData, loading: loadingBases } = useDataFetch<
@@ -152,8 +157,35 @@ export default function AderenciaEscalaPage() {
       dados = dados.filter((d) => d.tipoEquipeId === filtroTipoEquipe);
     }
 
+    // Busca textual por base
+    if (filtroBuscaBase) {
+      const buscaLower = filtroBuscaBase.toLowerCase();
+      dados = dados.filter((d) =>
+        d.baseNome?.toLowerCase().includes(buscaLower)
+      );
+    }
+
+    // Busca textual por tipo de equipe
+    if (filtroBuscaTipoEquipe) {
+      const buscaLower = filtroBuscaTipoEquipe.toLowerCase();
+      dados = dados.filter((d) =>
+        d.tipoEquipeNome?.toLowerCase().includes(buscaLower)
+      );
+    }
+
+    // Filtro por status (aderência)
+    if (filtroStatus) {
+      if (filtroStatus === 'aderente') {
+        dados = dados.filter((d) => d.percentualAderencia >= 80);
+      } else if (filtroStatus === 'nao_aderente') {
+        dados = dados.filter((d) => d.percentualNaoAderencia > 20);
+      } else if (filtroStatus === 'critico') {
+        dados = dados.filter((d) => d.percentualNaoAderencia > 50);
+      }
+    }
+
     return dados;
-  }, [aderenciaData, filtroBase, filtroTipoEquipe]);
+  }, [aderenciaData, filtroBase, filtroTipoEquipe, filtroBuscaBase, filtroBuscaTipoEquipe, filtroStatus]);
 
   // Colunas da tabela
   const columns: ColumnsType<DadosAderencia> = [
@@ -255,82 +287,122 @@ export default function AderenciaEscalaPage() {
             </p>
           </div>
 
-          {/* Filtros */}
-          <Row gutter={[16, 16]} align="bottom">
-            <Col xs={24} sm={12} md={6}>
-              <div style={{ marginBottom: 4, fontSize: '12px', fontWeight: 'bold' }}>
-                Período
-              </div>
-              <RangePicker
-                value={periodo}
-                onChange={(dates) => {
-                  if (dates && dates[0] && dates[1]) {
-                    setPeriodo([dates[0], dates[1]]);
+          {/* Card de Filtros */}
+          <Card
+            size="small"
+            title={
+              <Space>
+                <FilterOutlined />
+                <span>Filtros</span>
+              </Space>
+            }
+            style={{ marginBottom: '16px' }}
+          >
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={12} md={6}>
+                <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Período</div>
+                <RangePicker
+                  value={periodo}
+                  onChange={(dates) => {
+                    if (dates && dates[0] && dates[1]) {
+                      setPeriodo([dates[0], dates[1]]);
+                    }
+                  }}
+                  format="DD/MM/YYYY"
+                  style={{ width: '100%' }}
+                />
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Base</div>
+                <Select
+                  style={{ width: '100%' }}
+                  placeholder="Todas as bases"
+                  value={filtroBase}
+                  onChange={(value) => setFiltroBase(value)}
+                  allowClear
+                  showSearch
+                  optionFilterProp="children"
+                  loading={loadingBases}
+                  filterOption={(input, option) =>
+                    (option?.label ?? '')
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
                   }
-                }}
-                format="DD/MM/YYYY"
-                style={{ width: '100%' }}
-              />
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <div style={{ marginBottom: 4, fontSize: '12px', fontWeight: 'bold' }}>
-                Base
-              </div>
-              <Select
-                style={{ width: '100%' }}
-                placeholder="Filtrar por base"
-                value={filtroBase}
-                onChange={(value) => setFiltroBase(value)}
-                allowClear
-                showSearch
-                optionFilterProp="children"
-                loading={loadingBases}
-                filterOption={(input, option) =>
-                  (option?.label ?? '')
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-                options={basesData?.map((base) => ({
-                  label: base.nome,
-                  value: base.id,
-                }))}
-              />
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <div style={{ marginBottom: 4, fontSize: '12px', fontWeight: 'bold' }}>
-                Tipo de Equipe
-              </div>
-              <Select
-                style={{ width: '100%' }}
-                placeholder="Filtrar por tipo de equipe"
-                value={filtroTipoEquipe}
-                onChange={(value) => setFiltroTipoEquipe(value)}
-                allowClear
-                showSearch
-                optionFilterProp="children"
-                loading={loadingTiposEquipe}
-                filterOption={(input, option) =>
-                  (option?.label ?? '')
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-                options={tiposEquipeData?.map((tipo) => ({
-                  label: tipo.nome,
-                  value: tipo.id,
-                }))}
-              />
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Button
-                icon={<ReloadOutlined />}
-                onClick={() => refetchAderencia()}
-                loading={loadingAderencia}
-                style={{ width: '100%' }}
-              >
-                Atualizar
-              </Button>
-            </Col>
-          </Row>
+                  options={basesData?.map((base) => ({
+                    label: base.nome,
+                    value: base.id,
+                  }))}
+                />
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Tipo de Equipe</div>
+                <Select
+                  style={{ width: '100%' }}
+                  placeholder="Todos os tipos"
+                  value={filtroTipoEquipe}
+                  onChange={(value) => setFiltroTipoEquipe(value)}
+                  allowClear
+                  showSearch
+                  optionFilterProp="children"
+                  loading={loadingTiposEquipe}
+                  filterOption={(input, option) =>
+                    (option?.label ?? '')
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                  options={tiposEquipeData?.map((tipo) => ({
+                    label: tipo.nome,
+                    value: tipo.id,
+                  }))}
+                />
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Status</div>
+                <Select
+                  style={{ width: '100%' }}
+                  placeholder="Todos"
+                  value={filtroStatus}
+                  onChange={(value) => setFiltroStatus(value)}
+                  allowClear
+                  options={[
+                    { label: 'Aderente (≥80%)', value: 'aderente' },
+                    { label: 'Não Aderente (>20%)', value: 'nao_aderente' },
+                    { label: 'Crítico (>50%)', value: 'critico' },
+                  ]}
+                />
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Buscar por Base</div>
+                <Input
+                  placeholder="Digite o nome da base"
+                  prefix={<SearchOutlined />}
+                  value={filtroBuscaBase}
+                  onChange={(e) => setFiltroBuscaBase(e.target.value)}
+                  allowClear
+                />
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Buscar por Tipo de Equipe</div>
+                <Input
+                  placeholder="Digite o tipo de equipe"
+                  prefix={<SearchOutlined />}
+                  value={filtroBuscaTipoEquipe}
+                  onChange={(e) => setFiltroBuscaTipoEquipe(e.target.value)}
+                  allowClear
+                />
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Button
+                  icon={<ReloadOutlined />}
+                  onClick={() => refetchAderencia()}
+                  loading={loadingAderencia}
+                  style={{ width: '100%', marginTop: '24px' }}
+                >
+                  Atualizar
+                </Button>
+              </Col>
+            </Row>
+          </Card>
 
           {/* Estatísticas Gerais */}
           {aderenciaData?.totais && (

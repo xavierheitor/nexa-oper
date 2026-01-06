@@ -261,8 +261,6 @@ export default function VisualizarEscala({ escalaId, open, onClose }: Visualizar
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <Tag color="green">T = Trabalho</Tag>
               <Tag color="red">F = Folga</Tag>
-              <Tag color="orange">X = Falta</Tag>
-              <Tag color="blue">E = Exceção</Tag>
             </div>
           </div>
         </div>
