@@ -11,7 +11,6 @@
 import {
   EscalaEquipePeriodo,
   SlotEscala,
-  StatusEscalaEquipePeriodo,
   TipoEscala,
   EquipeHorarioVigencia,
 } from '@nexa-oper/db';
@@ -32,11 +31,7 @@ import {
   DuplicarPeriodoInput,
 } from '../../schemas/escalaSchemas';
 import { PaginatedResult } from '../../types/common';
-import {
-  resolveStatusDoDia,
-  horarioVigente,
-  membrosVigentes,
-} from './escalaHelpers';
+import { horarioVigente, membrosVigentes } from './escalaHelpers';
 
 type EscalaEquipePeriodoCreate = z.infer<
   typeof escalaEquipePeriodoCreateSchema
@@ -212,8 +207,8 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
     // ✅ CORREÇÃO: Permitir flexibilidade na quantidade de eletricistas
     // O eletricistasPorTurma do tipo de escala é apenas uma referência,
     // mas permite usar menos eletricistas se necessário (ex: 4x2 com 2 ao invés de 3)
-    const eletricistasPorTurma =
-      tipoEscala.eletricistasPorTurma || eletricistasParaGerar.length;
+    // const eletricistasPorTurma =
+    //   tipoEscala.eletricistasPorTurma || eletricistasParaGerar.length;
 
     // Validar apenas se não houver nenhum eletricista selecionado
     // A quantidade mínima será determinada pela quantidade selecionada
@@ -222,7 +217,10 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
     }
 
     // Aviso (não erro) se usar menos eletricistas que o recomendado
-    if (tipoEscala.eletricistasPorTurma && eletricistasParaGerar.length < tipoEscala.eletricistasPorTurma) {
+    if (
+      tipoEscala.eletricistasPorTurma &&
+      eletricistasParaGerar.length < tipoEscala.eletricistasPorTurma
+    ) {
       // Apenas log, não bloqueia - permite flexibilidade
       console.warn(
         `Aviso: Tipo de escala "${tipoEscala.nome}" recomenda ${tipoEscala.eletricistasPorTurma} eletricista(s), mas foram selecionados ${eletricistasParaGerar.length}. A escala será gerada com a quantidade selecionada.`
@@ -238,14 +236,19 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       // Apenas gera/atualiza slots a partir de hoje
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
-      dataInicio = hoje > new Date(periodo.periodoInicio) ? hoje : new Date(periodo.periodoInicio);
+      dataInicio =
+        hoje > new Date(periodo.periodoInicio)
+          ? hoje
+          : new Date(periodo.periodoInicio);
     } else {
       dataInicio = new Date(periodo.periodoInicio);
     }
 
     // ✅ CORREÇÃO: Recarregar período para garantir que periodoFim está atualizado
     // Isso é importante ao prolongar, pois o período foi atualizado antes de chamar gerarSlots
-    const periodoAtualizado = await this.escalaRepo.findById(input.escalaEquipePeriodoId);
+    const periodoAtualizado = await this.escalaRepo.findById(
+      input.escalaEquipePeriodoId
+    );
     if (!periodoAtualizado) {
       throw new Error('Período não encontrado após atualização');
     }
@@ -264,14 +267,21 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
 
     // ✅ CORREÇÃO: Ao prolongar CICLO_DIAS, buscar último slot e continuar o ciclo a partir dele
     // Para SEMANA_DEPENDENTE, não precisa fazer nada especial (usa semanaIndex baseado em semanas)
-    const ultimoSlotPorEletricista: Map<number, { data: Date; estado: 'TRABALHO' | 'FOLGA'; posicaoNoCiclo: number }> = new Map();
+    const ultimoSlotPorEletricista: Map<
+      number,
+      { data: Date; estado: 'TRABALHO' | 'FOLGA'; posicaoNoCiclo: number }
+    > = new Map();
     const posicaoInicialPorEletricista: Map<number, number> = new Map();
 
     // Definir periodoInicio para uso em todo o método
     const periodoInicio = new Date(periodo.periodoInicio);
     periodoInicio.setHours(0, 0, 0, 0);
 
-    if (input.mode === 'fromDate' && input.fromDate && tipoEscala.modoRepeticao === 'CICLO_DIAS') {
+    if (
+      input.mode === 'fromDate' &&
+      input.fromDate &&
+      tipoEscala.modoRepeticao === 'CICLO_DIAS'
+    ) {
       // Buscar último slot de cada eletricista (para calcular posição atual no ciclo)
       const dataAntesNovosSlots = new Date(input.fromDate);
       dataAntesNovosSlots.setDate(dataAntesNovosSlots.getDate() - 1);
@@ -287,10 +297,7 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
           data: { lte: dataAntesNovosSlots },
           deletedAt: null,
         },
-        orderBy: [
-          { eletricistaId: 'asc' },
-          { data: 'desc' },
-        ],
+        orderBy: [{ eletricistaId: 'asc' }, { data: 'desc' }],
       });
 
       // Buscar primeiro slot de folga de cada eletricista para recalcular posicaoInicial
@@ -301,16 +308,13 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
           estado: 'FOLGA',
           deletedAt: null,
         },
-        orderBy: [
-          { eletricistaId: 'asc' },
-          { data: 'asc' },
-        ],
+        orderBy: [{ eletricistaId: 'asc' }, { data: 'asc' }],
       });
 
       // Encontrar a primeira posição de FOLGA no ciclo
-      const primeiraFolga = tipoEscala.CicloPosicoes
-        .filter(p => p.status === 'FOLGA')
-        .sort((a, b) => a.posicao - b.posicao)[0];
+      const primeiraFolga = tipoEscala.CicloPosicoes.filter(
+        p => p.status === 'FOLGA'
+      ).sort((a, b) => a.posicao - b.posicao)[0];
 
       // Calcular posicaoInicial para cada eletricista baseado no primeiro slot de folga
       const slotsFolgaPorEletricista = new Map<number, Date>();
@@ -323,13 +327,19 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
       // Calcular posicaoInicial para cada eletricista
       for (const eletricistaId of eletricistasParaGerar.map(e => e.id)) {
         if (slotsFolgaPorEletricista.has(eletricistaId) && primeiraFolga) {
-          const dataPrimeiraFolga = new Date(slotsFolgaPorEletricista.get(eletricistaId)!);
+          const dataPrimeiraFolga = new Date(
+            slotsFolgaPorEletricista.get(eletricistaId)!
+          );
           dataPrimeiraFolga.setHours(0, 0, 0, 0);
-          const diffMsPrimeiraFolga = dataPrimeiraFolga.getTime() - periodoInicio.getTime();
-          const primeiroDiaFolga = Math.floor(diffMsPrimeiraFolga / (1000 * 60 * 60 * 24));
+          const diffMsPrimeiraFolga =
+            dataPrimeiraFolga.getTime() - periodoInicio.getTime();
+          const primeiroDiaFolga = Math.floor(
+            diffMsPrimeiraFolga / (1000 * 60 * 60 * 24)
+          );
 
           // Calcular posicaoInicial como na criação inicial
-          const posicaoInicial = (primeiraFolga.posicao - primeiroDiaFolga + cicloDias) % cicloDias;
+          const posicaoInicial =
+            (primeiraFolga.posicao - primeiroDiaFolga + cicloDias) % cicloDias;
           posicaoInicialPorEletricista.set(eletricistaId, posicaoInicial);
         }
       }
@@ -344,7 +354,8 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
           const diaIndex = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
           // ✅ CORREÇÃO: Usar posicaoInicial calculada a partir do primeiro slot de folga
-          const posicaoInicial = posicaoInicialPorEletricista.get(slot.eletricistaId) || 0;
+          const posicaoInicial =
+            posicaoInicialPorEletricista.get(slot.eletricistaId) || 0;
           // Posição no ciclo (0-indexed): 0..(cicloDias-1) para corresponder ao banco
           const posicaoNoCiclo = (posicaoInicial + diaIndex) % cicloDias;
 
@@ -371,12 +382,14 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
           if (input.mode === 'fromDate') {
             // Usar a posicaoInicial que foi calculada a partir do primeiro slot de folga
             if (posicaoInicialPorEletricista.has(eletricistaConfig.id)) {
-              posicaoInicial = posicaoInicialPorEletricista.get(eletricistaConfig.id)!;
+              posicaoInicial = posicaoInicialPorEletricista.get(
+                eletricistaConfig.id
+              )!;
             } else {
               // Fallback: se não encontrou primeiro slot de folga, usar cálculo normal baseado em primeiroDiaFolga
-              const primeiraFolga = tipoEscala.CicloPosicoes
-                .filter(p => p.status === 'FOLGA')
-                .sort((a, b) => a.posicao - b.posicao)[0];
+              const primeiraFolga = tipoEscala.CicloPosicoes.filter(
+                p => p.status === 'FOLGA'
+              ).sort((a, b) => a.posicao - b.posicao)[0];
 
               if (primeiraFolga) {
                 posicaoInicial =
@@ -389,9 +402,9 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
           } else {
             // Cálculo normal para criação inicial da escala
             // Encontrar a primeira posição de FOLGA no ciclo (menor posição que é FOLGA)
-            const primeiraFolga = tipoEscala.CicloPosicoes
-              .filter(p => p.status === 'FOLGA')
-              .sort((a, b) => a.posicao - b.posicao)[0];
+            const primeiraFolga = tipoEscala.CicloPosicoes.filter(
+              p => p.status === 'FOLGA'
+            ).sort((a, b) => a.posicao - b.posicao)[0];
 
             if (primeiraFolga) {
               // Calcular posição inicial: quando primeiroDiaFolga acontece,
@@ -457,7 +470,21 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
           // Para modo semanal (SEMANA_DEPENDENTE)
           const periodicidadeSemanas = tipoEscala.periodicidadeSemanas || 1;
           const diaSemana = currentDate.getDay(); // 0=Domingo, 1=Segunda...
-          const semanaIndex = Math.floor(diaIndex / 7) % periodicidadeSemanas;
+
+          // ✅ CORREÇÃO: Calcular semanaIndex baseado em semanas desde o início do período
+          // IMPORTANTE: A semana começa no domingo, então precisamos calcular desde o domingo da semana do início do período
+          const periodoInicioDiaSemana = periodoInicio.getDay(); // 0=Domingo, 1=Segunda...
+          const diasAteDomingoInicio = periodoInicioDiaSemana; // Dias até o domingo anterior ao início
+          const domingoInicioPeriodo = new Date(periodoInicio);
+          domingoInicioPeriodo.setDate(
+            periodoInicio.getDate() - diasAteDomingoInicio
+          );
+          domingoInicioPeriodo.setHours(0, 0, 0, 0);
+
+          // Calcular diferença desde o domingo da semana do início do período
+          const diffMs = currentDate.getTime() - domingoInicioPeriodo.getTime();
+          const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+          const semanaIndex = Math.floor(diffDays / 7) % periodicidadeSemanas;
 
           // Converter dia da semana JS para enum DiaSemana
           const diasSemanaEnum = [
@@ -475,6 +502,7 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
           const mascaraConfig = tipoEscala.SemanaMascaras.find(
             m => m.semanaIndex === semanaIndex && m.dia === diaEnum
           );
+
           statusEletricista =
             mascaraConfig?.status === 'TRABALHO' ? 'TRABALHO' : 'FOLGA';
         }
@@ -512,7 +540,7 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
 
     // ✅ OTIMIZAÇÃO: Upsert slots em transação para melhor performance e atomicidade
     await prisma.$transaction(
-      async (tx) => {
+      async tx => {
         for (const slot of slotsToUpsert) {
           await tx.slotEscala.upsert({
             where: {
