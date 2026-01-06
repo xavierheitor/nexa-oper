@@ -457,7 +457,21 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
           // Para modo semanal (SEMANA_DEPENDENTE)
           const periodicidadeSemanas = tipoEscala.periodicidadeSemanas || 1;
           const diaSemana = currentDate.getDay(); // 0=Domingo, 1=Segunda...
-          const semanaIndex = Math.floor(diaIndex / 7) % periodicidadeSemanas;
+
+          // ✅ CORREÇÃO: Calcular semanaIndex baseado em semanas desde o início do período
+          // IMPORTANTE: A semana começa no domingo, então precisamos calcular desde o domingo da semana do início do período
+          const periodoInicioDiaSemana = periodoInicio.getDay(); // 0=Domingo, 1=Segunda...
+          const diasAteDomingoInicio = periodoInicioDiaSemana; // Dias até o domingo anterior ao início
+          const domingoInicioPeriodo = new Date(periodoInicio);
+          domingoInicioPeriodo.setDate(
+            periodoInicio.getDate() - diasAteDomingoInicio
+          );
+          domingoInicioPeriodo.setHours(0, 0, 0, 0);
+
+          // Calcular diferença desde o domingo da semana do início do período
+          const diffMs = currentDate.getTime() - domingoInicioPeriodo.getTime();
+          const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+          const semanaIndex = Math.floor(diffDays / 7) % periodicidadeSemanas;
 
           // Converter dia da semana JS para enum DiaSemana
           const diasSemanaEnum = [
@@ -475,6 +489,7 @@ export class EscalaEquipePeriodoService extends AbstractCrudService<
           const mascaraConfig = tipoEscala.SemanaMascaras.find(
             m => m.semanaIndex === semanaIndex && m.dia === diaEnum
           );
+
           statusEletricista =
             mascaraConfig?.status === 'TRABALHO' ? 'TRABALHO' : 'FOLGA';
         }
