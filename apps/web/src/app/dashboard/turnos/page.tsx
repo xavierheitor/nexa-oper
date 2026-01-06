@@ -300,12 +300,22 @@ export default function TurnosPage() {
       '#fa8c16', // Laranja
     ];
 
+    // Usar dadosGraficoBase como referência principal, mas também considerar outros gráficos
+    const todosOsTipos = new Set<string>();
+
     if (dadosGraficoBase && dadosGraficoBase.length > 0) {
-      const tiposUnicos = [...new Set(dadosGraficoBase.map(d => d.tipo).filter(Boolean))].sort();
-      return tiposUnicos.map((_, index) => coresDisponiveis[index % coresDisponiveis.length]);
+      dadosGraficoBase.forEach(d => d.tipo && todosOsTipos.add(d.tipo));
     }
-    return [];
-  }, [dadosGraficoBase]);
+    if (dadosGraficoHora && dadosGraficoHora.length > 0) {
+      dadosGraficoHora.forEach(d => d.tipo && todosOsTipos.add(d.tipo));
+    }
+    if (dadosGrafico && dadosGrafico.length > 0) {
+      dadosGrafico.forEach(d => d.tipo && todosOsTipos.add(d.tipo));
+    }
+
+    const tiposUnicos = Array.from(todosOsTipos).sort();
+    return tiposUnicos.map((_, index) => coresDisponiveis[index % coresDisponiveis.length]);
+  }, [dadosGraficoBase, dadosGraficoHora, dadosGrafico]);
 
   // Fetch de bases para o select
   const { data: basesData, loading: loadingBases } = useDataFetch<Array<{ id: number; nome: string }>>(
@@ -610,6 +620,12 @@ export default function TurnosPage() {
                 yField="quantidade"
                 height={300}
                 columnWidthRatio={0.1}
+                colorField="tipo"
+                scale={{
+                  color: {
+                    range: coresArray.length > 0 ? coresArray : ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
+                  },
+                }}
                 label={{
                   text: 'quantidade',
                   position: 'top',
@@ -617,9 +633,6 @@ export default function TurnosPage() {
                     fill: '#000',
                     fontWeight: 'bold',
                   },
-                }}
-                style={{
-                  fill: '#1890ff',
                 }}
                 xAxis={{
                   label: {
@@ -654,8 +667,14 @@ export default function TurnosPage() {
                 xField="hora"
                 yField="quantidade"
                 seriesField="tipo"
+                colorField="tipo"
                 height={300}
                 isStack={true}
+                scale={{
+                  color: {
+                    range: coresArray.length > 0 ? coresArray : ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
+                  },
+                }}
                 label={{
                   text: 'quantidade',
                   position: 'inside',
@@ -667,6 +686,13 @@ export default function TurnosPage() {
                 }}
                 legend={{
                   position: 'top',
+                  itemName: {
+                    formatter: (text: string) => {
+                      // Não mostrar na legenda tipos que não têm dados
+                      const temDados = dadosGraficoHora?.some(d => d.tipo === text && d.quantidade > 0);
+                      return temDados ? text : '';
+                    },
+                  },
                 }}
                 xAxis={{
                   label: {
