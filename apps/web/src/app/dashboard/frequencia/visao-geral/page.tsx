@@ -37,6 +37,8 @@ export default function FrequenciaVisaoGeralPage() {
     const hoje = new Date();
     return new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 23, 59, 59); // Fim do mês
   });
+  // ✅ Filtro de status (client-side)
+  const [filtroStatus, setFiltroStatus] = useState<string | undefined>(undefined);
 
   // Carregar lista de eletricistas para o select
   const eletricistasFetcher = useMemo(
@@ -138,10 +140,40 @@ export default function FrequenciaVisaoGeralPage() {
     mutate();
   };
 
+  // ✅ Filtrar detalhamento por status (client-side)
+  const detalhamentoFiltrado = useMemo(() => {
+    if (!consolidado) return [];
+
+    let filtrado = consolidado.detalhamento;
+
+    if (filtroStatus) {
+      filtrado = filtrado.filter((dia) => {
+        // Mapear tipos para filtros
+        switch (filtroStatus) {
+          case 'trabalho':
+            return dia.tipo === 'trabalho' || dia.tipo === 'trabalho_realizado' || dia.tipo === 'escala_trabalho';
+          case 'falta':
+            return dia.tipo === 'falta';
+          case 'hora_extra':
+            return dia.tipo === 'hora_extra';
+          case 'folga':
+            return dia.tipo === 'folga' || dia.tipo === 'escala_folga';
+          case 'atestado':
+            return dia.tipo === 'falta' && dia.status === 'justificada';
+          default:
+            return true;
+        }
+      });
+    }
+
+    return filtrado;
+  }, [consolidado, filtroStatus]);
+
   const estatisticasDetalhadas = useMemo(() => {
     if (!consolidado) return null;
 
-    const { resumo, detalhamento } = consolidado;
+    const { resumo } = consolidado;
+    const detalhamento = detalhamentoFiltrado;
 
     // Calcular dias por tipo
     const diasPorTipo = detalhamento.reduce(
@@ -176,7 +208,7 @@ export default function FrequenciaVisaoGeralPage() {
       totalHorasPrevistas,
       totalHorasRealizadas,
     };
-  }, [consolidado]);
+  }, [consolidado, detalhamentoFiltrado]);
 
   return (
     <div style={{ padding: '24px' }}>
@@ -227,6 +259,37 @@ export default function FrequenciaVisaoGeralPage() {
           </Space>
         }
       >
+        {/* ✅ Filtro de Status (client-side) */}
+        {consolidado && (
+          <div style={{ marginBottom: 16 }}>
+            <Space>
+              <span style={{ fontWeight: 500 }}>Filtrar por Status:</span>
+              <Select
+                placeholder="Todos os status"
+                allowClear
+                style={{ width: 200 }}
+                value={filtroStatus}
+                onChange={(value) => setFiltroStatus(value || undefined)}
+              >
+                <Select.Option value="trabalho">Trabalho</Select.Option>
+                <Select.Option value="falta">Falta</Select.Option>
+                <Select.Option value="atestado">Atestado</Select.Option>
+                <Select.Option value="hora_extra">Hora Extra</Select.Option>
+                <Select.Option value="folga">Folga</Select.Option>
+              </Select>
+              {filtroStatus && (
+                <Tag color="blue" closable onClose={() => setFiltroStatus(undefined)}>
+                  {filtroStatus === 'trabalho' && 'Trabalho'}
+                  {filtroStatus === 'falta' && 'Falta'}
+                  {filtroStatus === 'atestado' && 'Atestado'}
+                  {filtroStatus === 'hora_extra' && 'Hora Extra'}
+                  {filtroStatus === 'folga' && 'Folga'}
+                  {' '}({detalhamentoFiltrado.length} dia{detalhamentoFiltrado.length !== 1 ? 's' : ''})
+                </Tag>
+              )}
+            </Space>
+          </div>
+        )}
         {!eletricistaId || !dataInicio || !dataFim ? (
           <Empty
             description="Selecione um eletricista e período para visualizar os dados"
@@ -383,7 +446,10 @@ export default function FrequenciaVisaoGeralPage() {
             {/* Calendário de Frequência */}
             <Card title="Calendário de Frequência" style={{ marginBottom: 24 }}>
               <CalendarioFrequencia
-                consolidado={consolidado}
+                consolidado={{
+                  ...consolidado,
+                  detalhamento: detalhamentoFiltrado,
+                }}
                 dataInicio={dataInicio}
                 dataFim={dataFim}
               />
@@ -392,7 +458,7 @@ export default function FrequenciaVisaoGeralPage() {
             {/* Histórico Detalhado */}
             <Card title="Histórico Detalhado por Dia">
               <HistoricoTable
-                dados={consolidado.detalhamento}
+                dados={detalhamentoFiltrado}
                 loading={loadingConsolidado}
               />
             </Card>

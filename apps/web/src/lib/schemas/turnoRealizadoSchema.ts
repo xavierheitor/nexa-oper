@@ -93,16 +93,27 @@ export const resumoEletricistaSchema = z.object({
 
 export const detalhamentoDiaSchema = z.object({
   data: z.coerce.date(),
-  tipo: z.enum(['trabalho', 'falta', 'hora_extra', 'folga']),
+  // ✅ CORREÇÃO: Adicionar novos tipos para mostrar escala e o que aconteceu
+  tipo: z.enum([
+    'trabalho',           // Compatibilidade (antigo)
+    'trabalho_realizado', // Trabalho realizado em dia de escala TRABALHO
+    'escala_trabalho',    // Escala prevista: TRABALHO
+    'escala_folga',       // Escala prevista: FOLGA
+    'falta',              // Falta em dia de escala TRABALHO
+    'hora_extra',         // Hora extra (folga trabalhada, extrafora, etc.)
+    'folga',              // Compatibilidade (antigo - folga sem trabalho)
+  ]),
   horasPrevistas: z.number(),
   horasRealizadas: z.number(),
   status: z.string(),
   faltaId: z.number().optional(),
   horaExtraId: z.number().optional(),
   tipoHoraExtra: HoraExtraTipoEnum.optional(),
-  equipe: equipeBasicaSchema.optional(), // Equipe em que trabalhou (quando tipo = 'trabalho')
-  horaInicio: z.coerce.date().optional(), // Hora de início do turno (quando tipo = 'trabalho')
-  horaFim: z.coerce.date().optional(), // Hora de fim do turno (quando tipo = 'trabalho')
+  equipe: equipeBasicaSchema.optional(), // Equipe em que trabalhou
+  horaInicio: z.coerce.date().optional(), // Hora de início do turno
+  horaFim: z.coerce.date().optional(), // Hora de fim do turno
+  slotId: z.number().optional(), // ID do slot de escala (para escala_trabalho/escala_folga)
+  turnoId: z.number().optional(), // ID do turno realizado
 });
 
 export const consolidadoEletricistaResponseSchema = z.object({

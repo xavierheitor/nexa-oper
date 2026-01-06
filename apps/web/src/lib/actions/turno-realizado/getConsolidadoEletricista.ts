@@ -132,14 +132,14 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
       // Filtrar apenas slots de TRABALHO para calcular dias escalados
       const slotsTrabalho = slotsEscala.filter(s => s.estado === 'TRABALHO');
       const diasEscalados = slotsTrabalho.length;
-      
+
       // Criar mapa de dias com escala (qualquer estado) para uso no calendário
       const diasComEscala = new Set<string>();
       slotsEscala.forEach(slot => {
         const dataStr = slot.data.toISOString().split('T')[0];
         diasComEscala.add(dataStr);
       });
-      
+
       const faltasTotal = faltas.length;
       const faltasJustificadas = faltas.filter(
         (f) => f.status === 'justificada'
@@ -159,23 +159,57 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
         .filter((he) => he.status === 'pendente')
         .reduce((sum, he) => sum + Number(he.horasRealizadas), 0);
 
-      // Detalhamento por dia
+      // ✅ CORREÇÃO: Processar detalhamento mostrando ESCALA e o que ACONTECEU
+      // Estratégia: Processar primeiro a ESCALA (TRABALHO e FOLGA), depois o que ACONTECEU
       const detalhamento: any[] = [];
-      const diasProcessados = new Set<string>();
+      const detalhamentoPorData = new Map<string, any[]>();
 
-      // Processar turnos realizados
+      // 1. PRIMEIRO: Processar TODOS os slots de escala (TRABALHO e FOLGA)
+      // Isso mostra o que estava previsto na escala
+      for (const slot of slotsEscala) {
+        const dataStr = slot.data.toISOString().split('T')[0];
+        if (!detalhamentoPorData.has(dataStr)) {
+          detalhamentoPorData.set(dataStr, []);
+        }
+
+        const horasPrevistas = slot.inicioPrevisto && slot.fimPrevisto
+          ? (slot.fimPrevisto.getTime() - slot.inicioPrevisto.getTime()) / (1000 * 60 * 60)
+          : 0;
+
+        detalhamentoPorData.get(dataStr)!.push({
+          data: slot.data,
+          tipo: slot.estado === 'TRABALHO' ? 'escala_trabalho' : 'escala_folga',
+          horasPrevistas,
+          horasRealizadas: 0,
+          status: 'normal',
+          slotId: slot.id,
+        });
+      }
+
+      // 2. Processar turnos realizados (o que ACONTECEU)
       for (const turno of turnosRealizados) {
         const dataStr = turno.abertoEm.toISOString().split('T')[0];
-        if (!diasProcessados.has(dataStr)) {
-          diasProcessados.add(dataStr);
-          const horasRealizadas = turno.fechadoEm
-            ? (turno.fechadoEm.getTime() - turno.abertoEm.getTime()) / (1000 * 60 * 60)
-            : 0;
+        if (!detalhamentoPorData.has(dataStr)) {
+          detalhamentoPorData.set(dataStr, []);
+        }
 
-          detalhamento.push({
+        const horasRealizadas = turno.fechadoEm
+          ? (turno.fechadoEm.getTime() - turno.abertoEm.getTime()) / (1000 * 60 * 60)
+          : 0;
+
+        // Verificar se há slot de escala para este dia
+        const slotDia = slotsEscala.find(
+          s => s.data.toISOString().split('T')[0] === dataStr
+        );
+
+        // Se trabalhou em dia de TRABALHO na escala, adicionar como trabalho realizado
+        if (slotDia && slotDia.estado === 'TRABALHO') {
+          detalhamentoPorData.get(dataStr)!.push({
             data: turno.abertoEm,
-            tipo: 'trabalho',
-            horasPrevistas: 0, // Será calculado se houver slot
+            tipo: 'trabalho_realizado',
+            horasPrevistas: slotDia.inicioPrevisto && slotDia.fimPrevisto
+              ? (slotDia.fimPrevisto.getTime() - slotDia.inicioPrevisto.getTime()) / (1000 * 60 * 60)
+              : 0,
             horasRealizadas,
             status: 'normal',
             equipe: turno.turnoRealizado?.equipe ? {
@@ -184,19 +218,48 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
             } : undefined,
             horaInicio: turno.abertoEm,
             horaFim: turno.fechadoEm || undefined,
+            turnoId: turno.id,
+          });
+        } else {
+          // Trabalhou em dia de FOLGA ou sem escala = HORA EXTRA
+          detalhamentoPorData.get(dataStr)!.push({
+            data: turno.abertoEm,
+            tipo: 'hora_extra',
+            horasPrevistas: 0,
+            horasRealizadas,
+            status: 'normal',
+            equipe: turno.turnoRealizado?.equipe ? {
+              id: turno.turnoRealizado.equipe.id,
+              nome: turno.turnoRealizado.equipe.nome,
+            } : undefined,
+            horaInicio: turno.abertoEm,
+            horaFim: turno.fechadoEm || undefined,
+            turnoId: turno.id,
+            tipoHoraExtra: slotDia && slotDia.estado === 'FOLGA' ? 'folga_trabalhada' : 'extrafora',
           });
         }
       }
 
-      // Processar faltas
+      // 3. Processar faltas (o que ACONTECEU quando deveria trabalhar)
       for (const falta of faltas) {
         const dataStr = falta.dataReferencia.toISOString().split('T')[0];
-        if (!diasProcessados.has(dataStr)) {
-          diasProcessados.add(dataStr);
-          detalhamento.push({
+        if (!detalhamentoPorData.has(dataStr)) {
+          detalhamentoPorData.set(dataStr, []);
+        }
+
+        // Verificar se há slot de TRABALHO para este dia
+        const slotDia = slotsEscala.find(
+          s => s.data.toISOString().split('T')[0] === dataStr && s.estado === 'TRABALHO'
+        );
+
+        // Só adicionar falta se havia escala de TRABALHO
+        if (slotDia) {
+          detalhamentoPorData.get(dataStr)!.push({
             data: falta.dataReferencia,
             tipo: 'falta',
-            horasPrevistas: 0,
+            horasPrevistas: slotDia.inicioPrevisto && slotDia.fimPrevisto
+              ? (slotDia.fimPrevisto.getTime() - slotDia.inicioPrevisto.getTime()) / (1000 * 60 * 60)
+              : 0,
             horasRealizadas: 0,
             status: falta.status,
             faltaId: falta.id,
@@ -204,18 +267,20 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
         }
       }
 
-      // Processar horas extras
+      // 4. Processar horas extras registradas (para garantir que apareçam)
       for (const horaExtra of horasExtras) {
         const dataStr = horaExtra.dataReferencia.toISOString().split('T')[0];
-        const existing = detalhamento.find(
-          (d) => d.data.toISOString().split('T')[0] === dataStr
+        if (!detalhamentoPorData.has(dataStr)) {
+          detalhamentoPorData.set(dataStr, []);
+        }
+
+        // Verificar se já existe hora extra para este dia
+        const jaTemHoraExtra = detalhamentoPorData.get(dataStr)!.some(
+          d => d.tipo === 'hora_extra'
         );
-        if (existing) {
-          existing.tipo = 'hora_extra';
-          existing.tipoHoraExtra = horaExtra.tipo;
-          existing.horaExtraId = horaExtra.id;
-        } else {
-          detalhamento.push({
+
+        if (!jaTemHoraExtra) {
+          detalhamentoPorData.get(dataStr)!.push({
             data: horaExtra.dataReferencia,
             tipo: 'hora_extra',
             horasPrevistas: Number(horaExtra.horasPrevistas || 0),
@@ -227,28 +292,12 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
         }
       }
 
-      // Adicionar folgas (slots com estado FOLGA que não foram trabalhados)
-      const slotsFolga = await prisma.slotEscala.findMany({
-        where: {
-          eletricistaId: data.eletricistaId,
-          data: { gte: dataInicio, lte: dataFim },
-          estado: 'FOLGA',
-        },
+      // Converter mapa para array e ordenar
+      detalhamentoPorData.forEach((dias) => {
+        detalhamento.push(...dias);
       });
 
-      for (const slot of slotsFolga) {
-        const dataStr = slot.data.toISOString().split('T')[0];
-        if (!diasProcessados.has(dataStr)) {
-          diasProcessados.add(dataStr);
-          detalhamento.push({
-            data: slot.data,
-            tipo: 'folga',
-            horasPrevistas: 0,
-            horasRealizadas: 0,
-            status: 'normal',
-          });
-        }
-      }
+      detalhamento.sort((a, b) => a.data.getTime() - b.data.getTime());
 
       detalhamento.sort((a, b) => a.data.getTime() - b.data.getTime());
 
