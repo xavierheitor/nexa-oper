@@ -164,6 +164,21 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
       const detalhamento: any[] = [];
       const detalhamentoPorData = new Map<string, any[]>();
 
+      // Helper para calcular horas a partir de strings "HH:MM:SS"
+      const calcularHorasDeString = (inicio: string | null, fim: string | null): number => {
+        if (!inicio || !fim) return 0;
+        try {
+          const [hInicio, mInicio] = inicio.split(':').map(Number);
+          const [hFim, mFim] = fim.split(':').map(Number);
+          const minutosInicio = hInicio * 60 + mInicio;
+          const minutosFim = hFim * 60 + mFim;
+          const diferencaMinutos = minutosFim - minutosInicio;
+          return diferencaMinutos / 60;
+        } catch {
+          return 0;
+        }
+      };
+
       // 1. PRIMEIRO: Processar TODOS os slots de escala (TRABALHO e FOLGA)
       // Isso mostra o que estava previsto na escala
       for (const slot of slotsEscala) {
@@ -172,9 +187,7 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
           detalhamentoPorData.set(dataStr, []);
         }
 
-        const horasPrevistas = slot.inicioPrevisto && slot.fimPrevisto
-          ? (slot.fimPrevisto.getTime() - slot.inicioPrevisto.getTime()) / (1000 * 60 * 60)
-          : 0;
+        const horasPrevistas = calcularHorasDeString(slot.inicioPrevisto, slot.fimPrevisto);
 
         detalhamentoPorData.get(dataStr)!.push({
           data: slot.data,
@@ -207,9 +220,7 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
           detalhamentoPorData.get(dataStr)!.push({
             data: turno.abertoEm,
             tipo: 'trabalho_realizado',
-            horasPrevistas: slotDia.inicioPrevisto && slotDia.fimPrevisto
-              ? (slotDia.fimPrevisto.getTime() - slotDia.inicioPrevisto.getTime()) / (1000 * 60 * 60)
-              : 0,
+            horasPrevistas: calcularHorasDeString(slotDia.inicioPrevisto, slotDia.fimPrevisto),
             horasRealizadas,
             status: 'normal',
             equipe: turno.turnoRealizado?.equipe ? {
@@ -257,9 +268,7 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
           detalhamentoPorData.get(dataStr)!.push({
             data: falta.dataReferencia,
             tipo: 'falta',
-            horasPrevistas: slotDia.inicioPrevisto && slotDia.fimPrevisto
-              ? (slotDia.fimPrevisto.getTime() - slotDia.inicioPrevisto.getTime()) / (1000 * 60 * 60)
-              : 0,
+            horasPrevistas: calcularHorasDeString(slotDia.inicioPrevisto, slotDia.fimPrevisto),
             horasRealizadas: 0,
             status: falta.status,
             faltaId: falta.id,
