@@ -261,63 +261,36 @@ export const escalaEquipePeriodoComposicaoMinimaUpdateSchema =
 // SLOT ESCALA
 // ============================================
 
-export const slotEscalaCreateSchema = z
-  .object({
-    escalaEquipePeriodoId: z.number().int().positive(),
-    data: z.coerce.date(),
-    estado: EstadoSlotEnum,
-    inicioPrevisto: z
-      .string()
-      .regex(/^\d{2}:\d{2}:\d{2}$/)
-      .optional(),
-    fimPrevisto: z
-      .string()
-      .regex(/^\d{2}:\d{2}:\d{2}$/)
-      .optional(),
-    anotacoesDia: z.string().max(1000).optional(),
-  })
-  .refine(
-    data => {
-      // Se TRABALHO, horários devem ser preenchidos
-      if (data.estado === 'TRABALHO') {
-        return data.inicioPrevisto != null && data.fimPrevisto != null;
-      }
-      return true;
-    },
-    {
-      message: 'Horários são obrigatórios quando o estado é TRABALHO',
-      path: ['estado'],
-    }
-  );
+export const slotEscalaCreateSchema = z.object({
+  escalaEquipePeriodoId: z.number().int().positive(),
+  data: z.coerce.date(),
+  estado: EstadoSlotEnum,
+  inicioPrevisto: z
+    .string()
+    .regex(/^\d{2}:\d{2}:\d{2}$/)
+    .optional(),
+  fimPrevisto: z
+    .string()
+    .regex(/^\d{2}:\d{2}:\d{2}$/)
+    .optional(),
+  anotacoesDia: z.string().max(1000).optional(),
+});
 
-export const slotEscalaUpdateSchema = z
-  .object({
-    id: z.number().int().positive(),
-    escalaEquipePeriodoId: z.number().int().positive(),
-    data: z.coerce.date(),
-    estado: EstadoSlotEnum,
-    inicioPrevisto: z
-      .string()
-      .regex(/^\d{2}:\d{2}:\d{2}$/)
-      .optional(),
-    fimPrevisto: z
-      .string()
-      .regex(/^\d{2}:\d{2}:\d{2}$/)
-      .optional(),
-    anotacoesDia: z.string().max(1000).optional(),
-  })
-  .refine(
-    data => {
-      if (data.estado === 'TRABALHO') {
-        return data.inicioPrevisto != null && data.fimPrevisto != null;
-      }
-      return true;
-    },
-    {
-      message: 'Horários são obrigatórios quando o estado é TRABALHO',
-      path: ['estado'],
-    }
-  );
+export const slotEscalaUpdateSchema = z.object({
+  id: z.number().int().positive(),
+  escalaEquipePeriodoId: z.number().int().positive(),
+  data: z.coerce.date(),
+  estado: EstadoSlotEnum,
+  inicioPrevisto: z
+    .string()
+    .regex(/^\d{2}:\d{2}:\d{2}$/)
+    .optional(),
+  fimPrevisto: z
+    .string()
+    .regex(/^\d{2}:\d{2}:\d{2}$/)
+    .optional(),
+  anotacoesDia: z.string().max(1000).optional(),
+});
 
 // ============================================
 // ATRIBUIÇÃO ELETRICISTA
@@ -446,6 +419,9 @@ export const equipeTurnoHistoricoFilterSchema = z.object({
   orderDir: z.enum(['asc', 'desc']),
   search: z.string().optional(),
   equipeId: z.number().int().positive().optional(),
+  baseId: z.number().int().positive().optional(),
+  tipoEquipeId: z.number().int().positive().optional(),
+  horarioAberturaCatalogoId: z.number().int().positive().optional(),
   vigente: z.boolean().optional(),
   include: z.custom<IncludeConfig>().optional(),
 });

@@ -187,7 +187,7 @@ export const getTurnosPrevistosHoje = async () =>
         }
       }
 
-      // 5. Buscar turnos abertos hoje
+      // 5. Buscar turnos abertos hoje com eletricistas
       const turnosAbertos = await prisma.turno.findMany({
         where: {
           dataInicio: {
@@ -196,10 +196,21 @@ export const getTurnosPrevistosHoje = async () =>
           },
           deletedAt: null,
         },
-        select: {
-          id: true,
-          equipeId: true,
-          dataInicio: true,
+        include: {
+          TurnoEletricistas: {
+            where: {
+              deletedAt: null,
+            },
+            include: {
+              eletricista: {
+                select: {
+                  id: true,
+                  nome: true,
+                  matricula: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -242,6 +253,16 @@ export const getTurnosPrevistosHoje = async () =>
 
         const eletricistas = Array.from(eletricistasMap.values());
 
+        // Buscar eletricistas que abriram o turno (se houver)
+        let eletricistasQueAbriram: Array<{ id: number; nome: string; matricula: string }> | undefined;
+        if (turno && turno.TurnoEletricistas) {
+          eletricistasQueAbriram = turno.TurnoEletricistas.map((te) => ({
+            id: te.eletricista.id,
+            nome: te.eletricista.nome,
+            matricula: te.eletricista.matricula,
+          }));
+        }
+
         let status: TurnoPrevisto['status'];
         let diferencaMinutos: number | undefined;
         let dataAbertura: Date | undefined;
@@ -282,6 +303,7 @@ export const getTurnosPrevistosHoje = async () =>
           tipoEquipeNome: equipe.tipoEquipeNome,
           horarioPrevisto,
           eletricistas,
+          eletricistasQueAbriram,
           status,
           turnoId,
           dataAbertura,

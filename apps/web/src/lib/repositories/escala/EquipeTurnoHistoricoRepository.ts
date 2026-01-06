@@ -14,6 +14,9 @@ import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaI
 interface EquipeTurnoHistoricoFilter extends PaginationParams {
   equipeId?: number;
   vigente?: boolean;
+  baseId?: number;
+  tipoEquipeId?: number;
+  horarioAberturaCatalogoId?: number;
 }
 
 export type EquipeTurnoHistoricoCreateInput = {
@@ -231,6 +234,9 @@ export class EquipeTurnoHistoricoRepository extends AbstractCrudRepository<
       orderDir = 'desc',
       search,
       equipeId,
+      baseId,
+      tipoEquipeId,
+      horarioAberturaCatalogoId,
       vigente,
     } = params;
 
@@ -239,6 +245,7 @@ export class EquipeTurnoHistoricoRepository extends AbstractCrudRepository<
     const where: Prisma.EquipeTurnoHistoricoWhereInput = {
       deletedAt: null,
       ...(equipeId && { equipeId }),
+      ...(horarioAberturaCatalogoId && { horarioAberturaCatalogoId }),
       ...(vigente && {
         dataInicio: { lte: new Date() },
         OR: [
@@ -249,6 +256,20 @@ export class EquipeTurnoHistoricoRepository extends AbstractCrudRepository<
       ...(search && {
         equipe: {
           nome: { contains: search },
+        },
+      }),
+      ...((baseId || tipoEquipeId) && {
+        equipe: {
+          ...(baseId && {
+            EquipeBaseHistorico: {
+              some: {
+                baseId,
+                dataFim: null,
+                deletedAt: null,
+              },
+            },
+          }),
+          ...(tipoEquipeId && { tipoEquipeId }),
         },
       }),
     };

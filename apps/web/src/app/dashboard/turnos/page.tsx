@@ -300,12 +300,22 @@ export default function TurnosPage() {
       '#fa8c16', // Laranja
     ];
 
+    // Usar dadosGraficoBase como referência principal, mas também considerar outros gráficos
+    const todosOsTipos = new Set<string>();
+
     if (dadosGraficoBase && dadosGraficoBase.length > 0) {
-      const tiposUnicos = [...new Set(dadosGraficoBase.map(d => d.tipo).filter(Boolean))].sort();
-      return tiposUnicos.map((_, index) => coresDisponiveis[index % coresDisponiveis.length]);
+      dadosGraficoBase.forEach(d => d.tipo && todosOsTipos.add(d.tipo));
     }
-    return [];
-  }, [dadosGraficoBase]);
+    if (dadosGraficoHora && dadosGraficoHora.length > 0) {
+      dadosGraficoHora.forEach(d => d.tipo && todosOsTipos.add(d.tipo));
+    }
+    if (dadosGrafico && dadosGrafico.length > 0) {
+      dadosGrafico.forEach(d => d.tipo && todosOsTipos.add(d.tipo));
+    }
+
+    const tiposUnicos = Array.from(todosOsTipos).sort();
+    return tiposUnicos.map((_, index) => coresDisponiveis[index % coresDisponiveis.length]);
+  }, [dadosGraficoBase, dadosGraficoHora, dadosGrafico]);
 
   // Fetch de bases para o select
   const { data: basesData, loading: loadingBases } = useDataFetch<Array<{ id: number; nome: string }>>(
@@ -610,6 +620,12 @@ export default function TurnosPage() {
                 yField="quantidade"
                 height={300}
                 columnWidthRatio={0.1}
+                colorField="tipo"
+                scale={{
+                  color: {
+                    range: coresArray.length > 0 ? coresArray : ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
+                  },
+                }}
                 label={{
                   text: 'quantidade',
                   position: 'top',
@@ -617,9 +633,6 @@ export default function TurnosPage() {
                     fill: '#000',
                     fontWeight: 'bold',
                   },
-                }}
-                style={{
-                  fill: '#1890ff',
                 }}
                 xAxis={{
                   label: {
@@ -654,8 +667,14 @@ export default function TurnosPage() {
                 xField="hora"
                 yField="quantidade"
                 seriesField="tipo"
+                colorField="tipo"
                 height={300}
                 isStack={true}
+                scale={{
+                  color: {
+                    range: coresArray.length > 0 ? coresArray : ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
+                  },
+                }}
                 label={{
                   text: 'quantidade',
                   position: 'inside',
@@ -667,6 +686,13 @@ export default function TurnosPage() {
                 }}
                 legend={{
                   position: 'top',
+                  itemName: {
+                    formatter: (text: string) => {
+                      // Não mostrar na legenda tipos que não têm dados
+                      const temDados = dadosGraficoHora?.some(d => d.tipo === text && d.quantidade > 0);
+                      return temDados ? text : '';
+                    },
+                  },
                 }}
                 xAxis={{
                   label: {
@@ -1166,15 +1192,49 @@ export default function TurnosPage() {
                   {
                     title: 'Eletricistas',
                     key: 'eletricistas',
-                    render: (_: unknown, record: TurnoPrevisto) => (
-                      <Space direction="vertical" size={0}>
-                        {record.eletricistas.map((el) => (
-                          <span key={el.id}>
-                            {el.nome} ({el.matricula})
-                          </span>
-                        ))}
-                      </Space>
-                    ),
+                    render: (_: unknown, record: TurnoPrevisto) => {
+                      // Se for turno extra, não precisa colorir
+                      if (record.status === 'TURNO_EXTRA') {
+                        return (
+                          <Space direction="vertical" size={0}>
+                            {record.eletricistas.map((el) => (
+                              <span key={el.id}>
+                                {el.nome} ({el.matricula})
+                              </span>
+                            ))}
+                          </Space>
+                        );
+                      }
+
+                      // Para turnos previstos, verificar quais abriram
+                      // Se status é NAO_ABERTO, nenhum abriu
+                      // Se status é ADERENTE ou NAO_ADERENTE, verificar quais abriram
+                      const eletricistasQueAbriramIds = new Set(
+                        record.status === 'NAO_ABERTO'
+                          ? []
+                          : record.eletricistasQueAbriram?.map((e) => e.id) || []
+                      );
+
+                      return (
+                        <Space direction="vertical" size={0}>
+                          {record.eletricistas.map((el) => {
+                            const abriu = eletricistasQueAbriramIds.has(el.id);
+                            const style: React.CSSProperties = {
+                              backgroundColor: abriu ? '#f6ffed' : '#fff1f0',
+                              color: abriu ? '#52c41a' : '#ff4d4f',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              display: 'inline-block',
+                            };
+                            return (
+                              <span key={el.id} style={style}>
+                                {el.nome} ({el.matricula})
+                              </span>
+                            );
+                          })}
+                        </Space>
+                      );
+                    },
                   },
                   {
                     title: 'Status',

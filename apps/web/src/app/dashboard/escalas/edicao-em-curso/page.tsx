@@ -30,8 +30,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { getEscalasPublicadas } from '@/lib/actions/escala/edicaoEmCurso';
 import { transferirEscala, updateSlotEscala } from '@/lib/actions/escala/escalaEquipePeriodo';
 import { listEletricistas } from '@/lib/actions/eletricista/list';
-import { createEquipeTurnoHistorico } from '@/lib/actions/escala/equipeTurnoHistorico';
-import { TimePicker } from 'antd';
+import { createEquipeTurnoHistorico, updateEquipeTurnoHistorico, buscarHorarioVigente } from '@/lib/actions/escala/equipeTurnoHistorico';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import EquipeTurnoHistoricoForm from '@/app/dashboard/cadastro/equipe-horario/form';
@@ -83,6 +82,8 @@ export default function EdicaoEmCursoPage() {
   // Estados para modal de horário
   const [modalHorarioOpen, setModalHorarioOpen] = useState(false);
   const [equipeIdParaHorario, setEquipeIdParaHorario] = useState<number | null>(null);
+  const [horarioVigenteEditando, setHorarioVigenteEditando] = useState<any | null>(null);
+  const [loadingHorarioVigente, setLoadingHorarioVigente] = useState(false);
   const crudHorario = useCrudController<any>('equipeTurnoHistorico');
 
   // Estados para modal de edição de slot
@@ -94,8 +95,6 @@ export default function EdicaoEmCursoPage() {
     eletricistaNome: string;
     data: Date;
     estado: 'TRABALHO' | 'FOLGA' | 'FALTA' | 'EXCECAO';
-    inicioPrevisto?: string | null;
-    fimPrevisto?: string | null;
     anotacoesDia?: string | null;
   } | null>(null);
   const [formSlot] = Form.useForm();
@@ -305,19 +304,37 @@ export default function EdicaoEmCursoPage() {
         render: (horario: string, record: any) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span>{horario}</span>
-            {!record.temHorario && (
-              <Button
-                type="link"
-                size="small"
-                icon={<EditOutlined />}
-                onClick={() => {
-                  setEquipeIdParaHorario(record.equipeId);
+            <Button
+              type="link"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={async () => {
+                setEquipeIdParaHorario(record.equipeId);
+                setHorarioVigenteEditando(null);
+                setLoadingHorarioVigente(true);
+                try {
+                  // Buscar horário vigente para esta equipe
+                  const result = await buscarHorarioVigente({
+                    equipeId: record.equipeId,
+                    data: new Date(),
+                  });
+                  if (result?.success && result.data) {
+                    setHorarioVigenteEditando(result.data);
+                  } else {
+                    setHorarioVigenteEditando(null);
+                  }
+                } catch (error) {
+                  console.error('Erro ao buscar horário vigente:', error);
+                  setHorarioVigenteEditando(null);
+                } finally {
+                  setLoadingHorarioVigente(false);
                   setModalHorarioOpen(true);
-                }}
-                title="Definir horário da equipe"
-                style={{ padding: 0, height: 'auto', minWidth: 'auto' }}
-              />
-            )}
+                }
+              }}
+              title={record.temHorario ? "Editar horário da equipe" : "Definir horário da equipe"}
+              style={{ padding: 0, height: 'auto', minWidth: 'auto' }}
+              loading={loadingHorarioVigente}
+            />
           </div>
         ),
       },
@@ -331,7 +348,8 @@ export default function EdicaoEmCursoPage() {
               <div style={{ fontWeight: 'bold' }}>{record.eletricista}</div>
               <div style={{ fontSize: '11px', color: '#666' }}>{record.matricula}</div>
             </div>
-            <Button
+            {/* Botão de transferir comentado - não será usado por enquanto */}
+            {/* <Button
               type="link"
               size="small"
               icon={<SwapOutlined />}
@@ -347,7 +365,7 @@ export default function EdicaoEmCursoPage() {
               title="Transferir escala"
             >
               Transferir
-            </Button>
+            </Button> */}
           </div>
         ),
       },
@@ -417,18 +435,10 @@ export default function EdicaoEmCursoPage() {
                       eletricistaNome: record.eletricista,
                       data: slotDate,
                       estado: slotFinal.estado,
-                      inicioPrevisto: slotFinal.inicioPrevisto || null,
-                      fimPrevisto: slotFinal.fimPrevisto || null,
                       anotacoesDia: slotFinal.anotacoesDia || null,
                     });
                     formSlot.setFieldsValue({
                       estado: slotFinal.estado,
-                      inicioPrevisto: slotFinal.inicioPrevisto
-                        ? dayjs(slotFinal.inicioPrevisto, 'HH:mm:ss')
-                        : null,
-                      fimPrevisto: slotFinal.fimPrevisto
-                        ? dayjs(slotFinal.fimPrevisto, 'HH:mm:ss')
-                        : null,
                       anotacoesDia: slotFinal.anotacoesDia || '',
                     });
                     setModalSlotOpen(true);
@@ -745,11 +755,12 @@ export default function EdicaoEmCursoPage() {
 
       {/* Modal para definir/alterar horário da equipe */}
       <Modal
-        title="Definir Horário da Equipe"
+        title={horarioVigenteEditando ? "Editar Horário da Equipe" : "Definir Horário da Equipe"}
         open={modalHorarioOpen}
         onCancel={() => {
           setModalHorarioOpen(false);
           setEquipeIdParaHorario(null);
+          setHorarioVigenteEditando(null);
         }}
         footer={null}
         width={700}
@@ -757,20 +768,40 @@ export default function EdicaoEmCursoPage() {
       >
         {equipeIdParaHorario && (
           <EquipeTurnoHistoricoForm
-            key={`horario-form-${equipeIdParaHorario}`}
-            initialValues={{
-              equipeId: equipeIdParaHorario,
-              dataInicio: new Date(),
-              dataFim: null,
-            }}
+            key={`horario-form-${equipeIdParaHorario}-${horarioVigenteEditando?.id || 'new'}`}
+            initialValues={
+              horarioVigenteEditando
+                ? {
+                    id: horarioVigenteEditando.id,
+                    equipeId: horarioVigenteEditando.equipeId,
+                    horarioAberturaCatalogoId: horarioVigenteEditando.horarioAberturaCatalogoId,
+                    dataInicio: new Date(horarioVigenteEditando.dataInicio),
+                    dataFim: horarioVigenteEditando.dataFim ? new Date(horarioVigenteEditando.dataFim) : null,
+                    inicioTurnoHora: horarioVigenteEditando.inicioTurnoHora,
+                    duracaoHoras: horarioVigenteEditando.duracaoHoras,
+                    duracaoIntervaloHoras: horarioVigenteEditando.duracaoIntervaloHoras,
+                    motivo: horarioVigenteEditando.motivo,
+                    observacoes: horarioVigenteEditando.observacoes,
+                  }
+                : {
+                    equipeId: equipeIdParaHorario,
+                    dataInicio: new Date(),
+                    dataFim: null,
+                  }
+            }
             disableEquipeSelect={true}
             onSubmit={async (values: unknown) => {
+              const isEditing = !!horarioVigenteEditando;
               await crudHorario.exec(
-                () => createEquipeTurnoHistorico(values),
-                'Horário definido com sucesso!',
+                () =>
+                  isEditing
+                    ? updateEquipeTurnoHistorico({ ...(values as any), id: horarioVigenteEditando.id })
+                    : createEquipeTurnoHistorico(values),
+                isEditing ? 'Horário atualizado com sucesso!' : 'Horário definido com sucesso!',
                 () => {
                   setModalHorarioOpen(false);
                   setEquipeIdParaHorario(null);
+                  setHorarioVigenteEditando(null);
                   // Recarregar escalas para atualizar os horários
                   const carregarEscalas = async () => {
                     if (!periodo[0] || !periodo[1]) return;
@@ -796,6 +827,7 @@ export default function EdicaoEmCursoPage() {
             onCancel={() => {
               setModalHorarioOpen(false);
               setEquipeIdParaHorario(null);
+              setHorarioVigenteEditando(null);
             }}
           />
         )}
@@ -821,14 +853,6 @@ export default function EdicaoEmCursoPage() {
               escalaEquipePeriodoId: slotEditando.escalaId,
               data: slotEditando.data,
               estado: values.estado,
-              inicioPrevisto:
-                values.estado === 'TRABALHO' && values.inicioPrevisto
-                  ? values.inicioPrevisto.format('HH:mm:ss')
-                  : undefined,
-              fimPrevisto:
-                values.estado === 'TRABALHO' && values.fimPrevisto
-                  ? values.fimPrevisto.format('HH:mm:ss')
-                  : undefined,
               anotacoesDia: values.anotacoesDia || undefined,
             });
 
@@ -896,58 +920,6 @@ export default function EdicaoEmCursoPage() {
                   <Tag color="blue">Exceção</Tag>
                 </Select.Option>
               </Select>
-            </Form.Item>
-
-            <Form.Item
-              noStyle
-              shouldUpdate={(prevValues, currentValues) =>
-                prevValues.estado !== currentValues.estado
-              }
-            >
-              {({ getFieldValue }) => {
-                const estado = getFieldValue('estado');
-                const isTrabalho = estado === 'TRABALHO';
-
-                return (
-                  <>
-                    <Form.Item
-                      label="Início Previsto"
-                      name="inicioPrevisto"
-                      rules={[
-                        {
-                          required: isTrabalho,
-                          message: 'Horário de início é obrigatório para trabalho',
-                        },
-                      ]}
-                    >
-                      <TimePicker
-                        style={{ width: '100%' }}
-                        format="HH:mm"
-                        disabled={!isTrabalho}
-                        placeholder="Selecione o horário de início"
-                      />
-                    </Form.Item>
-
-                    <Form.Item
-                      label="Fim Previsto"
-                      name="fimPrevisto"
-                      rules={[
-                        {
-                          required: isTrabalho,
-                          message: 'Horário de fim é obrigatório para trabalho',
-                        },
-                      ]}
-                    >
-                      <TimePicker
-                        style={{ width: '100%' }}
-                        format="HH:mm"
-                        disabled={!isTrabalho}
-                        placeholder="Selecione o horário de fim"
-                      />
-                    </Form.Item>
-                  </>
-                );
-              }}
             </Form.Item>
 
             <Form.Item

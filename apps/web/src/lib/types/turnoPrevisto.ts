@@ -27,6 +27,11 @@ export interface TurnoPrevisto {
     nome: string;
     matricula: string;
   }>;
+  eletricistasQueAbriram?: Array<{
+    id: number;
+    nome: string;
+    matricula: string;
+  }>; // Eletricistas que realmente abriram o turno
   status: StatusTurnoPrevisto;
   turnoId?: number; // Se abriu, ID do turno
   dataAbertura?: Date; // Se abriu, quando abriu

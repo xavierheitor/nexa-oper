@@ -6,9 +6,9 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Table, Button, Space, Modal, Tag, Tooltip, App } from 'antd';
+import { Table, Button, Space, Modal, Tag, Tooltip, App, Card, Row, Col, Select } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
@@ -16,17 +16,22 @@ import {
   ClockCircleOutlined,
   CheckCircleOutlined,
   TeamOutlined,
+  FilterOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useCrudController } from '@/lib/hooks/useCrudController';
+import { useSelectOptions } from '@/lib/hooks/useSelectOptions';
 import {
   listEquipeTurnoHistorico,
   createEquipeTurnoHistorico,
   updateEquipeTurnoHistorico,
   deleteEquipeTurnoHistorico,
 } from '@/lib/actions/escala/equipeTurnoHistorico';
+import { listBases } from '@/lib/actions/base/list';
+import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
+import { listHorarioAberturaCatalogo } from '@/lib/actions/escala/horarioAberturaCatalogo';
 import EquipeTurnoHistoricoForm from './form';
 
 interface EquipeTurnoHistorico {
@@ -58,6 +63,12 @@ export default function EquipeHorarioPage() {
   const [editingItem, setEditingItem] = useState<EquipeTurnoHistorico | null>(null);
   const [initialEquipeId, setInitialEquipeId] = useState<number | null>(null);
 
+  // Estados dos filtros
+  const [filtroBase, setFiltroBase] = useState<number | undefined>(undefined);
+  const [filtroTipoEquipe, setFiltroTipoEquipe] = useState<number | undefined>(undefined);
+  const [filtroHorario, setFiltroHorario] = useState<number | undefined>(undefined);
+  const [filtroVigente, setFiltroVigente] = useState<boolean | undefined>(undefined);
+
   const crud = useCrudController<EquipeTurnoHistorico>('equipeTurnoHistorico');
 
   // Verificar se há equipeId na query string e abrir modal automaticamente
@@ -72,10 +83,79 @@ export default function EquipeHorarioPage() {
     }
   }, [searchParams, isModalOpen]);
 
-  const associacoes = useEntityData({
-    key: 'equipeTurnoHistorico',
+  // Carregar dados para os filtros
+  const { data: bases } = useEntityData({
+    key: 'bases-filtro-equipe-horario',
+    fetcherAction: unwrapFetcher((params) => listBases({
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'nome',
+      orderDir: 'asc',
+      ...params,
+    })),
+    paginationEnabled: false,
+    initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
+  });
+
+  const { data: tiposEquipe } = useEntityData({
+    key: 'tipos-equipe-filtro-equipe-horario',
+    fetcherAction: unwrapFetcher((params) => listTiposEquipe({
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'nome',
+      orderDir: 'asc',
+      ...params,
+    })),
+    paginationEnabled: false,
+    initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
+  });
+
+  const { data: horarios } = useEntityData({
+    key: 'horarios-filtro-equipe-horario',
     fetcherAction: async (params: any) => {
-      const data = await unwrapFetcher(listEquipeTurnoHistorico)(params);
+      const result = await listHorarioAberturaCatalogo({
+        page: 1,
+        pageSize: 1000,
+        orderBy: 'nome',
+        orderDir: 'asc',
+        ativo: true,
+        ...params,
+      });
+      return result.success && result.data ? result.data.data : [];
+    },
+    paginationEnabled: false,
+  });
+
+  const basesOptions = useSelectOptions(bases, { labelKey: 'nome', valueKey: 'id' });
+  const tiposEquipeOptions = useSelectOptions(tiposEquipe, { labelKey: 'nome', valueKey: 'id' });
+  const horariosOptions = useSelectOptions(horarios, { labelKey: 'nome', valueKey: 'id' });
+
+  // Criar fetcher que inclui os filtros
+  const associacoesFetcher = useMemo(
+    () =>
+      unwrapFetcher((params: any) =>
+        listEquipeTurnoHistorico({
+          ...params,
+          baseId: filtroBase,
+          tipoEquipeId: filtroTipoEquipe,
+          horarioAberturaCatalogoId: filtroHorario,
+          vigente: filtroVigente,
+        })
+      ),
+    [filtroBase, filtroTipoEquipe, filtroHorario, filtroVigente]
+  );
+
+  // Chave do SWR incluindo filtros
+  const associacoesKey = useMemo(
+    () =>
+      `equipeTurnoHistorico-${filtroBase || 'all'}-${filtroTipoEquipe || 'all'}-${filtroHorario || 'all'}-${filtroVigente !== undefined ? filtroVigente : 'all'}`,
+    [filtroBase, filtroTipoEquipe, filtroHorario, filtroVigente]
+  );
+
+  const associacoes = useEntityData({
+    key: associacoesKey,
+    fetcherAction: async (params: any) => {
+      const data = await associacoesFetcher(params);
       // Converter Decimal para number para evitar erro de serialização
       return data.map((item: any) => ({
         ...item,
@@ -91,6 +171,25 @@ export default function EquipeHorarioPage() {
       orderDir: 'desc',
     },
   });
+
+  // Resetar para página 1 quando os filtros mudarem
+  const prevFiltersRef = useRef<{ filtroBase?: number; filtroTipoEquipe?: number; filtroHorario?: number; filtroVigente?: boolean }>({});
+  useEffect(() => {
+    const filtersChanged =
+      prevFiltersRef.current.filtroBase !== filtroBase ||
+      prevFiltersRef.current.filtroTipoEquipe !== filtroTipoEquipe ||
+      prevFiltersRef.current.filtroHorario !== filtroHorario ||
+      prevFiltersRef.current.filtroVigente !== filtroVigente;
+
+    if (filtersChanged) {
+      associacoes.setParams((prev) => ({
+        ...prev,
+        page: 1,
+      }));
+      prevFiltersRef.current = { filtroBase, filtroTipoEquipe, filtroHorario, filtroVigente };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtroBase, filtroTipoEquipe, filtroHorario, filtroVigente]);
 
   const isVigente = (registro: EquipeTurnoHistorico): boolean => {
     const hoje = new Date();
@@ -250,6 +349,88 @@ export default function EquipeHorarioPage() {
           Associar Equipe a Horário
         </Button>
       </div>
+
+      {/* Card de Filtros */}
+      <Card
+        size="small"
+        title={
+          <Space>
+            <FilterOutlined />
+            <span>Filtros</span>
+          </Space>
+        }
+        style={{ marginBottom: '16px' }}
+      >
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={6}>
+            <div>
+              <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Base</div>
+              <Select
+                placeholder="Todas as bases"
+                allowClear
+                value={filtroBase}
+                onChange={(value) => setFiltroBase(value || undefined)}
+                options={basesOptions}
+                style={{ width: '100%' }}
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                }
+              />
+            </div>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <div>
+              <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Tipo de Equipe</div>
+              <Select
+                placeholder="Todos os tipos"
+                allowClear
+                value={filtroTipoEquipe}
+                onChange={(value) => setFiltroTipoEquipe(value || undefined)}
+                options={tiposEquipeOptions}
+                style={{ width: '100%' }}
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                }
+              />
+            </div>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <div>
+              <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Horário</div>
+              <Select
+                placeholder="Todos os horários"
+                allowClear
+                value={filtroHorario}
+                onChange={(value) => setFiltroHorario(value || undefined)}
+                options={horariosOptions}
+                style={{ width: '100%' }}
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                }
+              />
+            </div>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <div>
+              <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Status</div>
+              <Select
+                placeholder="Todos"
+                allowClear
+                value={filtroVigente}
+                onChange={(value) => setFiltroVigente(value !== undefined ? value : undefined)}
+                style={{ width: '100%' }}
+                options={[
+                  { label: 'Vigente', value: true },
+                  { label: 'Inativo', value: false },
+                ]}
+              />
+            </div>
+          </Col>
+        </Row>
+      </Card>
 
       <Table
         columns={columns as any}

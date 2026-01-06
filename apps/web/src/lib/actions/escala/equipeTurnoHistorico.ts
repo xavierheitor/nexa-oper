@@ -109,3 +109,35 @@ export const deleteEquipeTurnoHistorico = async (id: number) =>
     { entityName: 'EquipeTurnoHistorico', actionType: 'delete' }
   );
 
+export const buscarHorarioVigente = async (rawData: { equipeId: number; data?: Date }) =>
+  handleServerAction(
+    z.object({
+      equipeId: z.number().int().positive(),
+      data: z.coerce.date().optional(),
+    }),
+    async data => {
+      const service = container.get<EquipeTurnoHistoricoService>(
+        'equipeTurnoHistoricoService'
+      );
+      const dataConsulta = data.data || new Date();
+      const result = await service.buscarHorarioVigente(data.equipeId, dataConsulta);
+      if (!result) return null;
+
+      // Converter Decimals para numbers (incluindo relacionamentos)
+      return {
+        ...result,
+        duracaoHoras: Number(result.duracaoHoras),
+        duracaoIntervaloHoras: Number(result.duracaoIntervaloHoras),
+        horarioAberturaCatalogo: result.horarioAberturaCatalogo
+          ? {
+              ...result.horarioAberturaCatalogo,
+              duracaoHoras: Number(result.horarioAberturaCatalogo.duracaoHoras),
+              duracaoIntervaloHoras: Number(result.horarioAberturaCatalogo.duracaoIntervaloHoras),
+            }
+          : null,
+      };
+    },
+    rawData,
+    { entityName: 'EquipeTurnoHistorico', actionType: 'get' }
+  );
+
