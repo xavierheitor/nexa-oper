@@ -15,8 +15,6 @@ import { listEquipes } from '@/lib/actions/equipe/list';
 import { listHorarioAberturaCatalogo } from '@/lib/actions/escala/horarioAberturaCatalogo';
 import { HorarioAberturaCatalogo, Equipe } from '@nexa-oper/db';
 
-const { RangePicker } = DatePicker;
-
 interface EquipeTurnoHistoricoFormProps {
   initialValues?: {
     id?: number;
@@ -87,7 +85,8 @@ export default function EquipeTurnoHistoricoForm({
   interface FormValues {
     equipeId: number;
     horarioAberturaCatalogoId?: number;
-    vigencia: [dayjs.Dayjs, dayjs.Dayjs | null];
+    dataInicio: dayjs.Dayjs;
+    dataFim?: dayjs.Dayjs | null;
     motivo?: string;
     observacoes?: string;
   }
@@ -96,9 +95,9 @@ export default function EquipeTurnoHistoricoForm({
     setLoading(true);
     try {
       // Validar que a data início existe e é válida
-      if (!values.vigencia || !values.vigencia[0] || !values.vigencia[0].isValid()) {
+      if (!values.dataInicio || !values.dataInicio.isValid()) {
         form.setFields([{
-          name: 'vigencia',
+          name: 'dataInicio',
           errors: ['Data de início é obrigatória e deve ser válida']
         }]);
         setLoading(false);
@@ -112,15 +111,15 @@ export default function EquipeTurnoHistoricoForm({
         duracaoIntervaloHoras: 1,
       };
 
-      const dataInicio = values.vigencia[0].toDate();
-      const dataFim = values.vigencia[1] && values.vigencia[1].isValid()
-        ? values.vigencia[1].toDate()
+      const dataInicio = values.dataInicio.toDate();
+      const dataFim = values.dataFim && values.dataFim.isValid()
+        ? values.dataFim.toDate()
         : null;
 
       // Validar que dataFim é maior ou igual a dataInicio se ambas existirem
       if (dataFim && dataFim < dataInicio) {
         form.setFields([{
-          name: 'vigencia',
+          name: 'dataFim',
           errors: ['Data fim deve ser maior ou igual à data início']
         }]);
         setLoading(false);
@@ -150,10 +149,8 @@ export default function EquipeTurnoHistoricoForm({
     ? {
         equipeId: initialValues.equipeId,
         horarioAberturaCatalogoId: initialValues.horarioAberturaCatalogoId || undefined,
-        vigencia: [
-          dayjs(initialValues.dataInicio),
-          initialValues.dataFim ? dayjs(initialValues.dataFim) : null,
-        ],
+        dataInicio: dayjs(initialValues.dataInicio),
+        dataFim: initialValues.dataFim ? dayjs(initialValues.dataFim) : null,
         motivo: initialValues.motivo || undefined,
         observacoes: initialValues.observacoes || undefined,
       }
@@ -243,15 +240,42 @@ export default function EquipeTurnoHistoricoForm({
       )}
 
       <Form.Item
-        name="vigencia"
-        label="Período de Vigência"
-        rules={[{ required: true, message: 'Período é obrigatório' }]}
-        tooltip="Defina quando esta equipe usará este horário. Deixe a data fim vazia para vigência atual"
+        name="dataInicio"
+        label="Data Início"
+        rules={[{ required: true, message: 'Data início é obrigatória' }]}
+        tooltip="Data em que este horário passa a valer para a equipe"
       >
-        <RangePicker
+        <DatePicker
           style={{ width: '100%' }}
           format="DD/MM/YYYY"
-          placeholder={['Início', 'Fim (deixe vazio se atual)']}
+          placeholder="Selecione a data início"
+        />
+      </Form.Item>
+
+      <Form.Item
+        name="dataFim"
+        label="Data Fim (Opcional)"
+        tooltip="Deixe vazio para mudança permanente. Se preenchida, define quando este horário deixa de valer"
+        dependencies={['dataInicio']}
+        rules={[
+          ({ getFieldValue }) => ({
+            validator(_, value) {
+              if (!value) {
+                return Promise.resolve();
+              }
+              const dataInicio = getFieldValue('dataInicio');
+              if (dataInicio && value.isBefore(dataInicio, 'day')) {
+                return Promise.reject(new Error('Data fim deve ser maior ou igual à data início'));
+              }
+              return Promise.resolve();
+            },
+          }),
+        ]}
+      >
+        <DatePicker
+          style={{ width: '100%' }}
+          format="DD/MM/YYYY"
+          placeholder="Deixe vazio para mudança permanente"
         />
       </Form.Item>
 
