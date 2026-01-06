@@ -58,7 +58,7 @@ export default function AderenciaEscalaPage() {
   const { message } = App.useApp();
   const [periodo, setPeriodo] = useState<[Dayjs, Dayjs]>([
     dayjs().startOf('month'),
-    dayjs().endOf('month'),
+    dayjs(), // Hoje, não o final do mês
   ]);
   const [filtroBase, setFiltroBase] = useState<number | undefined>(undefined);
   const [filtroTipoEquipe, setFiltroTipoEquipe] = useState<number | undefined>(
@@ -301,16 +301,23 @@ export default function AderenciaEscalaPage() {
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12} md={6}>
                 <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Período</div>
-                <RangePicker
-                  value={periodo}
-                  onChange={(dates) => {
-                    if (dates && dates[0] && dates[1]) {
-                      setPeriodo([dates[0], dates[1]]);
-                    }
-                  }}
-                  format="DD/MM/YYYY"
-                  style={{ width: '100%' }}
-                />
+              <RangePicker
+                value={periodo}
+                onChange={(dates) => {
+                  if (dates && dates[0] && dates[1]) {
+                    setPeriodo([dates[0], dates[1]]);
+                  }
+                }}
+                format="DD/MM/YYYY"
+                style={{ width: '100%' }}
+                disabledDate={(current) => {
+                  // Não permitir datas futuras (após hoje)
+                  if (current && current > dayjs().endOf('day')) {
+                    return true;
+                  }
+                  return false;
+                }}
+              />
               </Col>
               <Col xs={24} sm={12} md={6}>
                 <div style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}>Base</div>
