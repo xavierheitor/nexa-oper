@@ -31,7 +31,6 @@ import { getEscalasPublicadas } from '@/lib/actions/escala/edicaoEmCurso';
 import { transferirEscala, updateSlotEscala } from '@/lib/actions/escala/escalaEquipePeriodo';
 import { listEletricistas } from '@/lib/actions/eletricista/list';
 import { createEquipeTurnoHistorico } from '@/lib/actions/escala/equipeTurnoHistorico';
-import { TimePicker } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import EquipeTurnoHistoricoForm from '@/app/dashboard/cadastro/equipe-horario/form';
@@ -94,8 +93,6 @@ export default function EdicaoEmCursoPage() {
     eletricistaNome: string;
     data: Date;
     estado: 'TRABALHO' | 'FOLGA' | 'FALTA' | 'EXCECAO';
-    inicioPrevisto?: string | null;
-    fimPrevisto?: string | null;
     anotacoesDia?: string | null;
   } | null>(null);
   const [formSlot] = Form.useForm();
@@ -331,7 +328,8 @@ export default function EdicaoEmCursoPage() {
               <div style={{ fontWeight: 'bold' }}>{record.eletricista}</div>
               <div style={{ fontSize: '11px', color: '#666' }}>{record.matricula}</div>
             </div>
-            <Button
+            {/* Botão de transferir comentado - não será usado por enquanto */}
+            {/* <Button
               type="link"
               size="small"
               icon={<SwapOutlined />}
@@ -347,7 +345,7 @@ export default function EdicaoEmCursoPage() {
               title="Transferir escala"
             >
               Transferir
-            </Button>
+            </Button> */}
           </div>
         ),
       },
@@ -417,18 +415,10 @@ export default function EdicaoEmCursoPage() {
                       eletricistaNome: record.eletricista,
                       data: slotDate,
                       estado: slotFinal.estado,
-                      inicioPrevisto: slotFinal.inicioPrevisto || null,
-                      fimPrevisto: slotFinal.fimPrevisto || null,
                       anotacoesDia: slotFinal.anotacoesDia || null,
                     });
                     formSlot.setFieldsValue({
                       estado: slotFinal.estado,
-                      inicioPrevisto: slotFinal.inicioPrevisto
-                        ? dayjs(slotFinal.inicioPrevisto, 'HH:mm:ss')
-                        : null,
-                      fimPrevisto: slotFinal.fimPrevisto
-                        ? dayjs(slotFinal.fimPrevisto, 'HH:mm:ss')
-                        : null,
                       anotacoesDia: slotFinal.anotacoesDia || '',
                     });
                     setModalSlotOpen(true);
@@ -821,14 +811,6 @@ export default function EdicaoEmCursoPage() {
               escalaEquipePeriodoId: slotEditando.escalaId,
               data: slotEditando.data,
               estado: values.estado,
-              inicioPrevisto:
-                values.estado === 'TRABALHO' && values.inicioPrevisto
-                  ? values.inicioPrevisto.format('HH:mm:ss')
-                  : undefined,
-              fimPrevisto:
-                values.estado === 'TRABALHO' && values.fimPrevisto
-                  ? values.fimPrevisto.format('HH:mm:ss')
-                  : undefined,
               anotacoesDia: values.anotacoesDia || undefined,
             });
 
@@ -896,58 +878,6 @@ export default function EdicaoEmCursoPage() {
                   <Tag color="blue">Exceção</Tag>
                 </Select.Option>
               </Select>
-            </Form.Item>
-
-            <Form.Item
-              noStyle
-              shouldUpdate={(prevValues, currentValues) =>
-                prevValues.estado !== currentValues.estado
-              }
-            >
-              {({ getFieldValue }) => {
-                const estado = getFieldValue('estado');
-                const isTrabalho = estado === 'TRABALHO';
-
-                return (
-                  <>
-                    <Form.Item
-                      label="Início Previsto"
-                      name="inicioPrevisto"
-                      rules={[
-                        {
-                          required: isTrabalho,
-                          message: 'Horário de início é obrigatório para trabalho',
-                        },
-                      ]}
-                    >
-                      <TimePicker
-                        style={{ width: '100%' }}
-                        format="HH:mm"
-                        disabled={!isTrabalho}
-                        placeholder="Selecione o horário de início"
-                      />
-                    </Form.Item>
-
-                    <Form.Item
-                      label="Fim Previsto"
-                      name="fimPrevisto"
-                      rules={[
-                        {
-                          required: isTrabalho,
-                          message: 'Horário de fim é obrigatório para trabalho',
-                        },
-                      ]}
-                    >
-                      <TimePicker
-                        style={{ width: '100%' }}
-                        format="HH:mm"
-                        disabled={!isTrabalho}
-                        placeholder="Selecione o horário de fim"
-                      />
-                    </Form.Item>
-                  </>
-                );
-              }}
             </Form.Item>
 
             <Form.Item
