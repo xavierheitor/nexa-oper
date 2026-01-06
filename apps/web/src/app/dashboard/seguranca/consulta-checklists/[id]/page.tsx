@@ -149,13 +149,16 @@ export default function ChecklistDetalhesPage({ params }: { params: Promise<{ id
   };
 
   const getRespostaStatus = (resposta: ChecklistResposta) => {
-    if (resposta.aguardandoFoto) {
-      return { color: 'orange', icon: <ExclamationCircleOutlined />, text: 'Aguardando foto' };
+    // Sempre mostrar a resposta
+    const respostaText = resposta.opcaoResposta.nome;
+    const temFoto = resposta.fotosSincronizadas > 0 || (resposta.ChecklistRespostaFoto && resposta.ChecklistRespostaFoto.length > 0);
+    const reprovado = resposta.opcaoResposta.geraPendencia;
+
+    if (reprovado) {
+      return { color: 'red', icon: <ExclamationCircleOutlined />, text: respostaText };
     }
-    if (resposta.fotosSincronizadas > 0 || (resposta.ChecklistRespostaFoto && resposta.ChecklistRespostaFoto.length > 0)) {
-      return { color: 'green', icon: <CheckCircleOutlined />, text: 'Com foto' };
-    }
-    return { color: 'blue', icon: <CheckCircleOutlined />, text: 'Respondido' };
+    // Aprovado
+    return { color: 'green', icon: <CheckCircleOutlined />, text: respostaText };
   };
 
   const dataPreenchimentoStr = checklist.dataPreenchimento instanceof Date
@@ -235,62 +238,43 @@ export default function ChecklistDetalhesPage({ params }: { params: Promise<{ id
         {checklist.ChecklistResposta.length === 0 ? (
           <Empty description="Nenhuma resposta encontrada" />
         ) : (
-          <Collapse
-            items={checklist.ChecklistResposta.map((resposta, index) => {
+          <Space direction="vertical" size={16} style={{ width: '100%' }}>
+            {checklist.ChecklistResposta.map((resposta, index) => {
               const status = getRespostaStatus(resposta);
               const dataRespostaStr = resposta.dataResposta instanceof Date
                 ? resposta.dataResposta.toISOString()
                 : resposta.dataResposta;
               const { date: respostaDate, time: respostaTime } = formatDateTime(dataRespostaStr);
+              const temFoto = resposta.ChecklistRespostaFoto && resposta.ChecklistRespostaFoto.length > 0;
+              const reprovado = resposta.opcaoResposta.geraPendencia;
+              const deveExpandir = reprovado && temFoto;
 
-              return {
-                key: resposta.id,
-                label: (
-                  <Space>
-                    <Text strong>{index + 1}. {resposta.pergunta.nome}</Text>
-                    <Tag color={status.color} icon={status.icon}>
-                      {status.text}
-                    </Tag>
-                    {resposta.opcaoResposta.geraPendencia && (
-                      <Tag color="red">Gera Pendência</Tag>
-                    )}
-                  </Space>
-                ),
-                extra: (
-                  <Space>
-                    <Text type="secondary">{respostaDate} {respostaTime}</Text>
-                    {resposta.ChecklistRespostaFoto && resposta.ChecklistRespostaFoto.length > 0 && (
-                      <Space>
-                        <CameraOutlined />
-                        <Text>{resposta.ChecklistRespostaFoto.length}</Text>
+              // Se aprovado, mostrar direto sem collapse
+              if (!reprovado) {
+                return (
+                  <Card key={resposta.id} size="small" style={{ borderLeft: '4px solid #52c41a' }}>
+                    <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                        <Space>
+                          <Text strong>{index + 1}. {resposta.pergunta.nome}</Text>
+                          <Tag color={status.color} icon={status.icon}>
+                            {status.text}
+                          </Tag>
+                        </Space>
+                        <Space>
+                          <Text type="secondary">{respostaDate} {respostaTime}</Text>
+                          {temFoto && (
+                            <Space>
+                              <CameraOutlined />
+                              <Text>{resposta.ChecklistRespostaFoto.length}</Text>
+                            </Space>
+                          )}
+                        </Space>
                       </Space>
-                    )}
-                  </Space>
-                ),
-                children: (
-                  <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                    {/* Resposta */}
-                    <Card size="small">
-                      <Space direction="vertical" size={4}>
-                        <Text strong>Resposta:</Text>
-                        <Tag color={resposta.opcaoResposta.geraPendencia ? 'red' : 'green'} style={{ fontSize: '14px', padding: '4px 12px' }}>
-                          {resposta.opcaoResposta.nome}
-                        </Tag>
-                        {resposta.opcaoResposta.geraPendencia && (
-                          <Text type="warning">
-                            ⚠️ Esta resposta gera uma pendência automática
-                          </Text>
-                        )}
-                      </Space>
-                    </Card>
-
-                    {/* Fotos */}
-                    {resposta.ChecklistRespostaFoto && resposta.ChecklistRespostaFoto.length > 0 && (
-                      <Card size="small" title={<><CameraOutlined /> Fotos ({resposta.ChecklistRespostaFoto.length})</>}>
+                      {temFoto && (
                         <Row gutter={[16, 16]}>
                           {resposta.ChecklistRespostaFoto.map((foto) => {
                             const photoUrl = foto.urlPublica || buildPhotoUrl(foto.caminhoArquivo);
-
                             return (
                               <Col xs={24} sm={12} md={8} lg={6} key={foto.id}>
                                 <Card
@@ -301,9 +285,7 @@ export default function ChecklistDetalhesPage({ params }: { params: Promise<{ id
                                         src={photoUrl}
                                         alt={`Foto ${foto.id}`}
                                         style={{ objectFit: 'cover', height: 200 }}
-                                        preview={{
-                                          mask: 'Visualizar',
-                                        }}
+                                        preview={{ mask: 'Visualizar' }}
                                       />
                                     ) : (
                                       <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
@@ -327,17 +309,112 @@ export default function ChecklistDetalhesPage({ params }: { params: Promise<{ id
                             );
                           })}
                         </Row>
-                      </Card>
-                    )}
+                      )}
+                    </Space>
+                  </Card>
+                );
+              }
 
-                    {(!resposta.ChecklistRespostaFoto || resposta.ChecklistRespostaFoto.length === 0) && (
-                      <Text type="secondary">Sem fotos associadas</Text>
-                    )}
+              // Se reprovado, usar collapse apenas se tiver foto
+              if (deveExpandir) {
+                return (
+                  <Collapse
+                    key={resposta.id}
+                    defaultActiveKey={[resposta.id.toString()]}
+                    items={[{
+                      key: resposta.id.toString(),
+                      label: (
+                        <Space>
+                          <Text strong>{index + 1}. {resposta.pergunta.nome}</Text>
+                          <Tag color={status.color} icon={status.icon}>
+                            {status.text}
+                          </Tag>
+                          <Tag color="red">Gera Pendência</Tag>
+                        </Space>
+                      ),
+                      extra: (
+                        <Space>
+                          <Text type="secondary">{respostaDate} {respostaTime}</Text>
+                          {temFoto && (
+                            <Space>
+                              <CameraOutlined />
+                              <Text>{resposta.ChecklistRespostaFoto.length}</Text>
+                            </Space>
+                          )}
+                        </Space>
+                      ),
+                      children: (
+                        <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                          <Card size="small" style={{ backgroundColor: '#fff1f0' }}>
+                            <Space direction="vertical" size={4}>
+                              <Text strong>Resposta:</Text>
+                              <Tag color="red" style={{ fontSize: '14px', padding: '4px 12px' }}>
+                                {resposta.opcaoResposta.nome}
+                              </Tag>
+                              <Text type="warning">
+                                ⚠️ Esta resposta gera uma pendência automática
+                              </Text>
+                            </Space>
+                          </Card>
+                          {temFoto && (
+                            <Card size="small" title={<><CameraOutlined /> Fotos ({resposta.ChecklistRespostaFoto.length})</>}>
+                              <Row gutter={[16, 16]}>
+                                {resposta.ChecklistRespostaFoto.map((foto) => {
+                                  const photoUrl = foto.urlPublica || buildPhotoUrl(foto.caminhoArquivo);
+                                  return (
+                                    <Col xs={24} sm={12} md={12} lg={8} key={foto.id}>
+                                      {isValidPhotoPath(foto.caminhoArquivo) || foto.urlPublica ? (
+                                        <Image
+                                          src={photoUrl}
+                                          alt={`Foto ${foto.id}`}
+                                          style={{ width: '100%', borderRadius: '8px' }}
+                                          preview={{ mask: 'Ampliar' }}
+                                        />
+                                      ) : (
+                                        <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5', borderRadius: '8px' }}>
+                                          <Text type="secondary">Foto não disponível</Text>
+                                        </div>
+                                      )}
+                                      <Space direction="vertical" size={4} style={{ marginTop: '8px' }}>
+                                        <Text type="secondary" style={{ fontSize: '12px' }}>
+                                          {new Date(foto.createdAt).toLocaleString('pt-BR')}
+                                        </Text>
+                                        {foto.tamanhoBytes && (
+                                          <Text type="secondary" style={{ fontSize: '12px' }}>
+                                            {formatFileSize(foto.tamanhoBytes)}
+                                          </Text>
+                                        )}
+                                      </Space>
+                                    </Col>
+                                  );
+                                })}
+                              </Row>
+                            </Card>
+                          )}
+                        </Space>
+                      ),
+                    }]}
+                  />
+                );
+              }
+
+              // Reprovado sem foto - mostrar direto sem collapse
+              return (
+                <Card key={resposta.id} size="small" style={{ borderLeft: '4px solid #ff4d4f' }}>
+                  <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                    <Space>
+                      <Text strong>{index + 1}. {resposta.pergunta.nome}</Text>
+                      <Tag color={status.color} icon={status.icon}>
+                        {status.text}
+                      </Tag>
+                      <Tag color="red">Gera Pendência</Tag>
+                    </Space>
+                    <Text type="secondary">{respostaDate} {respostaTime}</Text>
                   </Space>
-                ),
-              };
+                </Card>
+              );
             })}
-          />
+          </Space>
         )}
       </Card>
     </div>
