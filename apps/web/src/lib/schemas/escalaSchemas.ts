@@ -419,6 +419,9 @@ export const equipeTurnoHistoricoFilterSchema = z.object({
   orderDir: z.enum(['asc', 'desc']),
   search: z.string().optional(),
   equipeId: z.number().int().positive().optional(),
+  baseId: z.number().int().positive().optional(),
+  tipoEquipeId: z.number().int().positive().optional(),
+  horarioAberturaCatalogoId: z.number().int().positive().optional(),
   vigente: z.boolean().optional(),
   include: z.custom<IncludeConfig>().optional(),
 });
