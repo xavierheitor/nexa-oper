@@ -953,8 +953,8 @@ export default function TurnosPage() {
           const horaAtual = agora.getHours() * 60 + agora.getMinutes(); // Minutos desde meia-noite
 
           // Função para converter horário "HH:MM:SS" para minutos desde meia-noite
-          const horarioParaMinutos = (horario: string | null): number | null => {
-            if (!horario) return null;
+          const horarioParaMinutos = (horario: string | null | undefined): number | null => {
+            if (!horario || typeof horario !== 'string') return null;
             const [hora, minuto] = horario.split(':').map(Number);
             if (isNaN(hora) || isNaN(minuto)) return null;
             return hora * 60 + minuto;

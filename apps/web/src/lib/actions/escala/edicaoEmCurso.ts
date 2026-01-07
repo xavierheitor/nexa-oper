@@ -38,6 +38,12 @@ export const getEscalasPublicadas = async (rawData: unknown) =>
             select: {
               id: true,
               nome: true,
+              tipoEquipe: {
+                select: {
+                  id: true,
+                  nome: true,
+                },
+              },
             },
           },
           tipoEscala: {
@@ -169,4 +175,3 @@ export const getEscalasPublicadas = async (rawData: unknown) =>
     rawData,
     { entityName: 'EscalaEquipePeriodo', actionType: 'get' }
   );
-
