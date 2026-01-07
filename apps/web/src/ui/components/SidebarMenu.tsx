@@ -172,7 +172,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
 
       // Submenus de Turnos
       '/dashboard/turnos': 'turnos-menu',
-      '/dashboard/historico': 'turnos-menu',
+      '/dashboard/turnos/historico': 'turnos-menu',
 
       // Submenus de Frequência
       '/dashboard/frequencia/eletricista': 'frequencia-menu',
@@ -387,8 +387,8 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
           label: <Link href='/dashboard/turnos'>Visão Geral</Link>,
         },
         {
-          key: '/dashboard/historico',
-          label: <Link href='/dashboard/historico'>Histórico</Link>,
+          key: '/dashboard/turnos/historico',
+          label: <Link href='/dashboard/turnos/historico'>Histórico</Link>,
         },
       ],
     },

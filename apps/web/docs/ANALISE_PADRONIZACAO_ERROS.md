@@ -88,7 +88,7 @@ try {
 
 - `apps/web/src/app/dashboard/cadastro/escala-equipe-periodo/page.tsx`
 - `apps/web/src/app/dashboard/frequencia/faltas/page.tsx`
-- `apps/web/src/app/dashboard/historico/page.tsx`
+- `apps/web/src/app/dashboard/turnos/historico/page.tsx`
 - E mais...
 
 ### 3. **Repositories e Helpers**

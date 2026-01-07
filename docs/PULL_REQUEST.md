@@ -42,7 +42,7 @@ Esta PR adiciona o campo `motorista` na tabela `TurnoEletricistas` para identifi
   - **Ícone de carro** (`CarOutlined`) adicionado ao lado do nome do eletricista motorista
   - Implementado nas tabelas de:
     - Visão Geral de Turnos (`/dashboard/turnos`)
-    - Histórico de Turnos (`/dashboard/historico`)
+    - Histórico de Turnos (`/dashboard/turnos/historico`)
   - Tooltip atualizado para indicar "Motorista" quando aplicável
 
 ### 📊 Melhorias nos Relatórios
@@ -135,4 +135,3 @@ interface TurnoEletricista {
 ---
 
 **Versões**: Web `0.1.1` | API `0.0.2`
-
