@@ -65,6 +65,8 @@ export default function EdicaoEmCursoPage() {
 
   // Estados dos filtros
   const [filtroBase, setFiltroBase] = useState<string | null>(null);
+  const [filtroTipoEquipe, setFiltroTipoEquipe] = useState<string | null>(null);
+  const [filtroEquipe, setFiltroEquipe] = useState<string | null>(null);
   const [filtroEletricista, setFiltroEletricista] = useState<string>('');
   const [filtroHorario, setFiltroHorario] = useState<string | null>(null);
   const [filtrosDias, setFiltrosDias] = useState<Record<string, string | null>>({});
@@ -114,6 +116,8 @@ export default function EdicaoEmCursoPage() {
       setLoading(true);
       // Limpar filtros quando o período muda
       setFiltroBase(null);
+      setFiltroTipoEquipe(null);
+      setFiltroEquipe(null);
       setFiltroEletricista('');
       setFiltroHorario(null);
       setFiltrosDias({});
@@ -157,11 +161,19 @@ export default function EdicaoEmCursoPage() {
   // Extrair valores únicos para os filtros
   const valoresUnicos = useMemo(() => {
     const bases = new Set<string>();
+    const tiposEquipe = new Set<string>();
+    const equipes = new Set<string>();
     const horarios = new Set<string>();
 
     escalas.forEach((escala: any) => {
       if (escala.base?.nome) {
         bases.add(escala.base.nome);
+      }
+      if (escala.equipe?.tipoEquipe?.nome) {
+        tiposEquipe.add(escala.equipe.tipoEquipe.nome);
+      }
+      if (escala.equipe?.nome) {
+        equipes.add(escala.equipe.nome);
       }
       if (escala.horario) {
         const horarioStr = `${escala.horario.inicioTurnoHora.substring(0, 5)}${escala.horario.fimTurnoHora ? ` - ${escala.horario.fimTurnoHora.substring(0, 5)}` : ''}`;
@@ -173,6 +185,8 @@ export default function EdicaoEmCursoPage() {
 
     return {
       bases: Array.from(bases).sort(),
+      tiposEquipe: Array.from(tiposEquipe).sort(),
+      equipes: Array.from(equipes).sort(),
       horarios: Array.from(horarios).sort(),
     };
   }, [escalas]);
@@ -210,6 +224,8 @@ export default function EdicaoEmCursoPage() {
           escalaId: escala.id,
           equipeId: escala.equipe.id,
           eletricistaId,
+          equipeNome: escala.equipe?.nome || '-',
+          tipoEquipe: escala.equipe?.tipoEquipe?.nome || '-',
           base: escala.base?.nome || '-',
           prefixo: escala.equipe.nome.substring(0, 10) || '-', // Usa parte do nome como prefixo
           horario: horarioStr,
@@ -246,6 +262,16 @@ export default function EdicaoEmCursoPage() {
         return false;
       }
 
+      // Filtro de tipo de equipe
+      if (filtroTipoEquipe && row.tipoEquipe !== filtroTipoEquipe) {
+        return false;
+      }
+
+      // Filtro de equipe
+      if (filtroEquipe && row.equipeNome !== filtroEquipe) {
+        return false;
+      }
+
       // Filtro de eletricista (texto)
       if (filtroEletricista) {
         const busca = filtroEletricista.toLowerCase();
@@ -270,7 +296,16 @@ export default function EdicaoEmCursoPage() {
 
       return true;
     });
-  }, [escalas, dias, filtroBase, filtroEletricista, filtroHorario, filtrosDias]);
+  }, [
+    escalas,
+    dias,
+    filtroBase,
+    filtroTipoEquipe,
+    filtroEquipe,
+    filtroEletricista,
+    filtroHorario,
+    filtrosDias,
+  ]);
 
   // Criar colunas da tabela (sem filtros nas colunas)
   const columns: ColumnsType<any> = useMemo(() => {
@@ -544,7 +579,7 @@ export default function EdicaoEmCursoPage() {
 
           {/* Linha de Filtros */}
           <Row gutter={16} align="bottom">
-            <Col span={6}>
+            <Col xs={24} sm={12} lg={8}>
               <div style={{ marginBottom: 4, fontSize: '12px', fontWeight: 'bold' }}>Base</div>
               <Select
                 style={{ width: '100%' }}
@@ -560,7 +595,47 @@ export default function EdicaoEmCursoPage() {
                 ))}
               </Select>
             </Col>
-            <Col span={6}>
+            <Col xs={24} sm={12} lg={8}>
+              <div style={{ marginBottom: 4, fontSize: '12px', fontWeight: 'bold' }}>Tipo de Equipe</div>
+              <Select
+                style={{ width: '100%' }}
+                placeholder="Filtrar por tipo de equipe"
+                value={filtroTipoEquipe}
+                onChange={(value) => setFiltroTipoEquipe(value)}
+                allowClear
+              >
+                {valoresUnicos.tiposEquipe.map((tipo) => (
+                  <Select.Option key={tipo} value={tipo}>
+                    {tipo}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Col>
+            <Col xs={24} sm={12} lg={8}>
+              <div style={{ marginBottom: 4, fontSize: '12px', fontWeight: 'bold' }}>Equipe</div>
+              <Select
+                style={{ width: '100%' }}
+                placeholder="Filtrar por equipe"
+                value={filtroEquipe}
+                onChange={(value) => setFiltroEquipe(value)}
+                allowClear
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) => {
+                  const label = typeof option?.children === 'string'
+                    ? option.children
+                    : String(option?.children ?? '');
+                  return label.toLowerCase().includes(input.toLowerCase());
+                }}
+              >
+                {valoresUnicos.equipes.map((equipe) => (
+                  <Select.Option key={equipe} value={equipe}>
+                    {equipe}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Col>
+            <Col xs={24} sm={12} lg={8}>
               <div style={{ marginBottom: 4, fontSize: '12px', fontWeight: 'bold' }}>Horário</div>
               <Select
                 style={{ width: '100%' }}
@@ -576,7 +651,7 @@ export default function EdicaoEmCursoPage() {
                 ))}
               </Select>
             </Col>
-            <Col span={6}>
+            <Col xs={24} sm={12} lg={8}>
               <div style={{ marginBottom: 4, fontSize: '12px', fontWeight: 'bold' }}>Eletricista</div>
               <Input
                 placeholder="Buscar por nome ou matrícula"
@@ -585,10 +660,12 @@ export default function EdicaoEmCursoPage() {
                 allowClear
               />
             </Col>
-            <Col span={6}>
+            <Col xs={24} sm={12} lg={8}>
               <Button
                 onClick={() => {
                   setFiltroBase(null);
+                  setFiltroTipoEquipe(null);
+                  setFiltroEquipe(null);
                   setFiltroEletricista('');
                   setFiltroHorario(null);
                   setFiltrosDias({});
@@ -942,4 +1019,3 @@ export default function EdicaoEmCursoPage() {
     </div>
   );
 }
-

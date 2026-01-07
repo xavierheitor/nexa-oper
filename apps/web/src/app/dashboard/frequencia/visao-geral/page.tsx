@@ -1,21 +1,80 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Card, Space, DatePicker, Select, Button, Spin, message, Row, Col, Statistic, Tag, Empty } from 'antd';
+import { Card, Space, DatePicker, Select, Button, Spin, Row, Col, Statistic, Tag, Empty, Table } from 'antd';
 import { App } from 'antd';
-import { UserOutlined, CalendarOutlined } from '@ant-design/icons';
+import { UserOutlined, CalendarOutlined, TeamOutlined, EyeOutlined } from '@ant-design/icons';
 import { getConsolidadoEletricista } from '@/lib/actions/turno-realizado/getConsolidadoEletricista';
 import { listEletricistas } from '@/lib/actions/eletricista/list';
+import { listEquipes } from '@/lib/actions/equipe/list';
+import { listTurnos } from '@/lib/actions/turno/list';
+import { getSlotsEscalaEquipePeriodo } from '@/lib/actions/escala/getSlotsEscalaEquipePeriodo';
 import { ConsolidadoEletricistaResponse } from '@/lib/schemas/turnoRealizadoSchema';
 import ConsolidadoEletricistaCard from '@/ui/components/ConsolidadoEletricistaCard';
 import HistoricoTable from '@/ui/components/HistoricoTable';
 import CalendarioFrequencia from '@/ui/components/CalendarioFrequencia';
+import ChecklistSelectorModal, { type ChecklistPreenchido } from '@/ui/components/ChecklistSelectorModal';
+import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import useSWR from 'swr';
 import dayjs, { Dayjs } from 'dayjs';
 import { errorHandler } from '@/lib/utils/errorHandler';
+import type { ColumnsType } from 'antd/es/table';
 
 const { RangePicker } = DatePicker;
+
+interface TurnoEquipeRow {
+  id: number;
+  dataInicio: Date | string;
+  dataFim?: Date | string | null;
+  veiculoPlaca?: string;
+  veiculoModelo?: string;
+  equipeNome?: string;
+  tipoEquipeNome?: string;
+  baseNome?: string;
+  eletricistas?: Array<{
+    id: number;
+    nome: string;
+    matricula: string;
+    motorista?: boolean;
+  }>;
+}
+
+interface SlotEscalaEquipe {
+  id: number;
+  data: Date | string;
+  inicioPrevisto?: string | null;
+  fimPrevisto?: string | null;
+  eletricistaId: number;
+  eletricista: {
+    id: number;
+    nome: string;
+    matricula: string;
+  };
+}
+
+interface TurnoEquipeHistoricoRow {
+  key: string;
+  data: Date;
+  dataInicio?: Date | string;
+  dataFim?: Date | string | null;
+  veiculoPlaca?: string;
+  veiculoModelo?: string;
+  equipeNome?: string;
+  eletricistasAbertura: Array<{
+    id: number;
+    nome: string;
+    matricula: string;
+    motorista?: boolean;
+  }>;
+  eletricistasEscala: Array<{
+    id: number;
+    nome: string;
+    matricula: string;
+  }>;
+  status: 'ABERTO' | 'FECHADO' | 'PREVISTO';
+  turnoId?: number;
+}
 
 /**
  * Página de Visão Geral de Frequência
@@ -39,6 +98,21 @@ export default function FrequenciaVisaoGeralPage() {
   });
   // ✅ Filtro de status (client-side)
   const [filtroStatus, setFiltroStatus] = useState<string | undefined>(undefined);
+
+  // Estados para visão geral de equipes
+  const [equipeId, setEquipeId] = useState<number | undefined>(undefined);
+  const [dataInicioEquipe, setDataInicioEquipe] = useState<Date | undefined>(() => {
+    const hoje = new Date();
+    return new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  });
+  const [dataFimEquipe, setDataFimEquipe] = useState<Date | undefined>(() => {
+    const hoje = new Date();
+    return new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 23, 59, 59);
+  });
+  const [checklistSelectorVisible, setChecklistSelectorVisible] = useState(false);
+  const [checklistViewerVisible, setChecklistViewerVisible] = useState(false);
+  const [selectedTurnoEquipe, setSelectedTurnoEquipe] = useState<TurnoEquipeRow | null>(null);
+  const [selectedChecklist, setSelectedChecklist] = useState<ChecklistPreenchido | null>(null);
 
   // Carregar lista de eletricistas para o select
   const eletricistasFetcher = useMemo(
@@ -64,8 +138,33 @@ export default function FrequenciaVisaoGeralPage() {
     []
   );
 
+  // Carregar lista de equipes para o select
+  const equipesFetcher = useMemo(
+    () => async () => {
+      const result = await listEquipes({
+        page: 1,
+        pageSize: 1000,
+        orderBy: 'nome',
+        orderDir: 'asc',
+      });
+
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Erro ao carregar equipes');
+      }
+
+      return result.data.data || [];
+    },
+    []
+  );
+
+  const { data: equipesData, loading: loadingEquipes } = useDataFetch(
+    equipesFetcher,
+    []
+  );
+
   // Garantir que eletricistas seja sempre um array
   const eletricistas = eletricistasData || [];
+  const equipes = equipesData || [];
 
   // Fetcher para dados consolidados
   const consolidadoFetcher = async (): Promise<ConsolidadoEletricistaResponse> => {
@@ -111,12 +210,116 @@ export default function FrequenciaVisaoGeralPage() {
     }
   );
 
+  const turnosEquipeFetcher = async (): Promise<TurnoEquipeRow[]> => {
+    if (!equipeId) {
+      throw new Error('Selecione uma equipe');
+    }
+
+    if (!dataInicioEquipe || !dataFimEquipe) {
+      throw new Error('Selecione o período');
+    }
+
+    const result = await listTurnos({
+      page: 1,
+      pageSize: 2000,
+      orderBy: 'dataInicio',
+      orderDir: 'desc',
+      equipeId,
+      dataInicio: dataInicioEquipe,
+      dataFim: dataFimEquipe,
+    });
+
+    if (!result.success) {
+      throw new Error(result.error || 'Erro ao buscar turnos da equipe');
+    }
+
+    return result.data?.data || [];
+  };
+
+  const slotsEquipeFetcher = async (): Promise<SlotEscalaEquipe[]> => {
+    if (!equipeId) {
+      throw new Error('Selecione uma equipe');
+    }
+
+    if (!dataInicioEquipe || !dataFimEquipe) {
+      throw new Error('Selecione o período');
+    }
+
+    const result = await getSlotsEscalaEquipePeriodo({
+      equipeId,
+      dataInicio: dataInicioEquipe,
+      dataFim: dataFimEquipe,
+    });
+
+    if (!result.success) {
+      throw new Error(result.error || 'Erro ao buscar escala da equipe');
+    }
+
+    return result.data || [];
+  };
+
+  const {
+    data: turnosEquipe,
+    error: errorEquipe,
+    isLoading: loadingEquipe,
+    mutate: mutateEquipe,
+  } = useSWR<TurnoEquipeRow[]>(
+    equipeId && dataInicioEquipe && dataFimEquipe
+      ? [
+          'frequencia-visao-geral-equipe',
+          equipeId,
+          dataInicioEquipe.toISOString(),
+          dataFimEquipe.toISOString(),
+        ]
+      : null,
+    turnosEquipeFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    }
+  );
+
+  const {
+    data: slotsEquipe,
+    error: errorEscalaEquipe,
+    isLoading: loadingEscalaEquipe,
+    mutate: mutateEscalaEquipe,
+  } = useSWR<SlotEscalaEquipe[]>(
+    equipeId && dataInicioEquipe && dataFimEquipe
+      ? [
+          'frequencia-visao-geral-equipe-escala',
+          equipeId,
+          dataInicioEquipe.toISOString(),
+          dataFimEquipe.toISOString(),
+        ]
+      : null,
+    slotsEquipeFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    }
+  );
+
   useEffect(() => {
     if (error) {
       errorHandler.log(error, 'FrequenciaVisaoGeralPage');
       messageApi.error(error.message || 'Erro ao carregar dados de frequência');
     }
   }, [error, messageApi]);
+
+  useEffect(() => {
+    if (errorEquipe) {
+      errorHandler.log(errorEquipe, 'FrequenciaVisaoGeralEquipe');
+      messageApi.error(errorEquipe.message || 'Erro ao carregar turnos da equipe');
+    }
+  }, [errorEquipe, messageApi]);
+
+  useEffect(() => {
+    if (errorEscalaEquipe) {
+      errorHandler.log(errorEscalaEquipe, 'FrequenciaVisaoGeralEquipeEscala');
+      messageApi.error(errorEscalaEquipe.message || 'Erro ao carregar escala da equipe');
+    }
+  }, [errorEscalaEquipe, messageApi]);
 
   const handleRangeChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
     if (dates && dates[0] && dates[1]) {
@@ -138,6 +341,44 @@ export default function FrequenciaVisaoGeralPage() {
       return;
     }
     mutate();
+  };
+
+  const handleRangeChangeEquipe = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    if (dates && dates[0] && dates[1]) {
+      setDataInicioEquipe(dates[0].startOf('day').toDate());
+      setDataFimEquipe(dates[1].endOf('day').toDate());
+    } else {
+      setDataInicioEquipe(undefined);
+      setDataFimEquipe(undefined);
+    }
+  };
+
+  const handleBuscarEquipe = () => {
+    if (!equipeId) {
+      messageApi.warning('Selecione uma equipe');
+      return;
+    }
+    if (!dataInicioEquipe || !dataFimEquipe) {
+      messageApi.warning('Selecione o período');
+      return;
+    }
+    mutateEquipe();
+    mutateEscalaEquipe();
+  };
+
+  const handleSelectChecklist = (checklist: ChecklistPreenchido) => {
+    setSelectedChecklist(checklist);
+    setChecklistViewerVisible(true);
+  };
+
+  const handleCloseChecklistSelector = () => {
+    setChecklistSelectorVisible(false);
+    setSelectedTurnoEquipe(null);
+  };
+
+  const handleCloseChecklistViewer = () => {
+    setChecklistViewerVisible(false);
+    setSelectedChecklist(null);
   };
 
   // ✅ Filtrar detalhamento por status (client-side)
@@ -209,6 +450,218 @@ export default function FrequenciaVisaoGeralPage() {
       totalHorasRealizadas,
     };
   }, [consolidado, detalhamentoFiltrado]);
+
+  const slotsPorDia = useMemo(() => {
+    const map = new Map<string, {
+      data: Date;
+      eletricistas: Map<number, { id: number; nome: string; matricula: string }>;
+    }>();
+
+    (slotsEquipe || []).forEach((slot) => {
+      const dataSlot = dayjs(slot.data).startOf('day');
+      const key = dataSlot.format('YYYY-MM-DD');
+      if (!map.has(key)) {
+        map.set(key, {
+          data: dataSlot.toDate(),
+          eletricistas: new Map(),
+        });
+      }
+      const info = map.get(key)!;
+      info.eletricistas.set(slot.eletricista.id, {
+        id: slot.eletricista.id,
+        nome: slot.eletricista.nome,
+        matricula: slot.eletricista.matricula,
+      });
+    });
+
+    return map;
+  }, [slotsEquipe]);
+
+  const turnosPorDia = useMemo(() => {
+    const map = new Map<string, TurnoEquipeRow[]>();
+    (turnosEquipe || []).forEach((turno) => {
+      const key = dayjs(turno.dataInicio).format('YYYY-MM-DD');
+      if (!map.has(key)) {
+        map.set(key, []);
+      }
+      map.get(key)!.push(turno);
+    });
+    return map;
+  }, [turnosEquipe]);
+
+  const linhasEquipe = useMemo(() => {
+    const rows: TurnoEquipeHistoricoRow[] = [];
+
+    (turnosEquipe || []).forEach((turno) => {
+      const keyDia = dayjs(turno.dataInicio).format('YYYY-MM-DD');
+      const escalados = slotsPorDia.get(keyDia);
+      rows.push({
+        key: String(turno.id),
+        data: dayjs(turno.dataInicio).toDate(),
+        dataInicio: turno.dataInicio,
+        dataFim: turno.dataFim,
+        veiculoPlaca: turno.veiculoPlaca,
+        veiculoModelo: turno.veiculoModelo,
+        equipeNome: turno.equipeNome,
+        eletricistasAbertura: turno.eletricistas || [],
+        eletricistasEscala: escalados
+          ? Array.from(escalados.eletricistas.values())
+          : [],
+        status: turno.dataFim ? 'FECHADO' : 'ABERTO',
+        turnoId: turno.id,
+      });
+    });
+
+    slotsPorDia.forEach((slotInfo, keyDia) => {
+      if (!turnosPorDia.has(keyDia)) {
+        rows.push({
+          key: `previsto-${keyDia}`,
+          data: slotInfo.data,
+          eletricistasAbertura: [],
+          eletricistasEscala: Array.from(slotInfo.eletricistas.values()),
+          status: 'PREVISTO',
+        });
+      }
+    });
+
+    return rows.sort((a, b) => b.data.getTime() - a.data.getTime());
+  }, [turnosEquipe, slotsPorDia, turnosPorDia]);
+
+  const resumoEquipe = useMemo(() => {
+    const lista = turnosEquipe || [];
+    const abertos = lista.filter((turno) => !turno.dataFim).length;
+    const total = lista.length;
+    const diasComEscala = slotsPorDia.size;
+    const diasComAbertura = turnosPorDia.size;
+    const previstosSemAbertura = Array.from(slotsPorDia.keys()).filter(
+      (dia) => !turnosPorDia.has(dia)
+    ).length;
+
+    return {
+      total,
+      abertos,
+      fechados: total - abertos,
+      diasComEscala,
+      diasComAbertura,
+      previstosSemAbertura,
+    };
+  }, [turnosEquipe, slotsPorDia, turnosPorDia]);
+
+  const colunasEquipe: ColumnsType<TurnoEquipeHistoricoRow> = useMemo(() => [
+    {
+      title: 'Data',
+      dataIndex: 'data',
+      key: 'data',
+      render: (_: Date, record) =>
+        record.status === 'PREVISTO'
+          ? dayjs(record.data).format('DD/MM/YYYY')
+          : dayjs(record.dataInicio).format('DD/MM/YYYY HH:mm'),
+      sorter: (a, b) =>
+        a.data.getTime() - b.data.getTime(),
+      defaultSortOrder: 'descend',
+    },
+    {
+      title: 'Escalados',
+      key: 'escalados',
+      render: (_: unknown, record) => {
+        if (!record.eletricistasEscala || record.eletricistasEscala.length === 0) {
+          return <Tag color="default">Sem escala</Tag>;
+        }
+        return (
+          <Space direction="vertical" size={0}>
+            {record.eletricistasEscala.map((eletricista) => (
+              <span key={eletricista.id}>
+                {eletricista.nome} ({eletricista.matricula})
+              </span>
+            ))}
+          </Space>
+        );
+      },
+    },
+    {
+      title: 'Abriram',
+      key: 'abriram',
+      render: (_: unknown, record) => {
+        if (!record.eletricistasAbertura || record.eletricistasAbertura.length === 0) {
+          return record.status === 'PREVISTO' ? '-' : 'Sem eletricistas';
+        }
+        return (
+          <Space direction="vertical" size={0}>
+            {record.eletricistasAbertura.map((eletricista) => (
+              <span key={eletricista.id}>
+                {eletricista.nome} ({eletricista.matricula})
+              </span>
+            ))}
+          </Space>
+        );
+      },
+    },
+    {
+      title: 'Veículo',
+      key: 'veiculo',
+      render: (_: unknown, record) =>
+        record.veiculoPlaca
+          ? `${record.veiculoPlaca}${record.veiculoModelo ? ` - ${record.veiculoModelo}` : ''}`
+          : '-',
+    },
+    {
+      title: 'Status',
+      key: 'status',
+      render: (_: unknown, record) => {
+        const status = record.status === 'PREVISTO'
+          ? 'PREVISTO'
+          : record.dataFim
+            ? 'FECHADO'
+            : 'ABERTO';
+        return (
+          <Tag
+            color={
+              status === 'ABERTO'
+                ? 'green'
+                : status === 'PREVISTO'
+                  ? 'blue'
+                  : 'default'
+            }
+          >
+            {status}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: 'Checklist',
+      key: 'checklist',
+      render: (_: unknown, record) => {
+        if (record.status === 'PREVISTO' || !record.turnoId) {
+          return <Tag color="default">Previsto</Tag>;
+        }
+        const turnoId = record.turnoId;
+        return (
+          <Button
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => {
+              setSelectedTurnoEquipe({
+                id: turnoId,
+                dataInicio: record.dataInicio || record.data,
+                dataFim: record.dataFim,
+                veiculoPlaca: record.veiculoPlaca,
+                veiculoModelo: record.veiculoModelo,
+                equipeNome: record.equipeNome,
+                eletricistas: record.eletricistasAbertura,
+              });
+              setChecklistSelectorVisible(true);
+            }}
+          >
+            Checklists
+          </Button>
+        );
+      },
+    },
+  ], []);
+
+  const loadingEquipeResumo = loadingEquipe || loadingEscalaEquipe;
+  const hasErroEquipe = Boolean(errorEquipe || errorEscalaEquipe);
 
   return (
     <div style={{ padding: '24px' }}>
@@ -465,7 +918,126 @@ export default function FrequenciaVisaoGeralPage() {
           </>
         ) : null}
       </Card>
+
+      <Card
+        title={
+          <Space>
+            <TeamOutlined />
+            Visão Geral de Equipes
+          </Space>
+        }
+        style={{ marginTop: 24 }}
+        extra={
+          <Space>
+            <Select
+              placeholder="Selecione a equipe"
+              showSearch
+              allowClear
+              style={{ width: 300 }}
+              loading={loadingEquipes}
+              value={equipeId}
+              onChange={(value) => setEquipeId(value)}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              options={Array.isArray(equipes) ? equipes.map((e) => ({
+                value: e.id,
+                label: e.nome,
+              })) : []}
+            />
+            <RangePicker
+              value={
+                dataInicioEquipe && dataFimEquipe
+                  ? [dayjs(dataInicioEquipe), dayjs(dataFimEquipe)]
+                  : null
+              }
+              onChange={handleRangeChangeEquipe}
+              format="DD/MM/YYYY"
+              placeholder={['Data início', 'Data fim']}
+            />
+            <Button
+              type="primary"
+              onClick={handleBuscarEquipe}
+              loading={loadingEquipe}
+              disabled={!equipeId || !dataInicioEquipe || !dataFimEquipe}
+            >
+              Buscar
+            </Button>
+          </Space>
+        }
+      >
+        {!equipeId || !dataInicioEquipe || !dataFimEquipe ? (
+          <Empty
+            description="Selecione uma equipe e período para visualizar os dados"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        ) : loadingEquipeResumo && linhasEquipe.length === 0 ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>
+            <Spin size="large" />
+          </div>
+        ) : hasErroEquipe && linhasEquipe.length === 0 ? (
+          <Card>
+            <p style={{ color: 'red' }}>
+              Erro ao carregar dados: {(errorEquipe || errorEscalaEquipe)?.message}
+            </p>
+          </Card>
+        ) : (
+          <>
+            <Card size="small" style={{ marginBottom: 24, backgroundColor: '#f5f5f5' }}>
+              <Row gutter={16}>
+                <Col xs={24} sm={8} md={4}>
+                  <Statistic title="Turnos Abertos" value={resumoEquipe.abertos} />
+                </Col>
+                <Col xs={24} sm={8} md={4}>
+                  <Statistic title="Turnos Fechados" value={resumoEquipe.fechados} />
+                </Col>
+                <Col xs={24} sm={8} md={4}>
+                  <Statistic title="Total no Período" value={resumoEquipe.total} />
+                </Col>
+                <Col xs={24} sm={8} md={4}>
+                  <Statistic title="Dias com Escala" value={resumoEquipe.diasComEscala} />
+                </Col>
+                <Col xs={24} sm={8} md={4}>
+                  <Statistic title="Dias com Abertura" value={resumoEquipe.diasComAbertura} />
+                </Col>
+                <Col xs={24} sm={8} md={4}>
+                  <Statistic title="Previstos sem Abertura" value={resumoEquipe.previstosSemAbertura} />
+                </Col>
+              </Row>
+            </Card>
+
+            <Card title="Histórico de Turnos da Equipe">
+              <Table
+                columns={colunasEquipe}
+                dataSource={linhasEquipe}
+                rowKey="key"
+                pagination={{ pageSize: 10 }}
+                size="small"
+              />
+            </Card>
+          </>
+        )}
+      </Card>
+
+      <ChecklistSelectorModal
+        visible={checklistSelectorVisible}
+        onClose={handleCloseChecklistSelector}
+        turnoId={selectedTurnoEquipe?.id || 0}
+        turnoInfo={{
+          veiculoPlaca: selectedTurnoEquipe?.veiculoPlaca || '',
+          equipeNome: selectedTurnoEquipe?.equipeNome || '',
+          dataInicio: selectedTurnoEquipe?.dataInicio
+            ? String(selectedTurnoEquipe.dataInicio)
+            : '',
+        }}
+        onSelectChecklist={handleSelectChecklist}
+      />
+
+      <ChecklistViewerModal
+        visible={checklistViewerVisible}
+        onClose={handleCloseChecklistViewer}
+        checklist={selectedChecklist}
+      />
     </div>
   );
 }
-

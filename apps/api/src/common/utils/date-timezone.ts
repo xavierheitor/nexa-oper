@@ -5,6 +5,10 @@
  * garantindo que as datas sejam interpretadas corretamente.
  */
 
+const TIMEZONE_SAO_PAULO = 'America/Sao_Paulo';
+const SAO_PAULO_OFFSET = '-03:00';
+const DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
 /**
  * Converte uma string de data do app mobile para Date
  *
@@ -26,6 +30,51 @@ export function parseMobileDate(dateString: string): Date {
   }
 
   return new Date(dateString);
+}
+
+/**
+ * Converte uma string de data para Date, respeitando data-only como dia local de São Paulo
+ *
+ * @param dateString - String de data (YYYY-MM-DD ou ISO completo)
+ * @returns Date object com timezone consistente
+ */
+export function parseDateInput(dateString: string): Date {
+  if (DATE_ONLY_REGEX.test(dateString)) {
+    return new Date(`${dateString}T00:00:00${SAO_PAULO_OFFSET}`);
+  }
+
+  return parseMobileDate(dateString);
+}
+
+/**
+ * Formata uma data como YYYY-MM-DD no timezone de São Paulo
+ *
+ * @param date - Date object
+ * @returns String YYYY-MM-DD
+ */
+export function formatDateOnly(date: Date): string {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: TIMEZONE_SAO_PAULO,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+
+  return formatter.format(date);
+}
+
+/**
+ * Retorna o intervalo do dia (início e fim) no timezone de São Paulo
+ *
+ * @param date - Date base
+ * @returns Intervalo do dia
+ */
+export function getSaoPauloDayRange(date: Date): { start: Date; end: Date } {
+  const dateStr = formatDateOnly(date);
+  return {
+    start: new Date(`${dateStr}T00:00:00${SAO_PAULO_OFFSET}`),
+    end: new Date(`${dateStr}T23:59:59.999${SAO_PAULO_OFFSET}`),
+  };
 }
 
 /**

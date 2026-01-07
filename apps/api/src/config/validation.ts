@@ -36,10 +36,13 @@ export const envValidationSchema = Joi.object({
     ),
 
   // Reconciliação interna
-  INTERNAL_KEY: Joi.string()
-    .min(16)
+  INTERNAL_KEY: Joi.alternatives()
+    .try(
+      Joi.string().min(12),
+      Joi.string().allow('')
+    )
     .optional()
-    .description('Chave interna para autenticação de endpoints internos'),
+    .description('Chave interna para autenticação de endpoints internos (mínimo 12 caracteres se definida)'),
   RECONCILE_CRON: Joi.string()
     .optional()
     .description(

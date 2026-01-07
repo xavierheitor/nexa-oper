@@ -39,7 +39,7 @@ import {
   updateAuditData,
   deleteAuditData,
 } from '@common/utils/audit';
-import { parseMobileDate } from '@common/utils/date-timezone';
+import { formatDateOnly, parseMobileDate } from '@common/utils/date-timezone';
 import { handleCrudError } from '@common/utils/error-handler';
 import {
   buildPaginationMeta,
@@ -292,7 +292,7 @@ export class TurnoService {
 
         await this.turnoRealizadoService.abrirTurno({
           equipeId: turnoCompleto.equipeId,
-          dataReferencia: dataReferencia.toISOString().split('T')[0], // YYYY-MM-DD
+          dataReferencia: formatDateOnly(dataReferencia),
           turnoId: resultado.turno.id, // Referência ao Turno original
           eletricistasAbertos: turnoCompleto.TurnoEletricistas.map(
             (te: any) => ({

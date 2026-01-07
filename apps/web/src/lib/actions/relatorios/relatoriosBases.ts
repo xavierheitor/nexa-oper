@@ -240,6 +240,129 @@ export const getComparacaoEntreBases = async (rawData?: unknown) =>
   );
 
 /**
+ * Retorna eletricistas não escalados (sem slots em escalas publicadas)
+ */
+export const getEletricistasNaoEscalados = async (rawData?: unknown) =>
+  handleServerAction(
+    relatorioBaseFiltroSchema,
+    async (filtros) => {
+      const whereBases: any = {
+        deletedAt: null,
+      };
+
+      if (filtros.contratoId) {
+        whereBases.contratoId = filtros.contratoId;
+      }
+
+      if (filtros.baseId) {
+        whereBases.id = filtros.baseId;
+      }
+
+      const bases = await prisma.base.findMany({
+        where: whereBases,
+        select: {
+          id: true,
+          nome: true,
+          contrato: {
+            select: {
+              nome: true,
+            },
+          },
+        },
+      });
+
+      if (bases.length === 0) {
+        return [];
+      }
+
+      const baseIds = bases.map((base) => base.id);
+
+      const eletricistasNaBase = await prisma.eletricistaBaseHistorico.findMany({
+        where: {
+          baseId: { in: baseIds },
+          dataFim: null,
+          deletedAt: null,
+          eletricista: {
+            deletedAt: null,
+          },
+        },
+        include: {
+          base: {
+            select: {
+              id: true,
+              nome: true,
+              contrato: {
+                select: {
+                  nome: true,
+                },
+              },
+            },
+          },
+          eletricista: {
+            select: {
+              id: true,
+              nome: true,
+              matricula: true,
+              Status: {
+                select: {
+                  status: true,
+                  dataInicio: true,
+                  dataFim: true,
+                  motivo: true,
+                  observacoes: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const eletricistaIds = [
+        ...new Set(eletricistasNaBase.map((item) => item.eletricistaId)),
+      ];
+
+      if (eletricistaIds.length === 0) {
+        return [];
+      }
+
+      const eletricistasEscalados = await prisma.slotEscala.findMany({
+        where: {
+          eletricistaId: { in: eletricistaIds },
+          escalaEquipePeriodo: {
+            status: 'PUBLICADA',
+            deletedAt: null,
+          },
+          deletedAt: null,
+        },
+        select: {
+          eletricistaId: true,
+        },
+        distinct: ['eletricistaId'],
+      });
+
+      const escaladosSet = new Set(
+        eletricistasEscalados.map((item) => item.eletricistaId)
+      );
+
+      return eletricistasNaBase
+        .filter((item) => !escaladosSet.has(item.eletricistaId))
+        .map((item) => ({
+          eletricistaId: item.eletricistaId,
+          nome: item.eletricista.nome,
+          matricula: item.eletricista.matricula,
+          baseId: item.baseId,
+          baseNome: item.base.nome,
+          contratoNome: item.base.contrato?.nome ?? '-',
+          status: item.eletricista.Status?.status ?? 'ATIVO',
+          statusMotivo: item.eletricista.Status?.motivo ?? null,
+        }))
+        .sort((a, b) => a.nome.localeCompare(b.nome));
+    },
+    rawData,
+    { entityName: 'Relatorio', actionType: 'read' }
+  );
+
+/**
  * Retorna distribuição de equipes por base
  */
 export const getEquipesPorBase = async (rawData?: unknown) =>
@@ -441,4 +564,3 @@ export const getDetalhesBase = async (baseId: number, rawData?: unknown) => {
     { entityName: 'Relatorio', actionType: 'read' }
   );
 };
-

@@ -9,7 +9,7 @@
  * - Tabela com detalhes dos turnos abertos
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, Button, Tooltip, Input, Select } from 'antd';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
@@ -87,6 +87,17 @@ export default function TurnosPage() {
   const [filtroEletricista, setFiltroEletricista] = useState<string>('');
   const [filtroBase, setFiltroBase] = useState<string | undefined>(undefined);
   const [filtroTipoEquipe, setFiltroTipoEquipe] = useState<string | undefined>(undefined);
+
+  // Filtros específicos para turnos previstos
+  const [filtroBaseTurnosPrevistos, setFiltroBaseTurnosPrevistos] = useState<string | undefined>(undefined);
+  const [filtroTipoEquipeTurnosPrevistos, setFiltroTipoEquipeTurnosPrevistos] = useState<string | undefined>(undefined);
+
+  // Filtros para detalhamento de turnos previstos
+  const [filtroBaseDetalhamento, setFiltroBaseDetalhamento] = useState<string | undefined>(undefined);
+  const [filtroTipoEquipeDetalhamento, setFiltroTipoEquipeDetalhamento] = useState<string | undefined>(undefined);
+
+  // Mapeamento de equipeId -> baseNome (para filtros de base nos turnos previstos)
+  const [equipeBaseMap, setEquipeBaseMap] = useState<Map<number, string>>(new Map());
 
   // Hook para paginação client-side da tabela principal
   const { pagination } = useTablePagination({
@@ -352,6 +363,68 @@ export default function TurnosPage() {
     },
     []
   );
+
+  // Buscar bases das equipes dos turnos previstos
+  useEffect(() => {
+    if (!turnosPrevistosResult || turnosPrevistosResult.length === 0) {
+      setEquipeBaseMap(new Map());
+      return;
+    }
+
+    const buscarBases = async () => {
+      const equipeIds = [...new Set(turnosPrevistosResult.map(tp => tp.equipeId))];
+      const { listEquipes } = await import('@/lib/actions/equipe/list');
+
+      try {
+        const result = await listEquipes({
+          page: 1,
+          pageSize: 1000,
+          orderBy: 'nome',
+          orderDir: 'asc',
+        });
+
+        if (result.success && result.data) {
+          const equipes = result.data.data || [];
+          const map = new Map<number, string>();
+
+          equipes.forEach((equipe: any) => {
+            if (equipeIds.includes(equipe.id)) {
+              const baseNome = equipe.baseAtual?.nome || equipe.baseNome || 'Sem Base';
+              map.set(equipe.id, baseNome);
+            }
+          });
+
+          setEquipeBaseMap(map);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar bases das equipes:', error);
+      }
+    };
+
+    buscarBases();
+  }, [turnosPrevistosResult]);
+
+  // Dados filtrados para o detalhamento de turnos previstos
+  const turnosPrevistosFiltrados = useMemo(() => {
+    if (!turnosPrevistosResult) return [];
+
+    let filtrados = [...turnosPrevistosResult];
+
+    if (filtroBaseDetalhamento) {
+      filtrados = filtrados.filter((tp) => {
+        const baseNome = equipeBaseMap.get(tp.equipeId);
+        return baseNome === filtroBaseDetalhamento;
+      });
+    }
+
+    if (filtroTipoEquipeDetalhamento) {
+      filtrados = filtrados.filter((tp) => {
+        return tp.tipoEquipeNome === filtroTipoEquipeDetalhamento;
+      });
+    }
+
+    return filtrados;
+  }, [turnosPrevistosResult, filtroBaseDetalhamento, filtroTipoEquipeDetalhamento, equipeBaseMap]);
 
   // Fetch de estatísticas de turnos previstos
   const { data: statsPrevistosResult, loading: loadingStatsPrevistos, refetch: refetchStatsPrevistos } = useDataFetch<EstatisticasTurnosPrevistos>(
@@ -880,21 +953,34 @@ export default function TurnosPage() {
           const horaAtual = agora.getHours() * 60 + agora.getMinutes(); // Minutos desde meia-noite
 
           // Função para converter horário "HH:MM:SS" para minutos desde meia-noite
-          const horarioParaMinutos = (horario: string | null): number | null => {
-            if (!horario) return null;
+          const horarioParaMinutos = (horario: string | null | undefined): number | null => {
+            if (!horario || typeof horario !== 'string') return null;
             const [hora, minuto] = horario.split(':').map(Number);
             if (isNaN(hora) || isNaN(minuto)) return null;
             return hora * 60 + minuto;
           };
 
           // Filtrar turnos não abertos que já passaram do horário previsto
-          const turnosNaoAbertosAtrasados = turnosPrevistosResult.filter((tp) => {
+          let turnosNaoAbertosAtrasados = turnosPrevistosResult.filter((tp) => {
             if (tp.status !== 'NAO_ABERTO') return false;
             if (!tp.horarioPrevisto) return true; // Se não tem horário previsto, considerar atrasado
             const minutosPrevistos = horarioParaMinutos(tp.horarioPrevisto);
             if (minutosPrevistos === null) return true;
             return minutosPrevistos <= horaAtual; // Já passou do horário previsto
           });
+
+          // Aplicar filtros de base e tipo de equipe
+          if (filtroBaseTurnosPrevistos) {
+            turnosNaoAbertosAtrasados = turnosNaoAbertosAtrasados.filter((tp) => {
+              const baseNome = equipeBaseMap.get(tp.equipeId);
+              return baseNome === filtroBaseTurnosPrevistos;
+            });
+          }
+          if (filtroTipoEquipeTurnosPrevistos) {
+            turnosNaoAbertosAtrasados = turnosNaoAbertosAtrasados.filter((tp) => {
+              return tp.tipoEquipeNome === filtroTipoEquipeTurnosPrevistos;
+            });
+          }
 
           // Filtrar turnos previstos que ainda não passaram do horário
           const turnosPrevistosFuturos = turnosPrevistosResult.filter((tp) => {
@@ -918,9 +1004,41 @@ export default function TurnosPage() {
                   }
                   style={{ marginBottom: 32 }}
                   extra={
-                    <Tag color="error">
-                      Deveriam ter sido abertos até agora
-                    </Tag>
+                    <Space>
+                      <Select
+                        placeholder="Filtrar por Base"
+                        allowClear
+                        style={{ width: 200 }}
+                        value={filtroBaseTurnosPrevistos}
+                        onChange={(value) => setFiltroBaseTurnosPrevistos(value || undefined)}
+                        showSearch
+                        filterOption={(input, option) =>
+                          (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                        }
+                        options={basesData?.map((base) => ({
+                          label: base.nome,
+                          value: base.nome,
+                        }))}
+                      />
+                      <Select
+                        placeholder="Filtrar por Tipo de Equipe"
+                        allowClear
+                        style={{ width: 200 }}
+                        value={filtroTipoEquipeTurnosPrevistos}
+                        onChange={(value) => setFiltroTipoEquipeTurnosPrevistos(value || undefined)}
+                        showSearch
+                        filterOption={(input, option) =>
+                          (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                        }
+                        options={tiposEquipeData?.map((tipo) => ({
+                          label: tipo.nome,
+                          value: tipo.nome,
+                        }))}
+                      />
+                      <Tag color="error">
+                        Deveriam ter sido abertos até agora
+                      </Tag>
+                    </Space>
                   }
                 >
                   <Table
@@ -929,6 +1047,15 @@ export default function TurnosPage() {
                     pagination={paginationNaoAbertos}
                     size="small"
                     columns={[
+                      {
+                        title: 'Base',
+                        key: 'base',
+                        width: 150,
+                        render: (_: unknown, record: TurnoPrevisto) => {
+                          const baseNome = equipeBaseMap.get(record.equipeId);
+                          return baseNome || '-';
+                        },
+                      },
                       {
                         title: 'Equipe',
                         dataIndex: 'equipeNome',
@@ -1167,12 +1294,58 @@ export default function TurnosPage() {
 
           {/* Tabela Detalhada de Turnos Previstos */}
           {turnosPrevistosResult && turnosPrevistosResult.length > 0 && (
-            <Card title="Detalhamento de Turnos Previstos" style={{ marginBottom: 24 }}>
+            <Card
+              title="Detalhamento de Turnos Previstos"
+              style={{ marginBottom: 24 }}
+              extra={
+                <Space>
+                  <Select
+                    placeholder="Filtrar por Base"
+                    allowClear
+                    style={{ width: 200 }}
+                    value={filtroBaseDetalhamento}
+                    onChange={(value) => setFiltroBaseDetalhamento(value || undefined)}
+                    showSearch
+                    filterOption={(input, option) =>
+                      (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                    }
+                    options={basesData?.map((base) => ({
+                      label: base.nome,
+                      value: base.nome,
+                    }))}
+                  />
+                  <Select
+                    placeholder="Filtrar por Tipo de Equipe"
+                    allowClear
+                    style={{ width: 200 }}
+                    value={filtroTipoEquipeDetalhamento}
+                    onChange={(value) => setFiltroTipoEquipeDetalhamento(value || undefined)}
+                    showSearch
+                    filterOption={(input, option) =>
+                      (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                    }
+                    options={tiposEquipeData?.map((tipo) => ({
+                      label: tipo.nome,
+                      value: tipo.nome,
+                    }))}
+                  />
+                </Space>
+              }
+            >
               <Table
-                dataSource={turnosPrevistosResult}
+                dataSource={turnosPrevistosFiltrados}
                 rowKey={(record) => `${record.equipeId}-${record.status}-${record.turnoId || 'no-turno'}`}
                 pagination={paginationTurnosPrevistos}
                 columns={[
+                  {
+                    title: 'Base',
+                    key: 'base',
+                    width: 150,
+                    render: (_: unknown, record: TurnoPrevisto) => {
+                      const baseNome = equipeBaseMap.get(record.equipeId);
+                      return baseNome || '-';
+                    },
+                  },
                   {
                     title: 'Equipe',
                     dataIndex: 'equipeNome',

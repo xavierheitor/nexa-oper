@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@nexa-oper/db';
+
+import {
+  getSaoPauloDayRange,
+  parseDateInput,
+} from '@common/utils/date-timezone';
 
 import {
   AprovarHoraExtraDto,
@@ -37,7 +41,7 @@ export class TurnoRealizadoService {
 
   async abrirTurno(payload: AbrirTurnoPayload) {
     const prisma = this.db.getPrisma();
-    const dataRef = new Date(payload.dataReferencia);
+    const dataRef = parseDateInput(payload.dataReferencia);
     const origem = payload.origem ?? 'mobile';
     // Garantir que executadoPor seja sempre string (pode vir como número do TurnoService)
     const executadoPor = String(payload.executadoPor || 'system');
@@ -155,14 +159,11 @@ export class TurnoRealizadoService {
     const prisma = this.db.getPrisma();
     const dataRef =
       typeof dataReferencia === 'string'
-        ? new Date(dataReferencia)
+        ? parseDateInput(dataReferencia)
         : dataReferencia;
 
-    // Normalizar para início do dia para buscar corretamente
-    const dataRefInicio = new Date(dataRef);
-    dataRefInicio.setHours(0, 0, 0, 0);
-    const dataRefFim = new Date(dataRef);
-    dataRefFim.setHours(23, 59, 59, 999);
+    const { start: dataRefInicio, end: dataRefFim } =
+      getSaoPauloDayRange(dataRef);
 
     // Garantir que executadoPor seja string
     const executadoPorStr = String(executadoPor || 'system');
@@ -216,7 +217,7 @@ export class TurnoRealizadoService {
 
   async resumo(params: { data: string; equipeId: number }) {
     const prisma = this.db.getPrisma();
-    const dataRef = new Date(params.data);
+    const dataRef = parseDateInput(params.data);
 
     const [slots, aberturas, faltas, divergencias] = await Promise.all([
       prisma.slotEscala.findMany({
@@ -693,7 +694,6 @@ export class TurnoRealizadoService {
     let diasEscalados = 0;
     let diasAbertos = 0;
     let diasJustificadosSemFalta = 0;
-    const totalEletricistasEscalados = 0;
     let totalEletricistasQueTrabalharam = 0;
     let totalEletricistasPrevistos = 0;
 

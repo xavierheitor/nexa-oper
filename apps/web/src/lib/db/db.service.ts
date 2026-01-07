@@ -81,8 +81,12 @@ class DbService {
         // Configuração de logging baseada no ambiente
         log:
           process.env.NODE_ENV === 'development'
-            ? ['query', 'error', 'warn'] // Desenvolvimento: logs detalhados
-            : ['error'], // Produção: apenas erros
+            ? [
+                { level: 'query', emit: 'event' },
+                { level: 'error', emit: 'stdout' },
+                { level: 'warn', emit: 'stdout' },
+              ]
+            : [{ level: 'error', emit: 'stdout' }],
         // Timeout aumentado para transações complexas
         transactionOptions: {
           maxWait: 10000, // Espera máxima para adquirir uma transação (10s)
