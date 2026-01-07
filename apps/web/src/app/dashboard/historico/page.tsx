@@ -26,6 +26,7 @@ import { useLoadingStates } from '@/lib/hooks/useLoadingStates';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
 import { useHydrated } from '@/lib/hooks/useHydrated';
+import { getDateRangeInSaoPaulo } from '@/lib/utils/dateHelpers';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -150,8 +151,9 @@ export default function HistoricoPage() {
     setLoading('main', true);
     try {
       // Definir período do dia selecionado (00:00:00 até 23:59:59)
-      const inicioDia = data.startOf('day').toDate();
-      const fimDia = data.endOf('day').toDate();
+      const { inicio: inicioDia, fim: fimDia } = getDateRangeInSaoPaulo(
+        data.toDate()
+      );
 
       // Buscar todos os turnos do dia selecionado
       const result = await listTurnos({
@@ -230,8 +232,9 @@ export default function HistoricoPage() {
 
     try {
       // Calcular dados dos gráficos baseados nos turnos da data selecionada
-      const inicioDia = data.startOf('day').toDate();
-      const fimDia = data.endOf('day').toDate();
+      const { inicio: inicioDia, fim: fimDia } = getDateRangeInSaoPaulo(
+        data.toDate()
+      );
 
       // Buscar todos os tipos de equipe do banco de dados
       const resultTipos = await listTiposEquipe({

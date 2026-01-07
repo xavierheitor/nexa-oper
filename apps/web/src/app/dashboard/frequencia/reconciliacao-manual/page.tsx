@@ -16,7 +16,7 @@ import { Card, Form, Alert, Space, Typography } from 'antd';
 import { App } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { reconciliarManual } from '@/lib/actions/turno-realizado/reconciliarManual';
-import { reconciliarForcado } from '@/lib/actions/turno-realizado/reconciliarForcado';
+import { forcarReconciliacaoTurnos, type ForcarReconciliacaoResult } from '@/lib/actions/admin/forcarReconciliacaoTurnos';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import { ReconciliacaoForm } from './components/ReconciliacaoForm';
 import { ReconciliacaoResults } from './components/ReconciliacaoResults';
@@ -37,6 +37,17 @@ interface PendenteReconciliacao {
 interface ResultadoForcado {
   success: boolean;
   message?: string;
+  runId?: string;
+  startedAt?: string;
+  finishedAt?: string;
+  durationMs?: number;
+  stats?: {
+    created: number;
+    updated: number;
+    closed: number;
+    skipped: number;
+  };
+  warnings?: string[];
   periodo?: {
     dataInicio: string;
     dataFim: string;
@@ -164,38 +175,64 @@ export default function ReconciliacaoManualPage() {
     setResultadoForcado(null);
 
     try {
-      const body: { diasHistorico?: number; dataInicio?: string; dataFim?: string } = {};
+      // Preparar parâmetros para a API
+      const params: {
+        dataReferencia?: string;
+        intervaloDias?: number;
+        equipeId?: number;
+        dryRun?: boolean;
+      } = {};
 
       if (values.dataInicio && values.dataFim) {
-        body.dataInicio = values.dataInicio.format('YYYY-MM-DD');
-        body.dataFim = values.dataFim.format('YYYY-MM-DD');
+        // Se tem período específico, usar data de referência e calcular intervalo
+        params.dataReferencia = values.dataInicio.format('YYYY-MM-DD');
+        const diffDays = values.dataFim.diff(values.dataInicio, 'day') + 1;
+        params.intervaloDias = diffDays;
       } else {
-        body.diasHistorico = values.diasHistorico || 30;
+        // Se não tem período, usar dias de histórico a partir de hoje
+        params.intervaloDias = values.diasHistorico || 30;
+        // dataReferencia não informada = usa hoje
       }
 
-      const result = await reconciliarForcado(body);
+      const result = await forcarReconciliacaoTurnos(params);
 
       if (!result.success) {
         throw new Error(result.error || 'Erro ao executar reconciliação forçada');
       }
 
-      const data = result.data;
+      // Converter resultado da API para o formato esperado pelo componente
+      const resultadoFormatado: ResultadoForcado = {
+        success: result.success,
+        runId: result.runId,
+        startedAt: result.startedAt,
+        finishedAt: result.finishedAt,
+        durationMs: result.durationMs,
+        stats: result.stats,
+        warnings: result.warnings,
+        message: result.stats
+          ? `Criados: ${result.stats.created}, Atualizados: ${result.stats.updated}, Fechados: ${result.stats.closed}, Ignorados: ${result.stats.skipped}`
+          : 'Reconciliação executada',
+      };
 
-      if (!data) {
-        throw new Error('Dados não retornados pela reconciliação forçada');
-      }
+      setResultadoForcado(resultadoFormatado);
 
-      setResultadoForcado(data);
+      if (result.success) {
+        const stats = result.stats;
+        const message = stats
+          ? `Reconciliação executada com sucesso! Criados: ${stats.created}, Atualizados: ${stats.updated}, Fechados: ${stats.closed}, Ignorados: ${stats.skipped}`
+          : 'Reconciliação executada com sucesso!';
 
-      if (data.success) {
-        messageApi.success(
-          `Reconciliação forçada executada: ${data.sucessos || 0} sucesso(s), ${data.erros || 0} erro(s)`
-        );
+        messageApi.success(message);
+
+        if (result.warnings && result.warnings.length > 0) {
+          messageApi.warning(`Avisos: ${result.warnings.join(', ')}`);
+        }
+
         if (values.diasHistorico) {
           await buscarPendentes(values.diasHistorico);
         }
       } else {
-        messageApi.warning(data.message || 'Reconciliação executada com alguns erros');
+        messageApi.error(result.error || 'Erro ao executar reconciliação');
       }
     } catch (error: unknown) {
       const errorMessage =

@@ -123,13 +123,20 @@ export class FaltaRepository extends AbstractCrudRepository<
     take: number,
     include?: GenericPrismaIncludeInput
   ): Promise<Falta[]> {
-    return prisma.falta.findMany({
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/7c28805d-18e5-4a0d-bd0c-9f591d50615f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'FaltaRepository.ts:119',message:'listFaltas findMany ENTRY',data:{where,orderBy,skip,take},timestamp:Date.now(),sessionId:'debug-session',runId:'list',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
+    const result = await prisma.falta.findMany({
       where,
       orderBy,
       skip,
       take,
       include: include || this.getDefaultInclude(),
     });
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/7c28805d-18e5-4a0d-bd0c-9f591d50615f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'FaltaRepository.ts:133',message:'listFaltas findMany EXIT',data:{count:result.length,ids:result.map(f=>({id:f.id,dataReferencia:f.dataReferencia.toISOString(),equipeId:f.equipeId,eletricistaId:f.eletricistaId,status:f.status}))},timestamp:Date.now(),sessionId:'debug-session',runId:'list',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
+    return result;
   }
 
   /**
@@ -139,7 +146,14 @@ export class FaltaRepository extends AbstractCrudRepository<
    * @returns Número total de registros
    */
   protected async count(where: GenericPrismaWhereInput): Promise<number> {
-    return prisma.falta.count({ where });
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/7c28805d-18e5-4a0d-bd0c-9f591d50615f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'FaltaRepository.ts:141',message:'listFaltas count ENTRY',data:{where},timestamp:Date.now(),sessionId:'debug-session',runId:'list',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
+    const result = await prisma.falta.count({ where });
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/7c28805d-18e5-4a0d-bd0c-9f591d50615f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'FaltaRepository.ts:143',message:'listFaltas count EXIT',data:{count:result},timestamp:Date.now(),sessionId:'debug-session',runId:'list',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
+    return result;
   }
 
   /**

@@ -40,8 +40,12 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   private readonly prisma = new PrismaClient({
     log:
       process.env['NODE_ENV'] === 'development'
-        ? ['query', 'error', 'warn']
-        : ['error'],
+        ? [
+            { level: 'query', emit: 'event' },
+            { level: 'error', emit: 'stdout' },
+            { level: 'warn', emit: 'stdout' },
+          ]
+        : [{ level: 'error', emit: 'stdout' }],
   });
 
   async onModuleInit() {

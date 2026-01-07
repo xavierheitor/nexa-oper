@@ -32,6 +32,14 @@ export class ReconciliacaoScheduler {
   async executarReconciliacaoDiaria(): Promise<void> {
     this.logger.log('Iniciando reconciliação diária automática...');
 
+    // #region agent log
+    try {
+      await fetch('http://127.0.0.1:7242/ingest/7c28805d-18e5-4a0d-bd0c-9f591d50615f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'reconciliacao.scheduler.ts:32',message:'executarReconciliacaoDiaria ENTRY (CRON)',data:{timestamp:new Date().toISOString()},timestamp:Date.now(),sessionId:'debug-session',runId:'cron-auto',hypothesisId:'A'})});
+    } catch (e) {
+      this.logger.warn('Erro ao enviar log de entrada do cron:', e);
+    }
+    // #endregion
+
     try {
       const params: ForceReconcileDto = {
         dataReferencia: undefined, // Usa hoje
@@ -47,6 +55,14 @@ export class ReconciliacaoScheduler {
         params,
         'cron'
       );
+
+      // #region agent log
+      try {
+        await fetch('http://127.0.0.1:7242/ingest/7c28805d-18e5-4a0d-bd0c-9f591d50615f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'reconciliacao.scheduler.ts:50',message:'executarReconciliacaoDiaria EXIT (CRON)',data:{resultado},timestamp:Date.now(),sessionId:'debug-session',runId:'cron-auto',hypothesisId:'A'})});
+      } catch (e) {
+        this.logger.warn('Erro ao enviar log de saída do cron:', e);
+      }
+      // #endregion
 
       this.logger.log(
         `Reconciliação diária concluída - runId: ${resultado.runId}, ` +

@@ -18,6 +18,10 @@ import {
   ReconcileStatsDto,
 } from './dto/reconcile-response.dto';
 import { acquireLock, releaseLock } from '../../common/utils/job-lock';
+import {
+  getSaoPauloDayRange,
+  parseDateInput,
+} from '../../common/utils/date-timezone';
 import { DatabaseService } from '../../database/database.service';
 
 const JOB_NAME = 'reconciliacao_turnos';
@@ -82,10 +86,11 @@ export class InternalReconciliacaoService {
 
     try {
       // Normalizar parâmetros
-      const dataReferencia = params.dataReferencia
-        ? new Date(params.dataReferencia)
+      const dataReferenciaBase = params.dataReferencia
+        ? parseDateInput(params.dataReferencia)
         : new Date();
-      dataReferencia.setHours(0, 0, 0, 0);
+      const { start: dataReferencia } =
+        getSaoPauloDayRange(dataReferenciaBase);
 
       const intervaloDias = params.intervaloDias || 1;
       const equipeId = params.equipeId;
@@ -113,8 +118,7 @@ export class InternalReconciliacaoService {
         // Processar equipe específica
         for (let dia = 0; dia < intervaloDias; dia++) {
           const dataAtual = new Date(dataReferencia);
-          dataAtual.setDate(dataAtual.getDate() + dia);
-          dataAtual.setHours(0, 0, 0, 0);
+          dataAtual.setUTCDate(dataAtual.getUTCDate() + dia);
 
           const resultado = await this.reconciliarDiaEquipe(
             prisma,
@@ -138,7 +142,7 @@ export class InternalReconciliacaoService {
         `[${runId}] Reconciliação concluída - stats: ${JSON.stringify(stats)}, duration: ${durationMs}ms`
       );
 
-      return {
+      const result = {
         success: true,
         runId,
         startedAt: startedAt.toISOString(),
@@ -147,6 +151,8 @@ export class InternalReconciliacaoService {
         stats,
         warnings,
       };
+
+      return result;
     } catch (error) {
       this.logger.error(`[${runId}] Erro na reconciliação:`, error);
       throw error;
@@ -200,8 +206,7 @@ export class InternalReconciliacaoService {
     for (const escala of equipesComEscala) {
       for (let dia = 0; dia < intervaloDias; dia++) {
         const dataAtual = new Date(dataReferencia);
-        dataAtual.setDate(dataAtual.getDate() + dia);
-        dataAtual.setHours(0, 0, 0, 0);
+        dataAtual.setUTCDate(dataAtual.getUTCDate() + dia);
 
         try {
           const resultado = await this.reconciliarDiaEquipe(
@@ -253,19 +258,374 @@ export class InternalReconciliacaoService {
     };
     const warnings: string[] = [];
 
-    const dataRefInicio = new Date(dataReferencia);
-    dataRefInicio.setHours(0, 0, 0, 0);
-    const dataRefFim = new Date(dataReferencia);
-    dataRefFim.setHours(23, 59, 59, 999);
+    const { start: dataRefInicio, end: dataRefFim } =
+      getSaoPauloDayRange(dataReferencia);
 
     this.logger.debug(
       `[${runId}] Reconciliação para equipe ${equipeId} em ${dataReferencia.toISOString().split('T')[0]}`
     );
 
-    // A lógica completa de reconciliação será portada do WEB
-    // Por enquanto, retornar estrutura básica
-    // TODO: Portar lógica completa de reconciliarDiaEquipeInterna do WEB
+    if (dryRun) {
+      this.logger.log(`[${runId}] DRY RUN - nenhuma alteração será feita`);
+      return { ...stats, warnings };
+    }
+
+    try {
+      // 1. Buscar slots da escala (previstos) com estado e horários
+      const slots = await prisma.slotEscala.findMany({
+        where: {
+          data: {
+            gte: dataRefInicio,
+            lte: dataRefFim,
+          },
+          escalaEquipePeriodo: { equipeId: equipeId },
+        },
+        include: {
+          eletricista: {
+            include: {
+              Status: true,
+            },
+          },
+        },
+      });
+
+      // 1b. Buscar TODOS os slots do dia (de todas as equipes) para verificar se eletricista tinha escala
+      const todosSlotsDia = await prisma.slotEscala.findMany({
+        where: {
+          data: {
+            gte: dataRefInicio,
+            lte: dataRefFim,
+          },
+          escalaEquipePeriodo: {
+            status: 'PUBLICADA',
+          },
+        },
+        select: {
+          eletricistaId: true,
+        },
+      });
+
+      const eletricistasComEscala = new Set(todosSlotsDia.map((s: { eletricistaId: number }) => s.eletricistaId));
+
+      // 2. Buscar turnos realmente abertos no dia (todas as equipes)
+      const aberturasDia = await prisma.turnoRealizadoEletricista.findMany({
+        where: {
+          turnoRealizado: {
+            dataReferencia: {
+              gte: dataRefInicio,
+              lte: dataRefFim,
+            },
+          },
+        },
+        include: {
+          turnoRealizado: {
+            select: {
+              equipeId: true,
+            },
+          },
+          eletricista: {
+            include: {
+              Status: true,
+            },
+          },
+        },
+      });
+
+      // 3. Agrupar aberturas por eletricista e equipe
+      const abertosPorEletricista = new Map<
+        number,
+        {
+          equipes: Set<number>;
+          itens: typeof aberturasDia;
+        }
+      >();
+
+      for (const abertura of aberturasDia) {
+        const eletricistaId = abertura.eletricistaId;
+        const existing = abertosPorEletricista.get(eletricistaId);
+        if (existing) {
+          existing.equipes.add(abertura.turnoRealizado.equipeId);
+          existing.itens.push(abertura);
+        } else {
+          abertosPorEletricista.set(eletricistaId, {
+            equipes: new Set([abertura.turnoRealizado.equipeId]),
+            itens: [abertura],
+          });
+        }
+      }
+
+      // 4. Processar cada slot da escala
+      for (const slot of slots) {
+        const aberturasEletricista = abertosPorEletricista.get(slot.eletricistaId);
+        const estadoSlot = slot.estado;
+        const eletricistaStatus = slot.eletricista.Status?.status || 'ATIVO';
+
+        const statusJustificaFalta = [
+          'FERIAS',
+          'LICENCA_MEDICA',
+          'LICENCA_MATERNIDADE',
+          'LICENCA_PATERNIDADE',
+          'SUSPENSAO',
+          'TREINAMENTO',
+          'AFastADO',
+          'DESLIGADO',
+          'APOSENTADO',
+        ].includes(eletricistaStatus);
+
+        // CASO 1: TRABALHO + ABRIU na mesma equipe (Normal)
+        if (estadoSlot === 'TRABALHO') {
+          if (
+            aberturasEletricista &&
+            aberturasEletricista.equipes.has(equipeId)
+          ) {
+            // Caso normal, sem ação adicional
+            continue;
+          }
+
+          // CASO 2: TRABALHO + NÃO ABRIU na equipe prevista
+          if (!aberturasEletricista || !aberturasEletricista.equipes.has(equipeId)) {
+            // CASO 3: TRABALHO + ABRIU em EQUIPE DIFERENTE (Divergência)
+            if (aberturasEletricista && aberturasEletricista.equipes.size > 0) {
+              const equipeRealId = [...aberturasEletricista.equipes][0];
+              try {
+                await prisma.divergenciaEscala.upsert({
+                  where: {
+                    dataReferencia_eletricistaId_equipePrevistaId_equipeRealId: {
+                      dataReferencia: dataReferencia,
+                      eletricistaId: slot.eletricistaId,
+                      equipePrevistaId: equipeId,
+                      equipeRealId,
+                    },
+                  },
+                  update: {},
+                  create: {
+                    dataReferencia: dataReferencia,
+                    equipePrevistaId: equipeId,
+                    equipeRealId,
+                    eletricistaId: slot.eletricistaId,
+                    tipo: 'equipe_divergente',
+                    detalhe: null,
+                    createdBy: 'system',
+                  },
+                });
+                stats.created++;
+              } catch (err: any) {
+                if (err.code !== 'P2002') {
+                  warnings.push(`Erro ao criar divergência para eletricista ${slot.eletricistaId}: ${err.message}`);
+                }
+              }
+              continue;
+            }
+
+            // CASO 2: TRABALHO + NÃO ABRIU em NENHUMA equipe (Falta)
+            const justificativaEquipe = await prisma.justificativaEquipe.findUnique({
+              where: {
+                dataReferencia_equipeId: {
+                  dataReferencia: dataReferencia,
+                  equipeId: equipeId,
+                },
+              },
+              include: {
+                tipoJustificativa: true,
+              },
+            });
+
+            if (
+              justificativaEquipe &&
+              justificativaEquipe.status === 'aprovada' &&
+              !justificativaEquipe.tipoJustificativa.geraFalta
+            ) {
+              continue;
+            }
+
+            if (!statusJustificaFalta) {
+              try {
+                const faltaResult = await prisma.falta.upsert({
+                  where: {
+                    dataReferencia_equipeId_eletricistaId_motivoSistema: {
+                      dataReferencia: dataReferencia,
+                      equipeId: equipeId,
+                      eletricistaId: slot.eletricistaId,
+                      motivoSistema: 'falta_abertura',
+                    },
+                  },
+                  update: {},
+                  create: {
+                    dataReferencia: dataReferencia,
+                    equipeId: equipeId,
+                    eletricistaId: slot.eletricistaId,
+                    escalaSlotId: slot.id,
+                    motivoSistema: 'falta_abertura',
+                    status: 'pendente',
+                    createdBy: 'system',
+                  },
+                });
+                stats.created++;
+              } catch (err: any) {
+                if (err.code !== 'P2002') {
+                  warnings.push(`Erro ao criar falta para eletricista ${slot.eletricistaId}: ${err.message}`);
+                }
+              }
+            }
+            continue;
+          }
+        }
+
+        // CASO 4: FOLGA + ABRIU (Hora Extra - folga_trabalhada)
+        if (estadoSlot === 'FOLGA') {
+          if (aberturasEletricista && aberturasEletricista.itens.length > 0) {
+            const abertura =
+              aberturasEletricista.itens.find(
+                (a: any) => a.turnoRealizado.equipeId === equipeId
+              ) || aberturasEletricista.itens[0];
+
+            const jaExiste = await prisma.horaExtra.findFirst({
+              where: {
+                turnoRealizadoEletricistaId: abertura.id,
+                tipo: 'folga_trabalhada',
+              },
+            });
+
+            if (!jaExiste) {
+              const horasRealizadas = this.calcularHorasTrabalhadas(
+                abertura.abertoEm,
+                abertura.fechadoEm
+              );
+
+              try {
+                await prisma.horaExtra.create({
+                  data: {
+                    dataReferencia: dataReferencia,
+                    eletricistaId: slot.eletricistaId,
+                    turnoRealizadoEletricistaId: abertura.id,
+                    escalaSlotId: slot.id,
+                    tipo: 'folga_trabalhada',
+                    horasPrevistas: new Prisma.Decimal(0),
+                    horasRealizadas: new Prisma.Decimal(horasRealizadas),
+                    diferencaHoras: new Prisma.Decimal(horasRealizadas),
+                    status: 'pendente',
+                    createdBy: 'system',
+                  },
+                });
+                stats.created++;
+              } catch (err: any) {
+                if (err.code !== 'P2002') {
+                  warnings.push(`Erro ao criar hora extra (folga_trabalhada) para eletricista ${slot.eletricistaId}: ${err.message}`);
+                }
+              }
+            }
+          }
+        }
+
+        // CASO 6: EXCECAO ou outros estados
+        if (estadoSlot === 'EXCECAO' || estadoSlot === 'FALTA') {
+          if (
+            !aberturasEletricista ||
+            aberturasEletricista.equipes.size === 0
+          ) {
+            if (!statusJustificaFalta) {
+              try {
+                await prisma.falta.upsert({
+                  where: {
+                    dataReferencia_equipeId_eletricistaId_motivoSistema: {
+                      dataReferencia: dataReferencia,
+                      equipeId: equipeId,
+                      eletricistaId: slot.eletricistaId,
+                      motivoSistema: 'falta_abertura',
+                    },
+                  },
+                  update: {},
+                  create: {
+                    dataReferencia: dataReferencia,
+                    equipeId: equipeId,
+                    eletricistaId: slot.eletricistaId,
+                    escalaSlotId: slot.id,
+                    motivoSistema: 'falta_abertura',
+                    status: 'pendente',
+                    createdBy: 'system',
+                  },
+                });
+                stats.created++;
+              } catch (err: any) {
+                if (err.code !== 'P2002') {
+                  // Ignorar erros silenciosamente
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // 5. Processar turnos abertos SEM escala (CASO 6: extrafora)
+      for (const [eletricistaId, aberturas] of abertosPorEletricista.entries()) {
+        const tinhaSlotNaEscala = eletricistasComEscala.has(eletricistaId);
+
+        if (!tinhaSlotNaEscala) {
+          for (const abertura of aberturas.itens) {
+            const jaExiste = await prisma.horaExtra.findFirst({
+              where: {
+                turnoRealizadoEletricistaId: abertura.id,
+                tipo: 'extrafora',
+              },
+            });
+
+            if (!jaExiste) {
+              const horasRealizadas = this.calcularHorasTrabalhadas(
+                abertura.abertoEm,
+                abertura.fechadoEm
+              );
+
+              try {
+                await prisma.horaExtra.create({
+                  data: {
+                    dataReferencia: dataReferencia,
+                    eletricistaId,
+                    turnoRealizadoEletricistaId: abertura.id,
+                    tipo: 'extrafora',
+                    horasPrevistas: new Prisma.Decimal(0),
+                    horasRealizadas: new Prisma.Decimal(horasRealizadas),
+                    diferencaHoras: new Prisma.Decimal(horasRealizadas),
+                    status: 'pendente',
+                    createdBy: 'system',
+                  },
+                });
+                stats.created++;
+              } catch (err: any) {
+                if (err.code !== 'P2002') {
+                  warnings.push(`Erro ao criar hora extra (extrafora) para eletricista ${eletricistaId}: ${err.message}`);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      this.logger.debug(
+        `[${runId}] Reconciliação concluída para equipe ${equipeId} em ${dataReferencia.toISOString().split('T')[0]}`
+      );
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      warnings.push(`Erro ao reconciliar equipe ${equipeId}: ${errorMsg}`);
+      this.logger.error(`[${runId}] Erro na reconciliação:`, error);
+    }
 
     return { ...stats, warnings };
+  }
+
+  /**
+   * Calcula horas trabalhadas a partir de abertura e fechamento
+   */
+  private calcularHorasTrabalhadas(
+    abertoEm: Date,
+    fechadoEm: Date | null
+  ): number {
+    if (!fechadoEm) {
+      const agora = new Date();
+      const diferencaMs = agora.getTime() - abertoEm.getTime();
+      return diferencaMs / (1000 * 60 * 60);
+    }
+
+    const diferencaMs = fechadoEm.getTime() - abertoEm.getTime();
+    return diferencaMs / (1000 * 60 * 60);
   }
 }

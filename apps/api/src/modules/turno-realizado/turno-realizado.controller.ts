@@ -7,7 +7,6 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
@@ -16,7 +15,6 @@ import { ConsolidadoEletricistaQueryDto } from './dto/consolidado-eletricista-qu
 import { ConsolidadoEquipeQueryDto } from './dto/consolidado-equipe-query.dto';
 import { FaltaFilterDto } from './dto/falta-filter.dto';
 import { HoraExtraFilterDto } from './dto/hora-extra-filter.dto';
-import { LocalhostCorsGuard } from './guards/localhost-cors.guard';
 import { TurnoRealizadoService } from './turno-realizado.service';
 
 import type { AbrirTurnoPayload } from './turno-realizado.service';

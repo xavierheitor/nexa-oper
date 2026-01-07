@@ -133,6 +133,17 @@ export class JustificativaEquipeRepository extends AbstractCrudRepository<
   }
 
   /**
+   * Verifica se o modelo tem soft delete
+   *
+   * JustificativaEquipe não tem soft delete (não tem campo deletedAt)
+   *
+   * @returns false - este modelo não tem soft delete
+   */
+  protected hasSoftDelete(): boolean {
+    return false;
+  }
+
+  /**
    * Define quais campos podem ser utilizados para busca
    *
    * @returns Array com os nomes dos campos de busca

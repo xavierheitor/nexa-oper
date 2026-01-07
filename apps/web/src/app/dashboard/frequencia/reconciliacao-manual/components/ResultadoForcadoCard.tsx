@@ -15,6 +15,17 @@ interface ResultadoItemForcado {
 interface ResultadoForcado {
   success: boolean;
   message?: string;
+  runId?: string;
+  startedAt?: string;
+  finishedAt?: string;
+  durationMs?: number;
+  stats?: {
+    created: number;
+    updated: number;
+    closed: number;
+    skipped: number;
+  };
+  warnings?: string[];
   periodo?: {
     dataInicio: string;
     dataFim: string;
@@ -58,13 +69,30 @@ export function ResultadoForcadoCard({ resultado }: ResultadoForcadoCardProps) {
                 </Text>
               </>
             )}
-            {resultado.diasProcessados !== undefined && (
+            {resultado.stats && (
               <>
                 <br />
                 <Text type="secondary" style={{ fontSize: '12px', marginTop: '8px', display: 'block' }}>
-                  Dias processados: {resultado.diasProcessados} | Equipes: {resultado.equipesProcessadas || 0} |
-                  Sucessos: <Tag color="success">{resultado.sucessos || 0}</Tag> |
-                  Erros: <Tag color="error">{resultado.erros || 0}</Tag>
+                  Criados: <Tag color="success">{resultado.stats.created}</Tag> |
+                  Atualizados: <Tag color="processing">{resultado.stats.updated}</Tag> |
+                  Fechados: <Tag color="default">{resultado.stats.closed}</Tag> |
+                  Ignorados: <Tag color="warning">{resultado.stats.skipped}</Tag>
+                </Text>
+              </>
+            )}
+            {resultado.runId && (
+              <>
+                <br />
+                <Text type="secondary" style={{ fontSize: '12px', marginTop: '8px', display: 'block' }}>
+                  Run ID: {resultado.runId} | Duração: {resultado.durationMs ? `${(resultado.durationMs / 1000).toFixed(2)}s` : '-'}
+                </Text>
+              </>
+            )}
+            {resultado.warnings && resultado.warnings.length > 0 && (
+              <>
+                <br />
+                <Text type="warning" style={{ fontSize: '12px', marginTop: '8px', display: 'block' }}>
+                  Avisos: {resultado.warnings.join(', ')}
                 </Text>
               </>
             )}
