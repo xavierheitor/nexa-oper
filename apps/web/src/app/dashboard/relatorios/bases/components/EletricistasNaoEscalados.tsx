@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, Empty, Spin, Table, Tag } from 'antd';
+import { Button, Card, Empty, Space, Spin, Table, Tag } from 'antd';
 import { useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useHydrated } from '@/lib/hooks/useHydrated';
@@ -54,6 +54,61 @@ export default function EletricistasNaoEscalados({
     useDataFetch<EletricistaNaoEscalado[]>(fetcher, [fetcher]);
 
   const dados: EletricistaNaoEscalado[] = dadosRaw ?? [];
+
+  const handleExportarCsv = () => {
+    if (dados.length === 0) {
+      return;
+    }
+
+    const headers = [
+      'Base',
+      'Contrato',
+      'Eletricista',
+      'Matrícula',
+      'Situação',
+      'Motivo',
+    ];
+
+    const csvRows = [
+      headers.join(';'),
+      ...dados.map((item) => {
+        const situacao =
+          StatusEletricistaLabels[item.status] || item.status || '';
+        return [
+          item.baseNome,
+          item.contratoNome,
+          item.nome,
+          item.matricula,
+          situacao,
+          item.statusMotivo || '',
+        ].join(';');
+      }),
+    ];
+
+    const csvContent = csvRows.join('\n');
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
+
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+
+    const dataAtual = new Date()
+      .toISOString()
+      .replace('T', '_')
+      .replace(/[:]/g, '-')
+      .slice(0, 16);
+    const nomeArquivo = `eletricistas_nao_escalados_${dataAtual}.csv`;
+
+    link.setAttribute('download', nomeArquivo);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const columns = useMemo(
     () => [
@@ -132,7 +187,16 @@ export default function EletricistasNaoEscalados({
   return (
     <Card
       title="Eletricistas não escalados"
-      extra={<Tag color={dados.length > 0 ? 'warning' : 'default'}>{dados.length}</Tag>}
+      extra={
+        <Space size={8}>
+          <Button onClick={handleExportarCsv} disabled={dados.length === 0}>
+            Exportar CSV
+          </Button>
+          <Tag color={dados.length > 0 ? 'warning' : 'default'}>
+            {dados.length}
+          </Tag>
+        </Space>
+      }
     >
       <ErrorAlert error={error} onRetry={refetch} />
       {dados.length === 0 && !error ? (
