@@ -173,6 +173,7 @@ export class InternalReconciliacaoService {
     dryRun: boolean,
     runId: string
   ): Promise<ReconcileStatsDto & { warnings: string[] }> {
+    const dataRefLabel = dataReferencia.toISOString().split('T')[0];
     const stats: ReconcileStatsDto = {
       created: 0,
       updated: 0,
@@ -185,6 +186,10 @@ export class InternalReconciliacaoService {
     const dataFim = new Date(dataReferencia);
     dataFim.setDate(dataFim.getDate() + intervaloDias - 1);
     dataFim.setHours(23, 59, 59, 999);
+
+    this.logger.log(
+      `[${runId}] Procurando equipes com escala publicada entre ${dataRefLabel} e ${dataFim.toISOString().split('T')[0]}`
+    );
 
     const equipesComEscala = await prisma.escalaEquipePeriodo.findMany({
       where: {
@@ -207,8 +212,12 @@ export class InternalReconciliacaoService {
       for (let dia = 0; dia < intervaloDias; dia++) {
         const dataAtual = new Date(dataReferencia);
         dataAtual.setUTCDate(dataAtual.getUTCDate() + dia);
+        const dataAtualLabel = dataAtual.toISOString().split('T')[0];
 
         try {
+          this.logger.log(
+            `[${runId}] Iniciando reconciliação da equipe ${escala.equipeId} no dia ${dataAtualLabel}`
+          );
           const resultado = await this.reconciliarDiaEquipe(
             prisma,
             dataAtual,
@@ -250,6 +259,7 @@ export class InternalReconciliacaoService {
     dryRun: boolean,
     runId: string
   ): Promise<ReconcileStatsDto & { warnings: string[] }> {
+    const dataRefLabel = dataReferencia.toISOString().split('T')[0];
     const stats: ReconcileStatsDto = {
       created: 0,
       updated: 0,
@@ -261,8 +271,11 @@ export class InternalReconciliacaoService {
     const { start: dataRefInicio, end: dataRefFim } =
       getSaoPauloDayRange(dataReferencia);
 
+    this.logger.log(
+      `[${runId}] Procurando escala do dia ${dataRefLabel} para equipe ${equipeId}`
+    );
     this.logger.debug(
-      `[${runId}] Reconciliação para equipe ${equipeId} em ${dataReferencia.toISOString().split('T')[0]}`
+      `[${runId}] Intervalo SP: ${dataRefInicio.toISOString()} -> ${dataRefFim.toISOString()}`
     );
 
     if (dryRun) {
@@ -289,6 +302,10 @@ export class InternalReconciliacaoService {
         },
       });
 
+      this.logger.log(
+        `[${runId}] Slots previstos encontrados: ${slots.length} (equipe ${equipeId}, dia ${dataRefLabel})`
+      );
+
       // 1b. Buscar TODOS os slots do dia (de todas as equipes) para verificar se eletricista tinha escala
       const todosSlotsDia = await prisma.slotEscala.findMany({
         where: {
@@ -305,9 +322,18 @@ export class InternalReconciliacaoService {
         },
       });
 
-      const eletricistasComEscala = new Set(todosSlotsDia.map((s: { eletricistaId: number }) => s.eletricistaId));
+      this.logger.log(
+        `[${runId}] Slots totais do dia ${dataRefLabel} (todas equipes): ${todosSlotsDia.length}`
+      );
+
+      const eletricistasComEscala = new Set(
+        todosSlotsDia.map((s: { eletricistaId: number }) => s.eletricistaId)
+      );
 
       // 2. Buscar turnos realmente abertos no dia (todas as equipes)
+      this.logger.log(
+        `[${runId}] Procurando turnos realizados/abertos no dia ${dataRefLabel} (todas equipes)`
+      );
       const aberturasDia = await prisma.turnoRealizadoEletricista.findMany({
         where: {
           turnoRealizado: {
@@ -330,6 +356,10 @@ export class InternalReconciliacaoService {
           },
         },
       });
+
+      this.logger.log(
+        `[${runId}] Turnos realizados/aberturas encontrados: ${aberturasDia.length} (dia ${dataRefLabel})`
+      );
 
       // 3. Agrupar aberturas por eletricista e equipe
       const abertosPorEletricista = new Map<
@@ -354,11 +384,24 @@ export class InternalReconciliacaoService {
         }
       }
 
+      this.logger.debug(
+        `[${runId}] Eletricistas com turno aberto no dia ${dataRefLabel}: ${abertosPorEletricista.size}`
+      );
+
       // 4. Processar cada slot da escala
       for (const slot of slots) {
         const aberturasEletricista = abertosPorEletricista.get(slot.eletricistaId);
         const estadoSlot = slot.estado;
         const eletricistaStatus = slot.eletricista.Status?.status || 'ATIVO';
+        const eletricistaNome = slot.eletricista?.nome || 'sem_nome';
+        const eletricistaMatricula = slot.eletricista?.matricula || 'sem_matricula';
+        const equipesAbertas = aberturasEletricista
+          ? [...aberturasEletricista.equipes]
+          : [];
+
+        this.logger.debug(
+          `[${runId}] Slot previsto: dia ${dataRefLabel}, equipe ${equipeId}, slotId=${slot.id}, eletricista=${slot.eletricistaId} (${eletricistaNome}, ${eletricistaMatricula}), estado=${estadoSlot}, statusEletricista=${eletricistaStatus}, equipesAbertas=${equipesAbertas.join(',') || 'nenhuma'}`
+        );
 
         const statusJustificaFalta = [
           'FERIAS',
@@ -379,6 +422,9 @@ export class InternalReconciliacaoService {
             aberturasEletricista.equipes.has(equipeId)
           ) {
             // Caso normal, sem ação adicional
+            this.logger.debug(
+              `[${runId}] OK: previsto e turno aberto na equipe ${equipeId} (eletricista ${slot.eletricistaId})`
+            );
             continue;
           }
 
@@ -387,6 +433,9 @@ export class InternalReconciliacaoService {
             // CASO 3: TRABALHO + ABRIU em EQUIPE DIFERENTE (Divergência)
             if (aberturasEletricista && aberturasEletricista.equipes.size > 0) {
               const equipeRealId = [...aberturasEletricista.equipes][0];
+              this.logger.log(
+                `[${runId}] Divergencia: previsto equipe ${equipeId}, abriu na equipe ${equipeRealId} (eletricista ${slot.eletricistaId})`
+              );
               try {
                 await prisma.divergenciaEscala.upsert({
                   where: {
@@ -409,6 +458,9 @@ export class InternalReconciliacaoService {
                   },
                 });
                 stats.created++;
+                this.logger.debug(
+                  `[${runId}] Divergencia registrada (eletricista ${slot.eletricistaId})`
+                );
               } catch (err: any) {
                 if (err.code !== 'P2002') {
                   warnings.push(`Erro ao criar divergência para eletricista ${slot.eletricistaId}: ${err.message}`);
@@ -418,6 +470,9 @@ export class InternalReconciliacaoService {
             }
 
             // CASO 2: TRABALHO + NÃO ABRIU em NENHUMA equipe (Falta)
+            this.logger.log(
+              `[${runId}] Nao achou turno aberto na equipe ${equipeId} (eletricista ${slot.eletricistaId})`
+            );
             const justificativaEquipe = await prisma.justificativaEquipe.findUnique({
               where: {
                 dataReferencia_equipeId: {
@@ -435,6 +490,9 @@ export class InternalReconciliacaoService {
               justificativaEquipe.status === 'aprovada' &&
               !justificativaEquipe.tipoJustificativa.geraFalta
             ) {
+              this.logger.debug(
+                `[${runId}] Justificativa aprovada sem falta para equipe ${equipeId} no dia ${dataRefLabel}`
+              );
               continue;
             }
 
@@ -461,11 +519,18 @@ export class InternalReconciliacaoService {
                   },
                 });
                 stats.created++;
+                this.logger.log(
+                  `[${runId}] Falta registrada (eletricista ${slot.eletricistaId}, equipe ${equipeId}, dia ${dataRefLabel})`
+                );
               } catch (err: any) {
                 if (err.code !== 'P2002') {
                   warnings.push(`Erro ao criar falta para eletricista ${slot.eletricistaId}: ${err.message}`);
                 }
               }
+            } else {
+              this.logger.debug(
+                `[${runId}] Status do eletricista justifica falta (status=${eletricistaStatus}), sem registrar falta`
+              );
             }
             continue;
           }
@@ -479,6 +544,9 @@ export class InternalReconciliacaoService {
                 (a: any) => a.turnoRealizado.equipeId === equipeId
               ) || aberturasEletricista.itens[0];
 
+            this.logger.log(
+              `[${runId}] Folga trabalhada detectada (eletricista ${slot.eletricistaId}, abertura ${abertura.id}, equipe ${abertura.turnoRealizado.equipeId})`
+            );
             const jaExiste = await prisma.horaExtra.findFirst({
               where: {
                 turnoRealizadoEletricistaId: abertura.id,
@@ -508,11 +576,18 @@ export class InternalReconciliacaoService {
                   },
                 });
                 stats.created++;
+                this.logger.log(
+                  `[${runId}] Hora extra (folga_trabalhada) criada - horas=${horasRealizadas.toFixed(2)} (eletricista ${slot.eletricistaId})`
+                );
               } catch (err: any) {
                 if (err.code !== 'P2002') {
                   warnings.push(`Erro ao criar hora extra (folga_trabalhada) para eletricista ${slot.eletricistaId}: ${err.message}`);
                 }
               }
+            } else {
+              this.logger.debug(
+                `[${runId}] Hora extra (folga_trabalhada) ja existente para abertura ${abertura.id}`
+              );
             }
           }
         }
@@ -523,6 +598,9 @@ export class InternalReconciliacaoService {
             !aberturasEletricista ||
             aberturasEletricista.equipes.size === 0
           ) {
+            this.logger.log(
+              `[${runId}] Estado ${estadoSlot} sem turno aberto (eletricista ${slot.eletricistaId}, equipe ${equipeId})`
+            );
             if (!statusJustificaFalta) {
               try {
                 await prisma.falta.upsert({
@@ -546,11 +624,18 @@ export class InternalReconciliacaoService {
                   },
                 });
                 stats.created++;
+                this.logger.log(
+                  `[${runId}] Falta registrada (estado ${estadoSlot}) para eletricista ${slot.eletricistaId}`
+                );
               } catch (err: any) {
                 if (err.code !== 'P2002') {
                   // Ignorar erros silenciosamente
                 }
               }
+            } else {
+              this.logger.debug(
+                `[${runId}] Status do eletricista justifica falta (status=${eletricistaStatus}) em estado ${estadoSlot}`
+              );
             }
           }
         }
@@ -561,7 +646,13 @@ export class InternalReconciliacaoService {
         const tinhaSlotNaEscala = eletricistasComEscala.has(eletricistaId);
 
         if (!tinhaSlotNaEscala) {
+          this.logger.log(
+            `[${runId}] Turno aberto sem escala prevista (extrafora) para eletricista ${eletricistaId} no dia ${dataRefLabel}`
+          );
           for (const abertura of aberturas.itens) {
+            this.logger.debug(
+              `[${runId}] Avaliando abertura ${abertura.id} (equipe ${abertura.turnoRealizado.equipeId}) para extrafora`
+            );
             const jaExiste = await prisma.horaExtra.findFirst({
               where: {
                 turnoRealizadoEletricistaId: abertura.id,
@@ -590,18 +681,25 @@ export class InternalReconciliacaoService {
                   },
                 });
                 stats.created++;
+                this.logger.log(
+                  `[${runId}] Hora extra (extrafora) criada - horas=${horasRealizadas.toFixed(2)} (eletricista ${eletricistaId})`
+                );
               } catch (err: any) {
                 if (err.code !== 'P2002') {
                   warnings.push(`Erro ao criar hora extra (extrafora) para eletricista ${eletricistaId}: ${err.message}`);
                 }
               }
+            } else {
+              this.logger.debug(
+                `[${runId}] Hora extra (extrafora) ja existente para abertura ${abertura.id}`
+              );
             }
           }
         }
       }
 
-      this.logger.debug(
-        `[${runId}] Reconciliação concluída para equipe ${equipeId} em ${dataReferencia.toISOString().split('T')[0]}`
+      this.logger.log(
+        `[${runId}] Reconciliação concluída para equipe ${equipeId} em ${dataRefLabel} - stats=${JSON.stringify(stats)}`
       );
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);

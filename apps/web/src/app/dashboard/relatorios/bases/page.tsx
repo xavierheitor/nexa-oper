@@ -4,6 +4,7 @@ import React, { useMemo, useCallback } from 'react';
 import { Card, Col, Row, Spin, Typography } from 'antd';
 import ConsolidacaoPorBase from './components/ConsolidacaoPorBase';
 import ComparacaoEntreBases from './components/ComparacaoEntreBases';
+import EletricistasNaoEscalados from './components/EletricistasNaoEscalados';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { useHydrated } from '@/lib/hooks/useHydrated';
@@ -100,6 +101,11 @@ export default function RelatoriosBasesPage() {
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24}>
           <ComparacaoEntreBases filtros={filtrosMemoizados} />
+        </Col>
+      </Row>
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Col xs={24}>
+          <EletricistasNaoEscalados filtros={filtrosMemoizados} />
         </Col>
       </Row>
     </div>
