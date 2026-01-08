@@ -1,0 +1,55 @@
+/* Estilos para o componente SidebarMenu */
+
+.sidebar-container {
+  height: 100vh;
+  overflow-y: auto;
+  background-color: #1d3557 !important; /* Mantém o tema azul do sidebar */
+}
+
+/* Customização do scrollbar para ficar mais discreto */
+.sidebar-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-container::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.sidebar-container::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.logo-title {
+  color: #f1faee !important;
+  margin: 0 !important;
+  font-weight: 600;
+}
+
+.menu-instance {
+  background: transparent !important;
+  border-inline-end: none !important;
+}
+
+/* Ajustes finos nos itens do menu para melhor contraste */
+.menu-instance :global(.ant-menu-item),
+.menu-instance :global(.ant-menu-submenu-title) {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.menu-instance :global(.ant-menu-item-selected) {
+  background-color: #457b9d !important;
+  color: #f1faee !important;
+}
+
+.menu-instance :global(.ant-menu-submenu-selected > .ant-menu-submenu-title) {
+  color: #f1faee !important;
+}
