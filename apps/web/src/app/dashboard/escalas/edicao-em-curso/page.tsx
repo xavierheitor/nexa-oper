@@ -33,11 +33,27 @@ import { listEletricistas } from '@/lib/actions/eletricista/list';
 import { createEquipeTurnoHistorico, updateEquipeTurnoHistorico, buscarHorarioVigente } from '@/lib/actions/escala/equipeTurnoHistorico';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useCrudController } from '@/lib/hooks/useCrudController';
-import EquipeTurnoHistoricoForm from '@/app/dashboard/cadastro/equipe-horario/form';
+import EquipeTurnoHistoricoForm from '@/app/dashboard/escalas/equipe-horario/form';
 import type { ColumnsType } from 'antd/es/table';
 
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
+
+const equipeStripePalette = [
+  'rgba(24, 144, 255, 0.05)',
+  'rgba(82, 196, 26, 0.05)',
+  'rgba(250, 173, 20, 0.05)',
+  'rgba(245, 34, 45, 0.04)',
+  'rgba(114, 46, 209, 0.05)',
+  'rgba(19, 194, 194, 0.05)',
+];
+
+const getEquipeStripeColor = (equipeId: number) =>
+  equipeStripePalette[Math.abs(equipeId) % equipeStripePalette.length];
+
+const getEquipeCellStyle = (record: { equipeId: number }) => ({
+  backgroundColor: getEquipeStripeColor(record.equipeId),
+});
 
 interface Slot {
   id: number;
@@ -317,6 +333,7 @@ export default function EdicaoEmCursoPage() {
         width: 120,
         onCell: (record: any) => ({
           rowSpan: record.rowSpan,
+          style: getEquipeCellStyle(record),
         }),
       },
       {
@@ -326,6 +343,7 @@ export default function EdicaoEmCursoPage() {
         width: 100,
         onCell: (record: any) => ({
           rowSpan: record.rowSpan,
+          style: getEquipeCellStyle(record),
         }),
       },
       {
@@ -335,6 +353,7 @@ export default function EdicaoEmCursoPage() {
         width: 200,
         onCell: (record: any) => ({
           rowSpan: record.rowSpan,
+          style: getEquipeCellStyle(record),
         }),
         render: (horario: string, record: any) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -377,6 +396,9 @@ export default function EdicaoEmCursoPage() {
         title: 'Eletricista',
         key: 'eletricista',
         width: 250,
+        onCell: (record: any) => ({
+          style: getEquipeCellStyle(record),
+        }),
         render: (_: unknown, record: any) => (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
@@ -422,6 +444,9 @@ export default function EdicaoEmCursoPage() {
           key: diaKey,
           width: 50,
           align: 'center' as const,
+          onCell: (record: any) => ({
+            style: getEquipeCellStyle(record),
+          }),
           render: (estado: string | null, record: any) => {
             if (!estado) {
               return <span style={{ color: '#ccc' }}>-</span>;

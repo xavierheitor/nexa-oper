@@ -128,8 +128,8 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
     }
 
     // Sempre abre 'escalas-menu' se a rota for de escalas principal
-    if (pathname === '/dashboard/cadastro/escala-equipe-periodo' ||
-        pathname === '/dashboard/cadastro/equipe-horario' ||
+    if (pathname === '/dashboard/escalas/escala-equipe-periodo' ||
+        pathname === '/dashboard/escalas/equipe-horario' ||
         pathname === '/dashboard/escalas/edicao-em-curso') {
       openKeys.push('escalas-menu');
     }
@@ -145,8 +145,8 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       '/dashboard/cadastro/veiculo': 'veiculos-menu',
 
       // Submenus de Escalas (no menu principal Escalas)
-      '/dashboard/cadastro/escala-equipe-periodo': 'escalas-menu',
-      '/dashboard/cadastro/equipe-horario': 'escalas-menu',
+      '/dashboard/escalas/escala-equipe-periodo': 'escalas-menu',
+      '/dashboard/escalas/equipe-horario': 'escalas-menu',
 
       // Submenus de Escalas (dentro de Cadastro)
       '/dashboard/cadastro/tipo-escala': 'escalas-cadastro-menu',
@@ -425,12 +425,12 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapseChange }
       label: 'Escalas',
       children: [
         {
-          key: '/dashboard/cadastro/escala-equipe-periodo',
-          label: <Link href='/dashboard/cadastro/escala-equipe-periodo'>Gestão de Escala</Link>,
+          key: '/dashboard/escalas/escala-equipe-periodo',
+          label: <Link href='/dashboard/escalas/escala-equipe-periodo'>Gestão de Escala</Link>,
         },
         {
-          key: '/dashboard/cadastro/equipe-horario',
-          label: <Link href='/dashboard/cadastro/equipe-horario'>Associar Horário</Link>,
+          key: '/dashboard/escalas/equipe-horario',
+          label: <Link href='/dashboard/escalas/equipe-horario'>Associar Horário</Link>,
         },
         {
           key: '/dashboard/escalas/edicao-em-curso',
