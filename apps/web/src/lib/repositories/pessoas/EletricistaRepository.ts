@@ -22,9 +22,16 @@
 import { Eletricista, StatusEletricista, Prisma } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
-import { EletricistaCreate, EletricistaUpdate } from '../../schemas/eletricistaSchema';
+import {
+  EletricistaCreate,
+  EletricistaUpdate,
+} from '../../schemas/eletricistaSchema';
 import { PaginationParams } from '../../types/common';
-import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
+import type {
+  GenericPrismaWhereInput,
+  GenericPrismaOrderByInput,
+  GenericPrismaIncludeInput,
+} from '../../types/prisma';
 
 /**
  * Tipo auxiliar para dados com campos de auditoria
@@ -60,11 +67,14 @@ export class EletricistaRepository extends AbstractCrudRepository<
     userId?: string,
     baseIdInput?: number
   ): Promise<Eletricista> {
-    const { baseId: dataBaseId, status, ...eletricistaData } =
-      data as EletricistaCreate & {
-        baseId?: number;
-        status?: string;
-      };
+    const {
+      baseId: dataBaseId,
+      status,
+      ...eletricistaData
+    } = data as EletricistaCreate & {
+      baseId?: number;
+      status?: string;
+    };
 
     const rawBaseId = baseIdInput ?? dataBaseId;
     const normalizedBaseId =
@@ -72,8 +82,10 @@ export class EletricistaRepository extends AbstractCrudRepository<
         ? undefined
         : Number(rawBaseId);
 
-    const createdBy = (eletricistaData as WithAuditFields).createdBy || userId || '';
-    const createdAt = (eletricistaData as WithAuditFields).createdAt || new Date();
+    const createdBy =
+      (eletricistaData as WithAuditFields).createdBy || userId || '';
+    const createdAt =
+      (eletricistaData as WithAuditFields).createdAt || new Date();
     const statusInicial = status || 'ATIVO';
 
     return prisma.$transaction(async tx => {
@@ -158,8 +170,10 @@ export class EletricistaRepository extends AbstractCrudRepository<
         ? undefined
         : Number(rawBaseId);
 
-    const updatedBy = (eletricistaData as WithAuditFields).updatedBy || userId || '';
-    const updatedAt = (eletricistaData as WithAuditFields).updatedAt || new Date();
+    const updatedBy =
+      (eletricistaData as WithAuditFields).updatedBy || userId || '';
+    const updatedAt =
+      (eletricistaData as WithAuditFields).updatedAt || new Date();
 
     return prisma.$transaction(async tx => {
       const eletricista = await tx.eletricista.update({
@@ -326,6 +340,12 @@ export class EletricistaRepository extends AbstractCrudRepository<
    * Sobrescreve o método base para adicionar suporte a filtros
    * de relacionamentos (cargo, base, estado)
    */
+  /**
+   * Lista eletricistas com filtros server-side
+   *
+   * Sobrescreve o método base para adicionar suporte a filtros
+   * de relacionamentos (cargo, base, estado) de forma otimizada
+   */
   async list(
     params: EletricistaFilter
   ): Promise<{ items: Eletricista[]; total: number }> {
@@ -345,94 +365,87 @@ export class EletricistaRepository extends AbstractCrudRepository<
 
     const skip = (page - 1) * pageSize;
 
-    // Construir where com filtros server-side
-    const where: Prisma.EletricistaWhereInput = {
-      deletedAt: null,
-      ...(contratoId && { contratoId }),
-      ...(cargoId && { cargoId }),
-      ...(estado && { estado: { contains: estado } }),
-      ...(search && {
-        OR: this.getSearchFields().map(field => ({
-          [field]: { contains: search },
-        })),
-      }),
-    };
+    // Construção do where usando array de condições para evitar conflitos de chaves
+    const conditions: Prisma.EletricistaWhereInput[] = [];
 
-    // Coletar IDs de filtros especiais para fazer interseção
-    let idsFiltrados: number[] | null = null;
+    // 1. Soft delete
+    conditions.push({ deletedAt: null });
 
-    // Filtro de base é especial (relacionamento com histórico)
-    if (baseId) {
-      let idsBase: number[];
-      // Se baseId = -1, filtra "sem lotação"
-      if (baseId === -1) {
-        const eletricistasComBase =
-          await prisma.eletricistaBaseHistorico.findMany({
-            where: { dataFim: null, deletedAt: null },
-            select: { eletricistaId: true },
-          });
-        const idsComBase = eletricistasComBase.map(h => h.eletricistaId);
-        // Buscar todos os eletricistas e remover os que têm base
-        const todosEletricistas = await prisma.eletricista.findMany({
-          where: { deletedAt: null },
-          select: { id: true },
+    // 2. Filtros diretos
+    if (contratoId) conditions.push({ contratoId });
+    if (cargoId) conditions.push({ cargoId });
+    if (estado) conditions.push({ estado: { contains: estado } });
+
+    // 3. Busca por texto (OR)
+    if (search) {
+      const searchFields = this.getSearchFields();
+      if (searchFields.length > 0) {
+        conditions.push({
+          OR: searchFields.map(field => ({
+            [field]: { contains: search },
+          })),
         });
-        const todosIds = todosEletricistas.map(e => e.id);
-        idsBase = todosIds.filter(id => !idsComBase.includes(id));
+      }
+    }
+
+    // 4. Filtro de Base (Relacionamento)
+    // Substitui a filtragem em memória por queries otimizadas no banco
+    if (baseId !== undefined) {
+      if (baseId === -1) {
+        // Sem lotação: Não tem histórico de base ativo
+        conditions.push({
+          EletricistaBaseHistorico: {
+            none: {
+              dataFim: null,
+              deletedAt: null,
+            },
+          },
+        });
       } else {
-        // Filtrar por base específica
-        const eletricistasNaBase =
-          await prisma.eletricistaBaseHistorico.findMany({
-            where: {
+        // Com lotação específica ativa
+        conditions.push({
+          EletricistaBaseHistorico: {
+            some: {
               baseId,
               dataFim: null,
               deletedAt: null,
             },
-            select: { eletricistaId: true },
-          });
-        idsBase = eletricistasNaBase.map(h => h.eletricistaId);
-      }
-      idsFiltrados = idsBase;
-    }
-
-    // Filtro de status é especial (relacionamento com EletricistaStatus)
-    if (status) {
-      // Buscar eletricistas com o status especificado
-      const eletricistasComStatus = await prisma.eletricistaStatus.findMany({
-        where: {
-          status: status as StatusEletricista,
-        },
-        select: { eletricistaId: true },
-      });
-      let idsStatus = eletricistasComStatus.map(s => s.eletricistaId);
-
-      if (status === 'ATIVO') {
-        // Para ATIVO, incluir também eletricistas sem registro de status
-        const todosEletricistas = await prisma.eletricista.findMany({
-          where: { deletedAt: null },
-          select: { id: true },
+          },
         });
-        const todosIds = todosEletricistas.map(e => e.id);
-        const idsSemStatus = todosIds.filter(id => !idsStatus.includes(id));
-        idsStatus = [...idsStatus, ...idsSemStatus];
       }
+    }
 
-      // Fazer interseção se já houver outros filtros
-      if (idsFiltrados !== null) {
-        idsFiltrados = idsFiltrados.filter(id => idsStatus.includes(id));
+    // 5. Filtro de Status (Relacionamento)
+    // Substitui a filtragem em memória por queries otimizadas no banco
+    if (status) {
+      if (status === 'ATIVO') {
+        // ATIVO: Tem status ATIVO ou não tem nenhum registro de status
+        conditions.push({
+          OR: [
+            {
+              Status: {
+                status: 'ATIVO',
+              },
+            },
+            {
+              Status: null,
+            },
+          ],
+        });
       } else {
-        idsFiltrados = idsStatus;
+        // Outros status
+        conditions.push({
+          Status: {
+            status: status as StatusEletricista,
+          },
+        });
       }
     }
 
-    // Aplicar filtros de IDs se houver
-    if (idsFiltrados !== null) {
-      if (idsFiltrados.length === 0) {
-        // Se não há IDs que atendem aos filtros, retornar vazio
-        return { items: [], total: 0 };
-      }
-      where.id = { in: idsFiltrados };
-    }
+    // Combina todas as condições em um AND
+    const where: Prisma.EletricistaWhereInput = {
+      AND: conditions,
+    };
 
     const [total, items] = await Promise.all([
       prisma.eletricista.count({ where }),

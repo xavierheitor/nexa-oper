@@ -30,7 +30,12 @@ import { Button, DatePicker, Form, Input, Modal, Select, Tag } from 'antd';
 import type { Rule } from 'antd/es/form';
 import { useEffect } from 'react';
 import dayjs, { type Dayjs } from 'dayjs';
-import { StatusEletricistaLabels, StatusEletricistaColors, StatusEletricistaEnum, StatusEletricista } from '@/lib/schemas/eletricistaStatusSchema';
+import {
+  StatusEletricistaLabels,
+  StatusEletricistaColors,
+  StatusEletricistaEnum,
+  StatusEletricista,
+} from '@/lib/schemas/eletricistaStatusSchema';
 
 const { TextArea } = Input;
 
@@ -44,7 +49,11 @@ interface AlterarStatusModalProps {
     motivo?: string;
     observacoes?: string;
   }) => Promise<void>;
-  eletricista?: { id: number; nome: string; Status?: { status: StatusEletricista } | null };
+  eletricista?: {
+    id: number;
+    nome: string;
+    Status?: { status: StatusEletricista } | null;
+  };
   statusAtual?: StatusEletricista;
   loading?: boolean;
 }
@@ -78,8 +87,6 @@ export default function AlterarStatusModal({
         motivo: '',
         observacoes: '',
       });
-    } else {
-      form.resetFields();
     }
   }, [open, currentStatus, form]);
 
@@ -123,14 +130,20 @@ export default function AlterarStatusModal({
     if (!value) return Promise.resolve();
     const dataInicio = form.getFieldValue('dataInicio');
     if (dataInicio && value.isBefore(dataInicio)) {
-      return Promise.reject(new Error('Data fim deve ser posterior à data início'));
+      return Promise.reject(
+        new Error('Data fim deve ser posterior à data início')
+      );
     }
     return Promise.resolve();
   };
 
   return (
     <Modal
-      title={eletricista ? `Alterar Status - ${eletricista.nome}` : 'Alterar Status do Eletricista'}
+      title={
+        eletricista
+          ? `Alterar Status - ${eletricista.nome}`
+          : 'Alterar Status do Eletricista'
+      }
       open={open}
       onCancel={handleCancel}
       footer={null}
@@ -138,114 +151,109 @@ export default function AlterarStatusModal({
       width={600}
     >
       {open && (
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-        >
-        {/* Status Atual (readonly) */}
-        <Form.Item label="Status Atual">
-          <Tag color={StatusEletricistaColors[currentStatus]}>
-            {StatusEletricistaLabels[currentStatus]}
-          </Tag>
-        </Form.Item>
+        <Form form={form} layout='vertical' onFinish={handleSubmit}>
+          {/* Status Atual (readonly) */}
+          <Form.Item label='Status Atual'>
+            <Tag color={StatusEletricistaColors[currentStatus]}>
+              {StatusEletricistaLabels[currentStatus]}
+            </Tag>
+          </Form.Item>
 
-        {/* Campo Novo Status */}
-        <Form.Item
-          name="status"
-          label="Novo Status"
-          rules={[
-            { required: true, message: 'Status é obrigatório' }
-          ]}
-        >
-          <Select
-            placeholder="Selecione o novo status"
-            options={statusOptions}
-            onChange={handleStatusChange}
-            autoFocus
-          />
-        </Form.Item>
+          {/* Campo Novo Status */}
+          <Form.Item
+            name='status'
+            label='Novo Status'
+            rules={[{ required: true, message: 'Status é obrigatório' }]}
+          >
+            <Select
+              placeholder='Selecione o novo status'
+              options={statusOptions}
+              onChange={handleStatusChange}
+              autoFocus
+            />
+          </Form.Item>
 
-        {/* Campo Data Início */}
-        <Form.Item
-          name="dataInicio"
-          label="Data Início"
-          rules={[
-            { required: true, message: 'Data início é obrigatória' }
-          ]}
-          tooltip="Data em que o novo status entra em vigor"
-        >
-          <DatePicker
-            format="DD/MM/YYYY"
-            placeholder="Selecione a data início"
-            style={{ width: '100%' }}
-            disabledDate={(current) => current && current > dayjs().endOf('day')}
-          />
-        </Form.Item>
+          {/* Campo Data Início */}
+          <Form.Item
+            name='dataInicio'
+            label='Data Início'
+            rules={[{ required: true, message: 'Data início é obrigatória' }]}
+            tooltip='Data em que o novo status entra em vigor'
+          >
+            <DatePicker
+              format='DD/MM/YYYY'
+              placeholder='Selecione a data início'
+              style={{ width: '100%' }}
+              disabledDate={current =>
+                current && current > dayjs().endOf('day')
+              }
+            />
+          </Form.Item>
 
-        {/* Campo Data Fim (opcional) */}
-        <Form.Item
-          name="dataFim"
-          label="Data Fim (Opcional)"
-          tooltip="Deixe em branco se o status não tiver data de término prevista"
-          rules={[{ validator: validateDataFim }]}
-        >
-          <DatePicker
-            format="DD/MM/YYYY"
-            placeholder="Selecione a data fim (opcional)"
-            style={{ width: '100%' }}
-            disabledDate={(current) => {
-              const dataInicio = form.getFieldValue('dataInicio');
-              return current && dataInicio && current.isBefore(dayjs(dataInicio));
-            }}
-          />
-        </Form.Item>
+          {/* Campo Data Fim (opcional) */}
+          <Form.Item
+            name='dataFim'
+            label='Data Fim (Opcional)'
+            tooltip='Deixe em branco se o status não tiver data de término prevista'
+            rules={[{ validator: validateDataFim }]}
+          >
+            <DatePicker
+              format='DD/MM/YYYY'
+              placeholder='Selecione a data fim (opcional)'
+              style={{ width: '100%' }}
+              disabledDate={current => {
+                const dataInicio = form.getFieldValue('dataInicio');
+                return (
+                  current && dataInicio && current.isBefore(dayjs(dataInicio))
+                );
+              }}
+            />
+          </Form.Item>
 
-        {/* Campo Motivo */}
-        <Form.Item
-          name="motivo"
-          label="Motivo"
-          tooltip="Motivo da mudança de status (opcional)"
-        >
-          <Input
-            placeholder="Ex: Férias anuais, Licença médica, etc."
-            maxLength={500}
-            showCount
-          />
-        </Form.Item>
+          {/* Campo Motivo */}
+          <Form.Item
+            name='motivo'
+            label='Motivo'
+            tooltip='Motivo da mudança de status (opcional)'
+          >
+            <Input
+              placeholder='Ex: Férias anuais, Licença médica, etc.'
+              maxLength={500}
+              showCount
+            />
+          </Form.Item>
 
-        {/* Campo Observações */}
-        <Form.Item
-          name="observacoes"
-          label="Observações"
-          tooltip="Observações adicionais sobre a mudança de status (opcional)"
-        >
-          <TextArea
-            placeholder="Observações adicionais..."
-            rows={4}
-            maxLength={1000}
-            showCount
-          />
-        </Form.Item>
+          {/* Campo Observações */}
+          <Form.Item
+            name='observacoes'
+            label='Observações'
+            tooltip='Observações adicionais sobre a mudança de status (opcional)'
+          >
+            <TextArea
+              placeholder='Observações adicionais...'
+              rows={4}
+              maxLength={1000}
+              showCount
+            />
+          </Form.Item>
 
-        {/* Botões */}
-        <Form.Item>
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-            <Button onClick={handleCancel}>
-              Cancelar
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
+          {/* Botões */}
+          <Form.Item>
+            <div
+              style={{
+                display: 'flex',
+                gap: '8px',
+                justifyContent: 'flex-end',
+              }}
             >
-              Alterar Status
-            </Button>
-          </div>
-        </Form.Item>
-      </Form>
+              <Button onClick={handleCancel}>Cancelar</Button>
+              <Button type='primary' htmlType='submit' loading={loading}>
+                Alterar Status
+              </Button>
+            </div>
+          </Form.Item>
+        </Form>
       )}
     </Modal>
   );
 }
-
