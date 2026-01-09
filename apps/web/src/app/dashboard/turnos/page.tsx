@@ -38,7 +38,6 @@ import {
   CarOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { listTurnos } from '@/lib/actions/turno/list';
 import { Column } from '@ant-design/plots';
 import { getStatsByTipoEquipe } from '@/lib/actions/turno/getStatsByTipoEquipe';
 import { getStatsByHoraETipoEquipe } from '@/lib/actions/turno/getStatsByHoraETipoEquipe';
@@ -80,7 +79,6 @@ interface DadosGraficoBase {
 }
 
 import type { TurnoData } from '@/lib/types/turno-frontend';
-import { mapTurnoToTurnoData } from '@/lib/mappers/turnoMapper';
 
 export default function TurnosPage() {
   // Estados para os filtros
@@ -157,7 +155,8 @@ export default function TurnosPage() {
   const [selectedTurnoParaFechar, setSelectedTurnoParaFechar] =
     useState<TurnoData | null>(null);
 
-  // Fetch de turnos abertos e totais do dia
+  // Fetch de turnos abertos e totais do dia (usando nova server action otimizada)
+  // Agora com filtros aplicados no servidor!
   const {
     data: turnosAbertosResult,
     loading: loadingTurnos,
@@ -166,117 +165,54 @@ export default function TurnosPage() {
   } = useDataFetch<{
     turnosAbertos: TurnoData[];
     totalDiarios: number;
+    stats: {
+      total: number;
+      totalDiarios: number;
+      porBase: Record<string, number>;
+    };
   }>(async () => {
-    // Usar getTodayDateRange para garantir timezone correto (São Paulo)
-    const { getTodayDateRange } = await import('@/lib/utils/dateHelpers');
-    const { inicio: inicioHoje, fim: fimHoje } = getTodayDateRange();
+    // Importar a nova action
+    const { getTurnosAbertosComStats } = await import(
+      '@/lib/actions/turno/getTurnosAbertosComStats'
+    );
 
-    const [resultAbertos, resultTodos] = await Promise.all([
-      listTurnos({ page: 1, pageSize: 1000, status: 'ABERTO' }),
-      listTurnos({
-        page: 1,
-        pageSize: 1000,
-        dataInicio: inicioHoje,
-        dataFim: fimHoje,
-      }),
-    ]);
-
-    if (
-      resultAbertos.success &&
-      resultAbertos.data &&
-      resultTodos.success &&
-      resultTodos.data
-    ) {
-      // Mapear turnos do formato Prisma para TurnoData
-      // Mapear turnos do formato Prisma para TurnoData usando mapper compartilhado
-      const turnosAbertos: TurnoData[] = (resultAbertos.data.data || []).map(
-        mapTurnoToTurnoData
-      );
-
-      return {
-        turnosAbertos,
-        totalDiarios: resultTodos.data.data?.length || 0,
-      };
-    }
-
-    throw new Error('Erro ao carregar turnos');
-  }, []);
-
-  // Processar dados dos turnos, aplicar filtros e calcular estatísticas
-  const { turnosFiltrados, stats } = useMemo(() => {
-    const turnos = turnosAbertosResult?.turnosAbertos || [];
-    const totalDiarios = turnosAbertosResult?.totalDiarios || 0;
-
-    // Aplicar filtros
-    let turnosFiltrados = turnos;
-
-    // Filtro por veículo (placa ou modelo)
-    if (filtroVeiculo) {
-      const filtroLower = filtroVeiculo.toLowerCase();
-      turnosFiltrados = turnosFiltrados.filter(
-        (turno: TurnoData) =>
-          turno.veiculoPlaca?.toLowerCase().includes(filtroLower) ||
-          turno.veiculoModelo?.toLowerCase().includes(filtroLower)
-      );
-    }
-
-    // Filtro por equipe
-    if (filtroEquipe) {
-      const filtroLower = filtroEquipe.toLowerCase();
-      turnosFiltrados = turnosFiltrados.filter((turno: TurnoData) =>
-        turno.equipeNome?.toLowerCase().includes(filtroLower)
-      );
-    }
-
-    // Filtro por eletricista (nome ou matrícula)
-    if (filtroEletricista) {
-      const filtroLower = filtroEletricista.toLowerCase();
-      turnosFiltrados = turnosFiltrados.filter((turno: TurnoData) =>
-        turno.eletricistas?.some(
-          elet =>
-            elet.nome?.toLowerCase().includes(filtroLower) ||
-            elet.matricula?.toLowerCase().includes(filtroLower)
-        )
-      );
-    }
-
-    // Filtro por base
-    if (filtroBase) {
-      turnosFiltrados = turnosFiltrados.filter(
-        (turno: TurnoData) => turno.baseNome === filtroBase
-      );
-    }
-
-    // Filtro por tipo de equipe
-    if (filtroTipoEquipe) {
-      turnosFiltrados = turnosFiltrados.filter(
-        (turno: TurnoData) => turno.tipoEquipeNome === filtroTipoEquipe
-      );
-    }
-
-    // Calcular estatísticas por base (dos turnos originais, não filtrados)
-    const porBase: Record<string, number> = {};
-    turnos.forEach((turno: TurnoData) => {
-      const base = turno.baseNome || 'Não identificada';
-      porBase[base] = (porBase[base] || 0) + 1;
+    // Buscar dados COM filtros aplicados no servidor
+    const result = await getTurnosAbertosComStats({
+      filtroVeiculo: filtroVeiculo || undefined,
+      filtroEquipe: filtroEquipe || undefined,
+      filtroEletricista: filtroEletricista || undefined,
+      filtroBase: filtroBase || undefined,
+      filtroTipoEquipe: filtroTipoEquipe || undefined,
     });
 
-    return {
-      turnosFiltrados,
-      stats: {
-        total: turnos.length,
-        totalDiarios,
-        porBase,
-      },
-    };
+    if (result.success && result.data) {
+      return result.data;
+    }
+
+    throw new Error(result.error || 'Erro ao carregar turnos');
   }, [
-    turnosAbertosResult,
     filtroVeiculo,
     filtroEquipe,
     filtroEletricista,
     filtroBase,
     filtroTipoEquipe,
   ]);
+
+  // Processar dados dos turnos (já vêm filtrados do servidor!)
+  const { turnosFiltrados, stats } = useMemo(() => {
+    const turnos = turnosAbertosResult?.turnosAbertos || [];
+    const statsFromServer = turnosAbertosResult?.stats;
+
+    // Dados já vêm filtrados do servidor, não precisa processar aqui
+    return {
+      turnosFiltrados: turnos,
+      stats: statsFromServer || {
+        total: 0,
+        totalDiarios: 0,
+        porBase: {},
+      },
+    };
+  }, [turnosAbertosResult]);
 
   // Fetch de gráfico por tipo de equipe
   const {
