@@ -1,11 +1,21 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Button, Card, Col, DatePicker, Row, Select, Space, Typography } from 'antd';
+import {
+  Button,
+  Card,
+  Col,
+  DatePicker,
+  Row,
+  Select,
+  Space,
+  Typography,
+} from 'antd';
 import dayjs from 'dayjs';
 import VeiculosPorTipo from './components/VeiculosPorTipo';
 import VeiculosPorLotacao from './components/VeiculosPorLotacao';
 import VeiculosPorMarca from './components/VeiculosPorMarca';
+import VeiculosListagem from './components/VeiculosListagem';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
@@ -27,30 +37,40 @@ export default function RelatoriosVeiculosPage() {
     key: 'relatorios-veiculos-contratos',
     fetcherAction: unwrapFetcher(listContratos),
     paginationEnabled: false,
-    initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
+    initialParams: {
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'nome',
+      orderDir: 'asc',
+    },
   });
 
   const { data: bases, isLoading: loadingBases } = useEntityData({
     key: 'relatorios-veiculos-bases',
     fetcherAction: unwrapFetcher(listBases),
     paginationEnabled: false,
-    initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
+    initialParams: {
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'nome',
+      orderDir: 'asc',
+    },
   });
 
   const handleFilterChange = (key: string, value: number | undefined) => {
-    setFiltros((prev) => ({ ...prev, [key]: value }));
+    setFiltros(prev => ({ ...prev, [key]: value }));
   };
 
   const handlePeriodChange = (dates: any) => {
     if (dates && dates.length === 2) {
-      setFiltros((prev) => ({
+      setFiltros(prev => ({
         ...prev,
         periodoInicio: dates[0].startOf('day').toDate(),
         periodoFim: dates[1].endOf('day').toDate(),
       }));
     } else {
       // Resetar para valores padrão quando não houver datas selecionadas
-      setFiltros((prev) => ({
+      setFiltros(prev => ({
         ...prev,
         periodoInicio: dayjs().subtract(1, 'month').startOf('day').toDate(),
         periodoFim: dayjs().endOf('day').toDate(),
@@ -69,7 +89,8 @@ export default function RelatoriosVeiculosPage() {
 
   // Memoiza as opções dos Selects para evitar recriações desnecessárias
   const contratosOptions = useMemo(
-    () => contratos?.map((c: Contrato) => ({ label: c.nome, value: c.id })) || [],
+    () =>
+      contratos?.map((c: Contrato) => ({ label: c.nome, value: c.id })) || [],
     [contratos]
   );
 
@@ -100,7 +121,7 @@ export default function RelatoriosVeiculosPage() {
             allowClear
             loading={loadingContratos}
             value={filtros.contratoId}
-            onChange={(value) => handleFilterChange('contratoId', value)}
+            onChange={value => handleFilterChange('contratoId', value)}
             options={contratosOptions}
           />
           <Select
@@ -109,7 +130,7 @@ export default function RelatoriosVeiculosPage() {
             allowClear
             loading={loadingBases}
             value={filtros.baseId}
-            onChange={(value) => handleFilterChange('baseId', value)}
+            onChange={value => handleFilterChange('baseId', value)}
             options={basesOptions}
           />
           <Button onClick={handleClearFilters}>Limpar Filtros</Button>
@@ -129,6 +150,8 @@ export default function RelatoriosVeiculosPage() {
           <VeiculosPorMarca filtros={filtros} />
         </Col>
       </Row>
+
+      <VeiculosListagem filtros={filtros} />
     </div>
   );
 }
