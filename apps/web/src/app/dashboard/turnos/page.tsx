@@ -10,10 +10,33 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, Button, Tooltip, Input, Select } from 'antd';
+import {
+  Card,
+  Col,
+  Row,
+  Statistic,
+  Table,
+  Tag,
+  Spin,
+  Empty,
+  Typography,
+  Space,
+  Button,
+  Tooltip,
+  Input,
+  Select,
+} from 'antd';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
-import { ClockCircleOutlined, CalendarOutlined, CheckOutlined, EnvironmentOutlined, CloseOutlined, SearchOutlined, CarOutlined } from '@ant-design/icons';
+import {
+  ClockCircleOutlined,
+  CalendarOutlined,
+  CheckOutlined,
+  EnvironmentOutlined,
+  CloseOutlined,
+  SearchOutlined,
+  CarOutlined,
+} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { listTurnos } from '@/lib/actions/turno/list';
 import { Column } from '@ant-design/plots';
@@ -24,7 +47,10 @@ import { listBases } from '@/lib/actions/base/list';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { getTurnosPrevistosHoje } from '@/lib/actions/turno/getTurnosPrevistos';
 import { getEstatisticasTurnosPrevistos } from '@/lib/actions/turno/getEstatisticasTurnosPrevistos';
-import type { TurnoPrevisto, EstatisticasTurnosPrevistos } from '@/lib/types/turnoPrevisto';
+import type {
+  TurnoPrevisto,
+  EstatisticasTurnosPrevistos,
+} from '@/lib/types/turnoPrevisto';
 import { formatTime } from '@/lib/utils/turnoPrevistoHelpers';
 import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
@@ -86,114 +112,164 @@ export default function TurnosPage() {
   const [filtroEquipe, setFiltroEquipe] = useState<string>('');
   const [filtroEletricista, setFiltroEletricista] = useState<string>('');
   const [filtroBase, setFiltroBase] = useState<string | undefined>(undefined);
-  const [filtroTipoEquipe, setFiltroTipoEquipe] = useState<string | undefined>(undefined);
+  const [filtroTipoEquipe, setFiltroTipoEquipe] = useState<string | undefined>(
+    undefined
+  );
 
   // Filtros específicos para turnos previstos
-  const [filtroBaseTurnosPrevistos, setFiltroBaseTurnosPrevistos] = useState<string | undefined>(undefined);
-  const [filtroTipoEquipeTurnosPrevistos, setFiltroTipoEquipeTurnosPrevistos] = useState<string | undefined>(undefined);
+  const [filtroBaseTurnosPrevistos, setFiltroBaseTurnosPrevistos] = useState<
+    string | undefined
+  >(undefined);
+  const [filtroTipoEquipeTurnosPrevistos, setFiltroTipoEquipeTurnosPrevistos] =
+    useState<string | undefined>(undefined);
 
   // Filtros para detalhamento de turnos previstos
-  const [filtroBaseDetalhamento, setFiltroBaseDetalhamento] = useState<string | undefined>(undefined);
-  const [filtroTipoEquipeDetalhamento, setFiltroTipoEquipeDetalhamento] = useState<string | undefined>(undefined);
+  const [filtroBaseDetalhamento, setFiltroBaseDetalhamento] = useState<
+    string | undefined
+  >(undefined);
+  const [filtroTipoEquipeDetalhamento, setFiltroTipoEquipeDetalhamento] =
+    useState<string | undefined>(undefined);
 
   // Mapeamento de equipeId -> baseNome (para filtros de base nos turnos previstos)
-  const [equipeBaseMap, setEquipeBaseMap] = useState<Map<number, string>>(new Map());
+  const [equipeBaseMap, setEquipeBaseMap] = useState<Map<number, string>>(
+    new Map()
+  );
 
   // Hook para paginação client-side da tabela principal
   const { pagination } = useTablePagination({
     defaultPageSize: 10,
-    showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase || filtroTipoEquipe ? ' (filtrado)' : ''}`,
+    showTotal: total =>
+      `Total de ${total} turno${total !== 1 ? 's' : ''}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase || filtroTipoEquipe ? ' (filtrado)' : ''}`,
   });
 
   // Hook para paginação da tabela de turnos não abertos
   const { pagination: paginationNaoAbertos } = useTablePagination({
     defaultPageSize: 10,
-    showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''} não aberto${total !== 1 ? 's' : ''}`,
+    showTotal: total =>
+      `Total de ${total} turno${total !== 1 ? 's' : ''} não aberto${total !== 1 ? 's' : ''}`,
   });
 
   // Hook para paginação da tabela detalhada de turnos previstos
   const { pagination: paginationTurnosPrevistos } = useTablePagination({
     defaultPageSize: 20,
-    showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''} previsto${total !== 1 ? 's' : ''}`,
+    showTotal: total =>
+      `Total de ${total} turno${total !== 1 ? 's' : ''} previsto${total !== 1 ? 's' : ''}`,
   });
 
   // Hook para paginação da tabela de turnos previstos futuros
   const { pagination: paginationTurnosFuturos } = useTablePagination({
     defaultPageSize: 10,
-    showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''} previsto${total !== 1 ? 's' : ''} para o resto do dia`,
+    showTotal: total =>
+      `Total de ${total} turno${total !== 1 ? 's' : ''} previsto${total !== 1 ? 's' : ''} para o resto do dia`,
   });
 
   // Estados para os modais de checklist
-  const [checklistSelectorVisible, setChecklistSelectorVisible] = useState(false);
+  const [checklistSelectorVisible, setChecklistSelectorVisible] =
+    useState(false);
   const [checklistViewerVisible, setChecklistViewerVisible] = useState(false);
   const [selectedTurno, setSelectedTurno] = useState<TurnoData | null>(null);
-  const [selectedChecklist, setSelectedChecklist] = useState<ChecklistPreenchido | null>(null);
+  const [selectedChecklist, setSelectedChecklist] =
+    useState<ChecklistPreenchido | null>(null);
 
   // Estados para o modal de localização
   const [locationMapVisible, setLocationMapVisible] = useState(false);
-  const [selectedTurnoForLocation, setSelectedTurnoForLocation] = useState<TurnoData | null>(null);
+  const [selectedTurnoForLocation, setSelectedTurnoForLocation] =
+    useState<TurnoData | null>(null);
 
   // Estados para o modal de fechar turno
   const [fecharTurnoVisible, setFecharTurnoVisible] = useState(false);
-  const [selectedTurnoParaFechar, setSelectedTurnoParaFechar] = useState<TurnoData | null>(null);
+  const [selectedTurnoParaFechar, setSelectedTurnoParaFechar] =
+    useState<TurnoData | null>(null);
 
   // Fetch de turnos abertos e totais do dia
-  const { data: turnosAbertosResult, loading: loadingTurnos, error: errorTurnos, refetch: refetchTurnos } = useDataFetch<{
+  const {
+    data: turnosAbertosResult,
+    loading: loadingTurnos,
+    error: errorTurnos,
+    refetch: refetchTurnos,
+  } = useDataFetch<{
     turnosAbertos: TurnoData[];
     totalDiarios: number;
-  }>(
-    async () => {
-      // Usar getTodayDateRange para garantir timezone correto (São Paulo)
-      const { getTodayDateRange } = await import('@/lib/utils/dateHelpers');
-      const { inicio: inicioHoje, fim: fimHoje } = getTodayDateRange();
+  }>(async () => {
+    // Usar getTodayDateRange para garantir timezone correto (São Paulo)
+    const { getTodayDateRange } = await import('@/lib/utils/dateHelpers');
+    const { inicio: inicioHoje, fim: fimHoje } = getTodayDateRange();
 
-      const [resultAbertos, resultTodos] = await Promise.all([
-        listTurnos({ page: 1, pageSize: 1000, status: 'ABERTO' }),
-        listTurnos({ page: 1, pageSize: 1000, dataInicio: inicioHoje, dataFim: fimHoje }),
-      ]);
+    const [resultAbertos, resultTodos] = await Promise.all([
+      listTurnos({ page: 1, pageSize: 1000, status: 'ABERTO' }),
+      listTurnos({
+        page: 1,
+        pageSize: 1000,
+        dataInicio: inicioHoje,
+        dataFim: fimHoje,
+      }),
+    ]);
 
-      if (resultAbertos.success && resultAbertos.data && resultTodos.success && resultTodos.data) {
-        // Mapear turnos do formato Prisma para TurnoData
-        const turnosAbertos: TurnoData[] = (resultAbertos.data.data || []).map((turno) => ({
+    if (
+      resultAbertos.success &&
+      resultAbertos.data &&
+      resultTodos.success &&
+      resultTodos.data
+    ) {
+      // Mapear turnos do formato Prisma para TurnoData
+      const turnosAbertos: TurnoData[] = (resultAbertos.data.data || []).map(
+        turno => ({
           id: turno.id,
-          dataSolicitacao: turno.dataSolicitacao instanceof Date
-            ? turno.dataSolicitacao.toISOString()
-            : String(turno.dataSolicitacao),
-          dataInicio: turno.dataInicio instanceof Date
-            ? turno.dataInicio.toISOString()
-            : String(turno.dataInicio),
+          dataSolicitacao:
+            turno.dataSolicitacao instanceof Date
+              ? turno.dataSolicitacao.toISOString()
+              : String(turno.dataSolicitacao),
+          dataInicio:
+            turno.dataInicio instanceof Date
+              ? turno.dataInicio.toISOString()
+              : String(turno.dataInicio),
           dataFim: turno.dataFim
-            ? (turno.dataFim instanceof Date ? turno.dataFim.toISOString() : String(turno.dataFim))
+            ? turno.dataFim instanceof Date
+              ? turno.dataFim.toISOString()
+              : String(turno.dataFim)
             : undefined,
           veiculoId: turno.veiculoId,
-          veiculoPlaca: (turno as { veiculoPlaca?: string }).veiculoPlaca || 'N/A',
-          veiculoModelo: (turno as { veiculoModelo?: string }).veiculoModelo || 'N/A',
+          veiculoPlaca:
+            (turno as { veiculoPlaca?: string }).veiculoPlaca || 'N/A',
+          veiculoModelo:
+            (turno as { veiculoModelo?: string }).veiculoModelo || 'N/A',
           equipeId: turno.equipeId,
           equipeNome: (turno as { equipeNome?: string }).equipeNome || 'N/A',
-          tipoEquipeNome: (turno as { tipoEquipeNome?: string }).tipoEquipeNome || 'N/A',
+          tipoEquipeNome:
+            (turno as { tipoEquipeNome?: string }).tipoEquipeNome || 'N/A',
           baseNome: (turno as { baseNome?: string }).baseNome || 'N/A',
           dispositivo: turno.dispositivo || '',
           kmInicio: turno.kmInicio || 0,
           kmFim: (turno as { KmFim?: number | null }).KmFim ?? undefined,
           status: turno.dataFim ? 'FECHADO' : 'ABERTO',
-          eletricistas: ((turno as { eletricistas?: Array<{ id: number; nome: string; matricula: string; motorista?: boolean }> }).eletricistas || []).map((e) => ({
+          eletricistas: (
+            (
+              turno as {
+                eletricistas?: Array<{
+                  id: number;
+                  nome: string;
+                  matricula: string;
+                  motorista?: boolean;
+                }>;
+              }
+            ).eletricistas || []
+          ).map(e => ({
             id: e.id,
             nome: e.nome,
             matricula: e.matricula,
             motorista: e.motorista || false,
           })),
-        }));
+        })
+      );
 
-        return {
-          turnosAbertos,
-          totalDiarios: resultTodos.data.data?.length || 0,
-        };
-      }
+      return {
+        turnosAbertos,
+        totalDiarios: resultTodos.data.data?.length || 0,
+      };
+    }
 
-      throw new Error('Erro ao carregar turnos');
-    },
-    []
-  );
+    throw new Error('Erro ao carregar turnos');
+  }, []);
 
   // Processar dados dos turnos, aplicar filtros e calcular estatísticas
   const { turnosFiltrados, stats } = useMemo(() => {
@@ -206,9 +282,10 @@ export default function TurnosPage() {
     // Filtro por veículo (placa ou modelo)
     if (filtroVeiculo) {
       const filtroLower = filtroVeiculo.toLowerCase();
-      turnosFiltrados = turnosFiltrados.filter((turno: TurnoData) =>
-        turno.veiculoPlaca?.toLowerCase().includes(filtroLower) ||
-        turno.veiculoModelo?.toLowerCase().includes(filtroLower)
+      turnosFiltrados = turnosFiltrados.filter(
+        (turno: TurnoData) =>
+          turno.veiculoPlaca?.toLowerCase().includes(filtroLower) ||
+          turno.veiculoModelo?.toLowerCase().includes(filtroLower)
       );
     }
 
@@ -224,24 +301,25 @@ export default function TurnosPage() {
     if (filtroEletricista) {
       const filtroLower = filtroEletricista.toLowerCase();
       turnosFiltrados = turnosFiltrados.filter((turno: TurnoData) =>
-        turno.eletricistas?.some((elet) =>
-          elet.nome?.toLowerCase().includes(filtroLower) ||
-          elet.matricula?.toLowerCase().includes(filtroLower)
+        turno.eletricistas?.some(
+          elet =>
+            elet.nome?.toLowerCase().includes(filtroLower) ||
+            elet.matricula?.toLowerCase().includes(filtroLower)
         )
       );
     }
 
     // Filtro por base
     if (filtroBase) {
-      turnosFiltrados = turnosFiltrados.filter((turno: TurnoData) =>
-        turno.baseNome === filtroBase
+      turnosFiltrados = turnosFiltrados.filter(
+        (turno: TurnoData) => turno.baseNome === filtroBase
       );
     }
 
     // Filtro por tipo de equipe
     if (filtroTipoEquipe) {
-      turnosFiltrados = turnosFiltrados.filter((turno: TurnoData) =>
-        turno.tipoEquipeNome === filtroTipoEquipe
+      turnosFiltrados = turnosFiltrados.filter(
+        (turno: TurnoData) => turno.tipoEquipeNome === filtroTipoEquipe
       );
     }
 
@@ -260,43 +338,60 @@ export default function TurnosPage() {
         porBase,
       },
     };
-  }, [turnosAbertosResult, filtroVeiculo, filtroEquipe, filtroEletricista, filtroBase, filtroTipoEquipe]);
+  }, [
+    turnosAbertosResult,
+    filtroVeiculo,
+    filtroEquipe,
+    filtroEletricista,
+    filtroBase,
+    filtroTipoEquipe,
+  ]);
 
   // Fetch de gráfico por tipo de equipe
-  const { data: dadosGrafico, loading: loadingGrafico, error: errorGrafico, refetch: refetchGrafico } = useDataFetch<DadosGraficoTipoEquipe[]>(
-    async () => {
-      const result = await getStatsByTipoEquipe();
-      if (result.success && result.data) {
-        return result.data;
-      }
-      throw new Error(result.error || 'Erro ao carregar dados do gráfico');
-    },
-    []
-  );
+  const {
+    data: dadosGrafico,
+    loading: loadingGrafico,
+    error: errorGrafico,
+    refetch: refetchGrafico,
+  } = useDataFetch<DadosGraficoTipoEquipe[]>(async () => {
+    const result = await getStatsByTipoEquipe();
+    if (result.success && result.data) {
+      return result.data;
+    }
+    throw new Error(result.error || 'Erro ao carregar dados do gráfico');
+  }, []);
 
   // Fetch de gráfico por hora e tipo
-  const { data: dadosGraficoHora, loading: loadingGraficoHora, error: errorGraficoHora, refetch: refetchGraficoHora } = useDataFetch<DadosGraficoHora[]>(
-    async () => {
-      const result = await getStatsByHoraETipoEquipe();
-      if (result.success && result.data) {
-        return result.data;
-      }
-      throw new Error(result.error || 'Erro ao carregar dados do gráfico por hora');
-    },
-    []
-  );
+  const {
+    data: dadosGraficoHora,
+    loading: loadingGraficoHora,
+    error: errorGraficoHora,
+    refetch: refetchGraficoHora,
+  } = useDataFetch<DadosGraficoHora[]>(async () => {
+    const result = await getStatsByHoraETipoEquipe();
+    if (result.success && result.data) {
+      return result.data;
+    }
+    throw new Error(
+      result.error || 'Erro ao carregar dados do gráfico por hora'
+    );
+  }, []);
 
   // Fetch de gráfico por base
-  const { data: dadosGraficoBase, loading: loadingGraficoBase, error: errorGraficoBase, refetch: refetchGraficoBase } = useDataFetch<DadosGraficoBase[]>(
-    async () => {
-      const result = await getStatsByBase();
-      if (result.success && result.data) {
-        return result.data;
-      }
-      throw new Error(result.error || 'Erro ao carregar dados do gráfico por base');
-    },
-    []
-  );
+  const {
+    data: dadosGraficoBase,
+    loading: loadingGraficoBase,
+    error: errorGraficoBase,
+    refetch: refetchGraficoBase,
+  } = useDataFetch<DadosGraficoBase[]>(async () => {
+    const result = await getStatsByBase();
+    if (result.success && result.data) {
+      return result.data;
+    }
+    throw new Error(
+      result.error || 'Erro ao carregar dados do gráfico por base'
+    );
+  }, []);
 
   // Gerar array de cores na ordem dos tipos (para usar com colorField e scale)
   const coresArray = useMemo(() => {
@@ -325,44 +420,55 @@ export default function TurnosPage() {
     }
 
     const tiposUnicos = Array.from(todosOsTipos).sort();
-    return tiposUnicos.map((_, index) => coresDisponiveis[index % coresDisponiveis.length]);
+    return tiposUnicos.map(
+      (_, index) => coresDisponiveis[index % coresDisponiveis.length]
+    );
   }, [dadosGraficoBase, dadosGraficoHora, dadosGrafico]);
 
   // Fetch de bases para o select
-  const { data: basesData, loading: loadingBases } = useDataFetch<Array<{ id: number; nome: string }>>(
-    async () => {
-      const result = await listBases({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' });
-      if (result.success && result.data) {
-        return result.data.data || [];
-      }
-      throw new Error(result.error || 'Erro ao carregar bases');
-    },
-    []
-  );
+  const { data: basesData, loading: loadingBases } = useDataFetch<
+    Array<{ id: number; nome: string }>
+  >(async () => {
+    const result = await listBases({
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'nome',
+      orderDir: 'asc',
+    });
+    if (result.success && result.data) {
+      return result.data.data || [];
+    }
+    throw new Error(result.error || 'Erro ao carregar bases');
+  }, []);
 
   // Fetch de tipos de equipe para o select
-  const { data: tiposEquipeData, loading: loadingTiposEquipe } = useDataFetch<Array<{ id: number; nome: string }>>(
-    async () => {
-      const result = await listTiposEquipe({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' });
-      if (result.success && result.data) {
-        return result.data.data || [];
-      }
-      throw new Error(result.error || 'Erro ao carregar tipos de equipe');
-    },
-    []
-  );
+  const { data: tiposEquipeData, loading: loadingTiposEquipe } = useDataFetch<
+    Array<{ id: number; nome: string }>
+  >(async () => {
+    const result = await listTiposEquipe({
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'nome',
+      orderDir: 'asc',
+    });
+    if (result.success && result.data) {
+      return result.data.data || [];
+    }
+    throw new Error(result.error || 'Erro ao carregar tipos de equipe');
+  }, []);
 
   // Fetch de turnos previstos
-  const { data: turnosPrevistosResult, loading: loadingTurnosPrevistos, refetch: refetchTurnosPrevistos } = useDataFetch<TurnoPrevisto[]>(
-    async () => {
-      const result = await getTurnosPrevistosHoje();
-      if (result.success && result.data) {
-        return result.data;
-      }
-      throw new Error(result.error || 'Erro ao carregar turnos previstos');
-    },
-    []
-  );
+  const {
+    data: turnosPrevistosResult,
+    loading: loadingTurnosPrevistos,
+    refetch: refetchTurnosPrevistos,
+  } = useDataFetch<TurnoPrevisto[]>(async () => {
+    const result = await getTurnosPrevistosHoje();
+    if (result.success && result.data) {
+      return result.data;
+    }
+    throw new Error(result.error || 'Erro ao carregar turnos previstos');
+  }, []);
 
   // Buscar bases das equipes dos turnos previstos
   useEffect(() => {
@@ -372,7 +478,9 @@ export default function TurnosPage() {
     }
 
     const buscarBases = async () => {
-      const equipeIds = [...new Set(turnosPrevistosResult.map(tp => tp.equipeId))];
+      const equipeIds = [
+        ...new Set(turnosPrevistosResult.map(tp => tp.equipeId)),
+      ];
       const { listEquipes } = await import('@/lib/actions/equipe/list');
 
       try {
@@ -389,7 +497,8 @@ export default function TurnosPage() {
 
           equipes.forEach((equipe: any) => {
             if (equipeIds.includes(equipe.id)) {
-              const baseNome = equipe.baseAtual?.nome || equipe.baseNome || 'Sem Base';
+              const baseNome =
+                equipe.baseAtual?.nome || equipe.baseNome || 'Sem Base';
               map.set(equipe.id, baseNome);
             }
           });
@@ -411,35 +520,44 @@ export default function TurnosPage() {
     let filtrados = [...turnosPrevistosResult];
 
     if (filtroBaseDetalhamento) {
-      filtrados = filtrados.filter((tp) => {
+      filtrados = filtrados.filter(tp => {
         const baseNome = equipeBaseMap.get(tp.equipeId);
         return baseNome === filtroBaseDetalhamento;
       });
     }
 
     if (filtroTipoEquipeDetalhamento) {
-      filtrados = filtrados.filter((tp) => {
+      filtrados = filtrados.filter(tp => {
         return tp.tipoEquipeNome === filtroTipoEquipeDetalhamento;
       });
     }
 
     return filtrados;
-  }, [turnosPrevistosResult, filtroBaseDetalhamento, filtroTipoEquipeDetalhamento, equipeBaseMap]);
+  }, [
+    turnosPrevistosResult,
+    filtroBaseDetalhamento,
+    filtroTipoEquipeDetalhamento,
+    equipeBaseMap,
+  ]);
 
   // Fetch de estatísticas de turnos previstos
-  const { data: statsPrevistosResult, loading: loadingStatsPrevistos, refetch: refetchStatsPrevistos } = useDataFetch<EstatisticasTurnosPrevistos>(
-    async () => {
-      const result = await getEstatisticasTurnosPrevistos();
-      if (result.success && result.data) {
-        return result.data;
-      }
-      throw new Error(result.error || 'Erro ao carregar estatísticas de turnos previstos');
-    },
-    []
-  );
+  const {
+    data: statsPrevistosResult,
+    loading: loadingStatsPrevistos,
+    refetch: refetchStatsPrevistos,
+  } = useDataFetch<EstatisticasTurnosPrevistos>(async () => {
+    const result = await getEstatisticasTurnosPrevistos();
+    if (result.success && result.data) {
+      return result.data;
+    }
+    throw new Error(
+      result.error || 'Erro ao carregar estatísticas de turnos previstos'
+    );
+  }, []);
 
   // Loading geral (qualquer um dos fetches)
-  const loading = loadingTurnos || loadingGrafico || loadingGraficoHora || loadingGraficoBase;
+  const loading =
+    loadingTurnos || loadingGrafico || loadingGraficoHora || loadingGraficoBase;
 
   // Funções para lidar com os modais de checklist
   const handleViewChecklists = (turno: TurnoData) => {
@@ -504,9 +622,13 @@ export default function TurnosPage() {
       title: 'Veículo',
       key: 'veiculo',
       render: (_: unknown, record: TurnoData) => (
-        <Space direction="vertical" size={0}>
-          <span><strong>{record.veiculoPlaca}</strong></span>
-          <span style={{ fontSize: '12px', color: '#666' }}>{record.veiculoModelo}</span>
+        <Space direction='vertical' size={0}>
+          <span>
+            <strong>{record.veiculoPlaca}</strong>
+          </span>
+          <span style={{ fontSize: '12px', color: '#666' }}>
+            {record.veiculoModelo}
+          </span>
         </Space>
       ),
     },
@@ -529,9 +651,12 @@ export default function TurnosPage() {
       title: 'Eletricistas',
       key: 'eletricistas',
       render: (_: unknown, record: TurnoData) => (
-        <Space direction="vertical" size={0}>
-          {record.eletricistas?.map((elet) => (
-            <Tooltip key={elet.id} title={`Matrícula: ${elet.matricula}${elet.motorista ? ' - Motorista' : ''}`}>
+        <Space direction='vertical' size={0}>
+          {record.eletricistas?.map(elet => (
+            <Tooltip
+              key={elet.id}
+              title={`Matrícula: ${elet.matricula}${elet.motorista ? ' - Motorista' : ''}`}
+            >
               <Space size={4} style={{ cursor: 'help' }}>
                 {elet.motorista && <CarOutlined style={{ color: '#1890ff' }} />}
                 <span>{elet.nome}</span>
@@ -548,7 +673,11 @@ export default function TurnosPage() {
         const data = new Date(record.dataInicio);
         return (
           <span>
-            {data.toLocaleDateString('pt-BR')} {data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            {data.toLocaleDateString('pt-BR')}{' '}
+            {data.toLocaleTimeString('pt-BR', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
           </span>
         );
       },
@@ -569,9 +698,7 @@ export default function TurnosPage() {
       render: (_: unknown, record: TurnoData) => {
         const status = record.dataFim ? 'FECHADO' : 'ABERTO';
         return (
-          <Tag color={status === 'ABERTO' ? 'green' : 'default'}>
-            {status}
-          </Tag>
+          <Tag color={status === 'ABERTO' ? 'green' : 'default'}>{status}</Tag>
         );
       },
     },
@@ -581,28 +708,28 @@ export default function TurnosPage() {
       width: 220,
       render: (_: unknown, record: TurnoData) => (
         <Space>
-          <Tooltip title="Ver Checklists">
+          <Tooltip title='Ver Checklists'>
             <Button
-              type="primary"
-              size="small"
+              type='primary'
+              size='small'
               icon={<CheckOutlined />}
               onClick={() => handleViewChecklists(record)}
             />
           </Tooltip>
-          <Tooltip title="Ver Histórico de Localização">
+          <Tooltip title='Ver Histórico de Localização'>
             <Button
-              type="default"
-              size="small"
+              type='default'
+              size='small'
               icon={<EnvironmentOutlined />}
               onClick={() => handleViewLocation(record)}
             />
           </Tooltip>
           {!record.dataFim && (
-            <Tooltip title="Fechar Turno">
+            <Tooltip title='Fechar Turno'>
               <Button
-                type="default"
+                type='default'
                 danger
-                size="small"
+                size='small'
                 icon={<CloseOutlined />}
                 onClick={() => handleFecharTurno(record)}
               />
@@ -626,8 +753,15 @@ export default function TurnosPage() {
 
   if (!hydrated) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-        <Spin size="large" />
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '50vh',
+        }}
+      >
+        <Spin size='large' />
       </div>
     );
   }
@@ -635,16 +769,14 @@ export default function TurnosPage() {
   if (loading && !turnosAbertosResult?.turnosAbertos?.length) {
     return (
       <div style={{ textAlign: 'center', padding: '40px' }}>
-        <Spin size="large" />
+        <Spin size='large' />
       </div>
     );
   }
 
   return (
     <div style={{ padding: '24px' }}>
-      <Title level={2}>
-        Turnos Abertos - Hoje ({dataFormatada})
-      </Title>
+      <Title level={2}>Turnos Abertos - Hoje ({dataFormatada})</Title>
 
       {/* Tratamento de Erros */}
       <ErrorAlert error={errorTurnos} onRetry={refetchTurnos} />
@@ -657,7 +789,7 @@ export default function TurnosPage() {
         <Col xs={24} sm={12}>
           <Card>
             <Statistic
-              title="Turnos Abertos no momento"
+              title='Turnos Abertos no momento'
               value={stats.total}
               prefix={<ClockCircleOutlined />}
               valueStyle={{ color: '#1890ff' }}
@@ -667,7 +799,7 @@ export default function TurnosPage() {
         <Col xs={24} sm={12}>
           <Card>
             <Statistic
-              title="Aberturas totais do dia"
+              title='Aberturas totais do dia'
               value={stats.totalDiarios}
               prefix={<CalendarOutlined />}
               valueStyle={{ color: '#722ed1' }}
@@ -679,24 +811,33 @@ export default function TurnosPage() {
       {/* Gráficos */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} md={7}>
-          <Card title="Turnos por Tipo de Equipe">
+          <Card title='Turnos por Tipo de Equipe'>
             {loadingGrafico ? (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <Spin size="large" />
+                <Spin size='large' />
               </div>
             ) : !dadosGrafico || dadosGrafico.length === 0 ? (
-              <Empty description="Nenhum dado disponível" />
+              <Empty description='Nenhum dado disponível' />
             ) : (
               <Column
                 data={dadosGrafico}
-                xField="tipo"
-                yField="quantidade"
+                xField='tipo'
+                yField='quantidade'
                 height={300}
                 columnWidthRatio={0.1}
-                colorField="tipo"
+                colorField='tipo'
                 scale={{
                   color: {
-                    range: coresArray.length > 0 ? coresArray : ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
+                    range:
+                      coresArray.length > 0
+                        ? coresArray
+                        : [
+                            '#1890ff',
+                            '#52c41a',
+                            '#faad14',
+                            '#f5222d',
+                            '#722ed1',
+                          ],
                   },
                 }}
                 label={{
@@ -713,39 +854,48 @@ export default function TurnosPage() {
                     autoHide: false,
                   },
                 }}
-                    yAxis={{
-                      tickCount: 5,
-                      label: {
-                        formatter: (text: string) => {
-                          const num = parseFloat(text);
-                          return Number.isInteger(num) ? num.toString() : '';
-                        },
-                      },
-                    }}
+                yAxis={{
+                  tickCount: 5,
+                  label: {
+                    formatter: (text: string) => {
+                      const num = parseFloat(text);
+                      return Number.isInteger(num) ? num.toString() : '';
+                    },
+                  },
+                }}
               />
             )}
           </Card>
         </Col>
         <Col xs={24} md={17}>
-          <Card title="Turnos Diários por Hora">
+          <Card title='Turnos Diários por Hora'>
             {loadingGraficoHora ? (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <Spin size="large" />
+                <Spin size='large' />
               </div>
             ) : !dadosGraficoHora || dadosGraficoHora.length === 0 ? (
-              <Empty description="Nenhum dado disponível" />
+              <Empty description='Nenhum dado disponível' />
             ) : (
               <Column
                 data={dadosGraficoHora}
-                xField="hora"
-                yField="quantidade"
-                seriesField="tipo"
-                colorField="tipo"
+                xField='hora'
+                yField='quantidade'
+                seriesField='tipo'
+                colorField='tipo'
                 height={300}
                 isStack={true}
                 scale={{
                   color: {
-                    range: coresArray.length > 0 ? coresArray : ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
+                    range:
+                      coresArray.length > 0
+                        ? coresArray
+                        : [
+                            '#1890ff',
+                            '#52c41a',
+                            '#faad14',
+                            '#f5222d',
+                            '#722ed1',
+                          ],
                   },
                 }}
                 label={{
@@ -762,7 +912,9 @@ export default function TurnosPage() {
                   itemName: {
                     formatter: (text: string) => {
                       // Não mostrar na legenda tipos que não têm dados
-                      const temDados = dadosGraficoHora?.some(d => d.tipo === text && d.quantidade > 0);
+                      const temDados = dadosGraficoHora?.some(
+                        d => d.tipo === text && d.quantidade > 0
+                      );
                       return temDados ? text : '';
                     },
                   },
@@ -791,24 +943,24 @@ export default function TurnosPage() {
       {/* Gráfico de Turnos por Base */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24}>
-          <Card title="Turnos Diários por Base">
+          <Card title='Turnos Diários por Base'>
             {loadingGraficoBase ? (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <Spin size="large" />
+                <Spin size='large' />
               </div>
             ) : !dadosGraficoBase || dadosGraficoBase.length === 0 ? (
-              <Empty description="Nenhum dado disponível" />
+              <Empty description='Nenhum dado disponível' />
             ) : (
               <Column
                 data={dadosGraficoBase}
-                xField="base"
-                yField="quantidade"
-                seriesField="tipo"
+                xField='base'
+                yField='quantidade'
+                seriesField='tipo'
                 isStack={true}
                 height={300}
                 columnWidthRatio={0.3}
                 label={{
-                  text: (d: any) => d.quantidade > 0 ? d.quantidade : '',
+                  text: (d: any) => (d.quantidade > 0 ? d.quantidade : ''),
                   position: 'inside',
                   style: {
                     fill: '#fff',
@@ -816,10 +968,19 @@ export default function TurnosPage() {
                     fontSize: 10,
                   },
                 }}
-                colorField="tipo"
+                colorField='tipo'
                 scale={{
                   color: {
-                    range: coresArray.length > 0 ? coresArray : ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
+                    range:
+                      coresArray.length > 0
+                        ? coresArray
+                        : [
+                            '#1890ff',
+                            '#52c41a',
+                            '#faad14',
+                            '#f5222d',
+                            '#722ed1',
+                          ],
                   },
                 }}
                 legend={{
@@ -827,7 +988,9 @@ export default function TurnosPage() {
                   itemName: {
                     formatter: (text: string) => {
                       // Não mostrar na legenda tipos que não têm dados
-                      const temDados = dadosGraficoBase?.some(d => d.tipo === text && d.quantidade > 0);
+                      const temDados = dadosGraficoBase?.some(
+                        d => d.tipo === text && d.quantidade > 0
+                      );
                       return temDados ? text : '';
                     },
                   },
@@ -860,45 +1023,47 @@ export default function TurnosPage() {
         <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
           <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Veículo"
+              placeholder='Veículo'
               prefix={<SearchOutlined />}
               value={filtroVeiculo}
-              onChange={(e) => setFiltroVeiculo(e.target.value)}
+              onChange={e => setFiltroVeiculo(e.target.value)}
               allowClear
             />
           </Col>
           <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Equipe"
+              placeholder='Equipe'
               prefix={<SearchOutlined />}
               value={filtroEquipe}
-              onChange={(e) => setFiltroEquipe(e.target.value)}
+              onChange={e => setFiltroEquipe(e.target.value)}
               allowClear
             />
           </Col>
           <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Eletricista"
+              placeholder='Eletricista'
               prefix={<SearchOutlined />}
               value={filtroEletricista}
-              onChange={(e) => setFiltroEletricista(e.target.value)}
+              onChange={e => setFiltroEletricista(e.target.value)}
               allowClear
             />
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Select
-              placeholder="Base"
+              placeholder='Base'
               style={{ width: '100%' }}
               value={filtroBase}
               onChange={setFiltroBase}
               allowClear
               showSearch
-              optionFilterProp="children"
+              optionFilterProp='children'
               loading={loadingBases}
               filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                (option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
               }
-              options={basesData?.map((base) => ({
+              options={basesData?.map(base => ({
                 label: base.nome,
                 value: base.nome,
               }))}
@@ -906,18 +1071,20 @@ export default function TurnosPage() {
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Select
-              placeholder="Tipo de Equipe"
+              placeholder='Tipo de Equipe'
               style={{ width: '100%' }}
               value={filtroTipoEquipe}
               onChange={setFiltroTipoEquipe}
               allowClear
               showSearch
-              optionFilterProp="children"
+              optionFilterProp='children'
               loading={loadingTiposEquipe}
               filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                (option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
               }
-              options={tiposEquipeData?.map((tipo) => ({
+              options={tiposEquipeData?.map(tipo => ({
                 label: tipo.nome,
                 value: tipo.nome,
               }))}
@@ -928,10 +1095,12 @@ export default function TurnosPage() {
         <Table
           columns={columns}
           dataSource={turnosFiltrados}
-          rowKey="id"
+          rowKey='id'
           pagination={pagination}
           locale={{
-            emptyText: <Empty description="Nenhum turno encontrado com os filtros aplicados" />,
+            emptyText: (
+              <Empty description='Nenhum turno encontrado com os filtros aplicados' />
+            ),
           }}
         />
       </Card>
@@ -942,7 +1111,7 @@ export default function TurnosPage() {
           <Col xs={24}>
             <Card>
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <Spin size="large" />
+                <Spin size='large' />
               </div>
             </Card>
           </Col>
@@ -953,7 +1122,9 @@ export default function TurnosPage() {
           const horaAtual = agora.getHours() * 60 + agora.getMinutes(); // Minutos desde meia-noite
 
           // Função para converter horário "HH:MM:SS" para minutos desde meia-noite
-          const horarioParaMinutos = (horario: string | null | undefined): number | null => {
+          const horarioParaMinutos = (
+            horario: string | null | undefined
+          ): number | null => {
             if (!horario || typeof horario !== 'string') return null;
             const [hora, minuto] = horario.split(':').map(Number);
             if (isNaN(hora) || isNaN(minuto)) return null;
@@ -961,7 +1132,7 @@ export default function TurnosPage() {
           };
 
           // Filtrar turnos não abertos que já passaram do horário previsto
-          let turnosNaoAbertosAtrasados = turnosPrevistosResult.filter((tp) => {
+          let turnosNaoAbertosAtrasados = turnosPrevistosResult.filter(tp => {
             if (tp.status !== 'NAO_ABERTO') return false;
             if (!tp.horarioPrevisto) return true; // Se não tem horário previsto, considerar atrasado
             const minutosPrevistos = horarioParaMinutos(tp.horarioPrevisto);
@@ -971,19 +1142,19 @@ export default function TurnosPage() {
 
           // Aplicar filtros de base e tipo de equipe
           if (filtroBaseTurnosPrevistos) {
-            turnosNaoAbertosAtrasados = turnosNaoAbertosAtrasados.filter((tp) => {
+            turnosNaoAbertosAtrasados = turnosNaoAbertosAtrasados.filter(tp => {
               const baseNome = equipeBaseMap.get(tp.equipeId);
               return baseNome === filtroBaseTurnosPrevistos;
             });
           }
           if (filtroTipoEquipeTurnosPrevistos) {
-            turnosNaoAbertosAtrasados = turnosNaoAbertosAtrasados.filter((tp) => {
+            turnosNaoAbertosAtrasados = turnosNaoAbertosAtrasados.filter(tp => {
               return tp.tipoEquipeNome === filtroTipoEquipeTurnosPrevistos;
             });
           }
 
           // Filtrar turnos previstos que ainda não passaram do horário
-          const turnosPrevistosFuturos = turnosPrevistosResult.filter((tp) => {
+          const turnosPrevistosFuturos = turnosPrevistosResult.filter(tp => {
             if (tp.status !== 'NAO_ABERTO') return false;
             if (!tp.horarioPrevisto) return false; // Se não tem horário, não mostrar aqui
             const minutosPrevistos = horarioParaMinutos(tp.horarioPrevisto);
@@ -994,105 +1165,112 @@ export default function TurnosPage() {
           return (
             <>
               {/* Card de Turnos Atrasados (já deveriam ter sido abertos) */}
-              {turnosNaoAbertosAtrasados.length > 0 && (
-                <Card
-                  title={
-                    <Space>
-                      <span>Turnos Previstos Não Abertos (Atrasados)</span>
-                      <Tag color="error">{turnosNaoAbertosAtrasados.length}</Tag>
-                    </Space>
-                  }
-                  style={{ marginBottom: 32 }}
-                  extra={
-                    <Space>
-                      <Select
-                        placeholder="Filtrar por Base"
-                        allowClear
-                        style={{ width: 200 }}
-                        value={filtroBaseTurnosPrevistos}
-                        onChange={(value) => setFiltroBaseTurnosPrevistos(value || undefined)}
-                        showSearch
-                        filterOption={(input, option) =>
-                          (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
-                        }
-                        options={basesData?.map((base) => ({
-                          label: base.nome,
-                          value: base.nome,
-                        }))}
-                      />
-                      <Select
-                        placeholder="Filtrar por Tipo de Equipe"
-                        allowClear
-                        style={{ width: 200 }}
-                        value={filtroTipoEquipeTurnosPrevistos}
-                        onChange={(value) => setFiltroTipoEquipeTurnosPrevistos(value || undefined)}
-                        showSearch
-                        filterOption={(input, option) =>
-                          (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
-                        }
-                        options={tiposEquipeData?.map((tipo) => ({
-                          label: tipo.nome,
-                          value: tipo.nome,
-                        }))}
-                      />
-                      <Tag color="error">
-                        Deveriam ter sido abertos até agora
-                      </Tag>
-                    </Space>
-                  }
-                >
-                  <Table
-                    dataSource={turnosNaoAbertosAtrasados}
-                    rowKey={(record) => `${record.equipeId}-${record.status}`}
-                    pagination={paginationNaoAbertos}
-                    size="small"
-                    columns={[
-                      {
-                        title: 'Base',
-                        key: 'base',
-                        width: 150,
-                        render: (_: unknown, record: TurnoPrevisto) => {
-                          const baseNome = equipeBaseMap.get(record.equipeId);
-                          return baseNome || '-';
-                        },
+              <Card
+                title={
+                  <Space>
+                    <span>Turnos Previstos Não Abertos (Atrasados)</span>
+                    <Tag color='error'>{turnosNaoAbertosAtrasados.length}</Tag>
+                  </Space>
+                }
+                style={{ marginBottom: 32, marginTop: 24 }}
+                extra={
+                  <Space>
+                    <Select
+                      placeholder='Filtrar por Base'
+                      allowClear
+                      style={{ width: 200 }}
+                      value={filtroBaseTurnosPrevistos}
+                      onChange={value =>
+                        setFiltroBaseTurnosPrevistos(value || undefined)
+                      }
+                      showSearch
+                      filterOption={(input, option) =>
+                        (option?.label ?? '')
+                          .toString()
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      options={basesData?.map(base => ({
+                        label: base.nome,
+                        value: base.nome,
+                      }))}
+                    />
+                    <Select
+                      placeholder='Filtrar por Tipo de Equipe'
+                      allowClear
+                      style={{ width: 200 }}
+                      value={filtroTipoEquipeTurnosPrevistos}
+                      onChange={value =>
+                        setFiltroTipoEquipeTurnosPrevistos(value || undefined)
+                      }
+                      showSearch
+                      filterOption={(input, option) =>
+                        (option?.label ?? '')
+                          .toString()
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      options={tiposEquipeData?.map(tipo => ({
+                        label: tipo.nome,
+                        value: tipo.nome,
+                      }))}
+                    />
+                    <Tag color='error'>Deveriam ter sido abertos até agora</Tag>
+                  </Space>
+                }
+              >
+                <Table
+                  dataSource={turnosNaoAbertosAtrasados}
+                  rowKey={record => `${record.equipeId}-${record.status}`}
+                  pagination={paginationNaoAbertos}
+                  size='small'
+                  columns={[
+                    {
+                      title: 'Base',
+                      key: 'base',
+                      width: 150,
+                      render: (_: unknown, record: TurnoPrevisto) => {
+                        const baseNome = equipeBaseMap.get(record.equipeId);
+                        return baseNome || '-';
                       },
-                      {
-                        title: 'Equipe',
-                        dataIndex: 'equipeNome',
-                        key: 'equipeNome',
-                        width: 200,
-                        fixed: 'left',
-                      },
-                      {
-                        title: 'Tipo de Equipe',
-                        dataIndex: 'tipoEquipeNome',
-                        key: 'tipoEquipeNome',
-                        width: 150,
-                      },
-                      {
-                        title: 'Horário Previsto',
-                        dataIndex: 'horarioPrevisto',
-                        key: 'horarioPrevisto',
-                        width: 140,
-                        render: (horario: string | null) => formatTime(horario) || '-',
-                      },
-                      {
-                        title: 'Eletricistas',
-                        key: 'eletricistas',
-                        render: (_: unknown, record: TurnoPrevisto) => (
-                          <Space direction="vertical" size={0}>
-                            {record.eletricistas.map((el) => (
-                              <span key={el.id}>
-                                {el.nome} ({el.matricula})
-                              </span>
-                            ))}
-                          </Space>
-                        ),
-                      },
-                    ]}
-                  />
-                </Card>
-              )}
+                    },
+                    {
+                      title: 'Equipe',
+                      dataIndex: 'equipeNome',
+                      key: 'equipeNome',
+                      width: 200,
+                      fixed: 'left',
+                    },
+                    {
+                      title: 'Tipo de Equipe',
+                      dataIndex: 'tipoEquipeNome',
+                      key: 'tipoEquipeNome',
+                      width: 150,
+                    },
+                    {
+                      title: 'Horário Previsto',
+                      dataIndex: 'horarioPrevisto',
+                      key: 'horarioPrevisto',
+                      width: 140,
+                      render: (horario: string | null) =>
+                        formatTime(horario) || '-',
+                    },
+                    {
+                      title: 'Eletricistas',
+                      key: 'eletricistas',
+                      render: (_: unknown, record: TurnoPrevisto) => (
+                        <Space direction='vertical' size={0}>
+                          {record.eletricistas.map(el => (
+                            <span key={el.id}>
+                              {el.nome} ({el.matricula})
+                            </span>
+                          ))}
+                        </Space>
+                      ),
+                    },
+                  ]}
+                />
+              </Card>
 
               {/* Card de Turnos Previstos para o Resto do Dia */}
               {turnosPrevistosFuturos.length > 0 && (
@@ -1100,21 +1278,23 @@ export default function TurnosPage() {
                   title={
                     <Space>
                       <span>Turnos Previstos para o Resto do Dia</span>
-                      <Tag color="blue">{turnosPrevistosFuturos.length}</Tag>
+                      <Tag color='blue'>{turnosPrevistosFuturos.length}</Tag>
                     </Space>
                   }
                   style={{ marginBottom: 24 }}
                   extra={
-                    <Tag color="processing">
+                    <Tag color='processing'>
                       Ainda não passou do horário previsto
                     </Tag>
                   }
                 >
                   <Table
                     dataSource={turnosPrevistosFuturos}
-                    rowKey={(record) => `${record.equipeId}-${record.status}-futuro`}
+                    rowKey={record =>
+                      `${record.equipeId}-${record.status}-futuro`
+                    }
                     pagination={paginationTurnosFuturos}
-                    size="small"
+                    size='small'
                     columns={[
                       {
                         title: 'Equipe',
@@ -1134,14 +1314,15 @@ export default function TurnosPage() {
                         dataIndex: 'horarioPrevisto',
                         key: 'horarioPrevisto',
                         width: 140,
-                        render: (horario: string | null) => formatTime(horario) || '-',
+                        render: (horario: string | null) =>
+                          formatTime(horario) || '-',
                       },
                       {
                         title: 'Eletricistas',
                         key: 'eletricistas',
                         render: (_: unknown, record: TurnoPrevisto) => (
-                          <Space direction="vertical" size={0}>
-                            {record.eletricistas.map((el) => (
+                          <Space direction='vertical' size={0}>
+                            {record.eletricistas.map(el => (
                               <span key={el.id}>
                                 {el.nome} ({el.matricula})
                               </span>
@@ -1164,7 +1345,7 @@ export default function TurnosPage() {
           <Col xs={24}>
             <Card>
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <Spin size="large" />
+                <Spin size='large' />
               </div>
             </Card>
           </Col>
@@ -1179,7 +1360,7 @@ export default function TurnosPage() {
             <Col xs={24} sm={12} md={6} lg={3}>
               <Card>
                 <Statistic
-                  title="Turnos Previstos Hoje"
+                  title='Turnos Previstos Hoje'
                   value={statsPrevistosResult.totalPrevistosHoje}
                   valueStyle={{ color: '#1890ff' }}
                 />
@@ -1188,7 +1369,7 @@ export default function TurnosPage() {
             <Col xs={24} sm={12} md={6} lg={3}>
               <Card>
                 <Statistic
-                  title="Já Abertos"
+                  title='Já Abertos'
                   value={statsPrevistosResult.totalAbertos}
                   valueStyle={{ color: '#52c41a' }}
                 />
@@ -1197,7 +1378,7 @@ export default function TurnosPage() {
             <Col xs={24} sm={12} md={6} lg={3}>
               <Card>
                 <Statistic
-                  title="Não Abertos"
+                  title='Não Abertos'
                   value={statsPrevistosResult.totalNaoAbertos}
                   valueStyle={{ color: '#f5222d' }}
                 />
@@ -1206,7 +1387,7 @@ export default function TurnosPage() {
             <Col xs={24} sm={12} md={6} lg={3}>
               <Card>
                 <Statistic
-                  title="Aderentes"
+                  title='Aderentes'
                   value={statsPrevistosResult.totalAderentes}
                   valueStyle={{ color: '#52c41a' }}
                 />
@@ -1215,7 +1396,7 @@ export default function TurnosPage() {
             <Col xs={24} sm={12} md={6} lg={3}>
               <Card>
                 <Statistic
-                  title="Não Aderentes"
+                  title='Não Aderentes'
                   value={statsPrevistosResult.totalNaoAderentes}
                   valueStyle={{ color: '#faad14' }}
                 />
@@ -1224,7 +1405,7 @@ export default function TurnosPage() {
             <Col xs={24} sm={12} md={6} lg={3}>
               <Card>
                 <Statistic
-                  title="Turnos Extras"
+                  title='Turnos Extras'
                   value={statsPrevistosResult.totalTurnosExtras}
                   valueStyle={{ color: '#1890ff' }}
                 />
@@ -1233,7 +1414,7 @@ export default function TurnosPage() {
             <Col xs={24} sm={12} md={6} lg={3}>
               <Card>
                 <Statistic
-                  title="Previstos até Agora"
+                  title='Previstos até Agora'
                   value={statsPrevistosResult.previstosAteAgora}
                   valueStyle={{ color: '#13c2c2' }}
                 />
@@ -1242,7 +1423,7 @@ export default function TurnosPage() {
             <Col xs={24} sm={12} md={6} lg={3}>
               <Card>
                 <Statistic
-                  title="Abertos até Agora"
+                  title='Abertos até Agora'
                   value={statsPrevistosResult.abertosAteAgora}
                   valueStyle={{ color: '#52c41a' }}
                 />
@@ -1252,10 +1433,13 @@ export default function TurnosPage() {
 
           {/* Resumo por Tipo de Equipe */}
           {statsPrevistosResult.porTipoEquipe.length > 0 && (
-            <Card title="Turnos Previstos por Tipo de Equipe" style={{ marginBottom: 24 }}>
+            <Card
+              title='Turnos Previstos por Tipo de Equipe'
+              style={{ marginBottom: 24 }}
+            >
               <Table
                 dataSource={statsPrevistosResult.porTipoEquipe}
-                rowKey="tipoEquipeId"
+                rowKey='tipoEquipeId'
                 pagination={false}
                 columns={[
                   {
@@ -1275,7 +1459,9 @@ export default function TurnosPage() {
                     key: 'abertos',
                     align: 'center',
                     render: (value: number) => (
-                      <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{value}</span>
+                      <span style={{ color: '#52c41a', fontWeight: 'bold' }}>
+                        {value}
+                      </span>
                     ),
                   },
                   {
@@ -1284,7 +1470,9 @@ export default function TurnosPage() {
                     key: 'naoAbertos',
                     align: 'center',
                     render: (value: number) => (
-                      <span style={{ color: '#f5222d', fontWeight: 'bold' }}>{value}</span>
+                      <span style={{ color: '#f5222d', fontWeight: 'bold' }}>
+                        {value}
+                      </span>
                     ),
                   },
                 ]}
@@ -1295,36 +1483,46 @@ export default function TurnosPage() {
           {/* Tabela Detalhada de Turnos Previstos */}
           {turnosPrevistosResult && turnosPrevistosResult.length > 0 && (
             <Card
-              title="Detalhamento de Turnos Previstos"
+              title='Detalhamento de Turnos Previstos'
               style={{ marginBottom: 24 }}
               extra={
                 <Space>
                   <Select
-                    placeholder="Filtrar por Base"
+                    placeholder='Filtrar por Base'
                     allowClear
                     style={{ width: 200 }}
                     value={filtroBaseDetalhamento}
-                    onChange={(value) => setFiltroBaseDetalhamento(value || undefined)}
+                    onChange={value =>
+                      setFiltroBaseDetalhamento(value || undefined)
+                    }
                     showSearch
                     filterOption={(input, option) =>
-                      (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                      (option?.label ?? '')
+                        .toString()
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
                     }
-                    options={basesData?.map((base) => ({
+                    options={basesData?.map(base => ({
                       label: base.nome,
                       value: base.nome,
                     }))}
                   />
                   <Select
-                    placeholder="Filtrar por Tipo de Equipe"
+                    placeholder='Filtrar por Tipo de Equipe'
                     allowClear
                     style={{ width: 200 }}
                     value={filtroTipoEquipeDetalhamento}
-                    onChange={(value) => setFiltroTipoEquipeDetalhamento(value || undefined)}
+                    onChange={value =>
+                      setFiltroTipoEquipeDetalhamento(value || undefined)
+                    }
                     showSearch
                     filterOption={(input, option) =>
-                      (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                      (option?.label ?? '')
+                        .toString()
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
                     }
-                    options={tiposEquipeData?.map((tipo) => ({
+                    options={tiposEquipeData?.map(tipo => ({
                       label: tipo.nome,
                       value: tipo.nome,
                     }))}
@@ -1334,7 +1532,9 @@ export default function TurnosPage() {
             >
               <Table
                 dataSource={turnosPrevistosFiltrados}
-                rowKey={(record) => `${record.equipeId}-${record.status}-${record.turnoId || 'no-turno'}`}
+                rowKey={record =>
+                  `${record.equipeId}-${record.status}-${record.turnoId || 'no-turno'}`
+                }
                 pagination={paginationTurnosPrevistos}
                 columns={[
                   {
@@ -1369,8 +1569,8 @@ export default function TurnosPage() {
                       // Se for turno extra, não precisa colorir
                       if (record.status === 'TURNO_EXTRA') {
                         return (
-                          <Space direction="vertical" size={0}>
-                            {record.eletricistas.map((el) => (
+                          <Space direction='vertical' size={0}>
+                            {record.eletricistas.map(el => (
                               <span key={el.id}>
                                 {el.nome} ({el.matricula})
                               </span>
@@ -1385,12 +1585,12 @@ export default function TurnosPage() {
                       const eletricistasQueAbriramIds = new Set(
                         record.status === 'NAO_ABERTO'
                           ? []
-                          : record.eletricistasQueAbriram?.map((e) => e.id) || []
+                          : record.eletricistasQueAbriram?.map(e => e.id) || []
                       );
 
                       return (
-                        <Space direction="vertical" size={0}>
-                          {record.eletricistas.map((el) => {
+                        <Space direction='vertical' size={0}>
+                          {record.eletricistas.map(el => {
                             const abriu = eletricistasQueAbriramIds.has(el.id);
                             const style: React.CSSProperties = {
                               backgroundColor: abriu ? '#f6ffed' : '#fff1f0',
@@ -1413,7 +1613,10 @@ export default function TurnosPage() {
                     title: 'Status',
                     dataIndex: 'status',
                     key: 'status',
-                    render: (status: TurnoPrevisto['status'], record: TurnoPrevisto) => {
+                    render: (
+                      status: TurnoPrevisto['status'],
+                      record: TurnoPrevisto
+                    ) => {
                       let color: string;
                       let text: string;
                       switch (status) {
@@ -1469,11 +1672,15 @@ export default function TurnosPage() {
           setSelectedTurnoForLocation(null);
         }}
         turnoId={selectedTurnoForLocation?.id || 0}
-        turnoInfo={selectedTurnoForLocation ? {
-          id: selectedTurnoForLocation.id,
-          veiculo: { placa: selectedTurnoForLocation.veiculoPlaca },
-          equipe: { nome: selectedTurnoForLocation.equipeNome },
-        } : undefined}
+        turnoInfo={
+          selectedTurnoForLocation
+            ? {
+                id: selectedTurnoForLocation.id,
+                veiculo: { placa: selectedTurnoForLocation.veiculoPlaca },
+                equipe: { nome: selectedTurnoForLocation.equipeNome },
+              }
+            : undefined
+        }
       />
 
       {/* Modais de Checklist */}
