@@ -79,32 +79,8 @@ interface DadosGraficoBase {
   quantidade: number;
 }
 
-/**
- * Interface para dados do turno
- */
-interface TurnoData {
-  id: number;
-  dataSolicitacao: string;
-  dataInicio: string;
-  dataFim?: string;
-  veiculoId: number;
-  veiculoPlaca: string;
-  veiculoModelo: string;
-  equipeId: number;
-  equipeNome: string;
-  tipoEquipeNome: string;
-  baseNome: string;
-  dispositivo: string;
-  kmInicio: number;
-  kmFim?: number;
-  status: string;
-  eletricistas: Array<{
-    id: number;
-    nome: string;
-    matricula: string;
-    motorista?: boolean;
-  }>;
-}
+import type { TurnoData } from '@/lib/types/turno-frontend';
+import { mapTurnoToTurnoData } from '@/lib/mappers/turnoMapper';
 
 export default function TurnosPage() {
   // Estados para os filtros
@@ -212,54 +188,9 @@ export default function TurnosPage() {
       resultTodos.data
     ) {
       // Mapear turnos do formato Prisma para TurnoData
+      // Mapear turnos do formato Prisma para TurnoData usando mapper compartilhado
       const turnosAbertos: TurnoData[] = (resultAbertos.data.data || []).map(
-        turno => ({
-          id: turno.id,
-          dataSolicitacao:
-            turno.dataSolicitacao instanceof Date
-              ? turno.dataSolicitacao.toISOString()
-              : String(turno.dataSolicitacao),
-          dataInicio:
-            turno.dataInicio instanceof Date
-              ? turno.dataInicio.toISOString()
-              : String(turno.dataInicio),
-          dataFim: turno.dataFim
-            ? turno.dataFim instanceof Date
-              ? turno.dataFim.toISOString()
-              : String(turno.dataFim)
-            : undefined,
-          veiculoId: turno.veiculoId,
-          veiculoPlaca:
-            (turno as { veiculoPlaca?: string }).veiculoPlaca || 'N/A',
-          veiculoModelo:
-            (turno as { veiculoModelo?: string }).veiculoModelo || 'N/A',
-          equipeId: turno.equipeId,
-          equipeNome: (turno as { equipeNome?: string }).equipeNome || 'N/A',
-          tipoEquipeNome:
-            (turno as { tipoEquipeNome?: string }).tipoEquipeNome || 'N/A',
-          baseNome: (turno as { baseNome?: string }).baseNome || 'N/A',
-          dispositivo: turno.dispositivo || '',
-          kmInicio: turno.kmInicio || 0,
-          kmFim: (turno as { KmFim?: number | null }).KmFim ?? undefined,
-          status: turno.dataFim ? 'FECHADO' : 'ABERTO',
-          eletricistas: (
-            (
-              turno as {
-                eletricistas?: Array<{
-                  id: number;
-                  nome: string;
-                  matricula: string;
-                  motorista?: boolean;
-                }>;
-              }
-            ).eletricistas || []
-          ).map(e => ({
-            id: e.id,
-            nome: e.nome,
-            matricula: e.matricula,
-            motorista: e.motorista || false,
-          })),
-        })
+        mapTurnoToTurnoData
       );
 
       return {
