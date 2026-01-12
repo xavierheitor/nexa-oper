@@ -21,6 +21,7 @@ export interface TurnoPrevisto {
   equipeNome: string;
   tipoEquipeId: number;
   tipoEquipeNome: string;
+  baseNome: string | null;
   horarioPrevisto: string | null; // "HH:MM:SS" ou null
   eletricistas: Array<{
     id: number;
@@ -58,4 +59,3 @@ export interface EstatisticasTurnosPrevistos {
     naoAbertos: number;
   }>;
 }
-

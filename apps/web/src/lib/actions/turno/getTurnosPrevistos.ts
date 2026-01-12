@@ -45,46 +45,47 @@ export const getTurnosPrevistosHoje = async () =>
         },
       });
 
-      const escalasValidasIds = escalasValidas.map((e) => e.id);
+      const escalasValidasIds = escalasValidas.map(e => e.id);
 
       // 2. Buscar slots de trabalho de hoje das escalas válidas
       // Se não houver escalas válidas, buscar slots vazios (mas ainda precisamos buscar turnos extras depois)
-      const slotsAgrupados = escalasValidasIds.length > 0
-        ? await prisma.slotEscala.findMany({
-            where: {
-              estado: 'TRABALHO',
-              data: {
-                gte: hoje,
-                lte: hojeFim,
-              },
-              escalaEquipePeriodoId: { in: escalasValidasIds },
-              deletedAt: null,
-            },
-            include: {
-              eletricista: {
-                select: {
-                  id: true,
-                  nome: true,
-                  matricula: true,
+      const slotsAgrupados =
+        escalasValidasIds.length > 0
+          ? await prisma.slotEscala.findMany({
+              where: {
+                estado: 'TRABALHO',
+                data: {
+                  gte: hoje,
+                  lte: hojeFim,
                 },
+                escalaEquipePeriodoId: { in: escalasValidasIds },
+                deletedAt: null,
               },
-              escalaEquipePeriodo: {
-                include: {
-                  equipe: {
-                    include: {
-                      tipoEquipe: {
-                        select: {
-                          id: true,
-                          nome: true,
+              include: {
+                eletricista: {
+                  select: {
+                    id: true,
+                    nome: true,
+                    matricula: true,
+                  },
+                },
+                escalaEquipePeriodo: {
+                  include: {
+                    equipe: {
+                      include: {
+                        tipoEquipe: {
+                          select: {
+                            id: true,
+                            nome: true,
+                          },
                         },
                       },
                     },
                   },
                 },
               },
-            },
-          })
-        : [];
+            })
+          : [];
 
       // 2. Agrupar slots por equipe e contar eletricistas
       const equipesComSlots = new Map<
@@ -106,10 +107,8 @@ export const getTurnosPrevistosHoje = async () =>
           equipesComSlots.set(equipeId, {
             equipeId,
             equipeNome: slot.escalaEquipePeriodo.equipe.nome,
-            tipoEquipeId:
-              slot.escalaEquipePeriodo.equipe.tipoEquipe.id,
-            tipoEquipeNome:
-              slot.escalaEquipePeriodo.equipe.tipoEquipe.nome,
+            tipoEquipeId: slot.escalaEquipePeriodo.equipe.tipoEquipe.id,
+            tipoEquipeNome: slot.escalaEquipePeriodo.equipe.tipoEquipe.nome,
             slots: [],
             eletricistas: new Set(),
             inicioPrevisto: null,
@@ -128,40 +127,73 @@ export const getTurnosPrevistosHoje = async () =>
       // 3. Filtrar apenas equipes com 2+ eletricistas
       const equipesComTurnoPrevisto = Array.from(
         equipesComSlots.values()
-      ).filter((eq) => eq.eletricistas.size >= 2);
+      ).filter(eq => eq.eletricistas.size >= 2);
 
-      // 4. Buscar horários de vigência das equipes que não têm horário no slot
-      const equipeIdsSemHorario = equipesComTurnoPrevisto
-        .filter((eq) => !eq.inicioPrevisto)
-        .map((eq) => eq.equipeId);
+      // 4. Buscar horários de vigência e BASE ATUAL das equipes
+      const equipeIdsSemHorario = equipesComTurnoPrevisto.map(
+        eq => eq.equipeId
+      );
+
+      // Buscar base atual (EquipeBaseHistorico)
+      const historicoBases =
+        equipeIdsSemHorario.length > 0
+          ? await prisma.equipeBaseHistorico.findMany({
+              where: {
+                equipeId: { in: equipeIdsSemHorario },
+                dataFim: null,
+                deletedAt: null,
+              },
+              include: {
+                base: true,
+              },
+              orderBy: {
+                dataInicio: 'desc',
+              },
+            })
+          : [];
+
+      const basePorEquipe = new Map<number, string>();
+      for (const hist of historicoBases) {
+        if (!basePorEquipe.has(hist.equipeId)) {
+          basePorEquipe.set(hist.equipeId, hist.base.nome);
+        }
+      }
+
+      // Buscar horários vigentes (apenas para quem não tem horário no slot)
+      const equipeIdsSemHorarioSlot = equipesComTurnoPrevisto
+        .filter(eq => !eq.inicioPrevisto)
+        .map(eq => eq.equipeId);
+
       // IMPORTANTE: A página de cadastro usa EquipeTurnoHistorico, não EquipeHorarioVigencia
       // Buscar em EquipeTurnoHistorico primeiro (dataInicio/dataFim ao invés de vigenciaInicio/vigenciaFim)
-      const historicosHorarios = equipeIdsSemHorario.length > 0
-        ? await prisma.equipeTurnoHistorico.findMany({
-            where: {
-              equipeId: { in: equipeIdsSemHorario },
-              dataInicio: { lte: hojeFim },
-              deletedAt: null,
-            },
-            orderBy: {
-              dataInicio: 'desc',
-            },
-          })
-        : [];
+      const historicosHorarios =
+        equipeIdsSemHorarioSlot.length > 0
+          ? await prisma.equipeTurnoHistorico.findMany({
+              where: {
+                equipeId: { in: equipeIdsSemHorarioSlot },
+                dataInicio: { lte: hojeFim },
+                deletedAt: null,
+              },
+              orderBy: {
+                dataInicio: 'desc',
+              },
+            })
+          : [];
 
       // Também buscar em EquipeHorarioVigencia (para compatibilidade)
-      const vigenciaHorarios = equipeIdsSemHorario.length > 0
-        ? await prisma.equipeHorarioVigencia.findMany({
-            where: {
-              equipeId: { in: equipeIdsSemHorario },
-              vigenciaInicio: { lte: hojeFim },
-              deletedAt: null,
-            },
-            orderBy: {
-              vigenciaInicio: 'desc',
-            },
-          })
-        : [];
+      const vigenciaHorarios =
+        equipeIdsSemHorarioSlot.length > 0
+          ? await prisma.equipeHorarioVigencia.findMany({
+              where: {
+                equipeId: { in: equipeIdsSemHorarioSlot },
+                vigenciaInicio: { lte: hojeFim },
+                deletedAt: null,
+              },
+              orderBy: {
+                vigenciaInicio: 'desc',
+              },
+            })
+          : [];
 
       // Filtrar em memória para pegar apenas os que estão vigentes hoje
       // e pegar o mais recente por equipe (priorizar EquipeTurnoHistorico)
@@ -180,7 +212,8 @@ export const getTurnosPrevistosHoje = async () =>
       // Depois processar EquipeHorarioVigencia (fallback se não encontrou no histórico)
       for (const vigencia of vigenciaHorarios) {
         // Verificar se está vigente (vigenciaFim null ou >= hoje)
-        const estaVigente = !vigencia.vigenciaFim || vigencia.vigenciaFim >= hoje;
+        const estaVigente =
+          !vigencia.vigenciaFim || vigencia.vigenciaFim >= hoje;
 
         if (estaVigente && !horarioPorEquipe.has(vigencia.equipeId)) {
           horarioPorEquipe.set(vigencia.equipeId, vigencia.inicioTurnoHora);
@@ -254,9 +287,11 @@ export const getTurnosPrevistosHoje = async () =>
         const eletricistas = Array.from(eletricistasMap.values());
 
         // Buscar eletricistas que abriram o turno (se houver)
-        let eletricistasQueAbriram: Array<{ id: number; nome: string; matricula: string }> | undefined;
+        let eletricistasQueAbriram:
+          | Array<{ id: number; nome: string; matricula: string }>
+          | undefined;
         if (turno && turno.TurnoEletricistas) {
-          eletricistasQueAbriram = turno.TurnoEletricistas.map((te) => ({
+          eletricistasQueAbriram = turno.TurnoEletricistas.map(te => ({
             id: te.eletricista.id,
             nome: te.eletricista.nome,
             matricula: te.eletricista.matricula,
@@ -278,10 +313,7 @@ export const getTurnosPrevistosHoje = async () =>
           turnoId = turno.id;
         } else {
           // Abriu - calcular aderência
-          const horarioPrevistoDate = parseTimeToDate(
-            horarioPrevisto,
-            hoje
-          );
+          const horarioPrevistoDate = parseTimeToDate(horarioPrevisto, hoje);
           diferencaMinutos = calculateMinutesDifference(
             turno.dataInicio,
             horarioPrevistoDate
@@ -301,6 +333,7 @@ export const getTurnosPrevistosHoje = async () =>
           equipeNome: equipe.equipeNome,
           tipoEquipeId: equipe.tipoEquipeId,
           tipoEquipeNome: equipe.tipoEquipeNome,
+          baseNome: basePorEquipe.get(equipe.equipeId) || null,
           horarioPrevisto,
           eletricistas,
           eletricistasQueAbriram,
@@ -315,16 +348,39 @@ export const getTurnosPrevistosHoje = async () =>
 
       // 7. Adicionar turnos extras (turnos abertos que não estão na escala)
       const equipesComTurnoPrevistoIds = new Set(
-        equipesComTurnoPrevisto.map((eq) => eq.equipeId)
+        equipesComTurnoPrevisto.map(eq => eq.equipeId)
       );
 
       // Buscar informações das equipes dos turnos extras
       const turnosExtras = turnosAbertos.filter(
-        (t) => !equipesComTurnoPrevistoIds.has(t.equipeId)
+        t => !equipesComTurnoPrevistoIds.has(t.equipeId)
       );
 
       if (turnosExtras.length > 0) {
-        const equipeIdsExtras = turnosExtras.map((t) => t.equipeId);
+        const equipeIdsExtras = turnosExtras.map(t => t.equipeId);
+
+        // Buscar bases para turnos extras também
+        const historicoBasesExtras = await prisma.equipeBaseHistorico.findMany({
+          where: {
+            equipeId: { in: equipeIdsExtras },
+            dataFim: null,
+            deletedAt: null,
+          },
+          include: {
+            base: true,
+          },
+          orderBy: {
+            dataInicio: 'desc',
+          },
+        });
+
+        const baseExtrasPorEquipe = new Map<number, string>();
+        for (const hist of historicoBasesExtras) {
+          if (!baseExtrasPorEquipe.has(hist.equipeId)) {
+            baseExtrasPorEquipe.set(hist.equipeId, hist.base.nome);
+          }
+        }
+
         const equipesExtras = await prisma.equipe.findMany({
           where: {
             id: { in: equipeIdsExtras },
@@ -340,9 +396,7 @@ export const getTurnosPrevistosHoje = async () =>
           },
         });
 
-        const equipesExtrasMap = new Map(
-          equipesExtras.map((e) => [e.id, e])
-        );
+        const equipesExtrasMap = new Map(equipesExtras.map(e => [e.id, e]));
 
         for (const turnoExtra of turnosExtras) {
           const equipe = equipesExtrasMap.get(turnoExtra.equipeId);
@@ -366,7 +420,7 @@ export const getTurnosPrevistosHoje = async () =>
             });
 
             const eletricistas =
-              turnoCompleto?.TurnoEletricistas.map((te) => ({
+              turnoCompleto?.TurnoEletricistas.map(te => ({
                 id: te.eletricista.id,
                 nome: te.eletricista.nome,
                 matricula: te.eletricista.matricula,
@@ -377,6 +431,7 @@ export const getTurnosPrevistosHoje = async () =>
               equipeNome: equipe.nome,
               tipoEquipeId: equipe.tipoEquipe.id,
               tipoEquipeNome: equipe.tipoEquipe.nome,
+              baseNome: baseExtrasPorEquipe.get(equipe.id) || null,
               horarioPrevisto: null,
               eletricistas,
               status: 'TURNO_EXTRA',
@@ -400,4 +455,3 @@ export const getTurnosPrevistosHoje = async () =>
     {},
     { entityName: 'TurnoPrevisto', actionType: 'get' }
   );
-

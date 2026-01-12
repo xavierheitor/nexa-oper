@@ -66,8 +66,8 @@ export const getTurnosAbertosComStats = async (
         const filtro = params.filtroVeiculo.toLowerCase();
         whereAbertos.veiculo = {
           OR: [
-            { placa: { contains: filtro, mode: 'insensitive' } },
-            { modelo: { contains: filtro, mode: 'insensitive' } },
+            { placa: { contains: filtro } },
+            { modelo: { contains: filtro } },
           ],
         };
       }
@@ -75,7 +75,7 @@ export const getTurnosAbertosComStats = async (
       // Aplicar filtro de equipe
       if (params.filtroEquipe) {
         whereAbertos.equipe = {
-          nome: { contains: params.filtroEquipe, mode: 'insensitive' },
+          nome: { contains: params.filtroEquipe },
         };
       }
 
