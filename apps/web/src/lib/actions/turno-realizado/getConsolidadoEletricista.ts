@@ -174,11 +174,26 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
         diasComEscala.add(dataStr);
       });
 
-      const faltasTotal = faltas.length;
-      const faltasJustificadas = faltas.filter(
+      // Filtrar Faltas: ignorar faltas futuras
+      // Helper simples para data referencial (ajuste fuso BR -3h)
+      // Garante que um turno começando 23:00 (dia X) caia no dia X e não X+1
+      const toRefDate = (d: Date) => {
+        const offset = 3 * 60 * 60 * 1000;
+        return new Date(d.getTime() - offset).toISOString().split('T')[0];
+      };
+
+      const dataHojeStr = toRefDate(new Date());
+
+      const faltasPassadas = faltas.filter(f => {
+        const dataFaltaStr = toRefDate(f.dataReferencia);
+        return dataFaltaStr <= dataHojeStr;
+      });
+
+      const faltasTotal = faltasPassadas.length;
+      const faltasJustificadas = faltasPassadas.filter(
         f => f.status === 'justificada'
       ).length;
-      const faltasPendentes = faltas.filter(
+      const faltasPendentes = faltasPassadas.filter(
         f => f.status === 'pendente'
       ).length;
 
@@ -247,13 +262,6 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
       const turnosNoPeriodo = turnosRealizados.filter(
         t => t.abertoEm >= dataInicio && t.abertoEm <= dataFim
       );
-
-      // Helper simples para data referencial (ajuste fuso BR -3h)
-      // Garante que um turno começando 23:00 (dia X) caia no dia X e não X+1
-      const toRefDate = (d: Date) => {
-        const offset = 3 * 60 * 60 * 1000;
-        return new Date(d.getTime() - offset).toISOString().split('T')[0];
-      };
 
       for (const turno of turnosNoPeriodo) {
         const dataStr = toRefDate(turno.abertoEm);
@@ -333,7 +341,7 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
 
       // 3. Processar faltas (o que ACONTECEU quando deveria trabalhar)
       // Ignorar faltas futuras (erroneamente geradas ou importadas)
-      const dataHojeStr = toRefDate(new Date());
+      // dataHojeStr já foi calculado anteriormente
 
       for (const falta of faltas) {
         const dataStr = toRefDate(falta.dataReferencia);
