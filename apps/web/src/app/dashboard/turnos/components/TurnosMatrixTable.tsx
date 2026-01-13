@@ -30,8 +30,11 @@ export const TurnosMatrixTable: React.FC<TurnosMatrixTableProps> = ({
     const basesSet = new Set<string>();
     const horariosSet = new Set<string>();
 
-    // Mapeamento: Horario -> Base -> Count
-    const map = new Map<string, Map<string, number>>();
+    // Mapeamento: Horario -> Base -> { previsto: number, realizado: number }
+    const map = new Map<
+      string,
+      Map<string, { previsto: number; realizado: number }>
+    >();
 
     filteredTurnos.forEach(turno => {
       const base = turno.baseNome || 'Sem Base';
@@ -46,27 +49,43 @@ export const TurnosMatrixTable: React.FC<TurnosMatrixTableProps> = ({
         map.set(horario, new Map());
       }
 
-      const counts = map.get(horario)!;
-      counts.set(base, (counts.get(base) || 0) + 1);
+      const countsMap = map.get(horario)!;
+      if (!countsMap.has(base)) {
+        countsMap.set(base, { previsto: 0, realizado: 0 });
+      }
+
+      const entry = countsMap.get(base)!;
+      entry.previsto += 1;
+
+      // Considera realizado se status não for NAO_ABERTO
+      if (turno.status !== 'NAO_ABERTO') {
+        entry.realizado += 1;
+      }
     });
 
     // Ordenar
     const sortedBases = Array.from(basesSet).sort();
-    // Ordenar horários (tratar 'Sem Horário' para ficar no fim ou algo assim, mas normalmente HH:mm ordena bem string)
     const sortedHorarios = Array.from(horariosSet).sort();
 
     // Criar DataSource para a tabela
     const data = sortedHorarios.map(horario => {
       const row: any = { key: horario, horario };
-      let totalRow = 0;
+      let totalPrevistoRow = 0;
+      let totalRealizadoRow = 0;
 
       sortedBases.forEach(base => {
-        const count = map.get(horario)?.get(base) || 0;
-        row[base] = count > 0 ? count : '-'; // Mostra traço se zero para limpar visual
-        totalRow += count;
+        const counts = map.get(horario)?.get(base) || {
+          previsto: 0,
+          realizado: 0,
+        };
+        // Armazena objeto completo para o render
+        row[base] = counts;
+
+        totalPrevistoRow += counts.previsto;
+        totalRealizadoRow += counts.realizado;
       });
 
-      row.total = totalRow;
+      row.total = { previsto: totalPrevistoRow, realizado: totalRealizadoRow };
       return row;
     });
 
@@ -75,13 +94,32 @@ export const TurnosMatrixTable: React.FC<TurnosMatrixTableProps> = ({
 
   // 3. Definir Colunas
   const columns: ColumnsType<any> = useMemo(() => {
+    const renderCell = (val: { previsto: number; realizado: number }) => {
+      if (!val || val.previsto === 0) return '-';
+
+      let color = '#52c41a'; // Verde (Igual)
+      if (val.realizado < val.previsto) color = '#f5222d'; // Vermelho
+      if (val.realizado > val.previsto) color = '#1890ff'; // Azul
+
+      return (
+        <Space size={4}>
+          <Text>{val.previsto}</Text>
+          {val.realizado > 0 && (
+            <Text strong style={{ color }}>
+              ({val.realizado})
+            </Text>
+          )}
+        </Space>
+      );
+    };
+
     const baseCols: ColumnsType<any> = bases.map(base => ({
       title: base,
       dataIndex: base,
       key: base,
       align: 'center',
       width: 100,
-      render: val => <Text strong={val !== '-'}>{val}</Text>,
+      render: renderCell,
     }));
 
     return [
@@ -101,9 +139,9 @@ export const TurnosMatrixTable: React.FC<TurnosMatrixTableProps> = ({
         dataIndex: 'total',
         key: 'total',
         fixed: 'right',
-        width: 80,
+        width: 100,
         align: 'center',
-        render: val => <Text strong>{val}</Text>,
+        render: renderCell,
       },
     ];
   }, [bases]);
@@ -112,6 +150,24 @@ export const TurnosMatrixTable: React.FC<TurnosMatrixTableProps> = ({
   const footerData = useMemo(() => {
     if (!bases.length) return null;
 
+    // Função helper para renderizar célula do rodapé
+    const renderFooterCell = (previsto: number, realizado: number) => {
+      let color = '#52c41a'; // Verde (Igual)
+      if (realizado < previsto) color = '#f5222d'; // Vermelho
+      if (realizado > previsto) color = '#1890ff'; // Azul
+
+      return (
+        <Space size={4}>
+          <Text strong>{previsto}</Text>
+          {realizado > 0 && (
+            <Text strong style={{ color }}>
+              ({realizado})
+            </Text>
+          )}
+        </Space>
+      );
+    };
+
     return (
       <Table.Summary fixed>
         <Table.Summary.Row style={{ backgroundColor: '#fafafa' }}>
@@ -119,17 +175,25 @@ export const TurnosMatrixTable: React.FC<TurnosMatrixTableProps> = ({
             <Text strong>Total</Text>
           </Table.Summary.Cell>
           {bases.map((base, idx) => {
-            const totalBase = filteredTurnos.filter(
+            const turnosDaBase = filteredTurnos.filter(
               t => (t.baseNome || 'Sem Base') === base
+            );
+            const totalPrevisto = turnosDaBase.length;
+            const totalRealizado = turnosDaBase.filter(
+              t => t.status !== 'NAO_ABERTO'
             ).length;
+
             return (
               <Table.Summary.Cell key={base} index={idx + 1} align='center'>
-                <Text strong>{totalBase}</Text>
+                {renderFooterCell(totalPrevisto, totalRealizado)}
               </Table.Summary.Cell>
             );
           })}
           <Table.Summary.Cell index={bases.length + 1} align='center'>
-            <Text strong>{filteredTurnos.length}</Text>
+            {renderFooterCell(
+              filteredTurnos.length,
+              filteredTurnos.filter(t => t.status !== 'NAO_ABERTO').length
+            )}
           </Table.Summary.Cell>
         </Table.Summary.Row>
       </Table.Summary>
@@ -140,7 +204,24 @@ export const TurnosMatrixTable: React.FC<TurnosMatrixTableProps> = ({
     <Card
       title='Matriz de Turnos Previstos (Horário x Base)'
       extra={
-        <Space>
+        <Space wrap>
+          <Space size={4} style={{ marginRight: 16 }}>
+            <span style={{ fontSize: 12, color: '#666' }}>Legenda:</span>
+            <Text strong style={{ fontSize: 12 }}>
+              Previsto
+            </Text>
+            <Text style={{ fontSize: 12 }}>(Realizado:</Text>
+            <Text strong style={{ fontSize: 12, color: '#f5222d' }}>
+              &lt;
+            </Text>
+            <Text strong style={{ fontSize: 12, color: '#52c41a' }}>
+              =
+            </Text>
+            <Text strong style={{ fontSize: 12, color: '#1890ff' }}>
+              &gt;
+            </Text>
+            <Text style={{ fontSize: 12 }}>)</Text>
+          </Space>
           <span style={{ fontSize: 14 }}>Tipo de Equipe:</span>
           <Select
             placeholder='Todos'
