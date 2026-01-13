@@ -1,7 +1,7 @@
 /**
  * Server Action para Estatísticas de Turnos por Hora e Tipo de Equipe
  *
- * Esta action recupera estatísticas sobre turnos do dia atual,
+ * Esta action recupera estatísticas sobre turnos de uma data específica,
  * agrupados por hora e tipo de equipe para gráfico de barras agrupadas.
  */
 
@@ -10,26 +10,36 @@
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
 import { listTiposEquipe } from '../tipoEquipe/list';
-import { getTodayDateRange, getHoursInSaoPaulo, getMinutesInSaoPaulo } from '@/lib/utils/dateHelpers';
-import { DEFAULT_STATS_PAGE_SIZE, MAX_STATS_ITEMS } from '@/lib/constants/statsLimits';
-import { logger } from '@/lib/utils/logger';
+import {
+  getDateRangeInSaoPaulo,
+  getHoursInSaoPaulo,
+  getMinutesInSaoPaulo,
+} from '@/lib/utils/dateHelpers';
 import { z } from 'zod';
 
-const turnoStatsByHoraETipoEquipeSchema = z.object({});
+const turnoStatsByHoraETipoEquipeSchema = z.object({
+  date: z.string().optional(),
+});
 
 /**
  * Busca estatísticas de turnos do dia por hora e tipo de equipe
  *
+ * @param params Objeto contendo a data opcional
  * @returns Estatísticas de turnos agrupados por hora e tipo de equipe
  */
-export const getStatsByHoraETipoEquipe = async () =>
+export const getStatsByHoraETipoEquipe = async (
+  params: { date?: string | Date } = {}
+) =>
   handleServerAction(
     turnoStatsByHoraETipoEquipeSchema,
     async () => {
+      const dateToUse = params.date ? new Date(params.date) : new Date();
+      const { inicio, fim } = getDateRangeInSaoPaulo(dateToUse);
+
       // 1. Buscar tipos de equipe
       const resultTipos = await listTiposEquipe({
         page: 1,
-        pageSize: DEFAULT_STATS_PAGE_SIZE,
+        pageSize: 100,
         orderBy: 'id',
         orderDir: 'asc',
       });
@@ -40,18 +50,7 @@ export const getStatsByHoraETipoEquipe = async () =>
 
       const tiposEquipe = resultTipos.data.data || [];
 
-      // Validação: Verifica se o limite foi atingido
-      if (resultTipos.data.total > MAX_STATS_ITEMS) {
-        logger.warn('Limite de tipos de equipe atingido nas estatísticas', {
-          total: resultTipos.data.total,
-          limite: MAX_STATS_ITEMS,
-          action: 'getStatsByHoraETipoEquipe',
-        });
-      }
-
-      // 2. Buscar turnos do dia com relacionamentos
-      const { inicio, fim } = getTodayDateRange();
-
+      // 2. Buscar turnos do dia com relacionamentos (Selecionando apenas campos necessários)
       const turnos = await prisma.turno.findMany({
         where: {
           deletedAt: null,
@@ -60,10 +59,15 @@ export const getStatsByHoraETipoEquipe = async () =>
             lte: fim,
           },
         },
-        include: {
+        select: {
+          dataInicio: true,
           equipe: {
-            include: {
-              tipoEquipe: true,
+            select: {
+              tipoEquipe: {
+                select: {
+                  nome: true,
+                },
+              },
             },
           },
         },
@@ -91,9 +95,13 @@ export const getStatsByHoraETipoEquipe = async () =>
           horaFinal = (hora + 1) % 24;
         }
 
-        const tipoEquipeNome = turno.equipe?.tipoEquipe?.nome || 'Sem classificação';
+        const tipoEquipeNome =
+          turno.equipe?.tipoEquipe?.nome || 'Sem classificação';
 
-        if (contagem[horaFinal] && contagem[horaFinal][tipoEquipeNome] !== undefined) {
+        if (
+          contagem[horaFinal] &&
+          contagem[horaFinal][tipoEquipeNome] !== undefined
+        ) {
           contagem[horaFinal][tipoEquipeNome]++;
         }
       });
@@ -113,6 +121,9 @@ export const getStatsByHoraETipoEquipe = async () =>
 
       return dados;
     },
-    {},
+    {
+      date:
+        params.date instanceof Date ? params.date.toISOString() : params.date,
+    },
     { entityName: 'Turno', actionType: 'get' }
   );

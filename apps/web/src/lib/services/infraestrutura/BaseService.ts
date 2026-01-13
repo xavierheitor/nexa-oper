@@ -29,7 +29,6 @@ import {
   baseFilterSchema,
   baseUpdateSchema,
 } from '../../schemas/baseSchema';
-import { PaginatedResult } from '../../types/common';
 
 // Tipos derivados dos schemas
 type BaseCreate = z.infer<typeof baseCreateSchema>;
@@ -99,5 +98,4 @@ export class BaseService extends AbstractCrudService<
 
     return this.repo.update(id, updateData);
   }
-
 }

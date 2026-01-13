@@ -25,7 +25,13 @@
 import { Eletricista } from '@nexa-oper/db';
 import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
 import { EletricistaRepository } from '../../repositories/pessoas/EletricistaRepository';
-import { EletricistaCreate, eletricistaCreateSchema, EletricistaFilter, EletricistaUpdate, eletricistaUpdateSchema } from '../../schemas/eletricistaSchema';
+import {
+  EletricistaCreate,
+  eletricistaCreateSchema,
+  EletricistaFilter,
+  EletricistaUpdate,
+  eletricistaUpdateSchema,
+} from '../../schemas/eletricistaSchema';
 import { PaginatedResult } from '../../types/common';
 
 /**
@@ -45,7 +51,8 @@ export class EletricistaService extends AbstractCrudService<
   EletricistaCreate,
   EletricistaUpdate,
   EletricistaFilter,
-  Eletricista
+  Eletricista,
+  EletricistaRepository
 > {
   private eletricistaRepo: EletricistaRepository;
   /**
@@ -55,11 +62,8 @@ export class EletricistaService extends AbstractCrudService<
    */
   constructor() {
     const repo = new EletricistaRepository();
-    // EletricistaRepository tem assinatura customizada de create que aceita status e baseId
-    // Por isso fazemos cast para compatibilidade com AbstractCrudService
-    // O cast é necessário porque o AbstractCrudService espera um ICrudRepository genérico
-    // mas EletricistaRepository implementa métodos com assinaturas específicas
-    super(repo as any);
+    // EletricistaRepository tem assinatura customizada de create mas satisfaz IBaseCrudRepository
+    super(repo);
     this.eletricistaRepo = repo;
   }
 
@@ -70,7 +74,10 @@ export class EletricistaService extends AbstractCrudService<
    * @param userId - ID do usuário que está criando
    * @returns Eletricista criado
    */
-  async create(raw: EletricistaCreateWithAudit, userId: string): Promise<Eletricista> {
+  async create(
+    raw: EletricistaCreateWithAudit,
+    userId: string
+  ): Promise<Eletricista> {
     // Extrai campos de auditoria adicionados pelo handleServerAction
     const { createdBy, createdAt, ...businessData } = raw;
 
@@ -104,7 +111,10 @@ export class EletricistaService extends AbstractCrudService<
    * @param userId - ID do usuário que está atualizando
    * @returns Eletricista atualizado
    */
-  async update(raw: EletricistaUpdateWithAudit, userId: string): Promise<Eletricista> {
+  async update(
+    raw: EletricistaUpdateWithAudit,
+    userId: string
+  ): Promise<Eletricista> {
     // Extrai campos de auditoria adicionados pelo handleServerAction
     const { updatedBy, updatedAt, ...businessData } = raw;
 

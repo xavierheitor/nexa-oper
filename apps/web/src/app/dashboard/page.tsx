@@ -17,7 +17,7 @@ import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import { DashboardStats } from './components/DashboardStats';
 import { DashboardCharts } from './components/DashboardCharts';
 import { DashboardResources } from './components/DashboardResources';
-import { useDashboardData } from './hooks/useDashboardData';
+import { useDashboardData } from '@/lib/hooks/useDashboardData';
 
 const { Title } = Typography;
 

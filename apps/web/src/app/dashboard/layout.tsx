@@ -30,7 +30,13 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <AuthGuard>
-      <Layout style={{ minHeight: '100vh', background: token.colorBgLayout }}>
+      <Layout
+        style={{
+          height: '100vh',
+          overflow: 'hidden',
+          background: token.colorBgLayout,
+        }}
+      >
         {/* Componente invisível que renova a sessão automaticamente */}
         <SessionRenewer />
 
@@ -47,7 +53,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <Col>
                 <Button
                   type='text'
-                  icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                  icon={
+                    collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
+                  }
                   onClick={() => setCollapsed(!collapsed)}
                   style={{
                     fontSize: token.fontSizeLG,
@@ -65,6 +73,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               background: token.colorBgContainer,
               borderRadius: token.borderRadiusLG,
               flex: 1,
+              overflowY: 'auto',
             }}
           >
             {children}

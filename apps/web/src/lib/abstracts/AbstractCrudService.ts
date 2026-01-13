@@ -27,7 +27,10 @@
  * ```
  */
 
-import { ICrudRepository } from '../interfaces/ICrudRepository';
+import {
+  IBaseCrudRepository,
+  ICrudRepository,
+} from '../interfaces/ICrudRepository';
 import { ICrudService } from '../interfaces/ICrudService';
 import type { PaginatedResult, PaginationParams } from '../types/common';
 
@@ -36,6 +39,7 @@ export abstract class AbstractCrudService<
   TUpdate,
   TFilter extends PaginationParams,
   T,
+  TRepo extends IBaseCrudRepository<T, TFilter> = ICrudRepository<T, TFilter>,
 > implements ICrudService<TCreate, TUpdate, TFilter, T>
 {
   /**
@@ -43,7 +47,7 @@ export abstract class AbstractCrudService<
    *
    * @param repo - Repositório para acesso a dados
    */
-  constructor(protected repo: ICrudRepository<T, TFilter>) {}
+  constructor(protected repo: TRepo) {}
 
   // Métodos abstratos que devem ser implementados pelas classes filhas
   abstract create(data: TCreate, userId: string): Promise<T>;

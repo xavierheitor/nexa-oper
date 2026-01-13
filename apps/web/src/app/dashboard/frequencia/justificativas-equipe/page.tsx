@@ -1,8 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, Table, Button, Space, Tag, DatePicker, Select, message, Tabs } from 'antd';
-import { CheckOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import {
+  Card,
+  Table,
+  Button,
+  Space,
+  Tag,
+  Select,
+  message,
+  Tabs,
+  Row,
+  Col,
+} from 'antd';
+import {
+  CheckOutlined,
+  CloseOutlined,
+  PlusOutlined,
+  FilterOutlined,
+} from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import { listJustificativasEquipe } from '@/lib/actions/justificativa-equipe/list';
 import { listCasosJustificativaEquipe } from '@/lib/actions/justificativa-equipe/listCasosPendentes';
@@ -10,8 +26,6 @@ import { aprovarJustificativaEquipe } from '@/lib/actions/justificativa-equipe/a
 import { rejeitarJustificativaEquipe } from '@/lib/actions/justificativa-equipe/rejeitar';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import dayjs from 'dayjs';
-
-const { RangePicker } = DatePicker;
 
 /**
  * Página de lista de justificativas de equipe pendentes para aprovar
@@ -42,7 +56,7 @@ export default function JustificativasEquipePage() {
     throw new Error(result.error || 'Erro ao carregar justificativas');
   }, [filtros]);
 
-  const { data: casosData, refetch: refetchCasos } = useDataFetch(async () => {
+  const { data: casosData } = useDataFetch(async () => {
     const result = await listCasosJustificativaEquipe(filtrosCasos);
     if (result.success) {
       return result.data;
@@ -117,7 +131,11 @@ export default function JustificativasEquipePage() {
           aprovada: 'success',
           rejeitada: 'error',
         };
-        return <Tag color={colors[status as keyof typeof colors]}>{status.toUpperCase()}</Tag>;
+        return (
+          <Tag color={colors[status as keyof typeof colors]}>
+            {status.toUpperCase()}
+          </Tag>
+        );
       },
     },
     {
@@ -128,8 +146,8 @@ export default function JustificativasEquipePage() {
         return (
           <Space>
             <Button
-              type="primary"
-              size="small"
+              type='primary'
+              size='small'
               icon={<CheckOutlined />}
               onClick={() => handleAprovar(record.id)}
               loading={loading}
@@ -138,7 +156,7 @@ export default function JustificativasEquipePage() {
             </Button>
             <Button
               danger
-              size="small"
+              size='small'
               icon={<CloseOutlined />}
               onClick={() => handleRejeitar(record.id)}
               loading={loading}
@@ -167,10 +185,13 @@ export default function JustificativasEquipePage() {
       title: 'Justificado',
       key: 'justificado',
       render: (_: any, record: any) => {
-        if (record.justificativaEquipe && record.justificativaEquipe.status === 'aprovada') {
-          return <Tag color="success">Sim</Tag>;
+        if (
+          record.justificativaEquipe &&
+          record.justificativaEquipe.status === 'aprovada'
+        ) {
+          return <Tag color='success'>Sim</Tag>;
         }
-        return <Tag color="default">Não</Tag>;
+        return <Tag color='default'>Não</Tag>;
       },
     },
     {
@@ -183,7 +204,11 @@ export default function JustificativasEquipePage() {
           justificado: 'success',
           ignorado: 'default',
         };
-        return <Tag color={colors[status as keyof typeof colors]}>{status.toUpperCase()}</Tag>;
+        return (
+          <Tag color={colors[status as keyof typeof colors]}>
+            {status.toUpperCase()}
+          </Tag>
+        );
       },
     },
     {
@@ -194,10 +219,14 @@ export default function JustificativasEquipePage() {
         return (
           <Space>
             <Button
-              type="primary"
-              size="small"
+              type='primary'
+              size='small'
               icon={<PlusOutlined />}
-              onClick={() => router.push(`/dashboard/frequencia/justificativas-equipe/criar?casoId=${record.id}&equipeId=${record.equipeId}&dataReferencia=${record.dataReferencia}`)}
+              onClick={() =>
+                router.push(
+                  `/dashboard/frequencia/justificativas-equipe/criar?casoId=${record.id}&equipeId=${record.equipeId}&dataReferencia=${record.dataReferencia}`
+                )
+              }
             >
               Criar Justificativa
             </Button>
@@ -212,31 +241,55 @@ export default function JustificativasEquipePage() {
       key: 'casos-pendentes',
       label: 'Casos Pendentes',
       children: (
-        <Space direction="vertical" style={{ width: '100%' }} size="large">
-          <Space>
-            <Select
-              style={{ width: 200 }}
-              placeholder="Status"
-              value={filtrosCasos.status}
-              onChange={(value) => setFiltrosCasos({ ...filtrosCasos, status: value, page: 1 })}
-              allowClear
-            >
-              <Select.Option value="pendente">Pendente</Select.Option>
-              <Select.Option value="justificado">Justificado</Select.Option>
-              <Select.Option value="ignorado">Ignorado</Select.Option>
-            </Select>
-          </Space>
+        <Space direction='vertical' style={{ width: '100%' }} size='large'>
+          <Card
+            size='small'
+            title={
+              <Space>
+                <FilterOutlined />
+                <span>Filtros</span>
+              </Space>
+            }
+          >
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={12} md={8}>
+                <div
+                  style={{
+                    marginBottom: '4px',
+                    fontSize: '12px',
+                    color: '#666',
+                  }}
+                >
+                  Status
+                </div>
+                <Select
+                  style={{ width: '100%' }}
+                  placeholder='Status'
+                  value={filtrosCasos.status}
+                  onChange={value =>
+                    setFiltrosCasos({ ...filtrosCasos, status: value, page: 1 })
+                  }
+                  allowClear
+                >
+                  <Select.Option value='pendente'>Pendente</Select.Option>
+                  <Select.Option value='justificado'>Justificado</Select.Option>
+                  <Select.Option value='ignorado'>Ignorado</Select.Option>
+                </Select>
+              </Col>
+            </Row>
+          </Card>
 
           <Table
             columns={casosColumns}
             dataSource={casosData?.items || []}
             loading={!casosData}
-            rowKey="id"
+            rowKey='id'
             pagination={{
               current: filtrosCasos.page,
               pageSize: filtrosCasos.pageSize,
               total: casosData?.total || 0,
-              onChange: (page, pageSize) => setFiltrosCasos({ ...filtrosCasos, page, pageSize }),
+              onChange: (page, pageSize) =>
+                setFiltrosCasos({ ...filtrosCasos, page, pageSize }),
             }}
           />
         </Space>
@@ -246,31 +299,55 @@ export default function JustificativasEquipePage() {
       key: 'justificativas',
       label: 'Justificativas Criadas',
       children: (
-        <Space direction="vertical" style={{ width: '100%' }} size="large">
-          <Space>
-            <Select
-              style={{ width: 200 }}
-              placeholder="Status"
-              value={filtros.status}
-              onChange={(value) => setFiltros({ ...filtros, status: value, page: 1 })}
-              allowClear
-            >
-              <Select.Option value="pendente">Pendente</Select.Option>
-              <Select.Option value="aprovada">Aprovada</Select.Option>
-              <Select.Option value="rejeitada">Rejeitada</Select.Option>
-            </Select>
-          </Space>
+        <Space direction='vertical' style={{ width: '100%' }} size='large'>
+          <Card
+            size='small'
+            title={
+              <Space>
+                <FilterOutlined />
+                <span>Filtros</span>
+              </Space>
+            }
+          >
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={12} md={8}>
+                <div
+                  style={{
+                    marginBottom: '4px',
+                    fontSize: '12px',
+                    color: '#666',
+                  }}
+                >
+                  Status
+                </div>
+                <Select
+                  style={{ width: '100%' }}
+                  placeholder='Status'
+                  value={filtros.status}
+                  onChange={value =>
+                    setFiltros({ ...filtros, status: value, page: 1 })
+                  }
+                  allowClear
+                >
+                  <Select.Option value='pendente'>Pendente</Select.Option>
+                  <Select.Option value='aprovada'>Aprovada</Select.Option>
+                  <Select.Option value='rejeitada'>Rejeitada</Select.Option>
+                </Select>
+              </Col>
+            </Row>
+          </Card>
 
           <Table
             columns={columns}
             dataSource={data?.data || []}
             loading={!data}
-            rowKey="id"
+            rowKey='id'
             pagination={{
               current: filtros.page,
               pageSize: filtros.pageSize,
               total: data?.total || 0,
-              onChange: (page, pageSize) => setFiltros({ ...filtros, page, pageSize }),
+              onChange: (page, pageSize) =>
+                setFiltros({ ...filtros, page, pageSize }),
             }}
           />
         </Space>
@@ -279,9 +356,8 @@ export default function JustificativasEquipePage() {
   ];
 
   return (
-    <Card title="Justificativas de Equipe">
+    <Card title='Justificativas de Equipe'>
       <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
     </Card>
   );
 }
-

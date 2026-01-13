@@ -2,7 +2,11 @@ import { Prisma, Veiculo } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
-import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
+import type {
+  GenericPrismaWhereInput,
+  GenericPrismaOrderByInput,
+  GenericPrismaIncludeInput,
+} from '../../types/prisma';
 
 interface VeiculoFilter extends PaginationParams {
   contratoId?: number;
@@ -25,7 +29,10 @@ export type VeiculoUpdateInput = VeiculoCreateInput & {
   id: number;
 };
 
-export class VeiculoRepository extends AbstractCrudRepository<Veiculo, VeiculoFilter> {
+export class VeiculoRepository extends AbstractCrudRepository<
+  Veiculo,
+  VeiculoFilter
+> {
   /**
    * Converte dados de entrada para o formato Prisma
    *
@@ -158,7 +165,7 @@ export class VeiculoRepository extends AbstractCrudRepository<Veiculo, VeiculoFi
    * Lista veículos com filtros server-side
    *
    * Sobrescreve o método base para adicionar suporte a filtros
-   * de relacionamentos (tipoVeiculo, contrato, base)
+   * de relacionamentos (tipoVeiculo, contrato, base) de forma otimizada
    */
   async list(
     params: VeiculoFilter
@@ -177,42 +184,59 @@ export class VeiculoRepository extends AbstractCrudRepository<Veiculo, VeiculoFi
 
     const skip = (page - 1) * pageSize;
 
-    // Construir where com filtros server-side
-    const where: Prisma.VeiculoWhereInput = {
-      deletedAt: null,
-      ...(contratoId && { contratoId }),
-      ...(tipoVeiculoId && { tipoVeiculoId }),
-      ...(search && {
-        OR: this.getSearchFields().map(field => ({
-          [field]: { contains: search },
-        })),
-      }),
-    };
+    // Construção do where usando array de condições para evitar conflitos de chaves
+    const conditions: Prisma.VeiculoWhereInput[] = [];
 
-    // Filtro de base é especial (relacionamento com histórico)
-    if (baseId) {
-      // Se baseId = -1, filtra "sem lotação"
-      if (baseId === -1) {
-        const veiculosComBase = await prisma.veiculoBaseHistorico.findMany({
-          where: { dataFim: null, deletedAt: null },
-          select: { veiculoId: true },
+    // 1. Soft delete
+    conditions.push({ deletedAt: null });
+
+    // 2. Filtros diretos
+    if (contratoId) conditions.push({ contratoId });
+    if (tipoVeiculoId) conditions.push({ tipoVeiculoId });
+
+    // 3. Busca por texto (OR)
+    if (search) {
+      const searchFields = this.getSearchFields();
+      if (searchFields.length > 0) {
+        conditions.push({
+          OR: searchFields.map(field => ({
+            [field]: { contains: search },
+          })),
         });
-        const idsComBase = veiculosComBase.map(h => h.veiculoId);
-        where.id = { notIn: idsComBase };
-      } else {
-        // Filtrar por base específica
-        const veiculosNaBase = await prisma.veiculoBaseHistorico.findMany({
-          where: {
-            baseId,
-            dataFim: null,
-            deletedAt: null,
-          },
-          select: { veiculoId: true },
-        });
-        const idsNaBase = veiculosNaBase.map(h => h.veiculoId);
-        where.id = { in: idsNaBase };
       }
     }
+
+    // 4. Filtro de Base (Relacionamento)
+    // Substitui a filtragem em memória por queries otimizadas no banco
+    if (baseId !== undefined) {
+      if (baseId === -1) {
+        // Sem lotação: Não tem histórico de base ativo
+        conditions.push({
+          VeiculoBaseHistorico: {
+            none: {
+              dataFim: null,
+              deletedAt: null,
+            },
+          },
+        });
+      } else {
+        // Com lotação específica ativa
+        conditions.push({
+          VeiculoBaseHistorico: {
+            some: {
+              baseId,
+              dataFim: null,
+              deletedAt: null,
+            },
+          },
+        });
+      }
+    }
+
+    // Combina todas as condições em um AND
+    const where: Prisma.VeiculoWhereInput = {
+      AND: conditions,
+    };
 
     const [total, items] = await Promise.all([
       prisma.veiculo.count({ where }),

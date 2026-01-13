@@ -2,7 +2,11 @@ import { Prisma, Equipe } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';
-import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
+import type {
+  GenericPrismaWhereInput,
+  GenericPrismaOrderByInput,
+  GenericPrismaIncludeInput,
+} from '../../types/prisma';
 
 interface EquipeFilter extends PaginationParams {
   contratoId?: number;
@@ -84,6 +88,12 @@ export class EquipeRepository extends AbstractCrudRepository<
    * Sobrescreve o método base para adicionar suporte a filtros
    * de relacionamentos (tipoEquipe, contrato, base)
    */
+  /**
+   * Lista equipes com filtros server-side
+   *
+   * Sobrescreve o método base para adicionar suporte a filtros
+   * de relacionamentos (tipoEquipe, contrato, base) de forma otimizada
+   */
   async list(
     params: EquipeFilter
   ): Promise<{ items: Equipe[]; total: number }> {
@@ -101,46 +111,59 @@ export class EquipeRepository extends AbstractCrudRepository<
 
     const skip = (page - 1) * pageSize;
 
-    // Construir where com filtros server-side
-    const where: Prisma.EquipeWhereInput = {
-      deletedAt: null,
-      ...(contratoId && { contratoId }),
-      ...(tipoEquipeId && { tipoEquipeId }),
-      ...(search && {
-        OR: this.getSearchFields().map(field => ({
-          [field]: { contains: search },
-        })),
-      }),
-    };
+    // Construção do where usando array de condições para evitar conflitos de chaves
+    const conditions: Prisma.EquipeWhereInput[] = [];
 
-    // Filtro de base é especial (relacionamento com histórico)
-    if (baseId !== undefined) {
-      // Se baseId = -1, filtra "sem lotação"
-      if (baseId === -1) {
-        const equipesComBase = await prisma.equipeBaseHistorico.findMany({
-          where: { dataFim: null, deletedAt: null },
-          select: { equipeId: true },
+    // 1. Soft delete
+    conditions.push({ deletedAt: null });
+
+    // 2. Filtros diretos
+    if (contratoId) conditions.push({ contratoId });
+    if (tipoEquipeId) conditions.push({ tipoEquipeId });
+
+    // 3. Busca por texto (OR)
+    if (search) {
+      const searchFields = this.getSearchFields();
+      if (searchFields.length > 0) {
+        conditions.push({
+          OR: searchFields.map(field => ({
+            [field]: { contains: search },
+          })),
         });
-        const idsComBase = equipesComBase.map(h => h.equipeId);
-        where.id = idsComBase.length > 0 ? { notIn: idsComBase } : undefined;
-      } else {
-        // Filtrar por base específica
-        const equipesNaBase = await prisma.equipeBaseHistorico.findMany({
-          where: {
-            baseId,
-            dataFim: null,
-            deletedAt: null,
-          },
-          select: { equipeId: true },
-        });
-        const idsNaBase = equipesNaBase.map(h => h.equipeId);
-        // Se não encontrou nenhuma, retorna vazio
-        if (idsNaBase.length === 0) {
-          return { items: [], total: 0 };
-        }
-        where.id = { in: idsNaBase };
       }
     }
+
+    // 4. Filtro de Base (Relacionamento)
+    // Substitui a filtragem em memória por queries otimizadas no banco
+    if (baseId !== undefined) {
+      if (baseId === -1) {
+        // Sem lotação: Não tem histórico de base ativo
+        conditions.push({
+          EquipeBaseHistorico: {
+            none: {
+              dataFim: null,
+              deletedAt: null,
+            },
+          },
+        });
+      } else {
+        // Com lotação específica ativa
+        conditions.push({
+          EquipeBaseHistorico: {
+            some: {
+              baseId,
+              dataFim: null,
+              deletedAt: null,
+            },
+          },
+        });
+      }
+    }
+
+    // Combina todas as condições em um AND
+    const where: Prisma.EquipeWhereInput = {
+      AND: conditions,
+    };
 
     const [total, items] = await Promise.all([
       prisma.equipe.count({ where }),
@@ -223,5 +246,3 @@ export class EquipeRepository extends AbstractCrudRepository<
     });
   }
 }
-
-

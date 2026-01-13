@@ -8,17 +8,42 @@
  */
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Spin, Empty, Typography, Space, DatePicker, Button, Tooltip, Input, Select } from 'antd';
-import { ClockCircleOutlined, CalendarOutlined, SearchOutlined, CheckOutlined, EnvironmentOutlined, CloseOutlined, CarOutlined } from '@ant-design/icons';
+import {
+  Card,
+  Col,
+  Row,
+  Statistic,
+  Table,
+  Tag,
+  Spin,
+  Empty,
+  Typography,
+  Space,
+  DatePicker,
+  Button,
+  Tooltip,
+  Input,
+  Select,
+} from 'antd';
+import {
+  CalendarOutlined,
+  SearchOutlined,
+  CheckOutlined,
+  EnvironmentOutlined,
+  CloseOutlined,
+  CarOutlined,
+} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { listTurnos } from '@/lib/actions/turno/list';
 import { Column } from '@ant-design/plots';
 import { getStatsByTipoEquipe } from '@/lib/actions/turno/getStatsByTipoEquipe';
 import { getStatsByHoraETipoEquipe } from '@/lib/actions/turno/getStatsByHoraETipoEquipe';
 import { getStatsByBase } from '@/lib/actions/turno/getStatsByBase';
-import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
+import { getDailyStats } from '@/lib/actions/turno/getDailyStats';
 import { listBases } from '@/lib/actions/base/list';
-import ChecklistSelectorModal, { type ChecklistPreenchido } from '@/ui/components/ChecklistSelectorModal';
+import ChecklistSelectorModal, {
+  type ChecklistPreenchido,
+} from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 import TurnoLocationMapModal from '@/ui/components/TurnoLocationMapModal';
 import FecharTurnoModal from '@/ui/components/FecharTurnoModal';
@@ -30,7 +55,6 @@ import { getDateRangeInSaoPaulo } from '@/lib/utils/dateHelpers';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
-const { RangePicker } = DatePicker;
 
 interface DadosGraficoTipoEquipe {
   tipo: string;
@@ -49,58 +73,8 @@ interface DadosGraficoBase {
   quantidade: number;
 }
 
-/**
- * Interface para dados do turno
- */
-interface TurnoData {
-  id: number;
-  dataSolicitacao: string;
-  dataInicio: string;
-  dataFim?: string;
-  veiculoId: number;
-  veiculoPlaca: string;
-  veiculoModelo: string;
-  equipeId: number;
-  equipeNome: string;
-  tipoEquipeNome: string;
-  baseNome: string;
-  dispositivo: string;
-  kmInicio: number;
-  kmFim?: number;
-  status: string;
-  eletricistas: Array<{
-    id: number;
-    nome: string;
-    matricula: string;
-    motorista?: boolean;
-  }>;
-}
-
-/**
- * Tipo para turno formatado pelo repository (com campos adicionais)
- */
-type TurnoFormatted = {
-  id: number;
-  dataSolicitacao: Date | string;
-  dataInicio: Date | string;
-  dataFim?: Date | string | null;
-  veiculoId: number;
-  equipeId: number;
-  dispositivo: string | null;
-  kmInicio: number;
-  kmFim?: number | null;
-  veiculoPlaca?: string;
-  veiculoModelo?: string;
-  equipeNome?: string;
-  tipoEquipeNome?: string;
-  baseNome?: string;
-  eletricistas?: Array<{
-    id: number;
-    nome: string;
-    matricula: string;
-    motorista?: boolean;
-  }>;
-};
+import { TurnoData } from '@/lib/types/turno-frontend';
+import { mapTurnoToTurnoData } from '@/lib/mappers/turnoMapper';
 
 export default function HistoricoPage() {
   // Estados para os filtros
@@ -112,7 +86,8 @@ export default function HistoricoPage() {
   // Hook para paginação client-side
   const { pagination } = useTablePagination({
     defaultPageSize: 10,
-    showTotal: (total) => `Total de ${total} turno${total !== 1 ? 's' : ''} em ${dataSelecionada.format('DD/MM/YYYY')}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? ' (filtrado)' : ''}`,
+    showTotal: total =>
+      `Total de ${total} turno${total !== 1 ? 's' : ''} em ${dataSelecionada.format('DD/MM/YYYY')}${filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? ' (filtrado)' : ''}`,
   });
 
   const [turnosHistorico, setTurnosHistorico] = useState<TurnoData[]>([]);
@@ -122,9 +97,15 @@ export default function HistoricoPage() {
     graficoHora: false,
     graficoBase: false,
   });
-  const [dadosGrafico, setDadosGrafico] = useState<DadosGraficoTipoEquipe[]>([]);
-  const [dadosGraficoHora, setDadosGraficoHora] = useState<DadosGraficoHora[]>([]);
-  const [dadosGraficoBase, setDadosGraficoBase] = useState<DadosGraficoBase[]>([]);
+  const [dadosGrafico, setDadosGrafico] = useState<DadosGraficoTipoEquipe[]>(
+    []
+  );
+  const [dadosGraficoHora, setDadosGraficoHora] = useState<DadosGraficoHora[]>(
+    []
+  );
+  const [dadosGraficoBase, setDadosGraficoBase] = useState<DadosGraficoBase[]>(
+    []
+  );
   const [stats, setStats] = useState({
     total: 0,
     totalAbertos: 0,
@@ -134,244 +115,99 @@ export default function HistoricoPage() {
   const [dataSelecionada, setDataSelecionada] = useState<dayjs.Dayjs>(dayjs());
 
   // Estados para os modais de checklist
-  const [checklistSelectorVisible, setChecklistSelectorVisible] = useState(false);
+  const [checklistSelectorVisible, setChecklistSelectorVisible] =
+    useState(false);
   const [checklistViewerVisible, setChecklistViewerVisible] = useState(false);
   const [selectedTurno, setSelectedTurno] = useState<TurnoData | null>(null);
-  const [selectedChecklist, setSelectedChecklist] = useState<ChecklistPreenchido | null>(null);
+  const [selectedChecklist, setSelectedChecklist] =
+    useState<ChecklistPreenchido | null>(null);
 
   // Estados para o modal de localização
   const [locationMapVisible, setLocationMapVisible] = useState(false);
-  const [selectedTurnoForLocation, setSelectedTurnoForLocation] = useState<TurnoData | null>(null);
+  const [selectedTurnoForLocation, setSelectedTurnoForLocation] =
+    useState<TurnoData | null>(null);
 
   // Estados para o modal de fechar turno
   const [fecharTurnoVisible, setFecharTurnoVisible] = useState(false);
-  const [selectedTurnoParaFechar, setSelectedTurnoParaFechar] = useState<TurnoData | null>(null);
+  const [selectedTurnoParaFechar, setSelectedTurnoParaFechar] =
+    useState<TurnoData | null>(null);
 
-  const buscarHistorico = useCallback(async (data: dayjs.Dayjs) => {
-    setLoading('main', true);
-    try {
-      // Definir período do dia selecionado (00:00:00 até 23:59:59)
-      const { inicio: inicioDia, fim: fimDia } = getDateRangeInSaoPaulo(
-        data.toDate()
-      );
+  const buscarHistorico = useCallback(
+    async (data: dayjs.Dayjs) => {
+      setLoading('main', true);
+      try {
+        const { inicio: inicioDia, fim: fimDia } = getDateRangeInSaoPaulo(
+          data.toDate()
+        );
 
-      // Buscar todos os turnos do dia selecionado
-      const result = await listTurnos({
-        page: 1,
-        pageSize: 1000,
-        dataInicio: inicioDia,
-        dataFim: fimDia,
-      });
-
-      if (result.success && result.data) {
-        const turnos = result.data.data || [];
-
-        const turnosMapeados: TurnoData[] = turnos.map((turno: TurnoFormatted) => ({
-          id: turno.id,
-          dataSolicitacao: turno.dataSolicitacao instanceof Date
-            ? turno.dataSolicitacao.toISOString()
-            : String(turno.dataSolicitacao),
-          dataInicio: turno.dataInicio instanceof Date
-            ? turno.dataInicio.toISOString()
-            : String(turno.dataInicio),
-          dataFim: turno.dataFim
-            ? (turno.dataFim instanceof Date ? turno.dataFim.toISOString() : String(turno.dataFim))
-            : undefined,
-          veiculoId: turno.veiculoId,
-          veiculoPlaca: turno.veiculoPlaca || 'N/A',
-          veiculoModelo: turno.veiculoModelo || 'N/A',
-          equipeId: turno.equipeId,
-          equipeNome: turno.equipeNome || 'N/A',
-          tipoEquipeNome: turno.tipoEquipeNome || 'N/A',
-          baseNome: turno.baseNome || 'N/A',
-          dispositivo: turno.dispositivo || '',
-          kmInicio: turno.kmInicio,
-          kmFim: turno.kmFim || undefined,
-          status: turno.dataFim ? 'FECHADO' : 'ABERTO',
-          eletricistas: turno.eletricistas || [],
-        }));
-        setTurnosHistorico(turnosMapeados);
-
-        // Calcular estatísticas
-        const porBase: Record<string, number> = {};
-        let totalAbertos = 0;
-        let totalFechados = 0;
-
-        turnos.forEach((turno: TurnoFormatted) => {
-          const base = turno.equipeNome?.split('-')[0] || 'Não identificada';
-          porBase[base] = (porBase[base] || 0) + 1;
-
-          if (turno.dataFim) {
-            totalFechados++;
-          } else {
-            totalAbertos++;
-          }
+        // Buscar todos os turnos do dia selecionado
+        const result = await listTurnos({
+          page: 1,
+          pageSize: 1000,
+          dataInicio: inicioDia,
+          dataFim: fimDia,
         });
 
-        setStats({
-          total: turnos.length,
-          totalAbertos,
-          totalFechados,
-          porBase,
-        });
-      } else if (result.redirectToLogin) {
-        window.location.href = '/login';
-        return;
+        if (result.success && result.data) {
+          const turnos = result.data.data || [];
+          const turnosMapeados: TurnoData[] = turnos.map(mapTurnoToTurnoData);
+          setTurnosHistorico(turnosMapeados);
+        } else if (result.redirectToLogin) {
+          window.location.href = '/login';
+          return;
+        }
+      } catch (error) {
+        console.error('Erro ao carregar histórico de turnos:', error);
+      } finally {
+        setLoading('main', false);
       }
-    } catch (error) {
-      console.error('Erro ao carregar histórico de turnos:', error);
-    } finally {
-      setLoading('main', false);
-    }
-  }, [setLoading]);
+    },
+    [setLoading]
+  );
 
-  const buscarGraficos = useCallback(async (data: dayjs.Dayjs) => {
-    setLoading('grafico', true);
-    setLoading('graficoHora', true);
-    setLoading('graficoBase', true);
+  const buscarGraficos = useCallback(
+    async (data: dayjs.Dayjs) => {
+      setLoading('grafico', true);
+      setLoading('graficoHora', true);
+      setLoading('graficoBase', true);
 
-    try {
-      // Calcular dados dos gráficos baseados nos turnos da data selecionada
-      const { inicio: inicioDia, fim: fimDia } = getDateRangeInSaoPaulo(
-        data.toDate()
-      );
+      try {
+        const dateStr = data.toISOString();
 
-      // Buscar todos os tipos de equipe do banco de dados
-      const resultTipos = await listTiposEquipe({
-        page: 1,
-        pageSize: 100,
-        orderBy: 'nome',
-        orderDir: 'asc',
-      });
+        // Executar todas as actions em paralelo
+        const [statsTipoEquipe, statsHora, statsBase, dailyStats] =
+          await Promise.all([
+            getStatsByTipoEquipe({ date: dateStr }),
+            getStatsByHoraETipoEquipe({ date: dateStr }),
+            getStatsByBase({ date: dateStr }),
+            getDailyStats({ date: dateStr }),
+          ]);
 
-      if (!resultTipos.success || !resultTipos.data) {
-        throw new Error('Erro ao buscar tipos de equipe');
-      }
-
-      const todosOsTipos = (resultTipos.data.data || []).map((tipo) => tipo.nome);
-
-      // Buscar turnos da data específica para calcular estatísticas
-      const result = await listTurnos({
-        page: 1,
-        pageSize: 1000,
-        dataInicio: inicioDia,
-        dataFim: fimDia,
-      });
-
-      if (result.success && result.data) {
-        // Tipar explicitamente o array de turnos
-        const turnosArray = result.data.data || [];
-        const turnos = turnosArray as TurnoFormatted[];
-
-        // Calcular estatísticas por tipo de equipe - sempre mostrar todos os tipos
-        const statsPorTipo: Record<string, number> = {};
-
-        // Inicializar todos os tipos com quantidade 0
-        todosOsTipos.forEach((tipo: string) => {
-          statsPorTipo[tipo] = 0;
-        });
-
-        // Processar turnos existentes
-        turnos.forEach((turno: TurnoFormatted) => {
-          const tipo = turno.tipoEquipeNome || 'Não identificado';
-          if (statsPorTipo[tipo] !== undefined) {
-            statsPorTipo[tipo] = (statsPorTipo[tipo] || 0) + 1;
-          }
-        });
-
-        const dadosTipo = Object.entries(statsPorTipo).map(([tipo, quantidade]) => ({
-          tipo,
-          quantidade,
-        }));
-        setDadosGrafico(dadosTipo);
-
-        // Calcular estatísticas por hora - sempre mostrar todas as 24 horas
-        const statsPorHora: Record<string, Record<string, number>> = {};
-
-        // Inicializar todas as horas de 0 a 23
-        for (let i = 0; i < 24; i++) {
-          statsPorHora[String(i)] = {};
+        if (statsTipoEquipe.success && statsTipoEquipe.data) {
+          setDadosGrafico(statsTipoEquipe.data);
         }
 
-        // Processar turnos existentes
-        turnos.forEach((turno: TurnoFormatted) => {
-          const hora = new Date(turno.dataInicio).getHours();
-          const tipo = turno.tipoEquipeNome || 'Não identificado';
-          statsPorHora[String(hora)][tipo] = (statsPorHora[String(hora)][tipo] || 0) + 1;
-        });
+        if (statsHora.success && statsHora.data) {
+          setDadosGraficoHora(statsHora.data);
+        }
 
-        // Usar todos os tipos de equipe do banco de dados
-        const tiposUnicos = todosOsTipos;
+        if (statsBase.success && statsBase.data) {
+          setDadosGraficoBase(statsBase.data);
+        }
 
-        const dadosHora = Object.entries(statsPorHora).flatMap(([hora, tipos]) => {
-          // Se não há turnos nesta hora, mostrar todos os tipos com quantidade 0
-          if (Object.keys(tipos).length === 0) {
-            return tiposUnicos.map((tipo) => ({
-              hora: hora,
-              tipo,
-              quantidade: 0,
-            }));
-          }
-
-          // Se há turnos, mostrar os tipos existentes e preencher os ausentes com 0
-          return tiposUnicos.map((tipo) => ({
-            hora: hora,
-            tipo,
-            quantidade: tipos[tipo] || 0,
-          }));
-        });
-        setDadosGraficoHora(dadosHora);
-
-        // Calcular estatísticas por base e tipo de equipe (empilhado)
-        // Estrutura: base -> tipo -> quantidade
-        const statsPorBase: Record<string, Record<string, number>> = {};
-
-        // Primeiro, obter todas as bases únicas do banco de dados
-        // Para garantir que mostramos todas as bases, mesmo as sem turnos
-        const todasAsBases = [...new Set(turnos.map((turno: TurnoFormatted) => turno.baseNome || 'Não identificada'))];
-
-        // Inicializar todas as bases com todos os tipos de equipe com quantidade 0
-        todasAsBases.forEach((base: string) => {
-          statsPorBase[base] = {};
-          todosOsTipos.forEach((tipo: string) => {
-            statsPorBase[base][tipo] = 0;
-          });
-        });
-
-        // Processar turnos existentes
-        turnos.forEach((turno: TurnoFormatted) => {
-          const base = turno.baseNome || 'Não identificada';
-          const tipo = turno.tipoEquipeNome || 'Não identificado';
-
-          if (statsPorBase[base] && statsPorBase[base][tipo] !== undefined) {
-            statsPorBase[base][tipo] = (statsPorBase[base][tipo] || 0) + 1;
-          }
-        });
-
-        // Converter para array formatado (empilhado)
-        const dadosBase: Array<{ base: string; tipo: string; quantidade: number }> = [];
-        todasAsBases.forEach(base => {
-          todosOsTipos.forEach(tipo => {
-            dadosBase.push({
-              base,
-              tipo,
-              quantidade: statsPorBase[base][tipo] || 0,
-            });
-          });
-        });
-        setDadosGraficoBase(dadosBase);
+        if (dailyStats.success && dailyStats.data) {
+          setStats(dailyStats.data);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados dos gráficos:', error);
+      } finally {
+        setLoading('grafico', false);
+        setLoading('graficoHora', false);
+        setLoading('graficoBase', false);
       }
-
-      setLoading('grafico', false);
-      setLoading('graficoHora', false);
-      setLoading('graficoBase', false);
-    } catch (error) {
-      console.error('Erro ao carregar dados dos gráficos:', error);
-      setLoading('grafico', false);
-      setLoading('graficoHora', false);
-      setLoading('graficoBase', false);
-    }
-  }, [setLoading]);
+    },
+    [setLoading]
+  );
 
   useEffect(() => {
     // Carregar dados iniciais (hoje)
@@ -382,8 +218,6 @@ export default function HistoricoPage() {
   const handleDataChange = (date: dayjs.Dayjs | null) => {
     if (date) {
       setDataSelecionada(date);
-      buscarHistorico(date);
-      buscarGraficos(date);
     }
   };
 
@@ -436,16 +270,20 @@ export default function HistoricoPage() {
   };
 
   // Fetch de bases para o select
-  const { data: basesData, loading: loadingBases } = useDataFetch<Array<{ id: number; nome: string }>>(
-    async () => {
-      const result = await listBases({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' });
-      if (result.success && result.data) {
-        return result.data.data || [];
-      }
-      throw new Error(result.error || 'Erro ao carregar bases');
-    },
-    []
-  );
+  const { data: basesData, loading: loadingBases } = useDataFetch<
+    Array<{ id: number; nome: string }>
+  >(async () => {
+    const result = await listBases({
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'nome',
+      orderDir: 'asc',
+    });
+    if (result.success && result.data) {
+      return result.data.data || [];
+    }
+    throw new Error(result.error || 'Erro ao carregar bases');
+  }, []);
 
   // Gerar array de cores na ordem dos tipos (para usar com colorField e scale)
   const coresArray = useMemo(() => {
@@ -461,8 +299,12 @@ export default function HistoricoPage() {
     ];
 
     if (dadosGraficoBase && dadosGraficoBase.length > 0) {
-      const tiposUnicos = [...new Set(dadosGraficoBase.map(d => d.tipo).filter(Boolean))].sort();
-      return tiposUnicos.map((_, index) => coresDisponiveis[index % coresDisponiveis.length]);
+      const tiposUnicos = [
+        ...new Set(dadosGraficoBase.map(d => d.tipo).filter(Boolean)),
+      ].sort();
+      return tiposUnicos.map(
+        (_, index) => coresDisponiveis[index % coresDisponiveis.length]
+      );
     }
     return [];
   }, [dadosGraficoBase]);
@@ -474,9 +316,10 @@ export default function HistoricoPage() {
     // Filtro por veículo (placa ou modelo)
     if (filtroVeiculo) {
       const filtroLower = filtroVeiculo.toLowerCase();
-      turnos = turnos.filter((turno: TurnoData) =>
-        turno.veiculoPlaca?.toLowerCase().includes(filtroLower) ||
-        turno.veiculoModelo?.toLowerCase().includes(filtroLower)
+      turnos = turnos.filter(
+        (turno: TurnoData) =>
+          turno.veiculoPlaca?.toLowerCase().includes(filtroLower) ||
+          turno.veiculoModelo?.toLowerCase().includes(filtroLower)
       );
     }
 
@@ -492,42 +335,59 @@ export default function HistoricoPage() {
     if (filtroEletricista) {
       const filtroLower = filtroEletricista.toLowerCase();
       turnos = turnos.filter((turno: TurnoData) =>
-        turno.eletricistas?.some((elet) =>
-          elet.nome?.toLowerCase().includes(filtroLower) ||
-          elet.matricula?.toLowerCase().includes(filtroLower)
+        turno.eletricistas?.some(
+          elet =>
+            elet.nome?.toLowerCase().includes(filtroLower) ||
+            elet.matricula?.toLowerCase().includes(filtroLower)
         )
       );
     }
 
     // Filtro por base
     if (filtroBase) {
-      turnos = turnos.filter((turno: TurnoData) =>
-        turno.baseNome === filtroBase
+      turnos = turnos.filter(
+        (turno: TurnoData) => turno.baseNome === filtroBase
       );
     }
 
     return turnos;
-  }, [turnosHistorico, filtroVeiculo, filtroEquipe, filtroEletricista, filtroBase]);
+  }, [
+    turnosHistorico,
+    filtroVeiculo,
+    filtroEquipe,
+    filtroEletricista,
+    filtroBase,
+  ]);
 
   // Check de hidratação DEPOIS de todos os hooks
   const hydrated = useHydrated();
   if (!hydrated) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-        <Spin size="large" />
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '50vh',
+        }}
+      >
+        <Spin size='large' />
       </div>
     );
   }
 
   const columns: ColumnsType<TurnoData> = [
-
     {
       title: 'Veículo',
       key: 'veiculo',
       render: (_: unknown, record: TurnoData) => (
-        <Space direction="vertical" size={0}>
-          <span><strong>{record.veiculoPlaca}</strong></span>
-          <span style={{ fontSize: '12px', color: '#666' }}>{record.veiculoModelo}</span>
+        <Space direction='vertical' size={0}>
+          <span>
+            <strong>{record.veiculoPlaca}</strong>
+          </span>
+          <span style={{ fontSize: '12px', color: '#666' }}>
+            {record.veiculoModelo}
+          </span>
         </Space>
       ),
     },
@@ -550,9 +410,12 @@ export default function HistoricoPage() {
       title: 'Eletricistas',
       key: 'eletricistas',
       render: (_: unknown, record: TurnoData) => (
-        <Space direction="vertical" size={0}>
-          {record.eletricistas?.map((elet) => (
-            <Tooltip key={elet.id} title={`Matrícula: ${elet.matricula}${elet.motorista ? ' - Motorista' : ''}`}>
+        <Space direction='vertical' size={0}>
+          {record.eletricistas?.map(elet => (
+            <Tooltip
+              key={elet.id}
+              title={`Matrícula: ${elet.matricula}${elet.motorista ? ' - Motorista' : ''}`}
+            >
               <Space size={4} style={{ cursor: 'help' }}>
                 {elet.motorista && <CarOutlined style={{ color: '#1890ff' }} />}
                 <span>{elet.nome}</span>
@@ -569,7 +432,11 @@ export default function HistoricoPage() {
         const data = new Date(record.dataInicio);
         return (
           <span>
-            {data.toLocaleDateString('pt-BR')} {data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            {data.toLocaleDateString('pt-BR')}{' '}
+            {data.toLocaleTimeString('pt-BR', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
           </span>
         );
       },
@@ -582,7 +449,11 @@ export default function HistoricoPage() {
         const data = new Date(record.dataFim);
         return (
           <span>
-            {data.toLocaleDateString('pt-BR')} {data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            {data.toLocaleDateString('pt-BR')}{' '}
+            {data.toLocaleTimeString('pt-BR', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
           </span>
         );
       },
@@ -612,9 +483,7 @@ export default function HistoricoPage() {
       render: (_: unknown, record: TurnoData) => {
         const status = record.dataFim ? 'FECHADO' : 'ABERTO';
         return (
-          <Tag color={status === 'ABERTO' ? 'green' : 'default'}>
-            {status}
-          </Tag>
+          <Tag color={status === 'ABERTO' ? 'green' : 'default'}>{status}</Tag>
         );
       },
     },
@@ -624,28 +493,28 @@ export default function HistoricoPage() {
       width: 220,
       render: (_: unknown, record: TurnoData) => (
         <Space>
-          <Tooltip title="Ver Checklists">
+          <Tooltip title='Ver Checklists'>
             <Button
-              type="primary"
-              size="small"
+              type='primary'
+              size='small'
               icon={<CheckOutlined />}
               onClick={() => handleViewChecklists(record)}
             />
           </Tooltip>
-          <Tooltip title="Ver Histórico de Localização">
+          <Tooltip title='Ver Histórico de Localização'>
             <Button
-              type="default"
-              size="small"
+              type='default'
+              size='small'
               icon={<EnvironmentOutlined />}
               onClick={() => handleViewLocation(record)}
             />
           </Tooltip>
           {!record.dataFim && (
-            <Tooltip title="Fechar Turno">
+            <Tooltip title='Fechar Turno'>
               <Button
-                type="default"
+                type='default'
                 danger
-                size="small"
+                size='small'
                 icon={<CloseOutlined />}
                 onClick={() => handleFecharTurno(record)}
               />
@@ -662,7 +531,7 @@ export default function HistoricoPage() {
 
       {/* Seletor de Data */}
       <Card style={{ marginBottom: 24 }}>
-        <Row gutter={[16, 16]} align="middle">
+        <Row gutter={[16, 16]} align='middle'>
           <Col>
             <span style={{ fontWeight: 'bold' }}>Selecionar Data:</span>
           </Col>
@@ -670,14 +539,14 @@ export default function HistoricoPage() {
             <DatePicker
               value={dataSelecionada}
               onChange={handleDataChange}
-              format="DD/MM/YYYY"
-              placeholder="Selecione uma data"
+              format='DD/MM/YYYY'
+              placeholder='Selecione uma data'
               style={{ width: 200 }}
             />
           </Col>
           <Col>
             <Button
-              type="primary"
+              type='primary'
               icon={<SearchOutlined />}
               onClick={() => buscarHistorico(dataSelecionada)}
               loading={loading.main}
@@ -700,25 +569,23 @@ export default function HistoricoPage() {
             />
           </Card>
         </Col>
-
-
       </Row>
 
       {/* Gráficos */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} md={7}>
-          <Card title="Turnos por Tipo de Equipe">
+          <Card title='Turnos por Tipo de Equipe'>
             {loading.grafico ? (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <Spin size="large" />
+                <Spin size='large' />
               </div>
             ) : dadosGrafico.length === 0 ? (
-              <Empty description="Nenhum dado disponível" />
+              <Empty description='Nenhum dado disponível' />
             ) : (
               <Column
                 data={dadosGrafico}
-                xField="tipo"
-                yField="quantidade"
+                xField='tipo'
+                yField='quantidade'
                 height={300}
                 columnWidthRatio={0.1}
                 label={{
@@ -752,19 +619,19 @@ export default function HistoricoPage() {
           </Card>
         </Col>
         <Col xs={24} md={17}>
-          <Card title="Turnos Diários por Hora">
+          <Card title='Turnos Diários por Hora'>
             {loading.graficoHora ? (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <Spin size="large" />
+                <Spin size='large' />
               </div>
             ) : dadosGraficoHora.length === 0 ? (
-              <Empty description="Nenhum dado disponível" />
+              <Empty description='Nenhum dado disponível' />
             ) : (
               <Column
                 data={dadosGraficoHora}
-                xField="hora"
-                yField="quantidade"
-                seriesField="tipo"
+                xField='hora'
+                yField='quantidade'
+                seriesField='tipo'
                 height={300}
                 isStack={true}
                 label={{
@@ -803,30 +670,39 @@ export default function HistoricoPage() {
       {/* Gráfico de Turnos por Base */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24}>
-          <Card title="Turnos Diários por Base">
+          <Card title='Turnos Diários por Base'>
             {loading.graficoBase ? (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <Spin size="large" />
+                <Spin size='large' />
               </div>
             ) : dadosGraficoBase.length === 0 ? (
-              <Empty description="Nenhum dado disponível" />
+              <Empty description='Nenhum dado disponível' />
             ) : (
               <Column
                 data={dadosGraficoBase.filter(d => d.quantidade > 0)}
-                xField="base"
-                yField="quantidade"
-                seriesField="tipo"
+                xField='base'
+                yField='quantidade'
+                seriesField='tipo'
                 isStack={true}
                 height={300}
                 columnWidthRatio={0.3}
-                colorField="tipo"
+                colorField='tipo'
                 scale={{
                   color: {
-                    range: coresArray.length > 0 ? coresArray : ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
+                    range:
+                      coresArray.length > 0
+                        ? coresArray
+                        : [
+                            '#1890ff',
+                            '#52c41a',
+                            '#faad14',
+                            '#f5222d',
+                            '#722ed1',
+                          ],
                   },
                 }}
                 label={{
-                  text: (d: any) => d.quantidade > 0 ? d.quantidade : '',
+                  text: (d: any) => (d.quantidade > 0 ? d.quantidade : ''),
                   position: 'inside',
                   style: {
                     fill: '#fff',
@@ -837,9 +713,11 @@ export default function HistoricoPage() {
                 legend={{
                   position: 'top',
                   itemName: {
-                    formatter: (text: string, item: any) => {
+                    formatter: (text: string) => {
                       // Não mostrar na legenda tipos que não têm dados
-                      const temDados = dadosGraficoBase.some(d => d.tipo === text && d.quantidade > 0);
+                      const temDados = dadosGraficoBase.some(
+                        d => d.tipo === text && d.quantidade > 0
+                      );
                       return temDados ? text : '';
                     },
                   },
@@ -872,45 +750,47 @@ export default function HistoricoPage() {
         <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
           <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Veículo"
+              placeholder='Veículo'
               prefix={<SearchOutlined />}
               value={filtroVeiculo}
-              onChange={(e) => setFiltroVeiculo(e.target.value)}
+              onChange={e => setFiltroVeiculo(e.target.value)}
               allowClear
             />
           </Col>
           <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Equipe"
+              placeholder='Equipe'
               prefix={<SearchOutlined />}
               value={filtroEquipe}
-              onChange={(e) => setFiltroEquipe(e.target.value)}
+              onChange={e => setFiltroEquipe(e.target.value)}
               allowClear
             />
           </Col>
           <Col xs={24} sm={12} md={4}>
             <Input
-              placeholder="Eletricista"
+              placeholder='Eletricista'
               prefix={<SearchOutlined />}
               value={filtroEletricista}
-              onChange={(e) => setFiltroEletricista(e.target.value)}
+              onChange={e => setFiltroEletricista(e.target.value)}
               allowClear
             />
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Select
-              placeholder="Base"
+              placeholder='Base'
               style={{ width: '100%' }}
               value={filtroBase}
               onChange={setFiltroBase}
               allowClear
               showSearch
-              optionFilterProp="children"
+              optionFilterProp='children'
               loading={loadingBases}
               filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                (option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
               }
-              options={basesData?.map((base) => ({
+              options={basesData?.map(base => ({
                 label: base.nome,
                 value: base.nome,
               }))}
@@ -921,10 +801,21 @@ export default function HistoricoPage() {
         <Table
           columns={columns}
           dataSource={turnosFiltrados}
-          rowKey="id"
+          rowKey='id'
           pagination={pagination}
           locale={{
-            emptyText: <Empty description={filtroVeiculo || filtroEquipe || filtroEletricista || filtroBase ? 'Nenhum turno encontrado com os filtros aplicados' : `Nenhum turno encontrado para ${dataSelecionada.format('DD/MM/YYYY')}`} />,
+            emptyText: (
+              <Empty
+                description={
+                  filtroVeiculo ||
+                  filtroEquipe ||
+                  filtroEletricista ||
+                  filtroBase
+                    ? 'Nenhum turno encontrado com os filtros aplicados'
+                    : `Nenhum turno encontrado para ${dataSelecionada.format('DD/MM/YYYY')}`
+                }
+              />
+            ),
           }}
         />
       </Card>
@@ -937,11 +828,15 @@ export default function HistoricoPage() {
           setSelectedTurnoForLocation(null);
         }}
         turnoId={selectedTurnoForLocation?.id || 0}
-        turnoInfo={selectedTurnoForLocation ? {
-          id: selectedTurnoForLocation.id,
-          veiculo: { placa: selectedTurnoForLocation.veiculoPlaca },
-          equipe: { nome: selectedTurnoForLocation.equipeNome },
-        } : undefined}
+        turnoInfo={
+          selectedTurnoForLocation
+            ? {
+                id: selectedTurnoForLocation.id,
+                veiculo: { placa: selectedTurnoForLocation.veiculoPlaca },
+                equipe: { nome: selectedTurnoForLocation.equipeNome },
+              }
+            : undefined
+        }
       />
 
       {/* Modais de Checklist */}

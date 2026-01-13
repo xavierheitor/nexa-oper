@@ -31,7 +31,9 @@ export default function BaseForm({
   const [form] = Form.useForm();
 
   // Estado para armazenar a lista de contratos
-  const [contratos, setContratos] = useState<Array<{ id: number; nome: string }>>([]);
+  const [contratos, setContratos] = useState<
+    Array<{ id: number; nome: string }>
+  >([]);
   const [contratosLoading, setContratosLoading] = useState(false);
 
   // Effect para carregar contratos ao montar o componente
@@ -54,7 +56,7 @@ export default function BaseForm({
         // Fallback com dados mock para desenvolvimento
         setContratos([
           { id: 1, nome: 'Contrato 1' },
-          { id: 2, nome: 'Contrato 2' }
+          { id: 2, nome: 'Contrato 2' },
         ]);
       } finally {
         setContratosLoading(false);
@@ -80,69 +82,77 @@ export default function BaseForm({
     <Spin spinning={loading}>
       <Form
         form={form} // Instância do formulário controlada pelo hook
-      layout="vertical" // Layout com labels acima dos campos
-      onFinish={onSubmit} // Função chamada quando o formulário é válido e submetido
-    >
-      {/* Campo Nome da Base */}
-      <Form.Item
-        name="nome" // Nome do campo (deve corresponder à interface BaseFormData)
-        label="Nome da Base" // Label exibido acima do campo
-        rules={[
-          // Regras de validação do campo
-          { required: true, message: 'Nome é obrigatório' }, // Campo obrigatório
-          { min: 1, max: 255, message: 'Nome deve ter entre 1 e 255 caracteres' }, // Validação de tamanho
-        ]}
+        layout='vertical' // Layout com labels acima dos campos
+        onFinish={onSubmit} // Função chamada quando o formulário é válido e submetido
       >
-        <Input
-          autoFocus // Foco automático no campo quando o formulário abre
-          placeholder="Digite o nome da base"
-        />
-      </Form.Item>
-
-      {/* Campo Contrato */}
-      <Form.Item
-        name="contratoId" // Nome do campo (deve corresponder à interface BaseFormData)
-        label="Contrato" // Label exibido acima do campo
-        rules={[
-          // Regras de validação do campo
-          { required: true, message: 'Contrato é obrigatório' }, // Campo obrigatório
-        ]}
-      >
-        <Select
-          placeholder="Selecione um contrato"
-          loading={contratosLoading}
-          showSearch
-          optionFilterProp="children"
-          filterOption={(input, option) => {
-            // option.children pode ser ReactNode, então precisamos extrair o texto
-            const childrenText = typeof option?.children === 'string'
-              ? option.children
-              : Array.isArray(option?.children)
-              ? option.children.map(c => typeof c === 'string' ? c : '').join('')
-              : '';
-            return childrenText.toLowerCase().includes(input.toLowerCase());
-          }}
+        {/* Campo Nome da Base */}
+        <Form.Item
+          name='nome' // Nome do campo (deve corresponder à interface BaseFormData)
+          label='Nome da Base' // Label exibido acima do campo
+          rules={[
+            // Regras de validação do campo
+            { required: true, message: 'Nome é obrigatório' }, // Campo obrigatório
+            {
+              min: 1,
+              max: 255,
+              message: 'Nome deve ter entre 1 e 255 caracteres',
+            }, // Validação de tamanho
+          ]}
         >
-          {contratos.map((contrato) => (
-            <Select.Option key={contrato.id} value={contrato.id}>
-              {contrato.nome}
-            </Select.Option>
-          ))}
-        </Select>
-      </Form.Item>
+          <Input
+            autoFocus // Foco automático no campo quando o formulário abre
+            placeholder='Digite o nome da base'
+          />
+        </Form.Item>
 
-      {/* Botão de Submit */}
-      <Form.Item>
-        <Button
-          type="primary" // Estilo primário (azul)
-          htmlType="submit" // Tipo HTML para submeter o formulário
-          block // Ocupa toda a largura disponível
-          loading={loading} // Mostra spinner e desabilita quando em loading
+        {/* Campo Contrato */}
+        <Form.Item
+          name='contratoId' // Nome do campo (deve corresponder à interface BaseFormData)
+          label='Contrato' // Label exibido acima do campo
+          rules={[
+            // Regras de validação do campo
+            { required: true, message: 'Contrato é obrigatório' }, // Campo obrigatório
+          ]}
         >
-          Salvar
-        </Button>
-      </Form.Item>
-    </Form>
+          <Select
+            placeholder='Selecione um contrato'
+            loading={contratosLoading}
+            showSearch
+            optionFilterProp='children'
+            filterOption={(input, option) => {
+              if (!option) return false;
+              // option.children pode ser ReactNode, então precisamos extrair o texto
+              const childrenText =
+                typeof option.children === 'string'
+                  ? option.children
+                  : Array.isArray(option.children)
+                    ? option.children
+                        .map((c: any) => (typeof c === 'string' ? c : ''))
+                        .join('')
+                    : '';
+              return childrenText.toLowerCase().includes(input.toLowerCase());
+            }}
+          >
+            {contratos.map(contrato => (
+              <Select.Option key={contrato.id} value={contrato.id}>
+                {contrato.nome}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        {/* Botão de Submit */}
+        <Form.Item>
+          <Button
+            type='primary' // Estilo primário (azul)
+            htmlType='submit' // Tipo HTML para submeter o formulário
+            block // Ocupa toda a largura disponível
+            loading={loading} // Mostra spinner e desabilita quando em loading
+          >
+            Salvar
+          </Button>
+        </Form.Item>
+      </Form>
     </Spin>
   );
 }

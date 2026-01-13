@@ -4,7 +4,6 @@ import { Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { DetalhamentoDia } from '@/lib/schemas/turnoRealizadoSchema';
 import StatusTag from './StatusTag';
-import TipoHoraExtraTag from './TipoHoraExtraTag';
 import dayjs from 'dayjs';
 import { useMemo } from 'react';
 
@@ -30,7 +29,7 @@ export default function HistoricoTable({
     // Agrupar por data
     const porData = new Map<string, DetalhamentoDia[]>();
 
-    dados.forEach((dia) => {
+    dados.forEach(dia => {
       const dataStr = dayjs(dia.data).format('YYYY-MM-DD');
       if (!porData.has(dataStr)) {
         porData.set(dataStr, []);
@@ -60,11 +59,15 @@ export default function HistoricoTable({
       }
 
       // Filtrar apenas eventos realizados (não apenas escala futura)
-      const eventosRealizados = eventos.filter(e =>
-        e.tipo === 'trabalho_realizado' ||
-        e.tipo === 'falta' ||
-        e.tipo === 'hora_extra' ||
-        (e.tipo === 'escala_trabalho' && eventos.some(ev => ev.tipo === 'trabalho_realizado' || ev.tipo === 'falta'))
+      const eventosRealizados = eventos.filter(
+        e =>
+          e.tipo === 'trabalho_realizado' ||
+          e.tipo === 'falta' ||
+          e.tipo === 'hora_extra' ||
+          (e.tipo === 'escala_trabalho' &&
+            eventos.some(
+              ev => ev.tipo === 'trabalho_realizado' || ev.tipo === 'falta'
+            ))
       );
 
       // Se não há eventos realizados, pular (não mostrar folgas futuras)
@@ -83,9 +86,10 @@ export default function HistoricoTable({
 
       // Prioridade: falta > trabalho_realizado > hora_extra
       const falta = eventosRealizados.find(e => e.tipo === 'falta');
-      const trabalho = eventosRealizados.find(e => e.tipo === 'trabalho_realizado');
+      const trabalho = eventosRealizados.find(
+        e => e.tipo === 'trabalho_realizado'
+      );
       const horaExtra = eventosRealizados.find(e => e.tipo === 'hora_extra');
-      const escalaTrabalho = eventos.find(e => e.tipo === 'escala_trabalho');
       const escalaFolga = eventos.find(e => e.tipo === 'escala_folga');
 
       if (falta) {
@@ -130,17 +134,17 @@ export default function HistoricoTable({
       });
     });
 
-    // Ordenar por data (mais recente primeiro)
-    return linhas.sort((a, b) => b.data.getTime() - a.data.getTime());
+    // Ordenar por data (mais antigo primeiro)
+    return linhas.sort((a, b) => a.data.getTime() - b.data.getTime());
   }, [dados]);
-  const columns: ColumnsType<typeof dadosAgrupados[0]> = [
+  const columns: ColumnsType<(typeof dadosAgrupados)[0]> = [
     {
       title: 'Data',
       dataIndex: 'data',
       key: 'data',
       render: (date: Date) => dayjs(date).format('DD/MM/YYYY'),
       sorter: (a, b) => a.data.getTime() - b.data.getTime(),
-      defaultSortOrder: 'descend',
+      defaultSortOrder: 'ascend',
     },
     {
       title: 'Descrição',
@@ -158,7 +162,8 @@ export default function HistoricoTable({
       title: 'Equipe',
       dataIndex: 'equipe',
       key: 'equipe',
-      render: (equipe: string | undefined) => equipe ? <Tag color="blue">{equipe}</Tag> : '-',
+      render: (equipe: string | undefined) =>
+        equipe ? <Tag color='blue'>{equipe}</Tag> : '-',
     },
     {
       title: 'Horas Previstas',
@@ -181,12 +186,12 @@ export default function HistoricoTable({
       render: (status: string | undefined, record) => {
         if (!status) return '-';
         if (record.tipo === 'falta') {
-          return <StatusTag status={status} tipo="falta" />;
+          return <StatusTag status={status} tipo='falta' />;
         }
         if (record.tipo === 'hora_extra') {
-          return <StatusTag status={status} tipo="horaExtra" />;
+          return <StatusTag status={status} tipo='horaExtra' />;
         }
-        return <StatusTag status={status} tipo="geral" />;
+        return <StatusTag status={status} tipo='geral' />;
       },
     },
   ];
@@ -197,8 +202,7 @@ export default function HistoricoTable({
       dataSource={dadosAgrupados}
       loading={loading}
       pagination={false}
-      size="small"
+      size='small'
     />
   );
 }
-
