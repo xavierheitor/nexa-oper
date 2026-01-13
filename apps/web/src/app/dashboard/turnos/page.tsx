@@ -45,6 +45,7 @@ import { TurnosAbertosTable } from './components/TurnosAbertosTable';
 import { TurnosPrevistosStats } from './components/TurnosPrevistosStats';
 import { TurnosNaoAbertosTable } from './components/TurnosNaoAbertosTable';
 import { TurnosPrevistosTable } from './components/TurnosPrevistosTable';
+import { TurnosMatrixTable } from './components/TurnosMatrixTable';
 
 const { Title } = Typography;
 
@@ -619,6 +620,12 @@ export default function TurnosPage() {
                   tiposEquipeData={tiposEquipeData || undefined}
                   filtroStatus={filtroStatusDetalhamento}
                   setFiltroStatus={setFiltroStatusDetalhamento}
+                />
+
+                {/* Matriz de Turnos Previstos */}
+                <TurnosMatrixTable
+                  turnosPrevistos={turnosPrevistosResult}
+                  tiposEquipeData={tiposEquipeData || undefined}
                 />
               </>
             )
