@@ -13,6 +13,8 @@ interface TurnosPrevistosTableProps {
   setFiltroTipoEquipe: (value: string | undefined) => void;
   basesData: Array<{ id: number; nome: string }> | undefined;
   tiposEquipeData: Array<{ id: number; nome: string }> | undefined;
+  filtroStatus: string | undefined;
+  setFiltroStatus: (value: string | undefined) => void;
 }
 
 export const TurnosPrevistosTable: React.FC<TurnosPrevistosTableProps> = ({
@@ -24,6 +26,8 @@ export const TurnosPrevistosTable: React.FC<TurnosPrevistosTableProps> = ({
   setFiltroTipoEquipe,
   basesData,
   tiposEquipeData,
+  filtroStatus,
+  setFiltroStatus,
 }) => {
   return (
     <Card
@@ -66,6 +70,19 @@ export const TurnosPrevistosTable: React.FC<TurnosPrevistosTableProps> = ({
               label: tipo.nome,
               value: tipo.nome,
             }))}
+          />
+          <Select
+            placeholder='Filtrar por Status'
+            allowClear
+            style={{ width: 200 }}
+            value={filtroStatus}
+            onChange={value => setFiltroStatus(value || undefined)}
+            options={[
+              { label: 'Aderente', value: 'ADERENTE' },
+              { label: 'Não Aderente', value: 'NAO_ADERENTE' },
+              { label: 'Não Aberto', value: 'NAO_ABERTO' },
+              { label: 'Turno Extra', value: 'TURNO_EXTRA' },
+            ]}
           />
         </Space>
       }

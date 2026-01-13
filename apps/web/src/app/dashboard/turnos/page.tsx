@@ -71,6 +71,9 @@ export default function TurnosPage() {
   >(undefined);
   const [filtroTipoEquipeDetalhamento, setFiltroTipoEquipeDetalhamento] =
     useState<string | undefined>(undefined);
+  const [filtroStatusDetalhamento, setFiltroStatusDetalhamento] = useState<
+    string | undefined
+  >(undefined);
 
   // Hook para paginação client-side da tabela principal
   const { pagination } = useTablePagination({
@@ -313,11 +316,18 @@ export default function TurnosPage() {
       });
     }
 
+    if (filtroStatusDetalhamento) {
+      filtrados = filtrados.filter(tp => {
+        return tp.status === filtroStatusDetalhamento;
+      });
+    }
+
     return filtrados;
   }, [
     turnosPrevistosResult,
     filtroBaseDetalhamento,
     filtroTipoEquipeDetalhamento,
+    filtroStatusDetalhamento,
   ]);
 
   // Fetch de estatísticas de turnos previstos
@@ -607,6 +617,8 @@ export default function TurnosPage() {
                   setFiltroTipoEquipe={setFiltroTipoEquipeDetalhamento}
                   basesData={basesData || undefined}
                   tiposEquipeData={tiposEquipeData || undefined}
+                  filtroStatus={filtroStatusDetalhamento}
+                  setFiltroStatus={setFiltroStatusDetalhamento}
                 />
               </>
             )
