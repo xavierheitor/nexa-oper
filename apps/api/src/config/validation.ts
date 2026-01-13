@@ -17,7 +17,16 @@ export const envValidationSchema = Joi.object({
   DATABASE_URL: Joi.string().uri().required(),
 
   // CORS
-  CORS_ORIGINS: Joi.string().optional(),
+  CORS_ORIGINS: Joi.string()
+    .description('Lista de origens permitidas (CSV ou JSON array)')
+    .when('NODE_ENV', {
+      is: 'production',
+      then: Joi.required().messages({
+        'any.required':
+          'CORS_ORIGINS é obrigatório em produção (formato: CSV ou JSON)',
+      }),
+      otherwise: Joi.optional(),
+    }),
 
   // Rate limiting
   RATE_LIMIT_WINDOW_MS: Joi.number().min(1000).default(60_000),
@@ -37,12 +46,11 @@ export const envValidationSchema = Joi.object({
 
   // Reconciliação interna
   INTERNAL_KEY: Joi.alternatives()
-    .try(
-      Joi.string().min(12),
-      Joi.string().allow('')
-    )
+    .try(Joi.string().min(12), Joi.string().allow(''))
     .optional()
-    .description('Chave interna para autenticação de endpoints internos (mínimo 12 caracteres se definida)'),
+    .description(
+      'Chave interna para autenticação de endpoints internos (mínimo 12 caracteres se definida)'
+    ),
   RECONCILE_CRON: Joi.string()
     .optional()
     .description(

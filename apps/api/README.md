@@ -55,6 +55,10 @@ DATABASE_URL="mysql://usuario:senha@localhost:3306/nexa_oper"
 JWT_SECRET="seu_jwt_secret_muito_longo_e_seguro_deve_ter_32_caracteres_minimo"
 
 # CORS
+# Obrigatório em produção (NODE_ENV=production).
+# Formats aceitos:
+#   - CSV: http://site1.com,https://site2.com
+#   - JSON: ["http://site1.com", "https://site2.com"]
 CORS_ORIGINS=http://localhost:3000,https://seu-dominio.com
 
 # Rate Limiting

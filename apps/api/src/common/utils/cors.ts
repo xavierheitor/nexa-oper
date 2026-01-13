@@ -3,7 +3,8 @@ export function getCorsOrigins():
   | ((origin: string | undefined) => boolean) {
   const corsOriginsEnv = process.env.CORS_ORIGINS;
 
-  if (!corsOriginsEnv || corsOriginsEnv.trim() === '') {
+  // 1. Se não definido ou vazio
+  if (!corsOriginsEnv || !corsOriginsEnv.trim()) {
     // Em produção, negar tudo se não houver configuração explícita
     if (process.env.NODE_ENV === 'production') {
       return () => false;
@@ -12,24 +13,26 @@ export function getCorsOrigins():
     return () => true;
   }
 
+  // 2. Tentar parsing como JSON
   try {
     const parsed = JSON.parse(corsOriginsEnv);
     if (Array.isArray(parsed)) {
       const validOrigins = parsed.filter(
-        (origin: any) => typeof origin === 'string'
+        (origin: unknown) => typeof origin === 'string' && origin.trim() !== ''
       );
-      // Se array vazio, negar
+      // Se array válido (com strings), retorna. Se vazio (ou só invalidos), nega.
       return validOrigins.length > 0 ? validOrigins : () => false;
     }
   } catch {
-    // ignore, tenta CSV
+    // Não é JSON válido, segue para CSV
   }
 
+  // 3. Parsing como CSV
   const origins = corsOriginsEnv
     .split(',')
     .map(origin => origin.trim())
     .filter(origin => origin.length > 0);
 
-  // Se resultou em array vazio (ex: ","), negar
+  // Se resultou em array com itens, retorna. Senão, nega.
   return origins.length > 0 ? origins : () => false;
 }
