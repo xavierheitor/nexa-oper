@@ -23,7 +23,11 @@ export default function CalendarioFrequencia({
   const diasComEscalaSet = new Set<string>(consolidado.diasComEscala || []);
 
   // Função para obter cor de fundo baseada no tipo
-  const getBackgroundColor = (tipo: string, status?: string, temEscalaFolga?: boolean): string => {
+  const getBackgroundColor = (
+    tipo: string,
+    status?: string,
+    temEscalaFolga?: boolean
+  ): string => {
     switch (tipo) {
       case 'trabalho':
       case 'trabalho_realizado':
@@ -60,14 +64,22 @@ export default function CalendarioFrequencia({
       return [];
     }
 
-    const list: Array<{ type: string; content: string; equipe?: string; isEscala?: boolean }> = [];
+    const list: Array<{
+      type: string;
+      content: string;
+      equipe?: string;
+      isEscala?: boolean;
+    }> = [];
 
     for (const dia of eventosDia) {
       switch (dia.tipo) {
         case 'escala_trabalho':
           list.push({
             type: 'default',
-            content: 'Escala: Trabalho',
+            content: dia.equipe?.nome
+              ? `Escala: ${dia.equipe.nome}`
+              : 'Escala: Trabalho',
+            equipe: dia.equipe?.nome,
             isEscala: true,
           });
           break;
@@ -102,9 +114,10 @@ export default function CalendarioFrequencia({
           }
           break;
         case 'hora_extra':
-          const tipoHoraExtra = dia.tipoHoraExtra === 'folga_trabalhada'
-            ? 'Hora Extra (Folga)'
-            : 'Hora Extra';
+          const tipoHoraExtra =
+            dia.tipoHoraExtra === 'folga_trabalhada'
+              ? 'Hora Extra (Folga)'
+              : 'Hora Extra';
           list.push({
             type: 'processing',
             content: tipoHoraExtra,
@@ -154,21 +167,26 @@ export default function CalendarioFrequencia({
     );
 
     // Determinar cor de fundo baseado no evento principal (não escala)
-    const eventoPrincipal = eventosDia.find(e =>
-      e.tipo !== 'escala_trabalho' && e.tipo !== 'escala_folga'
+    const eventoPrincipal = eventosDia.find(
+      e => e.tipo !== 'escala_trabalho' && e.tipo !== 'escala_folga'
     );
 
     // Verificar se tem escala de folga
     const temEscalaFolga = eventosDia.some(e => e.tipo === 'escala_folga');
 
     // Se trabalhou na folga (hora extra com escala folga), usar azul
-    const trabalhouNaFolga = eventoPrincipal?.tipo === 'hora_extra' && temEscalaFolga;
+    const trabalhouNaFolga =
+      eventoPrincipal?.tipo === 'hora_extra' && temEscalaFolga;
 
     const backgroundColor = eventoPrincipal
-      ? getBackgroundColor(eventoPrincipal.tipo, eventoPrincipal.status, temEscalaFolga)
+      ? getBackgroundColor(
+          eventoPrincipal.tipo,
+          eventoPrincipal.status,
+          temEscalaFolga
+        )
       : temEscalaFolga
-      ? getBackgroundColor('escala_folga')
-      : 'transparent';
+        ? getBackgroundColor('escala_folga')
+        : 'transparent';
 
     // Renderizar todos os eventos
     return (
@@ -191,17 +209,28 @@ export default function CalendarioFrequencia({
             // Buscar dados do evento correspondente
             const eventoDia = eventosDia.find(e => {
               if (item.isEscala) {
-                return e.tipo === 'escala_trabalho' || e.tipo === 'escala_folga';
+                return (
+                  e.tipo === 'escala_trabalho' || e.tipo === 'escala_folga'
+                );
               }
-              if (item.content === 'Trabalhado') return e.tipo === 'trabalho_realizado';
-              if (item.content === 'Falta') return e.tipo === 'falta' && e.status !== 'justificada';
-              if (item.content === 'Atestado') return e.tipo === 'falta' && e.status === 'justificada';
-              if (item.content.includes('Hora Extra')) return e.tipo === 'hora_extra';
+              if (item.content === 'Trabalhado')
+                return e.tipo === 'trabalho_realizado';
+              if (item.content === 'Falta')
+                return e.tipo === 'falta' && e.status !== 'justificada';
+              if (item.content === 'Atestado')
+                return e.tipo === 'falta' && e.status === 'justificada';
+              if (item.content.includes('Hora Extra'))
+                return e.tipo === 'hora_extra';
               return false;
             });
 
             // Determinar cor do badge baseado no tipo
-            let badgeColor: 'success' | 'error' | 'processing' | 'default' | 'warning' = 'default';
+            let badgeColor:
+              | 'success'
+              | 'error'
+              | 'processing'
+              | 'default'
+              | 'warning' = 'default';
             if (item.content === 'Trabalhado' && !item.isEscala) {
               badgeColor = 'success'; // Verde: trabalho normal
             } else if (item.content === 'Falta') {
@@ -220,16 +249,24 @@ export default function CalendarioFrequencia({
                       <div>{item.content}</div>
                       {item.equipe && <div>Equipe: {item.equipe}</div>}
                       {eventoDia && eventoDia.horaInicio && (
-                        <div>Início: {dayjs(eventoDia.horaInicio).format('HH:mm')}</div>
+                        <div>
+                          Início: {dayjs(eventoDia.horaInicio).format('HH:mm')}
+                        </div>
                       )}
                       {eventoDia && eventoDia.horaFim && (
-                        <div>Fim: {dayjs(eventoDia.horaFim).format('HH:mm')}</div>
+                        <div>
+                          Fim: {dayjs(eventoDia.horaFim).format('HH:mm')}
+                        </div>
                       )}
                       {eventoDia && eventoDia.horasRealizadas > 0 && (
-                        <div>Horas: {eventoDia.horasRealizadas.toFixed(1)}h</div>
+                        <div>
+                          Horas: {eventoDia.horasRealizadas.toFixed(1)}h
+                        </div>
                       )}
                       {eventoDia && eventoDia.horasPrevistas > 0 && (
-                        <div>Previstas: {eventoDia.horasPrevistas.toFixed(1)}h</div>
+                        <div>
+                          Previstas: {eventoDia.horasPrevistas.toFixed(1)}h
+                        </div>
                       )}
                     </div>
                   }
@@ -237,30 +274,64 @@ export default function CalendarioFrequencia({
                   <Badge
                     status={badgeColor}
                     text={
-                      <span style={{
-                        fontSize: item.isEscala ? '10px' : '11px',
-                        display: 'block',
-                        fontStyle: item.isEscala ? 'italic' : 'normal',
-                        opacity: item.isEscala ? 0.8 : 1,
-                        fontWeight: !item.isEscala ? 'bold' : 'normal',
-                      }}>
+                      <span
+                        style={{
+                          fontSize: item.isEscala ? '10px' : '11px',
+                          display: 'block',
+                          fontStyle: item.isEscala ? 'italic' : 'normal',
+                          opacity: item.isEscala ? 0.8 : 1,
+                          fontWeight: !item.isEscala ? 'bold' : 'normal',
+                        }}
+                      >
                         {item.content}
                       </span>
                     }
                   />
                 </Tooltip>
-                {eventoDia && eventoDia.horaInicio && eventoDia.horaFim && !item.isEscala && (
-                  <div style={{ fontSize: '10px', color: '#666', marginTop: '2px' }}>
-                    {dayjs(eventoDia.horaInicio).format('HH:mm')} - {dayjs(eventoDia.horaFim).format('HH:mm')}
-                  </div>
-                )}
-                {eventoDia && eventoDia.horaInicio && !eventoDia.horaFim && !item.isEscala && (
-                  <div style={{ fontSize: '10px', color: '#666', marginTop: '2px' }}>
-                    Início: {dayjs(eventoDia.horaInicio).format('HH:mm')}
-                  </div>
-                )}
+                {eventoDia &&
+                  eventoDia.horaInicio &&
+                  eventoDia.horaFim &&
+                  !item.isEscala && (
+                    <div
+                      style={{
+                        fontSize: '10px',
+                        color: '#666',
+                        marginTop: '2px',
+                      }}
+                    >
+                      {dayjs(eventoDia.horaInicio).format('HH:mm')} -{' '}
+                      {dayjs(eventoDia.horaFim).format('HH:mm')}
+                    </div>
+                  )}
+                {eventoDia &&
+                  eventoDia.horaInicio &&
+                  !eventoDia.horaFim &&
+                  !item.isEscala && (
+                    <div
+                      style={{
+                        fontSize: '10px',
+                        color: '#666',
+                        marginTop: '2px',
+                      }}
+                    >
+                      Início: {dayjs(eventoDia.horaInicio).format('HH:mm')}
+                    </div>
+                  )}
                 {item.equipe && (
-                  <Tag color={badgeColor === 'processing' ? 'blue' : badgeColor === 'success' ? 'green' : 'default'} style={{ marginTop: '2px', display: 'block', fontSize: '10px' }}>
+                  <Tag
+                    color={
+                      badgeColor === 'processing'
+                        ? 'blue'
+                        : badgeColor === 'success'
+                          ? 'green'
+                          : 'default'
+                    }
+                    style={{
+                      marginTop: '2px',
+                      display: 'block',
+                      fontSize: '10px',
+                    }}
+                  >
                     {item.equipe}
                   </Tag>
                 )}
@@ -281,18 +352,23 @@ export default function CalendarioFrequencia({
   // Calcular mês inicial para o calendário (primeiro mês do período)
   const mesInicial = dayjs(dataInicio);
 
-
   return (
     <div>
       <Calendar
-        mode="month"
+        mode='month'
         defaultValue={mesInicial}
         cellRender={cellRender}
         disabledDate={disabledDate}
         headerRender={({ value }) => {
           // Customizar header para mostrar apenas o período selecionado
           return (
-            <div style={{ padding: '8px', textAlign: 'center', fontWeight: 'bold' }}>
+            <div
+              style={{
+                padding: '8px',
+                textAlign: 'center',
+                fontWeight: 'bold',
+              }}
+            >
               {value.format('MMMM [de] YYYY')}
             </div>
           );
@@ -300,14 +376,21 @@ export default function CalendarioFrequencia({
       />
 
       {/* Legenda */}
-      <div style={{ marginTop: '16px', display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}>
-        <Badge status="success" text="Dia Trabalhado" />
-        <Badge status="error" text="Falta" />
-        <Badge status="warning" text="Atestado" />
-        <Badge status="processing" text="Hora Extra" />
-        <Badge status="default" text="Folga" />
+      <div
+        style={{
+          marginTop: '16px',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '16px',
+          justifyContent: 'center',
+        }}
+      >
+        <Badge status='success' text='Dia Trabalhado' />
+        <Badge status='error' text='Falta' />
+        <Badge status='warning' text='Atestado' />
+        <Badge status='processing' text='Hora Extra' />
+        <Badge status='default' text='Folga' />
       </div>
     </div>
   );
 }
-

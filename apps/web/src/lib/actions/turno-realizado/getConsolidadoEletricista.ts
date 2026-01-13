@@ -81,13 +81,21 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
       }
 
       // Buscar dados agregados em paralelo (evita N+1 queries)
+      // Ajustar range de busca de turnos para pegar turnos que começam antes
+      // mas terminam dentro do período (ou cruzam a meia-noite)
+      const dataInicioBuffer = new Date(dataInicio);
+      dataInicioBuffer.setDate(dataInicioBuffer.getDate() - 1);
+
+      const dataFimBuffer = new Date(dataFim);
+      dataFimBuffer.setDate(dataFimBuffer.getDate() + 1);
+
       const [turnosRealizados, faltas, horasExtras, slotsEscala] =
         await Promise.all([
-          // Turnos realmente abertos
+          // Turnos realmente abertos (com buffer)
           prisma.turnoRealizadoEletricista.findMany({
             where: {
               eletricistaId: data.eletricistaId,
-              abertoEm: { gte: dataInicio, lte: dataFim },
+              abertoEm: { gte: dataInicioBuffer, lte: dataFimBuffer },
             },
             include: {
               turnoRealizado: {
@@ -105,7 +113,7 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
           prisma.falta.findMany({
             where: {
               eletricistaId: data.eletricistaId,
-              dataReferencia: { gte: dataInicio, lte: dataFim },
+              dataReferencia: { gte: dataInicioBuffer, lte: dataFimBuffer },
             },
             include: {
               Justificativas: {
@@ -122,7 +130,7 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
           prisma.horaExtra.findMany({
             where: {
               eletricistaId: data.eletricistaId,
-              dataReferencia: { gte: dataInicio, lte: dataFim },
+              dataReferencia: { gte: dataInicioBuffer, lte: dataFimBuffer },
             },
           }),
 
@@ -130,15 +138,29 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
           prisma.slotEscala.findMany({
             where: {
               eletricistaId: data.eletricistaId,
-              data: { gte: dataInicio, lte: dataFim },
+              data: { gte: dataInicioBuffer, lte: dataFimBuffer },
               // Buscar todos os estados para saber quais dias têm escala
+            },
+            include: {
+              escalaEquipePeriodo: {
+                select: {
+                  equipe: {
+                    select: {
+                      id: true,
+                      nome: true,
+                    },
+                  },
+                },
+              },
             },
           }),
         ]);
 
       // Calcular resumo
       const diasTrabalhados = new Set(
-        turnosRealizados.map(t => t.abertoEm.toISOString().split('T')[0])
+        turnosRealizados
+          .filter(t => t.abertoEm >= dataInicio && t.abertoEm <= dataFim)
+          .map(t => t.abertoEm.toISOString().split('T')[0])
       ).size;
 
       // Filtrar apenas slots de TRABALHO para calcular dias escalados
@@ -207,6 +229,8 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
           slot.fimPrevisto
         );
 
+        const equipe = slot.escalaEquipePeriodo?.equipe;
+
         detalhamentoPorData.get(dataStr)!.push({
           data: slot.data,
           tipo: slot.estado === 'TRABALHO' ? 'escala_trabalho' : 'escala_folga',
@@ -214,13 +238,28 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
           horasRealizadas: 0,
           status: 'normal',
           slotId: slot.id,
+          equipe: equipe ? { id: equipe.id, nome: equipe.nome } : undefined,
         });
       }
 
       // 2. Processar turnos realizados (o que ACONTECEU)
-      for (const turno of turnosRealizados) {
-        const dataStr = turno.abertoEm.toISOString().split('T')[0];
+      // Filtrar turnos dentro do periodo "oficial" para exibição, mas usar todos para validação
+      const turnosNoPeriodo = turnosRealizados.filter(
+        t => t.abertoEm >= dataInicio && t.abertoEm <= dataFim
+      );
+
+      // Helper simples para data referencial (ajuste fuso BR -3h)
+      // Garante que um turno começando 23:00 (dia X) caia no dia X e não X+1
+      const toRefDate = (d: Date) => {
+        const offset = 3 * 60 * 60 * 1000;
+        return new Date(d.getTime() - offset).toISOString().split('T')[0];
+      };
+
+      for (const turno of turnosNoPeriodo) {
+        const dataStr = toRefDate(turno.abertoEm);
+
         if (!detalhamentoPorData.has(dataStr)) {
+          // Se não existir o dia no map (ex: turno extra em dia sem escala), inicializa
           detalhamentoPorData.set(dataStr, []);
         }
 
@@ -230,18 +269,30 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
           : 0;
 
         // Verificar se há slot de escala para este dia
-        const slotDia = slotsEscala.find(
+        // Slot.data vem como 00:00 UTC (ex: 2024-01-15T00:00:00.000Z)
+        // O dataStr já representa o dia operacional correto (ex: '2024-01-15')
+        // Portanto, basta comparar a string YYYY-MM-DD do slot diretamente.
+
+        const slotMatch = slotsEscala.find(
           s => s.data.toISOString().split('T')[0] === dataStr
         );
 
+        console.log(
+          `[DEBUG_FREQ] DiaRef: ${dataStr} | TurnoInicio: ${turno.abertoEm.toISOString()} | SlotFound: ${
+            slotMatch ? 'SIM' : 'NÃO'
+          } | SlotEstado: ${slotMatch?.estado || 'N/A'} | SlotData: ${slotMatch?.data.toISOString()} | EquipeTurno: ${
+            turno.turnoRealizado?.equipe?.nome
+          } | EquipeSlot: ${slotMatch?.escalaEquipePeriodo?.equipe.nome}`
+        );
+
         // Se trabalhou em dia de TRABALHO na escala, adicionar como trabalho realizado
-        if (slotDia && slotDia.estado === 'TRABALHO') {
+        if (slotMatch && slotMatch.estado === 'TRABALHO') {
           detalhamentoPorData.get(dataStr)!.push({
             data: turno.abertoEm,
             tipo: 'trabalho_realizado',
             horasPrevistas: calcularHorasDeString(
-              slotDia.inicioPrevisto,
-              slotDia.fimPrevisto
+              slotMatch.inicioPrevisto,
+              slotMatch.fimPrevisto
             ),
             horasRealizadas,
             status: 'normal',
@@ -273,7 +324,7 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
             horaFim: turno.fechadoEm || undefined,
             turnoId: turno.id,
             tipoHoraExtra:
-              slotDia && slotDia.estado === 'FOLGA'
+              slotMatch && slotMatch.estado === 'FOLGA'
                 ? 'folga_trabalhada'
                 : 'extrafora',
           });
@@ -282,35 +333,34 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
 
       // 3. Processar faltas (o que ACONTECEU quando deveria trabalhar)
       for (const falta of faltas) {
-        const dataStr = falta.dataReferencia.toISOString().split('T')[0];
+        const dataStr = toRefDate(falta.dataReferencia);
+
         if (!detalhamentoPorData.has(dataStr)) {
           detalhamentoPorData.set(dataStr, []);
         }
 
         // Verificar se há slot de TRABALHO para este dia
         const slotDia = slotsEscala.find(
-          s =>
-            s.data.toISOString().split('T')[0] === dataStr &&
-            s.estado === 'TRABALHO'
+          s => s.data.toISOString().split('T')[0] === dataStr
         );
 
-        // Só adicionar falta se havia escala de TRABALHO
-        if (slotDia) {
-          // Verificar se eletricista trabalhou neste dia (possivelmente em outro turno/carro)
-          const trabalhouNoDia = detalhamentoPorData
-            .get(dataStr)
-            ?.some(
-              d => d.tipo === 'trabalho_realizado' || d.tipo === 'hora_extra'
-            );
+        const slotMatch = slotDia;
 
-          // Se trabalhou, NÃO mostra falta no calendário
+        // Só adicionar falta se havia escala de TRABALHO
+        if (slotMatch && slotMatch.estado === 'TRABALHO') {
+          // Validar se trabalhou NESSE DIA OPERACIONAL
+          const trabalhouNoDia = turnosRealizados.some(t => {
+            return toRefDate(t.abertoEm) === dataStr;
+          });
+
+          // Se trabalhou, NÃO mostra falta
           if (!trabalhouNoDia) {
             detalhamentoPorData.get(dataStr)!.push({
               data: falta.dataReferencia,
               tipo: 'falta',
               horasPrevistas: calcularHorasDeString(
-                slotDia.inicioPrevisto,
-                slotDia.fimPrevisto
+                slotMatch.inicioPrevisto,
+                slotMatch.fimPrevisto
               ),
               horasRealizadas: 0,
               status: falta.status,
@@ -327,12 +377,16 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
           detalhamentoPorData.set(dataStr, []);
         }
 
-        // Verificar se já existe hora extra para este dia
-        const jaTemHoraExtra = detalhamentoPorData
+        // Verificar se já existe hora extra ou TRABALHO REALIZADO para este dia
+        // Se já trabalhou (e foi classificado como trabalho normal), não deve mostrar hora extra
+        // (Regra: Trabalho em dia de T em outra equipe não é extra)
+        const jaTemRegistroRelevante = detalhamentoPorData
           .get(dataStr)!
-          .some(d => d.tipo === 'hora_extra');
+          .some(
+            d => d.tipo === 'hora_extra' || d.tipo === 'trabalho_realizado'
+          );
 
-        if (!jaTemHoraExtra) {
+        if (!jaTemRegistroRelevante) {
           detalhamentoPorData.get(dataStr)!.push({
             data: horaExtra.dataReferencia,
             tipo: 'hora_extra',
