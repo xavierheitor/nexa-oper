@@ -115,7 +115,8 @@ export const TurnosPrevistosTable: React.FC<TurnosPrevistosTableProps> = ({
             title: 'Horário Previsto',
             dataIndex: 'horarioPrevisto',
             key: 'horarioPrevisto',
-            render: (horario: string | null) => formatTime(horario),
+            render: (horario: string | null) =>
+              horario ? formatTime(horario) : 'Sem Horário',
           },
           {
             title: 'Eletricistas',
