@@ -1,9 +1,27 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Card, Space, DatePicker, Select, Button, Spin, Row, Col, Statistic, Tag, Empty, Table } from 'antd';
+import {
+  Card,
+  Space,
+  DatePicker,
+  Select,
+  Button,
+  Spin,
+  Row,
+  Col,
+  Statistic,
+  Tag,
+  Empty,
+  Table,
+} from 'antd';
 import { App } from 'antd';
-import { UserOutlined, CalendarOutlined, TeamOutlined, EyeOutlined } from '@ant-design/icons';
+import {
+  UserOutlined,
+  CalendarOutlined,
+  TeamOutlined,
+  EyeOutlined,
+} from '@ant-design/icons';
 import { getConsolidadoEletricista } from '@/lib/actions/turno-realizado/getConsolidadoEletricista';
 import { listEletricistas } from '@/lib/actions/eletricista/list';
 import { listEquipes } from '@/lib/actions/equipe/list';
@@ -13,7 +31,9 @@ import { ConsolidadoEletricistaResponse } from '@/lib/schemas/turnoRealizadoSche
 import ConsolidadoEletricistaCard from '@/ui/components/ConsolidadoEletricistaCard';
 import HistoricoTable from '@/ui/components/HistoricoTable';
 import CalendarioFrequencia from '@/ui/components/CalendarioFrequencia';
-import ChecklistSelectorModal, { type ChecklistPreenchido } from '@/ui/components/ChecklistSelectorModal';
+import ChecklistSelectorModal, {
+  type ChecklistPreenchido,
+} from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import useSWR from 'swr';
@@ -87,7 +107,9 @@ export default function FrequenciaVisaoGeralPage() {
   const { message: messageApi } = App.useApp();
 
   // Estados para filtros
-  const [eletricistaId, setEletricistaId] = useState<number | undefined>(undefined);
+  const [eletricistaId, setEletricistaId] = useState<number | undefined>(
+    undefined
+  );
   const [dataInicio, setDataInicio] = useState<Date | undefined>(() => {
     const hoje = new Date();
     return new Date(hoje.getFullYear(), hoje.getMonth(), 1); // Início do mês
@@ -97,22 +119,29 @@ export default function FrequenciaVisaoGeralPage() {
     return new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 23, 59, 59); // Fim do mês
   });
   // ✅ Filtro de status (client-side)
-  const [filtroStatus, setFiltroStatus] = useState<string | undefined>(undefined);
+  const [filtroStatus, setFiltroStatus] = useState<string | undefined>(
+    undefined
+  );
 
   // Estados para visão geral de equipes
   const [equipeId, setEquipeId] = useState<number | undefined>(undefined);
-  const [dataInicioEquipe, setDataInicioEquipe] = useState<Date | undefined>(() => {
-    const hoje = new Date();
-    return new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-  });
+  const [dataInicioEquipe, setDataInicioEquipe] = useState<Date | undefined>(
+    () => {
+      const hoje = new Date();
+      return new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    }
+  );
   const [dataFimEquipe, setDataFimEquipe] = useState<Date | undefined>(() => {
     const hoje = new Date();
     return new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 23, 59, 59);
   });
-  const [checklistSelectorVisible, setChecklistSelectorVisible] = useState(false);
+  const [checklistSelectorVisible, setChecklistSelectorVisible] =
+    useState(false);
   const [checklistViewerVisible, setChecklistViewerVisible] = useState(false);
-  const [selectedTurnoEquipe, setSelectedTurnoEquipe] = useState<TurnoEquipeRow | null>(null);
-  const [selectedChecklist, setSelectedChecklist] = useState<ChecklistPreenchido | null>(null);
+  const [selectedTurnoEquipe, setSelectedTurnoEquipe] =
+    useState<TurnoEquipeRow | null>(null);
+  const [selectedChecklist, setSelectedChecklist] =
+    useState<ChecklistPreenchido | null>(null);
 
   // Carregar lista de eletricistas para o select
   const eletricistasFetcher = useMemo(
@@ -167,32 +196,33 @@ export default function FrequenciaVisaoGeralPage() {
   const equipes = equipesData || [];
 
   // Fetcher para dados consolidados
-  const consolidadoFetcher = async (): Promise<ConsolidadoEletricistaResponse> => {
-    if (!eletricistaId) {
-      throw new Error('Selecione um eletricista');
-    }
+  const consolidadoFetcher =
+    async (): Promise<ConsolidadoEletricistaResponse> => {
+      if (!eletricistaId) {
+        throw new Error('Selecione um eletricista');
+      }
 
-    if (!dataInicio || !dataFim) {
-      throw new Error('Selecione o período');
-    }
+      if (!dataInicio || !dataFim) {
+        throw new Error('Selecione o período');
+      }
 
-    const result = await getConsolidadoEletricista({
-      eletricistaId,
-      periodo: 'custom',
-      dataInicio: dataInicio.toISOString(),
-      dataFim: dataFim.toISOString(),
-    });
+      const result = await getConsolidadoEletricista({
+        eletricistaId,
+        periodo: 'custom',
+        dataInicio: dataInicio.toISOString(),
+        dataFim: dataFim.toISOString(),
+      });
 
-    if (!result.success) {
-      throw new Error(result.error || 'Erro ao buscar dados consolidados');
-    }
+      if (!result.success) {
+        throw new Error(result.error || 'Erro ao buscar dados consolidados');
+      }
 
-    if (!result.data) {
-      throw new Error('Dados não retornados');
-    }
+      if (!result.data) {
+        throw new Error('Dados não retornados');
+      }
 
-    return result.data;
-  };
+      return result.data;
+    };
 
   const {
     data: consolidado,
@@ -310,14 +340,18 @@ export default function FrequenciaVisaoGeralPage() {
   useEffect(() => {
     if (errorEquipe) {
       errorHandler.log(errorEquipe, 'FrequenciaVisaoGeralEquipe');
-      messageApi.error(errorEquipe.message || 'Erro ao carregar turnos da equipe');
+      messageApi.error(
+        errorEquipe.message || 'Erro ao carregar turnos da equipe'
+      );
     }
   }, [errorEquipe, messageApi]);
 
   useEffect(() => {
     if (errorEscalaEquipe) {
       errorHandler.log(errorEscalaEquipe, 'FrequenciaVisaoGeralEquipeEscala');
-      messageApi.error(errorEscalaEquipe.message || 'Erro ao carregar escala da equipe');
+      messageApi.error(
+        errorEscalaEquipe.message || 'Erro ao carregar escala da equipe'
+      );
     }
   }, [errorEscalaEquipe, messageApi]);
 
@@ -343,7 +377,9 @@ export default function FrequenciaVisaoGeralPage() {
     mutate();
   };
 
-  const handleRangeChangeEquipe = (dates: [Dayjs | null, Dayjs | null] | null) => {
+  const handleRangeChangeEquipe = (
+    dates: [Dayjs | null, Dayjs | null] | null
+  ) => {
     if (dates && dates[0] && dates[1]) {
       setDataInicioEquipe(dates[0].startOf('day').toDate());
       setDataFimEquipe(dates[1].endOf('day').toDate());
@@ -388,11 +424,15 @@ export default function FrequenciaVisaoGeralPage() {
     let filtrado = consolidado.detalhamento;
 
     if (filtroStatus) {
-      filtrado = filtrado.filter((dia) => {
+      filtrado = filtrado.filter(dia => {
         // Mapear tipos para filtros
         switch (filtroStatus) {
           case 'trabalho':
-            return dia.tipo === 'trabalho' || dia.tipo === 'trabalho_realizado' || dia.tipo === 'escala_trabalho';
+            return (
+              dia.tipo === 'trabalho' ||
+              dia.tipo === 'trabalho_realizado' ||
+              dia.tipo === 'escala_trabalho'
+            );
           case 'falta':
             return dia.tipo === 'falta';
           case 'hora_extra':
@@ -413,7 +453,6 @@ export default function FrequenciaVisaoGeralPage() {
   const estatisticasDetalhadas = useMemo(() => {
     if (!consolidado) return null;
 
-    const { resumo } = consolidado;
     const detalhamento = detalhamentoFiltrado;
 
     // Calcular dias por tipo
@@ -430,7 +469,7 @@ export default function FrequenciaVisaoGeralPage() {
 
     // Contar atestados (faltas justificadas)
     const atestados = detalhamento.filter(
-      (dia) => dia.tipo === 'falta' && dia.status === 'justificada'
+      dia => dia.tipo === 'falta' && dia.status === 'justificada'
     ).length;
 
     // Calcular total de horas
@@ -452,12 +491,18 @@ export default function FrequenciaVisaoGeralPage() {
   }, [consolidado, detalhamentoFiltrado]);
 
   const slotsPorDia = useMemo(() => {
-    const map = new Map<string, {
-      data: Date;
-      eletricistas: Map<number, { id: number; nome: string; matricula: string }>;
-    }>();
+    const map = new Map<
+      string,
+      {
+        data: Date;
+        eletricistas: Map<
+          number,
+          { id: number; nome: string; matricula: string }
+        >;
+      }
+    >();
 
-    (slotsEquipe || []).forEach((slot) => {
+    (slotsEquipe || []).forEach(slot => {
       const dataSlot = dayjs(slot.data).startOf('day');
       const key = dataSlot.format('YYYY-MM-DD');
       if (!map.has(key)) {
@@ -479,7 +524,7 @@ export default function FrequenciaVisaoGeralPage() {
 
   const turnosPorDia = useMemo(() => {
     const map = new Map<string, TurnoEquipeRow[]>();
-    (turnosEquipe || []).forEach((turno) => {
+    (turnosEquipe || []).forEach(turno => {
       const key = dayjs(turno.dataInicio).format('YYYY-MM-DD');
       if (!map.has(key)) {
         map.set(key, []);
@@ -492,7 +537,7 @@ export default function FrequenciaVisaoGeralPage() {
   const linhasEquipe = useMemo(() => {
     const rows: TurnoEquipeHistoricoRow[] = [];
 
-    (turnosEquipe || []).forEach((turno) => {
+    (turnosEquipe || []).forEach(turno => {
       const keyDia = dayjs(turno.dataInicio).format('YYYY-MM-DD');
       const escalados = slotsPorDia.get(keyDia);
       rows.push({
@@ -524,17 +569,17 @@ export default function FrequenciaVisaoGeralPage() {
       }
     });
 
-    return rows.sort((a, b) => b.data.getTime() - a.data.getTime());
+    return rows.sort((a, b) => a.data.getTime() - b.data.getTime());
   }, [turnosEquipe, slotsPorDia, turnosPorDia]);
 
   const resumoEquipe = useMemo(() => {
     const lista = turnosEquipe || [];
-    const abertos = lista.filter((turno) => !turno.dataFim).length;
+    const abertos = lista.filter(turno => !turno.dataFim).length;
     const total = lista.length;
     const diasComEscala = slotsPorDia.size;
     const diasComAbertura = turnosPorDia.size;
     const previstosSemAbertura = Array.from(slotsPorDia.keys()).filter(
-      (dia) => !turnosPorDia.has(dia)
+      dia => !turnosPorDia.has(dia)
     ).length;
 
     return {
@@ -547,118 +592,136 @@ export default function FrequenciaVisaoGeralPage() {
     };
   }, [turnosEquipe, slotsPorDia, turnosPorDia]);
 
-  const colunasEquipe: ColumnsType<TurnoEquipeHistoricoRow> = useMemo(() => [
-    {
-      title: 'Data',
-      dataIndex: 'data',
-      key: 'data',
-      render: (_: Date, record) =>
-        record.status === 'PREVISTO'
-          ? dayjs(record.data).format('DD/MM/YYYY')
-          : dayjs(record.dataInicio).format('DD/MM/YYYY HH:mm'),
-      sorter: (a, b) =>
-        a.data.getTime() - b.data.getTime(),
-      defaultSortOrder: 'descend',
-    },
-    {
-      title: 'Escalados',
-      key: 'escalados',
-      render: (_: unknown, record) => {
-        if (!record.eletricistasEscala || record.eletricistasEscala.length === 0) {
-          return <Tag color="default">Sem escala</Tag>;
-        }
-        return (
-          <Space direction="vertical" size={0}>
-            {record.eletricistasEscala.map((eletricista) => (
-              <span key={eletricista.id}>
-                {eletricista.nome} ({eletricista.matricula})
-              </span>
-            ))}
-          </Space>
-        );
+  const colunasEquipe: ColumnsType<TurnoEquipeHistoricoRow> = useMemo(
+    () => [
+      {
+        title: 'Data',
+        dataIndex: 'data',
+        key: 'data',
+        render: (_: Date, record) =>
+          record.status === 'PREVISTO'
+            ? dayjs(record.data).format('DD/MM/YYYY')
+            : dayjs(record.dataInicio).format('DD/MM/YYYY HH:mm'),
+        sorter: (a, b) => a.data.getTime() - b.data.getTime(),
+        defaultSortOrder: 'ascend',
       },
-    },
-    {
-      title: 'Abriram',
-      key: 'abriram',
-      render: (_: unknown, record) => {
-        if (!record.eletricistasAbertura || record.eletricistasAbertura.length === 0) {
-          return record.status === 'PREVISTO' ? '-' : 'Sem eletricistas';
-        }
-        return (
-          <Space direction="vertical" size={0}>
-            {record.eletricistasAbertura.map((eletricista) => (
-              <span key={eletricista.id}>
-                {eletricista.nome} ({eletricista.matricula})
-              </span>
-            ))}
-          </Space>
-        );
+      {
+        title: 'Escalados',
+        key: 'escalados',
+        render: (_: unknown, record) => {
+          if (
+            !record.eletricistasEscala ||
+            record.eletricistasEscala.length === 0
+          ) {
+            return <Tag color='default'>Sem escala</Tag>;
+          }
+          return (
+            <Space direction='vertical' size={0}>
+              {record.eletricistasEscala.map(eletricista => (
+                <span key={eletricista.id}>
+                  {eletricista.nome} ({eletricista.matricula})
+                </span>
+              ))}
+            </Space>
+          );
+        },
       },
-    },
-    {
-      title: 'Veículo',
-      key: 'veiculo',
-      render: (_: unknown, record) =>
-        record.veiculoPlaca
-          ? `${record.veiculoPlaca}${record.veiculoModelo ? ` - ${record.veiculoModelo}` : ''}`
-          : '-',
-    },
-    {
-      title: 'Status',
-      key: 'status',
-      render: (_: unknown, record) => {
-        const status = record.status === 'PREVISTO'
-          ? 'PREVISTO'
-          : record.dataFim
-            ? 'FECHADO'
-            : 'ABERTO';
-        return (
-          <Tag
-            color={
-              status === 'ABERTO'
-                ? 'green'
-                : status === 'PREVISTO'
-                  ? 'blue'
-                  : 'default'
-            }
-          >
-            {status}
-          </Tag>
-        );
+      {
+        title: 'Abriram',
+        key: 'abriram',
+        render: (_: unknown, record) => {
+          if (
+            !record.eletricistasAbertura ||
+            record.eletricistasAbertura.length === 0
+          ) {
+            return record.status === 'PREVISTO' ? '-' : 'Sem eletricistas';
+          }
+          return (
+            <Space direction='vertical' size={0}>
+              {record.eletricistasAbertura.map(eletricista => {
+                const isEscalado = record.eletricistasEscala?.some(
+                  e => e.id === eletricista.id
+                );
+                return (
+                  <span
+                    key={eletricista.id}
+                    style={!isEscalado ? { color: '#ff4d4f' } : undefined}
+                    title={!isEscalado ? 'Não estava na escala' : undefined}
+                  >
+                    {eletricista.nome} ({eletricista.matricula})
+                  </span>
+                );
+              })}
+            </Space>
+          );
+        },
       },
-    },
-    {
-      title: 'Checklist',
-      key: 'checklist',
-      render: (_: unknown, record) => {
-        if (record.status === 'PREVISTO' || !record.turnoId) {
-          return <Tag color="default">Previsto</Tag>;
-        }
-        const turnoId = record.turnoId;
-        return (
-          <Button
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => {
-              setSelectedTurnoEquipe({
-                id: turnoId,
-                dataInicio: record.dataInicio || record.data,
-                dataFim: record.dataFim,
-                veiculoPlaca: record.veiculoPlaca,
-                veiculoModelo: record.veiculoModelo,
-                equipeNome: record.equipeNome,
-                eletricistas: record.eletricistasAbertura,
-              });
-              setChecklistSelectorVisible(true);
-            }}
-          >
-            Checklists
-          </Button>
-        );
+      {
+        title: 'Veículo',
+        key: 'veiculo',
+        render: (_: unknown, record) =>
+          record.veiculoPlaca
+            ? `${record.veiculoPlaca}${record.veiculoModelo ? ` - ${record.veiculoModelo}` : ''}`
+            : '-',
       },
-    },
-  ], []);
+      {
+        title: 'Status',
+        key: 'status',
+        render: (_: unknown, record) => {
+          const status =
+            record.status === 'PREVISTO'
+              ? 'PREVISTO'
+              : record.dataFim
+                ? 'FECHADO'
+                : 'ABERTO';
+          return (
+            <Tag
+              color={
+                status === 'ABERTO'
+                  ? 'green'
+                  : status === 'PREVISTO'
+                    ? 'blue'
+                    : 'default'
+              }
+            >
+              {status}
+            </Tag>
+          );
+        },
+      },
+      {
+        title: 'Checklist',
+        key: 'checklist',
+        render: (_: unknown, record) => {
+          if (record.status === 'PREVISTO' || !record.turnoId) {
+            return <Tag color='default'>Previsto</Tag>;
+          }
+          const turnoId = record.turnoId;
+          return (
+            <Button
+              size='small'
+              icon={<EyeOutlined />}
+              onClick={() => {
+                setSelectedTurnoEquipe({
+                  id: turnoId,
+                  dataInicio: record.dataInicio || record.data,
+                  dataFim: record.dataFim,
+                  veiculoPlaca: record.veiculoPlaca,
+                  veiculoModelo: record.veiculoModelo,
+                  equipeNome: record.equipeNome,
+                  eletricistas: record.eletricistasAbertura,
+                });
+                setChecklistSelectorVisible(true);
+              }}
+            >
+              Checklists
+            </Button>
+          );
+        },
+      },
+    ],
+    []
+  );
 
   const loadingEquipeResumo = loadingEquipe || loadingEscalaEquipe;
   const hasErroEquipe = Boolean(errorEquipe || errorEscalaEquipe);
@@ -675,20 +738,26 @@ export default function FrequenciaVisaoGeralPage() {
         extra={
           <Space>
             <Select
-              placeholder="Selecione o eletricista"
+              placeholder='Selecione o eletricista'
               showSearch
               allowClear
               style={{ width: 300 }}
               loading={loadingEletricistas}
               value={eletricistaId}
-              onChange={(value) => setEletricistaId(value)}
+              onChange={value => setEletricistaId(value)}
               filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                (option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
               }
-              options={Array.isArray(eletricistas) ? eletricistas.map((e) => ({
-                value: e.id,
-                label: `${e.nome} (${e.matricula})`,
-              })) : []}
+              options={
+                Array.isArray(eletricistas)
+                  ? eletricistas.map(e => ({
+                      value: e.id,
+                      label: `${e.nome} (${e.matricula})`,
+                    }))
+                  : []
+              }
               suffixIcon={<UserOutlined />}
             />
             <RangePicker
@@ -698,11 +767,11 @@ export default function FrequenciaVisaoGeralPage() {
                   : null
               }
               onChange={handleRangeChange}
-              format="DD/MM/YYYY"
+              format='DD/MM/YYYY'
               placeholder={['Data início', 'Data fim']}
             />
             <Button
-              type="primary"
+              type='primary'
               onClick={handleBuscar}
               loading={loadingConsolidado}
               disabled={!eletricistaId || !dataInicio || !dataFim}
@@ -718,26 +787,31 @@ export default function FrequenciaVisaoGeralPage() {
             <Space>
               <span style={{ fontWeight: 500 }}>Filtrar por Status:</span>
               <Select
-                placeholder="Todos os status"
+                placeholder='Todos os status'
                 allowClear
                 style={{ width: 200 }}
                 value={filtroStatus}
-                onChange={(value) => setFiltroStatus(value || undefined)}
+                onChange={value => setFiltroStatus(value || undefined)}
               >
-                <Select.Option value="trabalho">Trabalho</Select.Option>
-                <Select.Option value="falta">Falta</Select.Option>
-                <Select.Option value="atestado">Atestado</Select.Option>
-                <Select.Option value="hora_extra">Hora Extra</Select.Option>
-                <Select.Option value="folga">Folga</Select.Option>
+                <Select.Option value='trabalho'>Trabalho</Select.Option>
+                <Select.Option value='falta'>Falta</Select.Option>
+                <Select.Option value='atestado'>Atestado</Select.Option>
+                <Select.Option value='hora_extra'>Hora Extra</Select.Option>
+                <Select.Option value='folga'>Folga</Select.Option>
               </Select>
               {filtroStatus && (
-                <Tag color="blue" closable onClose={() => setFiltroStatus(undefined)}>
+                <Tag
+                  color='blue'
+                  closable
+                  onClose={() => setFiltroStatus(undefined)}
+                >
                   {filtroStatus === 'trabalho' && 'Trabalho'}
                   {filtroStatus === 'falta' && 'Falta'}
                   {filtroStatus === 'atestado' && 'Atestado'}
                   {filtroStatus === 'hora_extra' && 'Hora Extra'}
-                  {filtroStatus === 'folga' && 'Folga'}
-                  {' '}({detalhamentoFiltrado.length} dia{detalhamentoFiltrado.length !== 1 ? 's' : ''})
+                  {filtroStatus === 'folga' && 'Folga'} (
+                  {detalhamentoFiltrado.length} dia
+                  {detalhamentoFiltrado.length !== 1 ? 's' : ''})
                 </Tag>
               )}
             </Space>
@@ -745,38 +819,48 @@ export default function FrequenciaVisaoGeralPage() {
         )}
         {!eletricistaId || !dataInicio || !dataFim ? (
           <Empty
-            description="Selecione um eletricista e período para visualizar os dados"
+            description='Selecione um eletricista e período para visualizar os dados'
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         ) : loadingConsolidado && !consolidado ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>
-            <Spin size="large" />
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              padding: '50px',
+            }}
+          >
+            <Spin size='large' />
           </div>
         ) : error && !consolidado ? (
           <Card>
-            <p style={{ color: 'red' }}>Erro ao carregar dados: {error.message}</p>
+            <p style={{ color: 'red' }}>
+              Erro ao carregar dados: {error.message}
+            </p>
           </Card>
         ) : consolidado ? (
           <>
             {/* Informações do Eletricista e Período */}
             <Card
-              size="small"
+              size='small'
               style={{ marginBottom: 24, backgroundColor: '#f5f5f5' }}
             >
               <Row gutter={16}>
                 <Col span={12}>
                   <Statistic
-                    title="Eletricista"
+                    title='Eletricista'
                     value={consolidado.eletricista.nome}
                     prefix={<UserOutlined />}
                     suffix={
-                      <Tag color="blue">{consolidado.eletricista.matricula}</Tag>
+                      <Tag color='blue'>
+                        {consolidado.eletricista.matricula}
+                      </Tag>
                     }
                   />
                 </Col>
                 <Col span={12}>
                   <Statistic
-                    title="Período"
+                    title='Período'
                     value={`${dayjs(consolidado.periodo.dataInicio).format('DD/MM/YYYY')} - ${dayjs(consolidado.periodo.dataFim).format('DD/MM/YYYY')}`}
                     prefix={<CalendarOutlined />}
                   />
@@ -785,10 +869,7 @@ export default function FrequenciaVisaoGeralPage() {
             </Card>
 
             {/* Resumo Consolidado */}
-            <Card
-              title="Resumo Consolidado"
-              style={{ marginBottom: 24 }}
-            >
+            <Card title='Resumo Consolidado' style={{ marginBottom: 24 }}>
               <ConsolidadoEletricistaCard
                 resumo={consolidado.resumo}
                 loading={loadingConsolidado}
@@ -798,89 +879,93 @@ export default function FrequenciaVisaoGeralPage() {
             {/* Estatísticas Detalhadas */}
             {estatisticasDetalhadas && (
               <Card
-                title="Estatísticas Detalhadas"
+                title='Estatísticas Detalhadas'
                 style={{ marginBottom: 24 }}
               >
                 <Row gutter={[16, 16]}>
                   <Col xs={24} sm={12} md={6}>
-                    <Card size="small">
+                    <Card size='small'>
                       <Statistic
-                        title="Dias Trabalhados"
+                        title='Dias Trabalhados'
                         value={estatisticasDetalhadas.trabalhados}
-                        suffix="dias"
+                        suffix='dias'
                         valueStyle={{ color: '#3f8600' }}
                       />
                     </Card>
                   </Col>
                   <Col xs={24} sm={12} md={6}>
-                    <Card size="small">
+                    <Card size='small'>
                       <Statistic
-                        title="Faltas"
+                        title='Faltas'
                         value={estatisticasDetalhadas.faltas}
-                        suffix="dias"
+                        suffix='dias'
                         valueStyle={{ color: '#cf1322' }}
                       />
                     </Card>
                   </Col>
                   <Col xs={24} sm={12} md={6}>
-                    <Card size="small">
+                    <Card size='small'>
                       <Statistic
-                        title="Atestados"
+                        title='Atestados'
                         value={estatisticasDetalhadas.atestados}
-                        suffix="dias"
+                        suffix='dias'
                         valueStyle={{ color: '#faad14' }}
                       />
                     </Card>
                   </Col>
                   <Col xs={24} sm={12} md={6}>
-                    <Card size="small">
+                    <Card size='small'>
                       <Statistic
-                        title="Horas Extras"
+                        title='Horas Extras'
                         value={estatisticasDetalhadas.horasExtras}
-                        suffix="dias"
+                        suffix='dias'
                         valueStyle={{ color: '#1890ff' }}
                       />
                     </Card>
                   </Col>
                   <Col xs={24} sm={12} md={6}>
-                    <Card size="small">
+                    <Card size='small'>
                       <Statistic
-                        title="Folgas"
+                        title='Folgas'
                         value={estatisticasDetalhadas.folgas}
-                        suffix="dias"
+                        suffix='dias'
                         valueStyle={{ color: '#722ed1' }}
                       />
                     </Card>
                   </Col>
                   <Col xs={24} sm={12} md={6}>
-                    <Card size="small">
+                    <Card size='small'>
                       <Statistic
-                        title="Horas Previstas"
-                        value={estatisticasDetalhadas.totalHorasPrevistas.toFixed(1)}
-                        suffix="h"
+                        title='Horas Previstas'
+                        value={estatisticasDetalhadas.totalHorasPrevistas.toFixed(
+                          1
+                        )}
+                        suffix='h'
                         valueStyle={{ color: '#595959' }}
                       />
                     </Card>
                   </Col>
                   <Col xs={24} sm={12} md={6}>
-                    <Card size="small">
+                    <Card size='small'>
                       <Statistic
-                        title="Horas Realizadas"
-                        value={estatisticasDetalhadas.totalHorasRealizadas.toFixed(1)}
-                        suffix="h"
+                        title='Horas Realizadas'
+                        value={estatisticasDetalhadas.totalHorasRealizadas.toFixed(
+                          1
+                        )}
+                        suffix='h'
                         valueStyle={{ color: '#3f8600' }}
                       />
                     </Card>
                   </Col>
                   <Col xs={24} sm={12} md={6}>
-                    <Card size="small">
+                    <Card size='small'>
                       <Statistic
-                        title="Diferença"
+                        title='Diferença'
                         value={(
                           estatisticasDetalhadas.totalHorasRealizadas -
                           estatisticasDetalhadas.totalHorasPrevistas
                         ).toFixed(1)}
-                        suffix="h"
+                        suffix='h'
                         valueStyle={{
                           color:
                             estatisticasDetalhadas.totalHorasRealizadas -
@@ -897,7 +982,7 @@ export default function FrequenciaVisaoGeralPage() {
             )}
 
             {/* Calendário de Frequência */}
-            <Card title="Calendário de Frequência" style={{ marginBottom: 24 }}>
+            <Card title='Calendário de Frequência' style={{ marginBottom: 24 }}>
               <CalendarioFrequencia
                 consolidado={{
                   ...consolidado,
@@ -909,7 +994,7 @@ export default function FrequenciaVisaoGeralPage() {
             </Card>
 
             {/* Histórico Detalhado */}
-            <Card title="Histórico Detalhado por Dia">
+            <Card title='Histórico Detalhado por Dia'>
               <HistoricoTable
                 dados={detalhamentoFiltrado}
                 loading={loadingConsolidado}
@@ -930,20 +1015,26 @@ export default function FrequenciaVisaoGeralPage() {
         extra={
           <Space>
             <Select
-              placeholder="Selecione a equipe"
+              placeholder='Selecione a equipe'
               showSearch
               allowClear
               style={{ width: 300 }}
               loading={loadingEquipes}
               value={equipeId}
-              onChange={(value) => setEquipeId(value)}
+              onChange={value => setEquipeId(value)}
               filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                (option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
               }
-              options={Array.isArray(equipes) ? equipes.map((e) => ({
-                value: e.id,
-                label: e.nome,
-              })) : []}
+              options={
+                Array.isArray(equipes)
+                  ? equipes.map(e => ({
+                      value: e.id,
+                      label: e.nome,
+                    }))
+                  : []
+              }
             />
             <RangePicker
               value={
@@ -952,11 +1043,11 @@ export default function FrequenciaVisaoGeralPage() {
                   : null
               }
               onChange={handleRangeChangeEquipe}
-              format="DD/MM/YYYY"
+              format='DD/MM/YYYY'
               placeholder={['Data início', 'Data fim']}
             />
             <Button
-              type="primary"
+              type='primary'
               onClick={handleBuscarEquipe}
               loading={loadingEquipe}
               disabled={!equipeId || !dataInicioEquipe || !dataFimEquipe}
@@ -968,51 +1059,79 @@ export default function FrequenciaVisaoGeralPage() {
       >
         {!equipeId || !dataInicioEquipe || !dataFimEquipe ? (
           <Empty
-            description="Selecione uma equipe e período para visualizar os dados"
+            description='Selecione uma equipe e período para visualizar os dados'
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         ) : loadingEquipeResumo && linhasEquipe.length === 0 ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>
-            <Spin size="large" />
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              padding: '50px',
+            }}
+          >
+            <Spin size='large' />
           </div>
         ) : hasErroEquipe && linhasEquipe.length === 0 ? (
           <Card>
             <p style={{ color: 'red' }}>
-              Erro ao carregar dados: {(errorEquipe || errorEscalaEquipe)?.message}
+              Erro ao carregar dados:{' '}
+              {(errorEquipe || errorEscalaEquipe)?.message}
             </p>
           </Card>
         ) : (
           <>
-            <Card size="small" style={{ marginBottom: 24, backgroundColor: '#f5f5f5' }}>
+            <Card
+              size='small'
+              style={{ marginBottom: 24, backgroundColor: '#f5f5f5' }}
+            >
               <Row gutter={16}>
                 <Col xs={24} sm={8} md={4}>
-                  <Statistic title="Turnos Abertos" value={resumoEquipe.abertos} />
+                  <Statistic
+                    title='Turnos Abertos'
+                    value={resumoEquipe.abertos}
+                  />
                 </Col>
                 <Col xs={24} sm={8} md={4}>
-                  <Statistic title="Turnos Fechados" value={resumoEquipe.fechados} />
+                  <Statistic
+                    title='Turnos Fechados'
+                    value={resumoEquipe.fechados}
+                  />
                 </Col>
                 <Col xs={24} sm={8} md={4}>
-                  <Statistic title="Total no Período" value={resumoEquipe.total} />
+                  <Statistic
+                    title='Total no Período'
+                    value={resumoEquipe.total}
+                  />
                 </Col>
                 <Col xs={24} sm={8} md={4}>
-                  <Statistic title="Dias com Escala" value={resumoEquipe.diasComEscala} />
+                  <Statistic
+                    title='Dias com Escala'
+                    value={resumoEquipe.diasComEscala}
+                  />
                 </Col>
                 <Col xs={24} sm={8} md={4}>
-                  <Statistic title="Dias com Abertura" value={resumoEquipe.diasComAbertura} />
+                  <Statistic
+                    title='Dias com Abertura'
+                    value={resumoEquipe.diasComAbertura}
+                  />
                 </Col>
                 <Col xs={24} sm={8} md={4}>
-                  <Statistic title="Previstos sem Abertura" value={resumoEquipe.previstosSemAbertura} />
+                  <Statistic
+                    title='Previstos sem Abertura'
+                    value={resumoEquipe.previstosSemAbertura}
+                  />
                 </Col>
               </Row>
             </Card>
 
-            <Card title="Histórico de Turnos da Equipe">
+            <Card title='Histórico de Turnos da Equipe'>
               <Table
                 columns={colunasEquipe}
                 dataSource={linhasEquipe}
-                rowKey="key"
+                rowKey='key'
                 pagination={{ pageSize: 10 }}
-                size="small"
+                size='small'
               />
             </Card>
           </>
