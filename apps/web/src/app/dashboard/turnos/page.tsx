@@ -75,6 +75,9 @@ export default function TurnosPage() {
   const [filtroStatusDetalhamento, setFiltroStatusDetalhamento] = useState<
     string | undefined
   >(undefined);
+  const [filtroHorarioDetalhamento, setFiltroHorarioDetalhamento] = useState<
+    string | undefined
+  >(undefined);
 
   // Hook para paginação client-side da tabela principal
   const { pagination } = useTablePagination({
@@ -323,12 +326,21 @@ export default function TurnosPage() {
       });
     }
 
+    if (filtroHorarioDetalhamento) {
+      if (filtroHorarioDetalhamento === 'COM_HORARIO') {
+        filtrados = filtrados.filter(tp => !!tp.horarioPrevisto);
+      } else if (filtroHorarioDetalhamento === 'SEM_HORARIO') {
+        filtrados = filtrados.filter(tp => !tp.horarioPrevisto);
+      }
+    }
+
     return filtrados;
   }, [
     turnosPrevistosResult,
     filtroBaseDetalhamento,
     filtroTipoEquipeDetalhamento,
     filtroStatusDetalhamento,
+    filtroHorarioDetalhamento,
   ]);
 
   // Fetch de estatísticas de turnos previstos
@@ -620,11 +632,17 @@ export default function TurnosPage() {
                   tiposEquipeData={tiposEquipeData || undefined}
                   filtroStatus={filtroStatusDetalhamento}
                   setFiltroStatus={setFiltroStatusDetalhamento}
+                  filtroHorario={filtroHorarioDetalhamento}
+                  setFiltroHorario={setFiltroHorarioDetalhamento}
                 />
 
                 {/* Matriz de Turnos Previstos */}
                 <TurnosMatrixTable
-                  turnosPrevistos={turnosPrevistosResult}
+                  turnosPrevistos={
+                    turnosPrevistosResult?.filter(
+                      t => t.status !== 'TURNO_EXTRA'
+                    ) || []
+                  }
                   tiposEquipeData={tiposEquipeData || undefined}
                 />
               </>
