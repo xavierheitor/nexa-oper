@@ -21,6 +21,7 @@ import {
   CalendarOutlined,
   TeamOutlined,
   EyeOutlined,
+  FilterOutlined,
 } from '@ant-design/icons';
 import { getConsolidadoEletricista } from '@/lib/actions/turno-realizado/getConsolidadoEletricista';
 import { listEletricistas } from '@/lib/actions/eletricista/list';
@@ -728,20 +729,29 @@ export default function FrequenciaVisaoGeralPage() {
 
   return (
     <div style={{ padding: '24px' }}>
+      {/* ✅ Card de Filtros - Eletricista */}
       <Card
+        size='small'
         title={
           <Space>
-            <CalendarOutlined />
-            Visão Geral de Frequência
+            <FilterOutlined />
+            <span>Filtros de Eletricista</span>
           </Space>
         }
-        extra={
-          <Space>
+        style={{ marginBottom: '16px' }}
+      >
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={8}>
+            <div
+              style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}
+            >
+              Eletricista
+            </div>
             <Select
               placeholder='Selecione o eletricista'
               showSearch
               allowClear
-              style={{ width: 300 }}
+              style={{ width: '100%' }}
               loading={loadingEletricistas}
               value={eletricistaId}
               onChange={value => setEletricistaId(value)}
@@ -760,6 +770,13 @@ export default function FrequenciaVisaoGeralPage() {
               }
               suffixIcon={<UserOutlined />}
             />
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <div
+              style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}
+            >
+              Período
+            </div>
             <RangePicker
               value={
                 dataInicio && dataFim
@@ -769,15 +786,33 @@ export default function FrequenciaVisaoGeralPage() {
               onChange={handleRangeChange}
               format='DD/MM/YYYY'
               placeholder={['Data início', 'Data fim']}
+              style={{ width: '100%' }}
             />
+          </Col>
+          <Col
+            xs={24}
+            sm={12}
+            md={8}
+            style={{ display: 'flex', alignItems: 'flex-end' }}
+          >
             <Button
               type='primary'
               onClick={handleBuscar}
               loading={loadingConsolidado}
               disabled={!eletricistaId || !dataInicio || !dataFim}
+              style={{ width: '100%' }}
             >
               Buscar
             </Button>
+          </Col>
+        </Row>
+      </Card>
+
+      <Card
+        title={
+          <Space>
+            <CalendarOutlined />
+            Visão Geral de Frequência
           </Space>
         }
       >
@@ -1004,21 +1039,29 @@ export default function FrequenciaVisaoGeralPage() {
         ) : null}
       </Card>
 
+      {/* ✅ Card de Filtros - Equipes */}
       <Card
+        size='small'
         title={
           <Space>
-            <TeamOutlined />
-            Visão Geral de Equipes
+            <FilterOutlined />
+            <span>Filtros de Equipes</span>
           </Space>
         }
-        style={{ marginTop: 24 }}
-        extra={
-          <Space>
+        style={{ marginTop: '24px', marginBottom: '16px' }}
+      >
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={8}>
+            <div
+              style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}
+            >
+              Equipe
+            </div>
             <Select
               placeholder='Selecione a equipe'
               showSearch
               allowClear
-              style={{ width: 300 }}
+              style={{ width: '100%' }}
               loading={loadingEquipes}
               value={equipeId}
               onChange={value => setEquipeId(value)}
@@ -1036,6 +1079,13 @@ export default function FrequenciaVisaoGeralPage() {
                   : []
               }
             />
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <div
+              style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}
+            >
+              Período
+            </div>
             <RangePicker
               value={
                 dataInicioEquipe && dataFimEquipe
@@ -1045,15 +1095,33 @@ export default function FrequenciaVisaoGeralPage() {
               onChange={handleRangeChangeEquipe}
               format='DD/MM/YYYY'
               placeholder={['Data início', 'Data fim']}
+              style={{ width: '100%' }}
             />
+          </Col>
+          <Col
+            xs={24}
+            sm={12}
+            md={8}
+            style={{ display: 'flex', alignItems: 'flex-end' }}
+          >
             <Button
               type='primary'
               onClick={handleBuscarEquipe}
               loading={loadingEquipe}
               disabled={!equipeId || !dataInicioEquipe || !dataFimEquipe}
+              style={{ width: '100%' }}
             >
               Buscar
             </Button>
+          </Col>
+        </Row>
+      </Card>
+
+      <Card
+        title={
+          <Space>
+            <TeamOutlined />
+            Visão Geral de Equipes
           </Space>
         }
       >
