@@ -95,7 +95,7 @@ export const TurnosMatrixTable: React.FC<TurnosMatrixTableProps> = ({
   // 3. Definir Colunas
   const columns: ColumnsType<any> = useMemo(() => {
     const renderCell = (val: { previsto: number; realizado: number }) => {
-      if (!val || val.previsto === 0) return '-';
+      if (!val || (val.previsto === 0 && val.realizado === 0)) return '-';
 
       let color = '#52c41a'; // Verde (Igual)
       if (val.realizado < val.previsto) color = '#f5222d'; // Vermelho
@@ -104,11 +104,9 @@ export const TurnosMatrixTable: React.FC<TurnosMatrixTableProps> = ({
       return (
         <Space size={4}>
           <Text>{val.previsto}</Text>
-          {val.realizado > 0 && (
-            <Text strong style={{ color }}>
-              ({val.realizado})
-            </Text>
-          )}
+          <Text strong style={{ color }}>
+            ({val.realizado})
+          </Text>
         </Space>
       );
     };
@@ -156,14 +154,15 @@ export const TurnosMatrixTable: React.FC<TurnosMatrixTableProps> = ({
       if (realizado < previsto) color = '#f5222d'; // Vermelho
       if (realizado > previsto) color = '#1890ff'; // Azul
 
+      // Se não tem nada previsto nem realizado, traço
+      if (previsto === 0 && realizado === 0) return '-';
+
       return (
         <Space size={4}>
           <Text strong>{previsto}</Text>
-          {realizado > 0 && (
-            <Text strong style={{ color }}>
-              ({realizado})
-            </Text>
-          )}
+          <Text strong style={{ color }}>
+            ({realizado})
+          </Text>
         </Space>
       );
     };
