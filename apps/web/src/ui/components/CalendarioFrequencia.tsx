@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, Badge, Tooltip, Tag } from 'antd';
+import { Calendar, Badge, Tooltip } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { ConsolidadoEletricistaResponse } from '@/lib/schemas/turnoRealizadoSchema';
@@ -22,40 +22,9 @@ export default function CalendarioFrequencia({
   // Criar Set de dias com escala para verificar "não escalado"
   const diasComEscalaSet = new Set<string>(consolidado.diasComEscala || []);
 
-  // Função para obter cor de fundo baseada no tipo
-  const getBackgroundColor = (
-    tipo: string,
-    status?: string,
-    temEscalaFolga?: boolean
-  ): string => {
-    switch (tipo) {
-      case 'trabalho':
-      case 'trabalho_realizado':
-        // Verde: trabalhado normal
-        return 'rgba(82, 196, 26, 0.2)'; // Verde
-      case 'falta':
-        // Vermelho: falta
-        return 'rgba(255, 77, 79, 0.2)'; // Vermelho
-      case 'hora_extra':
-        // Azul: trabalhado na folga ou fora da escala
-        return 'rgba(24, 144, 255, 0.2)'; // Azul
-      case 'folga':
-      case 'escala_folga':
-        // Folga pode aparecer no calendário (cinza suave)
-        return 'rgba(140, 140, 140, 0.1)'; // Cinza muito suave
-      case 'escala_trabalho':
-        // Se tem escala mas não trabalhou, não colorir (será mostrado como falta se não trabalhou)
-        return 'transparent';
-      default:
-        return 'transparent';
-    }
-  };
-
-  // ✅ CORREÇÃO: Obter TODOS os eventos de um dia (escala + o que aconteceu)
+  // ✅ CORREÇÃO: Obter APENAS o evento mais relevante do dia
   const getListData = (value: Dayjs) => {
     const dataStr = value.format('YYYY-MM-DD');
-
-    // Buscar TODOS os eventos deste dia (pode ter múltiplos: escala + trabalho/falta/hora extra)
     const eventosDia = consolidado.detalhamento.filter(
       d => dayjs(d.data).format('YYYY-MM-DD') === dataStr
     );
@@ -71,77 +40,79 @@ export default function CalendarioFrequencia({
       isEscala?: boolean;
     }> = [];
 
-    for (const dia of eventosDia) {
-      switch (dia.tipo) {
-        case 'escala_trabalho':
-          list.push({
-            type: 'default',
-            content: dia.equipe?.nome
-              ? `Escala: ${dia.equipe.nome}`
-              : 'Escala: Trabalho',
-            equipe: dia.equipe?.nome,
-            isEscala: true,
-          });
-          break;
-        case 'escala_folga':
-          list.push({
-            type: 'default',
-            content: 'Escala: Folga',
-            isEscala: true,
-          });
-          break;
-        case 'trabalho_realizado':
-          list.push({
-            type: 'success',
-            content: 'Trabalhado',
-            equipe: dia.equipe?.nome,
-            isEscala: false,
-          });
-          break;
-        case 'falta':
-          if (dia.status === 'justificada') {
-            list.push({
-              type: 'warning',
-              content: 'Atestado',
-              isEscala: false,
-            });
-          } else {
-            list.push({
-              type: 'error',
-              content: 'Falta',
-              isEscala: false,
-            });
-          }
-          break;
-        case 'hora_extra':
-          const tipoHoraExtra =
-            dia.tipoHoraExtra === 'folga_trabalhada'
-              ? 'Hora Extra (Folga)'
-              : 'Hora Extra';
-          list.push({
-            type: 'processing',
-            content: tipoHoraExtra,
-            equipe: dia.equipe?.nome,
-            isEscala: false,
-          });
-          break;
-        case 'folga':
-          // Folga sem trabalho (já processada como escala_folga, mas manter compatibilidade)
-          if (!list.some(l => l.content === 'Escala: Folga')) {
-            list.push({
-              type: 'default',
-              content: 'Folga',
-              isEscala: true,
-            });
-          }
-          break;
-      }
+    // Prioridade de exibição:
+    // 1. Trabalho Realizado / Hora Extra (O que aconteceu de fato)
+    // 2. Falta (Se não trabalhou)
+    // 3. Escala Futura/Prevista (Se ainda não aconteceu)
+
+    // Tenta achar trabalho realizado ou extra
+    const trabalho = eventosDia.find(
+      d => d.tipo === 'trabalho_realizado' || d.tipo === 'hora_extra'
+    );
+
+    if (trabalho) {
+      // Se tem trabalho, mostra SÓ os dados do trabalho
+      const type = trabalho.tipo === 'hora_extra' ? 'processing' : 'success';
+      // Conteúdo principal deve ser a equipe
+      const content = trabalho.equipe?.nome || 'Trabalhado';
+
+      list.push({
+        type,
+        content,
+        equipe: undefined, // Já está no content
+        isEscala: false,
+      });
+      return list;
     }
 
-    return list;
+    // Se não tem trabalho, verifica falta
+    const falta = eventosDia.find(d => d.tipo === 'falta');
+    if (falta) {
+      const isAtestado = falta.status === 'justificada';
+      list.push({
+        type: isAtestado ? 'warning' : 'error',
+        content: isAtestado ? 'Atestado' : 'Falta',
+        isEscala: false,
+      });
+      return list;
+    }
+
+    // Se não tem nada realizado, mostra o previsto (escala)
+    const escala = eventosDia.find(
+      d =>
+        d.tipo === 'escala_trabalho' ||
+        d.tipo === 'escala_folga' ||
+        d.tipo === 'folga'
+    );
+
+    if (escala) {
+      if (escala.tipo === 'escala_folga' || escala.tipo === 'folga') {
+        list.push({
+          type: 'default',
+          content: 'Folga',
+          isEscala: true,
+        });
+      } else {
+        // Escala de trabalho
+        // Verificar se é futuro para adicionar "Previsto"
+        const isFuturo = value.isAfter(dayjs(), 'day');
+        const nomeEquipe = escala.equipe?.nome || 'Trabalho';
+        const content = isFuturo ? `Previsto: ${nomeEquipe}` : nomeEquipe;
+
+        list.push({
+          type: 'default', // Neutro para futuro
+          content,
+          equipe: undefined,
+          isEscala: true,
+        });
+      }
+      return list;
+    }
+
+    return [];
   };
 
-  // ✅ CORREÇÃO: Customizar célula mostrando TODOS os eventos (escala + o que aconteceu)
+  // ✅ CORREÇÃO: Customizar célula mostrando APENAS o evento consolidado
   const cellRender = (current: Dayjs) => {
     const dataStr = current.format('YYYY-MM-DD');
     const listData = getListData(current);
@@ -157,38 +128,36 @@ export default function CalendarioFrequencia({
           </div>
         );
       }
-      // Se tem escala mas não tem dados, retornar vazio (só o número do dia será mostrado)
+      // Se tem escala mas não tem dados (e.g. futuro proximo sem slot gerado ainda? improvavel com a logica atual, mas ok), retornar vazio
       return null;
     }
 
-    // Buscar eventos do dia para obter informações detalhadas
+    const item = listData[0]; // Agora sempre temos no máximo 1 item principal
+
+    // Definir cor de fundo baseado no tipo do item
+    let backgroundColor = 'transparent';
+    if (item.type === 'success') backgroundColor = 'rgba(82, 196, 26, 0.2)';
+    else if (item.type === 'error') backgroundColor = 'rgba(255, 77, 79, 0.2)';
+    else if (item.type === 'processing')
+      backgroundColor = 'rgba(24, 144, 255, 0.2)';
+    else if (item.type === 'warning')
+      backgroundColor = 'rgba(250, 219, 20, 0.2)';
+    else if (item.type === 'default' && item.content === 'Folga')
+      backgroundColor = 'rgba(140, 140, 140, 0.1)';
+
+    // Buscar dados originais para tooltip (horas, etc)
     const eventosDia = consolidado.detalhamento.filter(
       d => dayjs(d.data).format('YYYY-MM-DD') === dataStr
     );
+    // Tenta pegar o evento que gerou o item (trabalho, falta, ou escala)
+    const eventoGerador = eventosDia.find(d => {
+      if (item.type === 'success' || item.type === 'processing')
+        return d.tipo === 'trabalho_realizado' || d.tipo === 'hora_extra';
+      if (item.type === 'error') return d.tipo === 'falta';
+      if (item.type === 'warning') return d.tipo === 'falta'; // atestado
+      return d.tipo.startsWith('escala_') || d.tipo === 'folga';
+    });
 
-    // Determinar cor de fundo baseado no evento principal (não escala)
-    const eventoPrincipal = eventosDia.find(
-      e => e.tipo !== 'escala_trabalho' && e.tipo !== 'escala_folga'
-    );
-
-    // Verificar se tem escala de folga
-    const temEscalaFolga = eventosDia.some(e => e.tipo === 'escala_folga');
-
-    // Se trabalhou na folga (hora extra com escala folga), usar azul
-    const trabalhouNaFolga =
-      eventoPrincipal?.tipo === 'hora_extra' && temEscalaFolga;
-
-    const backgroundColor = eventoPrincipal
-      ? getBackgroundColor(
-          eventoPrincipal.tipo,
-          eventoPrincipal.status,
-          temEscalaFolga
-        )
-      : temEscalaFolga
-        ? getBackgroundColor('escala_folga')
-        : 'transparent';
-
-    // Renderizar todos os eventos
     return (
       <div
         style={{
@@ -199,145 +168,82 @@ export default function CalendarioFrequencia({
           marginTop: '4px',
         }}
       >
-        {listData
-          .filter(item => {
-            // No calendário, mostrar tudo (incluindo folgas)
-            // Mas priorizar eventos realizados
-            return true;
-          })
-          .map((item, index) => {
-            // Buscar dados do evento correspondente
-            const eventoDia = eventosDia.find(e => {
-              if (item.isEscala) {
-                return (
-                  e.tipo === 'escala_trabalho' || e.tipo === 'escala_folga'
-                );
-              }
-              if (item.content === 'Trabalhado')
-                return e.tipo === 'trabalho_realizado';
-              if (item.content === 'Falta')
-                return e.tipo === 'falta' && e.status !== 'justificada';
-              if (item.content === 'Atestado')
-                return e.tipo === 'falta' && e.status === 'justificada';
-              if (item.content.includes('Hora Extra'))
-                return e.tipo === 'hora_extra';
-              return false;
-            });
-
-            // Determinar cor do badge baseado no tipo
-            let badgeColor:
-              | 'success'
-              | 'error'
-              | 'processing'
-              | 'default'
-              | 'warning' = 'default';
-            if (item.content === 'Trabalhado' && !item.isEscala) {
-              badgeColor = 'success'; // Verde: trabalho normal
-            } else if (item.content === 'Falta') {
-              badgeColor = 'error'; // Vermelho: falta
-            } else if (item.content.includes('Hora Extra')) {
-              badgeColor = 'processing'; // Azul: hora extra (trabalho na folga ou fora da escala)
-            } else if (item.content === 'Atestado') {
-              badgeColor = 'warning'; // Amarelo: atestado
-            }
-
-            return (
-              <div key={index} style={{ marginTop: index > 0 ? '4px' : 0 }}>
-                <Tooltip
-                  title={
-                    <div>
-                      <div>{item.content}</div>
-                      {item.equipe && <div>Equipe: {item.equipe}</div>}
-                      {eventoDia && eventoDia.horaInicio && (
-                        <div>
-                          Início: {dayjs(eventoDia.horaInicio).format('HH:mm')}
-                        </div>
-                      )}
-                      {eventoDia && eventoDia.horaFim && (
-                        <div>
-                          Fim: {dayjs(eventoDia.horaFim).format('HH:mm')}
-                        </div>
-                      )}
-                      {eventoDia && eventoDia.horasRealizadas > 0 && (
-                        <div>
-                          Horas: {eventoDia.horasRealizadas.toFixed(1)}h
-                        </div>
-                      )}
-                      {eventoDia && eventoDia.horasPrevistas > 0 && (
-                        <div>
-                          Previstas: {eventoDia.horasPrevistas.toFixed(1)}h
-                        </div>
-                      )}
-                    </div>
-                  }
-                >
-                  <Badge
-                    status={badgeColor}
-                    text={
-                      <span
-                        style={{
-                          fontSize: item.isEscala ? '10px' : '11px',
-                          display: 'block',
-                          fontStyle: item.isEscala ? 'italic' : 'normal',
-                          opacity: item.isEscala ? 0.8 : 1,
-                          fontWeight: !item.isEscala ? 'bold' : 'normal',
-                        }}
-                      >
-                        {item.content}
-                      </span>
-                    }
-                  />
-                </Tooltip>
-                {eventoDia &&
-                  eventoDia.horaInicio &&
-                  eventoDia.horaFim &&
-                  !item.isEscala && (
-                    <div
-                      style={{
-                        fontSize: '10px',
-                        color: '#666',
-                        marginTop: '2px',
-                      }}
-                    >
-                      {dayjs(eventoDia.horaInicio).format('HH:mm')} -{' '}
-                      {dayjs(eventoDia.horaFim).format('HH:mm')}
-                    </div>
-                  )}
-                {eventoDia &&
-                  eventoDia.horaInicio &&
-                  !eventoDia.horaFim &&
-                  !item.isEscala && (
-                    <div
-                      style={{
-                        fontSize: '10px',
-                        color: '#666',
-                        marginTop: '2px',
-                      }}
-                    >
-                      Início: {dayjs(eventoDia.horaInicio).format('HH:mm')}
-                    </div>
-                  )}
-                {item.equipe && (
-                  <Tag
-                    color={
-                      badgeColor === 'processing'
-                        ? 'blue'
-                        : badgeColor === 'success'
-                          ? 'green'
-                          : 'default'
-                    }
-                    style={{
-                      marginTop: '2px',
-                      display: 'block',
-                      fontSize: '10px',
-                    }}
-                  >
-                    {item.equipe}
-                  </Tag>
+        <Tooltip
+          title={
+            <div>
+              <div>{item.content}</div>
+              {/* Se o content já é o nome da equipe, não precisa repetir */}
+              {eventoGerador?.equipe?.nome &&
+                item.content !== eventoGerador.equipe.nome && (
+                  <div>Equipe: {eventoGerador.equipe.nome}</div>
                 )}
-              </div>
-            );
-          })}
+
+              {eventoGerador && eventoGerador.horaInicio && (
+                <div>
+                  Início: {dayjs(eventoGerador.horaInicio).format('HH:mm')}
+                </div>
+              )}
+              {eventoGerador && eventoGerador.horaFim && (
+                <div>Fim: {dayjs(eventoGerador.horaFim).format('HH:mm')}</div>
+              )}
+              {eventoGerador && eventoGerador.horasRealizadas > 0 && (
+                <div>Horas: {eventoGerador.horasRealizadas.toFixed(1)}h</div>
+              )}
+              {eventoGerador && eventoGerador.horasPrevistas > 0 && (
+                <div>Previstas: {eventoGerador.horasPrevistas.toFixed(1)}h</div>
+              )}
+            </div>
+          }
+        >
+          <Badge
+            status={item.type as any}
+            text={
+              <span
+                style={{
+                  fontSize: item.isEscala ? '10px' : '11px',
+                  display: 'block',
+                  fontStyle: item.isEscala ? 'italic' : 'normal',
+                  opacity: item.isEscala ? 0.8 : 1,
+                  fontWeight: !item.isEscala ? 'bold' : 'normal',
+                }}
+              >
+                {item.content}
+              </span>
+            }
+          />
+        </Tooltip>
+
+        {/* Horários abaixo do badge se disponível */}
+        {eventoGerador &&
+          eventoGerador.horaInicio &&
+          eventoGerador.horaFim &&
+          !item.isEscala && (
+            <div
+              style={{
+                fontSize: '10px',
+                color: '#666',
+                marginTop: '2px',
+              }}
+            >
+              {dayjs(eventoGerador.horaInicio).format('HH:mm')} -{' '}
+              {dayjs(eventoGerador.horaFim).format('HH:mm')}
+            </div>
+          )}
+
+        {eventoGerador &&
+          eventoGerador.horaInicio &&
+          !eventoGerador.horaFim &&
+          !item.isEscala && (
+            <div
+              style={{
+                fontSize: '10px',
+                color: '#666',
+                marginTop: '2px',
+              }}
+            >
+              Início: {dayjs(eventoGerador.horaInicio).format('HH:mm')}
+            </div>
+          )}
       </div>
     );
   };

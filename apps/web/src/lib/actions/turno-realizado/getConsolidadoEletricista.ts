@@ -332,8 +332,16 @@ export const getConsolidadoEletricista = async (rawData: unknown) =>
       }
 
       // 3. Processar faltas (o que ACONTECEU quando deveria trabalhar)
+      // Ignorar faltas futuras (erroneamente geradas ou importadas)
+      const dataHojeStr = toRefDate(new Date());
+
       for (const falta of faltas) {
         const dataStr = toRefDate(falta.dataReferencia);
+
+        // Se a falta é futura, ignora
+        if (dataStr > dataHojeStr) {
+          continue;
+        }
 
         if (!detalhamentoPorData.has(dataStr)) {
           detalhamentoPorData.set(dataStr, []);
