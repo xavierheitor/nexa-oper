@@ -95,12 +95,28 @@ export class AuthService {
    */
   async validateLogin(matricula: string, senha: string) {
     // Buscar usuário pela matrícula
+    this.logger.debug(`Tentativa de login para matrícula: ${matricula}`);
     const user = await this.mobileUsersService.findByMatricula(matricula);
 
-    // Validar credenciais
-    if (!user || !(await bcrypt.compare(senha, user.password))) {
+    if (!user) {
+      this.logger.warn(
+        `Login falhou: Usuário não encontrado para matrícula ${matricula}`
+      );
       throw new UnauthorizedException('Matrícula ou senha inválida');
     }
+
+    // Validar credenciais
+    const isPasswordValid = await bcrypt.compare(senha, user.password);
+    if (!isPasswordValid) {
+      this.logger.warn(
+        `Login falhou: Senha incorreta para usuário ${matricula} (ID: ${user.id})`
+      );
+      throw new UnauthorizedException('Matrícula ou senha inválida');
+    }
+
+    this.logger.log(
+      `Login bem-sucedido para usuário ${matricula} (ID: ${user.id})`
+    );
 
     // Criar payload do JWT
     const payload = {
