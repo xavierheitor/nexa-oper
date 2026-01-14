@@ -18,6 +18,34 @@ describe('Environment Validation Schema', () => {
       expect(value.NODE_ENV).toBe('development');
     });
 
+    it('should fail if JWT_SECRET is missing', () => {
+      const env: Record<string, unknown> = { ...validBaseEnv };
+      delete env.JWT_SECRET;
+
+      const { error } = envValidationSchema.validate(env);
+      expect(error).toBeDefined();
+      expect(error?.message).toContain('JWT_SECRET é obrigatório');
+    });
+
+    it('should fail if JWT_SECRET is too short', () => {
+      const env = { ...validBaseEnv, JWT_SECRET: 'short' };
+
+      const { error } = envValidationSchema.validate(env);
+      expect(error).toBeDefined();
+      expect(error?.message).toContain(
+        'JWT_SECRET deve ter pelo menos 32 caracteres'
+      );
+    });
+
+    it('should fail if DATABASE_URL is missing', () => {
+      const env: Record<string, unknown> = { ...validBaseEnv };
+      delete env.DATABASE_URL;
+
+      const { error } = envValidationSchema.validate(env);
+      expect(error).toBeDefined();
+      expect(error?.message).toContain('"DATABASE_URL" is required');
+    });
+
     it('should pass with CORS_ORIGINS', () => {
       const env = { ...validBaseEnv, CORS_ORIGINS: 'http://localhost:3000' };
 

@@ -94,6 +94,7 @@ import { WebLogsModule } from './modules/web-logs/web-logs.module';
       envFilePath: [
         process.env.ENV_FILE_PATH || '.env', // Permite sobrescrever via variável de ambiente
         '.env.local',
+        'apps/api/.env',
         '.env',
       ],
       // Expandir variáveis de ambiente do sistema

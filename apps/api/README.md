@@ -41,7 +41,19 @@ Consulte a documentação detalhada em `apps/api/docs/`:
 
 ### Variáveis de Ambiente
 
-Criar arquivo `.env` na pasta `apps/api/`:
+O carregamento e validação de variáveis de ambiente é gerenciado exclusivamente pelo
+`@nestjs/config` (ConfigModule). Não há carregamento manual via `dotenv` no bootstrap.
+
+**Desenvolvimento:** Crie o arquivo `.env` na pasta `apps/api/`. O sistema também buscará `.env` na
+raiz da execução se necessário.
+
+**Produção:** Você pode especificar o caminho do arquivo `.env` explicitamente usando a variável de
+ambiente `ENV_FILE_PATH`. Exemplo: `ENV_FILE_PATH=/etc/nexa-oper/api.env node dist/main`
+
+Se `ENV_FILE_PATH` não for definido, o sistema buscará `.env`, `.env.local` e `apps/api/.env` na
+ordem definida no `AppModule`.
+
+Exemplo de arquivo `.env` na pasta `apps/api/`:
 
 ```env
 # Ambiente

@@ -4,7 +4,6 @@
 
 export * from './app.config';
 export * from './cors.config';
-export * from './env-loader';
 export * from './routes.config';
 export * from './security.config';
 export * from './swagger.config';

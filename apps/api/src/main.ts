@@ -15,7 +15,6 @@ import { Express } from 'express';
 import { AppModule } from './app.module';
 // Configurações
 import {
-  loadEnvironmentVariables,
   getAppConfig,
   configureTrustProxy,
   configureGlobalPrefix,
@@ -31,11 +30,6 @@ import {
 import { timeoutMiddleware } from './middleware';
 // Utils
 import { setupGracefulShutdown } from './utils/graceful-shutdown';
-
-/**
- * Carrega variáveis de ambiente antes de qualquer importação
- */
-loadEnvironmentVariables();
 
 /**
  * Função principal de bootstrap da aplicação
