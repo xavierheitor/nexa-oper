@@ -35,7 +35,6 @@
  * ```
  */
 
-import { ErrorLoggingInterceptor } from '@common/interceptors/error-logging.interceptor';
 import { OperationLoggingInterceptor } from '@common/interceptors/operation-logging.interceptor';
 import { LoggerMiddleware } from '@common/middleware/logger.middleware';
 import { RateLimitMiddleware } from '@common/middleware/rate-limit.middleware';
@@ -45,21 +44,21 @@ import { ChecklistModule } from '@modules/checklist/checklist.module';
 import { EletricistaModule } from '@modules/eletricista/eletricista.module';
 import { AuthModule } from '@modules/engine/auth/auth.module';
 import { ContractsModule } from '@modules/engine/contracts/contracts.module';
+import { VeiculoModule } from '@modules/veiculo/veiculo.module';
 import {
   MiddlewareConsumer,
   Module,
   NestModule,
   RequestMethod,
 } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { ScheduleModule } from '@nestjs/schedule';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
 import { envValidationSchema } from './config/validation';
-import { VeiculoModule } from '@modules/veiculo/veiculo.module';
-
 import { HealthModule } from './health/health.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { AtividadeModule } from './modules/atividade';
@@ -153,11 +152,6 @@ import { WebLogsModule } from './modules/web-logs/web-logs.module';
     // Serviço principal da aplicação
     AppService,
 
-    // Interceptors globais para logging e tratamento de erros
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: ErrorLoggingInterceptor,
-    },
     {
       provide: APP_INTERCEPTOR,
       useClass: OperationLoggingInterceptor,

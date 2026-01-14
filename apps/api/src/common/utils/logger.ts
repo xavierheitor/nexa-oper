@@ -60,7 +60,11 @@ function writeLogToFile(line: string, level: string): void {
     const levelLower = level.toLowerCase();
 
     // Escreve sempre no arquivo principal (app.log) para info, log, warn e error
-    if (['info', 'log', 'warn', 'error'].includes(levelLower)) {
+    // MAS APENAS SE NÃO FOR PRODUÇÃO (para evitar I/O bloqueante)
+    if (
+      process.env.NODE_ENV !== 'production' &&
+      ['info', 'log', 'warn', 'error'].includes(levelLower)
+    ) {
       fs.appendFileSync(LOG_FILE, line + '\n', 'utf8');
     }
 
