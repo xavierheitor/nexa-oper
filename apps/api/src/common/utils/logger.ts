@@ -28,63 +28,126 @@ const LOG_FILE = path.join(LOG_DIR, 'app.log');
 const ERROR_LOG_FILE = path.join(LOG_DIR, 'error.log');
 
 /**
- * Inicialização automática dos arquivos de log
- * Garante que o diretório e arquivos existem antes de usar
+ * Gerenciador de Escrita de Logs (FileLogWriter)
+ *
+ * Responsável por gerenciar os streams de escrita em arquivo de forma
+ * assíncrona e resiliente. Implementa padrão Singleton internamente.
  */
-if (!fs.existsSync(LOG_DIR)) {
-  fs.mkdirSync(LOG_DIR, { recursive: true });
+class FileLogWriter {
+  private appLogStream: fs.WriteStream | null = null;
+  private errorLogStream: fs.WriteStream | null = null;
+  private isClosing = false;
+
+  private ensureDirectoryExists() {
+    try {
+      if (!fs.existsSync(LOG_DIR)) {
+        fs.mkdirSync(LOG_DIR, { recursive: true });
+      }
+    } catch (err) {
+      console.error('Falha crítica ao criar diretório de logs:', err);
+    }
+  }
+
+  private createStream(filePath: string): fs.WriteStream | null {
+    try {
+      this.ensureDirectoryExists();
+      const stream = fs.createWriteStream(filePath, { flags: 'a' });
+
+      stream.on('error', err => {
+        console.error(`Erro no stream de log (${filePath}):`, err);
+      });
+
+      return stream;
+    } catch (err) {
+      console.error(`Erro ao criar stream para ${filePath}:`, err);
+      return null;
+    }
+  }
+
+  private getStream(type: 'app' | 'error'): fs.WriteStream | null {
+    if (this.isClosing) return null;
+
+    if (type === 'app') {
+      if (!this.appLogStream) {
+        this.appLogStream = this.createStream(LOG_FILE);
+      }
+      return this.appLogStream;
+    } else {
+      if (!this.errorLogStream) {
+        this.errorLogStream = this.createStream(ERROR_LOG_FILE);
+      }
+      return this.errorLogStream;
+    }
+  }
+
+  public write(line: string, level: string): void {
+    if (this.isClosing) return;
+
+    try {
+      const levelLower = level.toLowerCase();
+      const isError = levelLower === 'error';
+
+      // Regra 1: Error log recebe erros
+      if (isError) {
+        const errStream = this.getStream('error');
+        if (errStream && !errStream.write(line + '\n')) {
+          // Backpressure handled by Node.js stream internal buffer
+          // We don't need explicit drain handler for simple logging unless very high throughput
+        }
+      }
+
+      // Regra 2: App log recebe tudo (exceto debug/verbose em prod)
+      // Debug/Verbose check já é feito externamente, mas reforçamos aqui se necessário
+      // O StandardLogger já filtra debug/verbose antes de chamar writeLogToFile
+      // Portanto, aqui escrevemos tudo que chega.
+
+      const appStream = this.getStream('app');
+      if (appStream && !appStream.write(line + '\n')) {
+        // Pass
+      }
+    } catch (err) {
+      // Fallback para console em caso de falha catastrófica no stream
+      console.error('Falha ao escrever no log (fallback):', err);
+    }
+  }
+
+  public async close(): Promise<void> {
+    this.isClosing = true;
+    const streams = [this.appLogStream, this.errorLogStream].filter(
+      (s): s is fs.WriteStream => s !== null
+    );
+
+    if (streams.length === 0) return;
+
+    await new Promise<void>(resolve => {
+      let pending = streams.length;
+      const onDone = () => {
+        pending--;
+        if (pending <= 0) resolve();
+      };
+
+      streams.forEach(stream => stream.end(onDone));
+
+      // Timeout de segurança (1s)
+      setTimeout(resolve, 1000);
+    });
+  }
 }
-if (!fs.existsSync(LOG_FILE)) {
-  fs.writeFileSync(LOG_FILE, '', 'utf8');
-}
-if (!fs.existsSync(ERROR_LOG_FILE)) {
-  fs.writeFileSync(ERROR_LOG_FILE, '', 'utf8');
+
+const fileWriter = new FileLogWriter();
+
+/**
+ * Função para escrever logs em arquivos (Wrapper para FileLogWriter)
+ */
+function writeLogToFile(line: string, level: string): void {
+  fileWriter.write(line, level);
 }
 
 /**
- * Função para escrever logs em arquivos
- *
- * Escreve o log formatado no arquivo apropriado baseado no nível
- * Garante que info e error sejam sempre escritos em produção
- *
- * LOGS ESCRITOS:
- * - info, log, warn: app.log apenas
- * - error: app.log e error.log (duplicado para facilitar análise)
- * - debug, verbose: apenas em desenvolvimento (se shouldLogDebug retornar true)
- *
- * @param line - Linha formatada para escrita
- * @param level - Nível do log para determinar arquivo de destino
+ * Fecha os streams de log graciosamente
  */
-function writeLogToFile(line: string, level: string): void {
-  try {
-    const levelLower = level.toLowerCase();
-
-    // Escreve sempre no arquivo principal (app.log) para info, log, warn e error
-    // MAS APENAS SE NÃO FOR PRODUÇÃO (para evitar I/O bloqueante)
-    if (
-      process.env.NODE_ENV !== 'production' &&
-      ['info', 'log', 'warn', 'error'].includes(levelLower)
-    ) {
-      fs.appendFileSync(LOG_FILE, line + '\n', 'utf8');
-    }
-
-    // Se for erro, escreve também no arquivo específico de erros
-    if (levelLower === 'error') {
-      fs.appendFileSync(ERROR_LOG_FILE, line + '\n', 'utf8');
-    }
-
-    // Debug e verbose apenas em desenvolvimento
-    if (
-      ['debug', 'verbose'].includes(levelLower) &&
-      process.env.NODE_ENV !== 'production'
-    ) {
-      fs.appendFileSync(LOG_FILE, line + '\n', 'utf8');
-    }
-  } catch (err) {
-    // Em caso de erro ao escrever, não quebra a aplicação
-    // Apenas loga no console como fallback
-    console.error('Erro ao escrever log em arquivo:', err);
-  }
+export async function flushAndCloseLogs(): Promise<void> {
+  await fileWriter.close();
 }
 
 /**

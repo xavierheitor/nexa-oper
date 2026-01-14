@@ -106,5 +106,11 @@ UPLOAD_BASE_URL=
 
 ## Observabilidade
 
-- `StandardLogger` + sanitização (`sanitizeHeaders`, `sanitizeData`)
-- Métricas via `metrics` (quando habilitado)
+- **StandardLogger**: Logging estruturado e assíncrono.
+  - Grava em arquivos via streams não bloqueantes.
+  - Sanitização automática de dados sensíveis (`sanitizeHeaders`, `sanitizeData`).
+- **Arquivos**:
+  - `app.log`: Logs gerais (exceto debug em produção).
+  - `error.log`: Apenas erros e exceptions.
+  - Localização padrão: `./logs` (configurável via variável de ambiente `LOG_PATH`).
+- **Métricas**: `metrics` endpoint (Prometheus) quando habilitado.

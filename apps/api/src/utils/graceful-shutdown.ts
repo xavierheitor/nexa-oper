@@ -6,7 +6,7 @@
  * de encerrar o processo.
  */
 
-import { StandardLogger } from '@common/utils/logger';
+import { StandardLogger, flushAndCloseLogs } from '@common/utils/logger';
 import { INestApplication } from '@nestjs/common';
 
 /**
@@ -34,8 +34,12 @@ export function setupGracefulShutdown(
       }, 30_000);
 
       await app.close();
+
+      // Fecha os streams de logs
+      await flushAndCloseLogs();
+
       clearTimeout(shutdownTimeout);
-      logger.log('Aplicação finalizada com sucesso');
+      logger.log('Aplicação finalizada com sucesso (logs flushados)');
       process.exit(0);
     } catch (error) {
       logger.error('Erro durante graceful shutdown:', error);
