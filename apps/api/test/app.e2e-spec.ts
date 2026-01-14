@@ -20,10 +20,11 @@ describe('AppController (e2e)', () => {
     await app.close();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  it('/health (GET)', () => {
+    return request(app.getHttpServer()).get('/health').expect(200); // Should be accessible and healthy/degraded but not error
+  });
+
+  it('/db/tests (GET) should not exist', () => {
+    return request(app.getHttpServer()).get('/db/tests').expect(404); // Should be removed
   });
 });

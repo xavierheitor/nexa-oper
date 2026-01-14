@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { PrismaClient } from '@nexa-oper/db';
 
-import { DatabaseController } from './database.controller';
 import { DatabaseService } from './database.service';
 
 @Module({
-  controllers: [DatabaseController],
+  controllers: [],
   providers: [
     DatabaseService,
     {
