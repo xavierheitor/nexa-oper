@@ -15,6 +15,8 @@ interface TurnosPrevistosTableProps {
   tiposEquipeData: Array<{ id: number; nome: string }> | undefined;
   filtroStatus: string | undefined;
   setFiltroStatus: (value: string | undefined) => void;
+  filtroHorario: string | undefined;
+  setFiltroHorario: (value: string | undefined) => void;
 }
 
 export const TurnosPrevistosTable: React.FC<TurnosPrevistosTableProps> = ({
@@ -28,6 +30,8 @@ export const TurnosPrevistosTable: React.FC<TurnosPrevistosTableProps> = ({
   tiposEquipeData,
   filtroStatus,
   setFiltroStatus,
+  filtroHorario,
+  setFiltroHorario,
 }) => {
   return (
     <Card
@@ -84,6 +88,17 @@ export const TurnosPrevistosTable: React.FC<TurnosPrevistosTableProps> = ({
               { label: 'Turno Extra', value: 'TURNO_EXTRA' },
             ]}
           />
+          <Select
+            placeholder='Filtrar por Horário'
+            allowClear
+            style={{ width: 180 }}
+            value={filtroHorario}
+            onChange={value => setFiltroHorario(value || undefined)}
+            options={[
+              { label: 'Com Horário', value: 'COM_HORARIO' },
+              { label: 'Sem Horário', value: 'SEM_HORARIO' },
+            ]}
+          />
         </Space>
       }
     >
@@ -115,7 +130,8 @@ export const TurnosPrevistosTable: React.FC<TurnosPrevistosTableProps> = ({
             title: 'Horário Previsto',
             dataIndex: 'horarioPrevisto',
             key: 'horarioPrevisto',
-            render: (horario: string | null) => formatTime(horario),
+            render: (horario: string | null) =>
+              horario ? formatTime(horario) : 'Sem Horário',
           },
           {
             title: 'Eletricistas',

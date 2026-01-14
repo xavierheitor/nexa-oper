@@ -238,11 +238,7 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
         label: 'Justificativas de Equipe',
         path: '/dashboard/frequencia/justificativas-equipe',
       },
-      {
-        key: '/dashboard/frequencia/reconciliacao-manual',
-        label: 'Reconciliação Manual',
-        path: '/dashboard/frequencia/reconciliacao-manual',
-      },
+
       {
         key: '/dashboard/frequencia/aderencia-escala',
         label: 'Aderência de Escala',

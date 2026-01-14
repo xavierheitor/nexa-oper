@@ -23,6 +23,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
@@ -36,27 +37,6 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
  * @returns JWT_SECRET configurado
  * @throws {Error} Se JWT_SECRET não estiver configurado
  */
-function getJwtSecret(): string {
-  const secret = process.env.JWT_SECRET;
-  if (!secret || secret.trim() === '') {
-    throw new Error(
-      'JWT_SECRET não está configurado. Configure a variável de ambiente antes de iniciar a aplicação.'
-    );
-  }
-  if (secret === 'secret' || secret.length < 32) {
-    throw new Error(
-      'JWT_SECRET deve ser uma string segura com pelo menos 32 caracteres e não pode ser "secret"'
-    );
-  }
-  return secret;
-}
-
-/**
- * Estratégia JWT para autenticação de usuários móveis
- *
- * Implementa a validação de tokens JWT usando Passport, configurada
- * para trabalhar com tokens que não expiram automaticamente.
- */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   private readonly logger = new Logger(JwtStrategy.name);
@@ -66,9 +46,16 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
    *
    * Configura a estratégia JWT com as opções necessárias para autenticação
    * de usuários móveis, incluindo extração de tokens e validação de assinatura.
+   * Utiliza ConfigService para obter o segredo, garantindo consistência.
    */
-  constructor() {
-    const jwtSecret = getJwtSecret();
+  constructor(configService: ConfigService) {
+    const jwtSecret = configService.get<string>('JWT_SECRET');
+
+    if (!jwtSecret) {
+      throw new Error(
+        'JWT_SECRET não está configurado. Verifique as variáveis de ambiente.'
+      );
+    }
 
     super({
       // Extrair token do header Authorization: Bearer <token>

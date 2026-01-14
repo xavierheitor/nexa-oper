@@ -29,6 +29,7 @@ import {
   CalendarOutlined,
   SearchOutlined,
   EditOutlined,
+  UserSwitchOutlined,
 } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { getEscalasPublicadasProcessadas } from '@/lib/actions/escala/getEscalasPublicadasProcessadas';
@@ -43,6 +44,7 @@ import {
 } from '@/lib/actions/escala/equipeTurnoHistorico';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import EquipeTurnoHistoricoForm from '@/app/dashboard/escalas/equipe-horario/form';
+import SubstituirEletricistaModal from './components/SubstituirEletricistaModal';
 import type { ColumnsType } from 'antd/es/table';
 
 const { RangePicker } = DatePicker;
@@ -143,6 +145,18 @@ export default function EdicaoEmCursoPage() {
   // Estado para dados de eletricistas
   const [eletricistasData, setEletricistasData] = useState<any>(null);
 
+  // Estados para modal de substituição
+  const [modalSubstituicaoOpen, setModalSubstituicaoOpen] = useState(false);
+  const [dadosSubstituicao, setDadosSubstituicao] = useState<{
+    escalaId: number;
+    eletricistaSaiId: number;
+    eletricistaSaiNome: string;
+    periodoInicial: [Dayjs, Dayjs];
+  } | null>(null);
+
+  // Trigger para recarregar dados
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   // Carregar lista de eletricistas
   React.useEffect(() => {
     import('@/lib/actions/eletricista/list').then(({ listEletricistas }) => {
@@ -193,6 +207,7 @@ export default function EdicaoEmCursoPage() {
     filtroEquipe,
     filtroEletricista,
     filtroHorario,
+    refreshTrigger,
   ]);
 
   // Gerar lista de dias do período
@@ -306,24 +321,22 @@ export default function EdicaoEmCursoPage() {
                 {record.matricula}
               </div>
             </div>
-            {/* Botão de transferir comentado - não será usado por enquanto */}
-            {/* <Button
-              type="link"
-              size="small"
-              icon={<SwapOutlined />}
+            {/* Botão de substituir eletricista */}
+            <Button
+              type='text'
+              size='small'
+              icon={<UserSwitchOutlined />}
               onClick={() => {
-                setTransferenciaData({
+                setDadosSubstituicao({
                   escalaId: record.escalaId,
-                  eletricistaOrigemId: record.eletricistaId,
-                  eletricistaOrigemNome: record.eletricista,
+                  eletricistaSaiId: record.eletricistaId,
+                  eletricistaSaiNome: record.eletricista,
+                  periodoInicial: periodo,
                 });
-                formTransferencia.resetFields();
-                setModalTransferenciaOpen(true);
+                setModalSubstituicaoOpen(true);
               }}
-              title="Transferir escala"
-            >
-              Transferir
-            </Button> */}
+              title='Substituir Eletricista (Férias/Ausência)'
+            />
           </div>
         ),
       },
@@ -476,7 +489,7 @@ export default function EdicaoEmCursoPage() {
     ];
 
     return baseColumns;
-  }, [dias, filtrosDias, escalas, formSlot, loadingHorarioVigente]);
+  }, [dias, filtrosDias, escalas, formSlot, loadingHorarioVigente, periodo]);
 
   return (
     <div style={{ padding: '24px' }}>
@@ -1029,6 +1042,13 @@ export default function EdicaoEmCursoPage() {
           </Form>
         )}
       </Modal>
+      <SubstituirEletricistaModal
+        visible={modalSubstituicaoOpen}
+        onClose={() => setModalSubstituicaoOpen(false)}
+        dados={dadosSubstituicao}
+        eletricistas={eletricistasData}
+        onSuccess={() => setRefreshTrigger(prev => prev + 1)}
+      />
     </div>
   );
 }

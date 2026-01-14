@@ -109,13 +109,28 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
 
-    // Determina o status HTTP baseado no tipo de exceção
-    const status =
-      exception instanceof HttpException
-        ? exception.getStatus() // Para HttpException, usa o status definido
-        : HttpStatus.INTERNAL_SERVER_ERROR; // Para outros erros, usa 500
+    // Determina o status e monta o corpo da resposta
+    const status = this.getExceptionStatus(exception);
+    const responseBody = this.buildResponseBody(exception, status, request);
 
-    // Extrai e normaliza mensagem segura para o cliente
+    // Registra o log da exceção
+    this.logException(exception, status, request, responseBody);
+
+    // Envia resposta HTTP padronizada ao cliente (preservando campos adicionais quando for objeto)
+    response.status(status).json(responseBody);
+  }
+
+  private getExceptionStatus(exception: unknown): number {
+    return exception instanceof HttpException
+      ? exception.getStatus() // Para HttpException, usa o status definido
+      : HttpStatus.INTERNAL_SERVER_ERROR; // Para outros erros, usa 500
+  }
+
+  private buildResponseBody(
+    exception: unknown,
+    status: number,
+    request: Request
+  ): any {
     let safeMessage: string | string[] = 'Internal server error';
     let responseBody: any = {
       statusCode: status,
@@ -156,18 +171,30 @@ export class AllExceptionsFilter implements ExceptionFilter {
       responseBody.message = safeMessage;
     }
 
+    return responseBody;
+  }
+
+  private logException(
+    exception: unknown,
+    status: number,
+    request: Request,
+    responseBody: any
+  ): void {
     // Cria payload estruturado para logging com informações relevantes
     const logPayload = {
       timestamp: new Date().toISOString(),
+      requestId: (request as any).requestId, // Injetado pelo LoggerMiddleware
       method: request.method,
       url: request.url,
       status,
-      message: safeMessage,
+      message: responseBody.message,
       headers: sanitizeData(request.headers),
       body: sanitizeData((request as any).body),
     };
 
     // Registra log com severidade baseada no status HTTP usando Logger
+    const logContext = JSON.stringify(logPayload);
+
     if (status >= 500) {
       const errorMessage =
         exception instanceof Error
@@ -175,15 +202,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
           : 'Internal Server Error';
       const errorStack =
         exception instanceof Error ? exception.stack : undefined;
+
       this.logger.error(
         `[500] ${request.method} ${request.url} - ${errorMessage}`,
-        errorStack
+        errorStack,
+        logContext
       );
     } else if (status >= 400) {
       // Casos especiais que são comportamentos esperados, não erros
       // HTTP 409 com status 'already_closed' é comportamento esperado para sincronização mobile
       const isExpectedBehavior =
-        status === HttpStatus.CONFLICT &&
+        status === (HttpStatus.CONFLICT as number) &&
         typeof responseBody === 'object' &&
         responseBody !== null &&
         responseBody.status === 'already_closed';
@@ -191,16 +220,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
       if (isExpectedBehavior) {
         // Logar como debug - é comportamento esperado para sincronização mobile
         this.logger.debug(
-          `[409] Sincronização mobile - turno já fechado: ${responseBody.remoteId || 'N/A'}`
+          `[409] Sincronização mobile - turno já fechado: ${
+            responseBody.remoteId || 'N/A'
+          }`,
+          logContext
         );
       } else {
         this.logger.warn(
-          `[${status}] ${request.method} ${request.url} - ${JSON.stringify(safeMessage)}`
+          `[${status}] ${request.method} ${request.url} - ${JSON.stringify(
+            responseBody.message
+          )}`,
+          logContext
         );
       }
     }
-
-    // Envia resposta HTTP padronizada ao cliente (preservando campos adicionais quando for objeto)
-    response.status(status).json(responseBody);
   }
 }

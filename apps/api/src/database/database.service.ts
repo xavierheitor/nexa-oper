@@ -32,7 +32,7 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-import { PrismaClient, Test } from '@nexa-oper/db';
+import { PrismaClient } from '@nexa-oper/db';
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
@@ -83,29 +83,6 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   // Método para acessar o Prisma Client (mantido para compatibilidade)
   getPrisma(): PrismaClient {
     return this.prisma;
-  }
-
-  // Métodos de exemplo para o modelo Test (mantidos para compatibilidade)
-  async findAllTests(): Promise<Test[]> {
-    return await this.prisma.test.findMany();
-  }
-  async createTest(name: string): Promise<Test> {
-    return await this.prisma.test.create({
-      data: { name },
-    });
-  }
-
-  async updateTest(id: number, name: string): Promise<Test> {
-    return await this.prisma.test.update({
-      where: { id },
-      data: { name },
-    });
-  }
-
-  async deleteTest(id: number): Promise<Test> {
-    return await this.prisma.test.delete({
-      where: { id },
-    });
   }
 
   // Método para verificar saúde da conexão

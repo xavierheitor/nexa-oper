@@ -64,9 +64,15 @@ export function configureCors(
   });
 
   if (!isAllowedArray) {
-    logger.warn(
-      '⚠️ CORS PERMISSIVO (todas as origens). Use #CORS_ORIGINS em produção.'
-    );
+    if (process.env.NODE_ENV === 'production') {
+      logger.warn(
+        '🔒 CORS BLOQUEADO (Default em Produção). Configure CORS_ORIGINS para permitir acessos.'
+      );
+    } else {
+      logger.warn(
+        '⚠️ CORS PERMISSIVO (todas as origens). Use #CORS_ORIGINS em produção.'
+      );
+    }
   } else {
     logger.log(
       `✅ CORS restrito a ${allowed.length} origem(ens): ${allowed.join(', ')}`

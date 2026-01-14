@@ -41,7 +41,19 @@ Consulte a documentação detalhada em `apps/api/docs/`:
 
 ### Variáveis de Ambiente
 
-Criar arquivo `.env` na pasta `apps/api/`:
+O carregamento e validação de variáveis de ambiente é gerenciado exclusivamente pelo
+`@nestjs/config` (ConfigModule). Não há carregamento manual via `dotenv` no bootstrap.
+
+**Desenvolvimento:** Crie o arquivo `.env` na pasta `apps/api/`. O sistema também buscará `.env` na
+raiz da execução se necessário.
+
+**Produção:** Você pode especificar o caminho do arquivo `.env` explicitamente usando a variável de
+ambiente `ENV_FILE_PATH`. Exemplo: `ENV_FILE_PATH=/etc/nexa-oper/api.env node dist/main`
+
+Se `ENV_FILE_PATH` não for definido, o sistema buscará `.env`, `.env.local` e `apps/api/.env` na
+ordem definida no `AppModule`.
+
+Exemplo de arquivo `.env` na pasta `apps/api/`:
 
 ```env
 # Ambiente
@@ -55,6 +67,10 @@ DATABASE_URL="mysql://usuario:senha@localhost:3306/nexa_oper"
 JWT_SECRET="seu_jwt_secret_muito_longo_e_seguro_deve_ter_32_caracteres_minimo"
 
 # CORS
+# Obrigatório em produção (NODE_ENV=production).
+# Formats aceitos:
+#   - CSV: http://site1.com,https://site2.com
+#   - JSON: ["http://site1.com", "https://site2.com"]
 CORS_ORIGINS=http://localhost:3000,https://seu-dominio.com
 
 # Rate Limiting
@@ -90,5 +106,11 @@ UPLOAD_BASE_URL=
 
 ## Observabilidade
 
-- `StandardLogger` + sanitização (`sanitizeHeaders`, `sanitizeData`)
-- Métricas via `metrics` (quando habilitado)
+- **StandardLogger**: Logging estruturado e assíncrono.
+  - Grava em arquivos via streams não bloqueantes.
+  - Sanitização automática de dados sensíveis (`sanitizeHeaders`, `sanitizeData`).
+- **Arquivos**:
+  - `app.log`: Logs gerais (exceto debug em produção).
+  - `error.log`: Apenas erros e exceptions.
+  - Localização padrão: `./logs` (configurável via variável de ambiente `LOG_PATH`).
+- **Métricas**: `metrics` endpoint (Prometheus) quando habilitado.

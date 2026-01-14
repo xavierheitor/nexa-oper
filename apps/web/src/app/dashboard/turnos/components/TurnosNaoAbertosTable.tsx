@@ -117,7 +117,8 @@ export const TurnosNaoAbertosTable: React.FC<TurnoNaoAbertoTableProps> = ({
             dataIndex: 'horarioPrevisto',
             key: 'horarioPrevisto',
             width: 140,
-            render: (horario: string | null) => formatTime(horario) || '-',
+            render: (horario: string | null) =>
+              horario ? formatTime(horario) : 'Sem Horário',
           },
           {
             title: 'Eletricistas',

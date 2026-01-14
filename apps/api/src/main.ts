@@ -13,10 +13,8 @@ import { NestFactory } from '@nestjs/core';
 import { Express } from 'express';
 
 import { AppModule } from './app.module';
-
 // Configurações
 import {
-  loadEnvironmentVariables,
   getAppConfig,
   configureTrustProxy,
   configureGlobalPrefix,
@@ -28,17 +26,10 @@ import {
   configureCors,
   configureSpecialRoutes,
 } from './config';
-
 // Middlewares
-import { requestLoggerMiddleware, timeoutMiddleware } from './middleware';
-
+import { timeoutMiddleware } from './middleware';
 // Utils
 import { setupGracefulShutdown } from './utils/graceful-shutdown';
-
-/**
- * Carrega variáveis de ambiente antes de qualquer importação
- */
-loadEnvironmentVariables();
 
 /**
  * Função principal de bootstrap da aplicação
@@ -74,7 +65,6 @@ async function bootstrap(): Promise<void> {
     configureSpecialRoutes(expressApp);
 
     // Middlewares
-    expressApp.use(requestLoggerMiddleware);
     expressApp.use(timeoutMiddleware);
 
     // Segurança
