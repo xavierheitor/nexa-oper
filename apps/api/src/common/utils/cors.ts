@@ -33,6 +33,11 @@ export function getCorsOrigins():
     .map(origin => origin.trim())
     .filter(origin => origin.length > 0);
 
+  // Se o usuário colocou "*", liberamos tudo explicitamente
+  if (origins.includes('*')) {
+    return () => true;
+  }
+
   // Se resultou em array com itens, retorna. Senão, nega.
   return origins.length > 0 ? origins : () => false;
 }
