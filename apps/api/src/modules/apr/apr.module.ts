@@ -3,8 +3,8 @@ import { AuthModule } from '@modules/engine/auth/auth.module';
 import { Module } from '@nestjs/common';
 
 import { AprSyncController } from './controllers/apr-sync.controller';
-import { AprController } from './controllers/apr.controller';
 import { AprService } from './services/apr.service';
+import { AprSyncService } from './services/apr-sync.service';
 
 /**
  * Módulo de APR (Análise Preliminar de Risco)
@@ -25,8 +25,8 @@ import { AprService } from './services/apr.service';
  */
 @Module({
   imports: [DatabaseModule, AuthModule],
-  providers: [AprService],
-  exports: [AprService],
-  controllers: [AprSyncController, AprController],
+  providers: [AprService, AprSyncService],
+  exports: [AprService, AprSyncService],
+  controllers: [AprSyncController],
 })
 export class AprModule {}

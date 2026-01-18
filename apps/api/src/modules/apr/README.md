@@ -1,171 +1,88 @@
 # Módulo APR (Análise Preliminar de Risco)
 
-Este módulo gerencia todas as funcionalidades relacionadas aos modelos de APR, incluindo operações
-CRUD e sincronização para clientes mobile.
+Este módulo gerencia listagem e sincronização de modelos de APR para clientes mobile. A criação, atualização e exclusão de APRs, perguntas, opções e relações são feitas **somente no web** (outra aplicação).
 
-## 📁 Estrutura de Arquivos
+## Estrutura de Arquivos
 
 ```bash
 apr/
-├── constants/
-│   ├── apr.constants.ts         # Constantes centralizadas
-│   └── index.ts                 # Exportações de constantes
 ├── controllers/
-│   ├── apr.controller.ts        # Controller CRUD (Web)
 │   ├── apr-sync.controller.ts   # Controller de sincronização (Mobile)
-│   └── index.ts                 # Exportações de controllers
+│   └── index.ts
 ├── services/
-│   ├── apr.service.ts           # Regras de negócio de APR
-│   └── index.ts                 # Exportações de serviços
+│   ├── apr.service.ts           # Regras de negócio de APR (listagem + sync)
+│   └── index.ts
 ├── dto/
-│   ├── create-apr.dto.ts        # DTO para criação
-│   ├── update-apr.dto.ts        # DTO para atualização
-│   ├── apr-response.dto.ts      # DTO para respostas
-│   ├── apr-list-response.dto.ts # DTO para listas paginadas
-│   ├── apr-query.dto.ts         # DTO para parâmetros de consulta
-│   ├── apr-pergunta-sync.dto.ts # DTO para sincronização de perguntas
-│   ├── apr-pergunta-relacao-sync.dto.ts # DTO para relações APR-Perguntas
-│   ├── apr-opcao-resposta-sync.dto.ts   # DTO para opções de resposta
-│   ├── apr-opcao-resposta-relacao-sync.dto.ts # DTO para relações APR-Opções
-│   ├── apr-tipo-atividade-relacao-sync.dto.ts # DTO para relações APR-TipoAtividade
-│   └── index.ts                 # Exportações de DTOs
-├── apr.module.ts                # Módulo principal
-└── README.md                    # Esta documentação
+│   ├── apr-response.dto.ts
+│   ├── apr-list-response.dto.ts
+│   ├── apr-query.dto.ts
+│   ├── apr-pergunta-sync.dto.ts
+│   ├── apr-pergunta-relacao-sync.dto.ts
+│   ├── apr-opcao-resposta-sync.dto.ts
+│   ├── apr-opcao-resposta-relacao-sync.dto.ts
+│   ├── apr-tipo-atividade-relacao-sync.dto.ts
+│   └── index.ts
+├── apr.module.ts
+└── README.md
 ```
 
-## 🎯 Controllers
+Constantes: `@common/constants/apr`.
 
-### AprController (CRUD - Web)
-
-**Rota base:** `/api/apr`
-
-Endpoints para operações CRUD tradicionais com paginação:
-
-- `GET /api/apr/modelos` - Lista modelos APR (paginado)
-- `POST /api/apr/modelos` - Cria novo modelo APR
-- `GET /api/apr/modelos/:id` - Busca modelo específico
-- `PUT /api/apr/modelos/:id` - Atualiza modelo existente
-- `DELETE /api/apr/modelos/:id` - Remove modelo (soft delete)
-- `GET /api/apr/modelos/count` - Conta total de modelos ativos
-
-**Características:**
-
-- ✅ Paginação eficiente
-- ✅ Busca por nome
-- ✅ Validação rigorosa
-- ✅ Documentação Swagger completa
-- ✅ Tratamento de erros padronizado
-
-### AprSyncController (Sincronização - Mobile)
+## AprSyncController (Sincronização - Mobile)
 
 **Rota base:** `/api/apr/sync`
 
-Endpoints para sincronização completa sem paginação:
+### Status (checksum)
 
-- `GET /api/apr/sync/modelos` - Sincronizar modelos APR
-- `GET /api/apr/sync/perguntas` - Sincronizar perguntas APR
-- `GET /api/apr/sync/perguntas/relacoes` - Sincronizar relações APR-Perguntas
-- `GET /api/apr/sync/opcoes-resposta` - Sincronizar opções de resposta
-- `GET /api/apr/sync/opcoes-resposta/relacoes` - Sincronizar relações APR-Opções
-- `GET /api/apr/sync/tipos-atividade/relacoes` - Sincronizar relações APR-TipoAtividade
+- `GET /api/apr/sync/status?checksum=opcional` — Verifica se houve mudanças sem baixar os payloads.
+  - **Resposta:** `{ changed: boolean, checksum: string, serverTime: string }`
+  - Se o cliente envia `checksum` e é igual ao atual: `changed: false` (não é necessário sincronizar).
+  - `serverTime` pode ser usado como `since` na próxima sincronização incremental.
 
-**Características:**
+### Dados (full ou incremental)
 
-- ✅ Dados completos sem paginação
-- ✅ Ordenação otimizada para mobile
-- ✅ Campos de auditoria incluídos
-- ✅ Documentação Swagger completa
-- ✅ Performance otimizada para sincronização
+- `GET /api/apr/sync/modelos?since=opcional`
+- `GET /api/apr/sync/perguntas?since=opcional`
+- `GET /api/apr/sync/perguntas/relacoes?since=opcional`
+- `GET /api/apr/sync/opcoes-resposta?since=opcional`
+- `GET /api/apr/sync/opcoes-resposta/relacoes?since=opcional`
+- `GET /api/apr/sync/tipos-atividade/relacoes?since=opcional`
 
-## 🔧 Serviços
+**Parâmetro `since` (opcional):** data em ISO 8601 (ex: `2024-01-15T00:00:00.000Z`). Se presente, retorna apenas registros **alterados** (`updatedAt > since`) ou **deletados** (`deletedAt > since`) após essa data (sincronização incremental). Sem `since`: full sync (todos os ativos).
 
-### AprService
+**Respostas:** Incluem `updatedAt` e `deletedAt` em cada registro para o mobile aplicar incremental e remover itens deletados. Registros com `deletedAt` preenchido devem ser removidos no cliente.
 
-Serviço centralizado com toda a lógica de negócio:
+## Fluxo sugerido no mobile
 
-- **CRUD Operations:** create, findAll, findOne, update, remove, count
-- **Sync Operations:** findAllForSync, findAllPerguntasForSync, etc.
-- **Validações:** IDs, paginação, duplicatas
-- **Auditoria:** Criação, atualização, exclusão lógica
-- **Logging:** Estruturado com contexto detalhado
+1. `GET /api/apr/sync/status?checksum={últimoChecksum}`
+   - Se `changed === false`: não baixar nada.
+   - Se `changed === true`: prosseguir.
 
-## 📋 DTOs
+2. **Com `lastSync` (since):** chamar os 6 endpoints de dados com `?since={lastSync}` (incremental).
+   **Sem `lastSync` (primeira vez):** chamar os 6 endpoints sem `since` (full).
 
-### DTOs Principais
+3. Aplicar os dados; para itens com `deletedAt` definido, remover localmente.
 
-- **CreateAprDto:** Validação para criação de modelos
-- **UpdateAprDto:** Validação para atualização (campos opcionais)
-- **AprResponseDto:** Estrutura de resposta individual
-- **AprListResponseDto:** Estrutura de resposta paginada
-- **AprQueryDto:** Parâmetros de consulta (página, limite, busca)
-- **PaginationMetaDto:** Metadados de paginação (importado de `@common/dto/pagination-meta.dto`)
+4. Gravar `checksum` e `serverTime` da resposta do status como `lastSync` para a próxima incremental.
 
-### DTOs de Sincronização
+## Serviços
 
-- **AprPerguntaSyncDto:** Sincronização de perguntas
-- **AprPerguntaRelacaoSyncDto:** Sincronização de relações APR-Perguntas
-- **AprOpcaoRespostaSyncDto:** Sincronização de opções de resposta
-- **AprOpcaoRespostaRelacaoSyncDto:** Sincronização de relações APR-Opções
-- **AprTipoAtividadeRelacaoSyncDto:** Sincronização de relações APR-TipoAtividade
+- **AprService:** `findAll`, `findOne`, `count` (listagem)
+- **AprSyncService:** `getSyncStatus(clientChecksum?)`, `findAllForSync(since?)`, `findAllPerguntasForSync(since?)`, `findAllPerguntaRelacoesForSync(since?)`, `findAllOpcoesForSync(since?)`, `findAllOpcaoRelacoesForSync(since?)`, `findAllTipoAtividadeRelacoesForSync(since?)`
 
-## ⚙️ Constantes
+## Segurança
 
-Arquivo `constants/apr.constants.ts` centraliza:
+- **Autenticação JWT:** Todas as rotas de sync requerem token válido.
 
-- **PAGINATION_CONFIG:** Limites e configurações de paginação
-- **VALIDATION_CONFIG:** Tamanhos mínimos/máximos de campos
-- **AUDIT_CONFIG:** Configurações de auditoria
-- **ERROR_MESSAGES:** Mensagens de erro padronizadas
-- **ORDER_CONFIG:** Configurações de ordenação para consultas
-
-## 🔐 Segurança
-
-- **Autenticação JWT:** Todos os endpoints requerem token válido
-- **Validação de Dados:** DTOs com class-validator
-- **Soft Delete:** Preservação de dados para auditoria
-- **Logging:** Rastreamento de operações críticas
-
-## 📊 Performance
-
-- **Paginação:** Listas grandes divididas em páginas
-- **Índices:** Consultas otimizadas no banco
-- **Cache:** Preparado para implementação futura
-- **Paralelização:** Consultas simultâneas quando possível
-
-## 🚀 Uso
-
-### Web (CRUD)
-
-```typescript
-// Listar com paginação
-GET /api/apr/modelos?page=1&limit=10&search=soldagem
-
-// Criar novo modelo
-POST /api/apr/modelos
-{
-  "nome": "APR Soldagem Industrial"
-}
-
-// Buscar específico
-GET /api/apr/modelos/1
-```
-
-### Mobile (Sync)
+## Exemplos
 
 ```bash
-# Sincronizar todos os dados
+# Verificar se há mudanças
+GET /api/apr/sync/status?checksum=abc123...
+
+# Full sync (modelos)
 GET /api/apr/sync/modelos
-GET /api/apr/sync/perguntas
-GET /api/apr/sync/perguntas/relacoes
-GET /api/apr/sync/opcoes-resposta
-GET /api/apr/sync/opcoes-resposta/relacoes
-GET /api/apr/sync/tipos-atividade/relacoes
+
+# Incremental (apenas alterados/deletados após a data)
+GET /api/apr/sync/modelos?since=2024-01-15T00:00:00.000Z
 ```
-
-## 📝 Próximos Passos
-
-1. **Implementar cache Redis** para consultas frequentes
-2. **Adicionar testes unitários** e de integração
-3. **Implementar rate limiting** para endpoints públicos
-4. **Adicionar métricas** de performance
-5. **Implementar webhooks** para notificações de mudanças

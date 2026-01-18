@@ -12,12 +12,13 @@
  * - Tratar erros de forma padronizada
  *
  * ROTAS DISPONÍVEIS:
- * - GET /api/apr/sync/modelos - Sincronizar modelos APR
- * - GET /api/apr/sync/perguntas - Sincronizar perguntas APR
- * - GET /api/apr/sync/perguntas/relacoes - Sincronizar relações APR-Perguntas
- * - GET /api/apr/sync/opcoes-resposta - Sincronizar opções de resposta
- * - GET /api/apr/sync/opcoes-resposta/relacoes - Sincronizar relações APR-Opções
- * - GET /api/apr/sync/tipos-atividade/relacoes - Sincronizar relações APR-TipoAtividade
+ * - GET /api/apr/sync/status?checksum=opcional - Status (checksum); changed=false dispensa download
+ * - GET /api/apr/sync/modelos?since=opcional - Modelos APR (since=ISO8601 para incremental)
+ * - GET /api/apr/sync/perguntas?since=opcional
+ * - GET /api/apr/sync/perguntas/relacoes?since=opcional
+ * - GET /api/apr/sync/opcoes-resposta?since=opcional
+ * - GET /api/apr/sync/opcoes-resposta/relacoes?since=opcional
+ * - GET /api/apr/sync/tipos-atividade/relacoes?since=opcional
  *
  * PADRÕES IMPLEMENTADOS:
  * - Documentação Swagger completa
@@ -37,21 +38,22 @@
  * ```
  */
 
-import { SyncAuditRemoverInterceptor } from '@common/interceptors';
 import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import {
+  BadRequestException,
   Controller,
   Get,
   HttpStatus,
   Logger,
+  Query,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
-  ApiBearerAuth,
 } from '@nestjs/swagger';
 
 import {
@@ -62,7 +64,7 @@ import {
   AprResponseDto,
   AprTipoAtividadeRelacaoSyncDto,
 } from '../dto';
-import { AprService } from '../services/apr.service';
+import { AprSyncService } from '../services/apr-sync.service';
 
 /**
  * Controlador de Sincronização APR (Análise Preliminar de Risco)
@@ -76,19 +78,74 @@ import { AprService } from '../services/apr.service';
  * - Retorna 401 Unauthorized para requisições não autenticadas
  *
  * PERFORMANCE:
- * - Dados retornados sem paginação para facilitar sincronização
- * - Ordenação otimizada para mobile (updatedAt desc)
- * - Campos de auditoria incluídos para controle de versão
+ * - GET /status com checksum: evita download quando nada mudou
+ * - Parâmetro ?since=ISO8601: sincronização incremental (apenas alterados/deletados)
+ * - Respostas incluem updatedAt e deletedAt para o mobile aplicar incremental
  */
 @ApiTags('apr-sync')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(SyncAuditRemoverInterceptor)
 @Controller('apr/sync')
 export class AprSyncController {
   private readonly logger = new Logger(AprSyncController.name);
 
-  constructor(private readonly aprService: AprService) {}
+  constructor(private readonly aprSyncService: AprSyncService) {}
+
+  /**
+   * Valida since (ISO 8601). Se presente e inválido, lança BadRequestException.
+   */
+  private validateSince(since?: string): string | undefined {
+    if (!since) return undefined;
+    const t = new Date(since).getTime();
+    if (Number.isNaN(t)) {
+      throw new BadRequestException(
+        'O parâmetro since deve ser uma data em formato ISO 8601 (ex: 2024-01-15T00:00:00.000Z)',
+      );
+    }
+    return since;
+  }
+
+  /**
+   * Retorna status de sincronização (checksum). Permite ao mobile verificar
+   * se houve mudanças sem baixar os 6 payloads. Se changed=false, não há
+   * necessidade de sincronizar.
+   *
+   * @param checksum - Checksum obtido na última sincronização (opcional)
+   * @returns { changed, checksum, serverTime }
+   */
+  @Get('status')
+  @ApiOperation({
+    summary: 'Status de sincronização APR (checksum)',
+    description:
+      'Retorna checksum e indica se houve mudanças. Se changed=false, o mobile pode pular o download. serverTime pode ser usado como since na próxima incremental.',
+  })
+  @ApiQuery({
+    name: 'checksum',
+    required: false,
+    description: 'Checksum da última sincronização; se igual ao atual, changed=false',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Status retornado com sucesso',
+    schema: {
+      type: 'object',
+      properties: {
+        changed: { type: 'boolean' },
+        checksum: { type: 'string' },
+        serverTime: { type: 'string', format: 'date-time' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token de autenticação inválido ou ausente',
+  })
+  async syncStatus(
+    @Query('checksum') checksum?: string,
+  ): Promise<{ changed: boolean; checksum: string; serverTime: string }> {
+    this.logger.log('Iniciando verificação de status de sincronização APR');
+    return this.aprSyncService.getSyncStatus(checksum);
+  }
 
   /**
    * Retorna todos os modelos APR para sincronização mobile
@@ -102,13 +159,19 @@ export class AprSyncController {
   @ApiOperation({
     summary: 'Sincronizar modelos APR',
     description:
-      'Retorna todos os modelos APR ativos sem paginação para sincronização mobile',
+      'Retorna todos os modelos APR ativos. Com ?since=ISO8601: apenas alterados ou deletados após essa data (incremental).',
+  })
+  @ApiQuery({
+    name: 'since',
+    required: false,
+    description: 'Data ISO 8601; se presente, retorna só registros atualizados ou deletados após since',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de modelos APR retornada com sucesso',
     type: [AprResponseDto],
   })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Parâmetro since inválido' })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Token de autenticação inválido ou ausente',
@@ -117,9 +180,12 @@ export class AprSyncController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor',
   })
-  async syncModelos(): Promise<AprResponseDto[]> {
+  async syncModelos(
+    @Query('since') since?: string,
+  ): Promise<AprResponseDto[]> {
+    const s = this.validateSince(since);
     this.logger.log('Iniciando sincronização de modelos APR');
-    return this.aprService.findAllForSync();
+    return this.aprSyncService.findAllForSync(s);
   }
 
   /**
@@ -133,13 +199,15 @@ export class AprSyncController {
   @ApiOperation({
     summary: 'Sincronizar perguntas APR',
     description:
-      'Retorna todas as perguntas APR ativas para sincronização mobile',
+      'Retorna todas as perguntas APR ativas. Com ?since=ISO8601: incremental.',
   })
+  @ApiQuery({ name: 'since', required: false, description: 'Data ISO 8601 para sincronização incremental' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de perguntas APR retornada com sucesso',
     type: [AprPerguntaSyncDto],
   })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Parâmetro since inválido' })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Token de autenticação inválido ou ausente',
@@ -148,9 +216,12 @@ export class AprSyncController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor',
   })
-  async syncPerguntas(): Promise<AprPerguntaSyncDto[]> {
+  async syncPerguntas(
+    @Query('since') since?: string,
+  ): Promise<AprPerguntaSyncDto[]> {
+    const s = this.validateSince(since);
     this.logger.log('Iniciando sincronização de perguntas APR');
-    return this.aprService.findAllPerguntasForSync();
+    return this.aprSyncService.findAllPerguntasForSync(s);
   }
 
   /**
@@ -164,13 +235,15 @@ export class AprSyncController {
   @ApiOperation({
     summary: 'Sincronizar relações APR-Perguntas',
     description:
-      'Retorna todas as relações entre modelos APR e perguntas para sincronização mobile',
+      'Retorna relações entre modelos APR e perguntas. Com ?since=ISO8601: incremental.',
   })
+  @ApiQuery({ name: 'since', required: false, description: 'Data ISO 8601 para sincronização incremental' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de relações APR-Perguntas retornada com sucesso',
     type: [AprPerguntaRelacaoSyncDto],
   })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Parâmetro since inválido' })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Token de autenticação inválido ou ausente',
@@ -179,9 +252,12 @@ export class AprSyncController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor',
   })
-  async syncPerguntaRelacoes(): Promise<AprPerguntaRelacaoSyncDto[]> {
+  async syncPerguntaRelacoes(
+    @Query('since') since?: string,
+  ): Promise<AprPerguntaRelacaoSyncDto[]> {
+    const s = this.validateSince(since);
     this.logger.log('Iniciando sincronização de relações APR-Perguntas');
-    return this.aprService.findAllPerguntaRelacoesForSync();
+    return this.aprSyncService.findAllPerguntaRelacoesForSync(s);
   }
 
   /**
@@ -195,13 +271,15 @@ export class AprSyncController {
   @ApiOperation({
     summary: 'Sincronizar opções de resposta APR',
     description:
-      'Retorna todas as opções de resposta APR ativas para sincronização mobile',
+      'Retorna opções de resposta APR ativas. Com ?since=ISO8601: incremental.',
   })
+  @ApiQuery({ name: 'since', required: false, description: 'Data ISO 8601 para sincronização incremental' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de opções de resposta APR retornada com sucesso',
     type: [AprOpcaoRespostaSyncDto],
   })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Parâmetro since inválido' })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Token de autenticação inválido ou ausente',
@@ -210,9 +288,12 @@ export class AprSyncController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor',
   })
-  async syncOpcoesResposta(): Promise<AprOpcaoRespostaSyncDto[]> {
+  async syncOpcoesResposta(
+    @Query('since') since?: string,
+  ): Promise<AprOpcaoRespostaSyncDto[]> {
+    const s = this.validateSince(since);
     this.logger.log('Iniciando sincronização de opções de resposta APR');
-    return this.aprService.findAllOpcoesForSync();
+    return this.aprSyncService.findAllOpcoesForSync(s);
   }
 
   /**
@@ -226,13 +307,15 @@ export class AprSyncController {
   @ApiOperation({
     summary: 'Sincronizar relações APR-Opções de resposta',
     description:
-      'Retorna todas as relações entre modelos APR e opções de resposta para sincronização mobile',
+      'Retorna relações entre modelos APR e opções de resposta. Com ?since=ISO8601: incremental.',
   })
+  @ApiQuery({ name: 'since', required: false, description: 'Data ISO 8601 para sincronização incremental' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de relações APR-Opções retornada com sucesso',
     type: [AprOpcaoRespostaRelacaoSyncDto],
   })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Parâmetro since inválido' })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Token de autenticação inválido ou ausente',
@@ -241,11 +324,14 @@ export class AprSyncController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor',
   })
-  async syncOpcaoRespostaRelacoes(): Promise<AprOpcaoRespostaRelacaoSyncDto[]> {
+  async syncOpcaoRespostaRelacoes(
+    @Query('since') since?: string,
+  ): Promise<AprOpcaoRespostaRelacaoSyncDto[]> {
+    const s = this.validateSince(since);
     this.logger.log(
       'Iniciando sincronização de relações APR-Opções de resposta'
     );
-    return this.aprService.findAllOpcaoRelacoesForSync();
+    return this.aprSyncService.findAllOpcaoRelacoesForSync(s);
   }
 
   /**
@@ -259,14 +345,16 @@ export class AprSyncController {
   @ApiOperation({
     summary: 'Sincronizar relações APR-Tipo de Atividade',
     description:
-      'Retorna todas as relações entre modelos APR e tipos de atividade para sincronização mobile',
+      'Retorna relações entre modelos APR e tipos de atividade. Com ?since=ISO8601: incremental.',
   })
+  @ApiQuery({ name: 'since', required: false, description: 'Data ISO 8601 para sincronização incremental' })
   @ApiResponse({
     status: HttpStatus.OK,
     description:
       'Lista de relações APR-Tipo de Atividade retornada com sucesso',
     type: [AprTipoAtividadeRelacaoSyncDto],
   })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Parâmetro since inválido' })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Token de autenticação inválido ou ausente',
@@ -275,10 +363,13 @@ export class AprSyncController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor',
   })
-  async syncTipoAtividadeRelacoes(): Promise<AprTipoAtividadeRelacaoSyncDto[]> {
+  async syncTipoAtividadeRelacoes(
+    @Query('since') since?: string,
+  ): Promise<AprTipoAtividadeRelacaoSyncDto[]> {
+    const s = this.validateSince(since);
     this.logger.log(
       'Iniciando sincronização de relações APR-Tipo de Atividade'
     );
-    return this.aprService.findAllTipoAtividadeRelacoesForSync();
+    return this.aprSyncService.findAllTipoAtividadeRelacoesForSync(s);
   }
 }

@@ -15,8 +15,6 @@
  */
 
 // DTOs principais
-export { CreateAprDto } from './create-apr.dto';
-export { UpdateAprDto } from './update-apr.dto';
 export { AprResponseDto } from './apr-response.dto';
 export { AprListResponseDto } from './apr-list-response.dto';
 export { AprQueryDto } from './apr-query.dto';
