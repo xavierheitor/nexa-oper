@@ -8,7 +8,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 
-import { VALIDATION_CONFIG } from '../constants';
+import { VALIDATION_CONFIG } from '@common/constants/tipo-veiculo';
 
 /**
  * DTO para criação de tipos de veículo

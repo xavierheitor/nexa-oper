@@ -2,10 +2,10 @@
  * Constantes do módulo Checklist
  *
  * Este arquivo centraliza todas as constantes específicas
- * do módulo Checklist. Constantes comuns estão em common/constants.
+ * do módulo Checklist. Constantes comuns estão em common.constants.
  */
 
-import { COMMON_ERROR_MESSAGES, ORDER_CONFIG } from '@common/constants';
+import { COMMON_ERROR_MESSAGES, ORDER_CONFIG } from './common.constants';
 
 /**
  * Configurações de validação específicas do Checklist
@@ -18,11 +18,7 @@ export const CHECKLIST_VALIDATION_CONFIG = {
 } as const;
 
 // Re-export das constantes compartilhadas para manter compatibilidade
-export {
-  PAGINATION_CONFIG,
-  AUDIT_CONFIG,
-  CACHE_CONFIG,
-} from '@common/constants';
+export { PAGINATION_CONFIG, AUDIT_CONFIG, CACHE_CONFIG } from './common.constants';
 
 /**
  * Mensagens de erro específicas do Checklist
@@ -72,7 +68,7 @@ export const CHECKLIST_ORDER_CONFIG = {
 } as const;
 
 // Re-export das constantes compartilhadas para manter compatibilidade
-export { ORDER_CONFIG } from '@common/constants';
+export { ORDER_CONFIG } from './common.constants';
 
 /**
  * Ordenações específicas do Checklist (compatibilidade)

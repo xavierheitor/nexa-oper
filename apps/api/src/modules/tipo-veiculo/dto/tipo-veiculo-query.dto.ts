@@ -19,7 +19,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-import { ORDER_CONFIG, PAGINATION_CONFIG, SEARCH_CONFIG } from '../constants';
+import { ORDER_CONFIG, PAGINATION_CONFIG, SEARCH_CONFIG } from '@common/constants/tipo-veiculo';
 
 /**
  * Direções de ordenação permitidas

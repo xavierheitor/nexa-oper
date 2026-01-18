@@ -32,4 +32,4 @@ export {
   ORDER_CONFIG,
   ERROR_MESSAGES,
   ATIVIDADE_VALIDATION_CONFIG,
-} from './constants';
+} from '@common/constants/atividade';

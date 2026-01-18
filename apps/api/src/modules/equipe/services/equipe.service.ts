@@ -74,7 +74,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { ORDER_CONFIG } from '../constants/equipe.constants';
+import { ORDER_CONFIG } from '@common/constants/equipe';
 import {
   CreateEquipeDto,
   UpdateEquipeDto,

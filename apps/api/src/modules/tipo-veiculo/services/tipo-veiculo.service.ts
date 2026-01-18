@@ -64,7 +64,7 @@ import {
 import {
   ORDER_CONFIG,
   ERROR_MESSAGES as MODULE_ERROR_MESSAGES,
-} from '../constants';
+} from '@common/constants/tipo-veiculo';
 import {
   CreateTipoVeiculoDto,
   UpdateTipoVeiculoDto,

@@ -41,7 +41,7 @@ import {
 import {
   ORDER_CONFIG,
   PAGINATION_CONFIG,
-} from '../constants/eletricista.constants';
+} from '@common/constants/eletricista';
 import {
   CreateEletricistaDto,
   EletricistaListResponseDto,

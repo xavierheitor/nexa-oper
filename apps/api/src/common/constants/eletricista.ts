@@ -5,7 +5,7 @@
  * específicas do módulo responsável por gerenciar eletricistas.
  */
 
-import { ERROR_MESSAGES as SHARED_ERRORS } from '@common/constants/errors';
+import { ERROR_MESSAGES as SHARED_ERRORS } from './errors';
 
 /**
  * Configurações de validação específicas para eletricistas

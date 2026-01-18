@@ -16,7 +16,7 @@ import {
   IsDateString,
 } from 'class-validator';
 
-import { PAGINATION_CONFIG } from '../constants/turno.constants';
+import { PAGINATION_CONFIG } from '@common/constants/turno';
 
 /**
  * DTO para parâmetros de consulta de turnos

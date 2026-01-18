@@ -14,7 +14,7 @@ import {
   MaxLength,
 } from 'class-validator';
 
-import { EQUIPE_VALIDATION_CONFIG } from '../constants/equipe.constants';
+import { EQUIPE_VALIDATION_CONFIG } from '@common/constants/equipe';
 
 /**
  * DTO para criação de equipe

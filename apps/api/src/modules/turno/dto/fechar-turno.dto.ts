@@ -8,7 +8,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsInt, Min, Max, IsDateString } from 'class-validator';
 
-import { TURNO_VALIDATION_CONFIG } from '../constants/turno.constants';
+import { TURNO_VALIDATION_CONFIG } from '@common/constants/turno';
 
 /**
  * DTO para fechamento de turno

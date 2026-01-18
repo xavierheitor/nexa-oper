@@ -13,7 +13,7 @@ import {
   Min,
 } from 'class-validator';
 
-import { SUPPORTED_MOBILE_PHOTO_TYPES } from '../constants/mobile-upload.constants';
+import { SUPPORTED_MOBILE_PHOTO_TYPES } from '@common/constants/mobile-upload';
 
 export class PhotoUploadDto {
   @ApiProperty({

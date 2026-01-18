@@ -70,7 +70,7 @@ import {
 import {
   ORDER_CONFIG,
   ERROR_MESSAGES as ATIVIDADE_ERRORS,
-} from '../constants/atividade.constants';
+} from '@common/constants/atividade';
 import {
   CreateTipoAtividadeDto,
   UpdateTipoAtividadeDto,

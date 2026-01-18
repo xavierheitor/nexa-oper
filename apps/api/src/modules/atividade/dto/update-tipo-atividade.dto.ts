@@ -8,7 +8,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, MinLength, MaxLength } from 'class-validator';
 
-import { ATIVIDADE_VALIDATION_CONFIG } from '../constants/atividade.constants';
+import { ATIVIDADE_VALIDATION_CONFIG } from '@common/constants/atividade';
 
 /**
  * DTO para atualização de tipo de atividade

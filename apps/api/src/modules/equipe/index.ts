@@ -24,4 +24,4 @@ export {
 } from './dto';
 
 // Constantes
-export { ORDER_CONFIG, ERROR_MESSAGES } from './constants/equipe.constants';
+export { ORDER_CONFIG, ERROR_MESSAGES } from '@common/constants/equipe';

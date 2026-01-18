@@ -14,7 +14,7 @@ import {
   MaxLength,
 } from 'class-validator';
 
-import { ELETRICISTA_VALIDATION_CONFIG } from '../constants/eletricista.constants';
+import { ELETRICISTA_VALIDATION_CONFIG } from '@common/constants/eletricista';
 
 export class EletricistaQueryDto {
   @ApiPropertyOptional({

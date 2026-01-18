@@ -27,4 +27,4 @@ export {
   SUPPORTED_MOBILE_PHOTO_TYPES,
   MOBILE_PHOTO_UPLOAD_ROOT,
   MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX,
-} from './constants/mobile-upload.constants';
+} from '@common/constants/mobile-upload';

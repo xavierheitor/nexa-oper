@@ -33,4 +33,4 @@ export {
   ERROR_MESSAGES,
   TURNO_VALIDATION_CONFIG,
   TURNO_STATUS,
-} from './constants';
+} from '@common/constants/turno';

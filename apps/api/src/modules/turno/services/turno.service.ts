@@ -64,7 +64,7 @@ import {
   ORDER_CONFIG,
   ERROR_MESSAGES as TURNO_ERRORS,
   TURNO_STATUS,
-} from '../constants/turno.constants';
+} from '@common/constants/turno';
 import {
   AbrirTurnoDto,
   FecharTurnoDto,

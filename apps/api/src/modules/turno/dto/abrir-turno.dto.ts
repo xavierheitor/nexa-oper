@@ -24,7 +24,7 @@ import {
 } from 'class-validator';
 
 import { SalvarChecklistPreenchidoDto } from './checklist-preenchido.dto';
-import { TURNO_VALIDATION_CONFIG } from '../constants/turno.constants';
+import { TURNO_VALIDATION_CONFIG } from '@common/constants/turno';
 
 /**
  * DTO para eletricista no turno

@@ -2,10 +2,10 @@
  * Constantes do módulo Turno
  *
  * Este arquivo centraliza todas as constantes específicas
- * do módulo Turno. Constantes comuns estão em common/constants.
+ * do módulo Turno. Constantes comuns estão em common.constants.
  */
 
-import { ERROR_MESSAGES as SHARED_ERRORS } from '@common/constants/errors';
+import { ERROR_MESSAGES as SHARED_ERRORS } from './errors';
 
 /**
  * Configurações de validação específicas do Turno

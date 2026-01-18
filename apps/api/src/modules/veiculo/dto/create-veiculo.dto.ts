@@ -37,7 +37,7 @@ import {
   Min,
 } from 'class-validator';
 
-import { VEICULO_VALIDATION_CONFIG } from '../constants/veiculo.constants';
+import { VEICULO_VALIDATION_CONFIG } from '@common/constants/veiculo';
 
 /**
  * DTO para criação de novo veículo

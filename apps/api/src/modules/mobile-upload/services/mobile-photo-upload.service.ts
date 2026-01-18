@@ -17,7 +17,7 @@ import {
   MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX,
   MOBILE_PHOTO_UPLOAD_ROOT,
   SUPPORTED_MOBILE_PHOTO_TYPES,
-} from '../constants/mobile-upload.constants';
+} from '@common/constants/mobile-upload';
 import { PhotoUploadDto, PhotoUploadResponseDto } from '../dto';
 
 type MulterFile = Express.Multer.File;

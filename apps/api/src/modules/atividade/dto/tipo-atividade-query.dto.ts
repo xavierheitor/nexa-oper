@@ -9,7 +9,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type, Transform } from 'class-transformer';
 import { IsOptional, IsString, IsInt, Min, Max } from 'class-validator';
 
-import { PAGINATION_CONFIG } from '../constants/atividade.constants';
+import { PAGINATION_CONFIG } from '@common/constants/atividade';
 
 /**
  * DTO para parâmetros de consulta de tipos de atividade

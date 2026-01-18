@@ -4,7 +4,7 @@ import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 
-import { MAX_MOBILE_PHOTO_FILE_SIZE } from './constants/mobile-upload.constants';
+import { MAX_MOBILE_PHOTO_FILE_SIZE } from '@common/constants/mobile-upload';
 import {
   MobilePhotoUploadController,
   MobileLocationUploadController,

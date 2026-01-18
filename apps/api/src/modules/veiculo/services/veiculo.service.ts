@@ -76,7 +76,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { ORDER_CONFIG } from '../constants/veiculo.constants';
+import { ORDER_CONFIG } from '@common/constants/veiculo';
 import {
   CreateVeiculoDto,
   UpdateVeiculoDto,

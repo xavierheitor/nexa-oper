@@ -74,7 +74,7 @@ import {
   ERROR_MESSAGES,
   CHECKLIST_ORDER_CONFIG_COMPAT,
   ORDER_CONFIG,
-} from '../constants/checklist.constants';
+} from '@common/constants/checklist';
 import {
   ChecklistListResponseDto,
   ChecklistOpcaoRespostaRelacaoSyncDto,

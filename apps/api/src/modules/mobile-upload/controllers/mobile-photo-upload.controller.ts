@@ -28,7 +28,7 @@ import { memoryStorage } from 'multer';
 import {
   MAX_MOBILE_PHOTO_FILE_SIZE,
   SUPPORTED_MOBILE_PHOTO_TYPES,
-} from '../constants/mobile-upload.constants';
+} from '@common/constants/mobile-upload';
 import { PhotoUploadDto, PhotoUploadResponseDto } from '../dto';
 import { MobilePhotoUploadService } from '../services';
 

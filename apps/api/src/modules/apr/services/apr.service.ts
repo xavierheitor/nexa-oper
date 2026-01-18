@@ -72,7 +72,7 @@ import {
   ERROR_MESSAGES,
   APR_ORDER_CONFIG_COMPAT,
   ORDER_CONFIG,
-} from '../constants/apr.constants';
+} from '@common/constants/apr';
 import {
   AprListResponseDto,
   AprResponseDto,
