@@ -1,39 +1,34 @@
 /**
  * Controlador de Sincronização de Checklists
  *
- * Este controlador gerencia exclusivamente os endpoints de sincronização
- * para clientes mobile, fornecendo dados completos sem paginação.
+ * Gerencia os endpoints de sincronização para clientes mobile: status (checksum),
+ * modelos, perguntas, relações. Criação/edição de checklists é feita no web.
  *
- * RESPONSABILIDADES:
- * - Gerenciar endpoints de sincronização de checklists
- * - Fornecer dados completos para mobile
- * - Documentar APIs via Swagger
- * - Tratar erros de forma padronizada
- * - Garantir logging estruturado
- *
- * ROTAS DISPONÍVEIS:
- * - GET /api/checklist/sync/modelos - Sincronizar checklists
- * - GET /api/checklist/sync/perguntas - Sincronizar perguntas
- * - GET /api/checklist/sync/perguntas/relacoes - Sincronizar relações Checklist-Perguntas
- * - GET /api/checklist/sync/opcoes-resposta - Sincronizar opções de resposta
- * - GET /api/checklist/sync/opcoes-resposta/relacoes - Sincronizar relações Checklist-Opções
- * - GET /api/checklist/sync/tipos-veiculo/relacoes - Sincronizar relações Checklist-TipoVeículo
- * - GET /api/checklist/sync/tipos-equipe/relacoes - Sincronizar relações Checklist-TipoEquipe
+ * ROTAS:
+ * - GET /api/checklist/sync/status?checksum=opcional - Status (checksum); changed=false dispensa download
+ * - GET /api/checklist/sync/modelos?since=opcional
+ * - GET /api/checklist/sync/perguntas?since=opcional
+ * - GET /api/checklist/sync/perguntas/relacoes?since=opcional
+ * - GET /api/checklist/sync/opcoes-resposta?since=opcional
+ * - GET /api/checklist/sync/opcoes-resposta/relacoes?since=opcional
+ * - GET /api/checklist/sync/tipos-veiculo/relacoes?since=opcional
+ * - GET /api/checklist/sync/tipos-equipe/relacoes?since=opcional
  */
 
-import { SyncAuditRemoverInterceptor } from '@common/interceptors';
 import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import {
+  BadRequestException,
   Controller,
   Get,
   HttpStatus,
   Logger,
+  Query,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -47,215 +42,273 @@ import {
   ChecklistTipoEquipeRelacaoSyncDto,
   ChecklistTipoVeiculoRelacaoSyncDto,
 } from '../dto';
-import { ChecklistService } from '../services/checklist.service';
+import { ChecklistSyncService } from '../services/checklist-sync.service';
 
-/**
- * Controlador de Sincronização de Checklists
- */
 @ApiTags('checklist-sync')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(SyncAuditRemoverInterceptor)
 @Controller('checklist/sync')
 export class ChecklistSyncController {
   private readonly logger = new Logger(ChecklistSyncController.name);
 
-  constructor(private readonly checklistService: ChecklistService) {}
+  constructor(private readonly checklistSyncService: ChecklistSyncService) {}
 
-  /**
-   * Retorna todos os checklists para sincronização mobile
-   */
+  private validateSince(since?: string): string | undefined {
+    if (!since) return undefined;
+    const t = new Date(since).getTime();
+    if (Number.isNaN(t)) {
+      throw new BadRequestException(
+        'O parâmetro since deve ser uma data em formato ISO 8601 (ex: 2024-01-15T00:00:00.000Z)'
+      );
+    }
+    return since;
+  }
+
+  @Get('status')
+  @ApiOperation({
+    summary: 'Status de sincronização Checklist (checksum)',
+    description:
+      'Retorna checksum e indica se houve mudanças. Se changed=false, o mobile pode pular o download.',
+  })
+  @ApiQuery({
+    name: 'checksum',
+    required: false,
+    description: 'Checksum da última sincronização',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Status retornado com sucesso',
+    schema: {
+      type: 'object',
+      properties: {
+        changed: { type: 'boolean' },
+        checksum: { type: 'string' },
+        serverTime: { type: 'string', format: 'date-time' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou ausente',
+  })
+  async syncStatus(
+    @Query('checksum') checksum?: string
+  ): Promise<{ changed: boolean; checksum: string; serverTime: string }> {
+    this.logger.log(
+      'Iniciando verificação de status de sincronização Checklist'
+    );
+    return this.checklistSyncService.getSyncStatus(checksum);
+  }
+
   @Get('modelos')
   @ApiOperation({
     summary: 'Sincronizar checklists',
-    description:
-      'Retorna todos os checklists ativos sem paginação para sincronização mobile',
+    description: 'Retorna checklists ativos. Com ?since=ISO8601: incremental.',
+  })
+  @ApiQuery({
+    name: 'since',
+    required: false,
+    description: 'Data ISO 8601 para sincronização incremental',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Lista de checklists retornada com sucesso',
+    description: 'Lista de checklists',
     type: [ChecklistResponseDto],
   })
   @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Token de autenticação inválido ou ausente',
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Parâmetro since inválido',
   })
   @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor',
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou ausente',
   })
-  async syncModelos(): Promise<ChecklistResponseDto[]> {
+  async syncModelos(
+    @Query('since') since?: string
+  ): Promise<ChecklistResponseDto[]> {
+    const s = this.validateSince(since);
     this.logger.log('Iniciando sincronização de checklists');
-    return this.checklistService.findAllForSync();
+    return this.checklistSyncService.findAllForSync(s);
   }
 
-  /**
-   * Retorna todas as perguntas de checklist para sincronização mobile
-   */
   @Get('perguntas')
   @ApiOperation({
-    summary: 'Sincronizar perguntas de checklist',
+    summary: 'Sincronizar perguntas',
     description:
-      'Retorna todas as perguntas de checklist ativas para sincronização mobile',
+      'Retorna perguntas de checklist. Com ?since=ISO8601: incremental.',
   })
+  @ApiQuery({
+    name: 'since',
+    required: false,
+    description: 'Data ISO 8601 para sincronização incremental',
+  })
+  @ApiResponse({ status: HttpStatus.OK, type: [ChecklistPerguntaSyncDto] })
   @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Lista de perguntas retornada com sucesso',
-    type: [ChecklistPerguntaSyncDto],
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Parâmetro since inválido',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Token de autenticação inválido ou ausente',
+    description: 'Token inválido ou ausente',
   })
-  @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor',
-  })
-  async syncPerguntas(): Promise<ChecklistPerguntaSyncDto[]> {
+  async syncPerguntas(
+    @Query('since') since?: string
+  ): Promise<ChecklistPerguntaSyncDto[]> {
+    const s = this.validateSince(since);
     this.logger.log('Iniciando sincronização de perguntas de checklist');
-    return this.checklistService.findAllPerguntasForSync();
+    return this.checklistSyncService.findAllPerguntasForSync(s);
   }
 
-  /**
-   * Retorna todas as relações checklist-perguntas para sincronização mobile
-   */
   @Get('perguntas/relacoes')
   @ApiOperation({
     summary: 'Sincronizar relações Checklist-Perguntas',
-    description:
-      'Retorna todas as relações entre checklists e perguntas para sincronização mobile',
+    description: 'Com ?since=ISO8601: incremental.',
+  })
+  @ApiQuery({
+    name: 'since',
+    required: false,
+    description: 'Data ISO 8601 para sincronização incremental',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Lista de relações retornada com sucesso',
     type: [ChecklistPerguntaRelacaoSyncDto],
   })
   @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Token de autenticação inválido ou ausente',
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Parâmetro since inválido',
   })
   @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor',
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou ausente',
   })
-  async syncPerguntaRelacoes(): Promise<ChecklistPerguntaRelacaoSyncDto[]> {
+  async syncPerguntaRelacoes(
+    @Query('since') since?: string
+  ): Promise<ChecklistPerguntaRelacaoSyncDto[]> {
+    const s = this.validateSince(since);
     this.logger.log('Iniciando sincronização de relações Checklist-Perguntas');
-    return this.checklistService.findAllPerguntaRelacoesForSync();
+    return this.checklistSyncService.findAllPerguntaRelacoesForSync(s);
   }
 
-  /**
-   * Retorna todas as opções de resposta de checklist para sincronização mobile
-   */
   @Get('opcoes-resposta')
   @ApiOperation({
-    summary: 'Sincronizar opções de resposta de checklist',
-    description:
-      'Retorna todas as opções de resposta de checklist ativas para sincronização mobile',
+    summary: 'Sincronizar opções de resposta',
+    description: 'Com ?since=ISO8601: incremental.',
   })
+  @ApiQuery({
+    name: 'since',
+    required: false,
+    description: 'Data ISO 8601 para sincronização incremental',
+  })
+  @ApiResponse({ status: HttpStatus.OK, type: [ChecklistOpcaoRespostaSyncDto] })
   @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Lista de opções retornada com sucesso',
-    type: [ChecklistOpcaoRespostaSyncDto],
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Parâmetro since inválido',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Token de autenticação inválido ou ausente',
+    description: 'Token inválido ou ausente',
   })
-  @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor',
-  })
-  async syncOpcoes(): Promise<ChecklistOpcaoRespostaSyncDto[]> {
+  async syncOpcoes(
+    @Query('since') since?: string
+  ): Promise<ChecklistOpcaoRespostaSyncDto[]> {
+    const s = this.validateSince(since);
     this.logger.log(
       'Iniciando sincronização de opções de resposta de checklist'
     );
-    return this.checklistService.findAllOpcoesForSync();
+    return this.checklistSyncService.findAllOpcoesForSync(s);
   }
 
-  /**
-   * Retorna todas as relações checklist-opções para sincronização mobile
-   */
   @Get('opcoes-resposta/relacoes')
   @ApiOperation({
     summary: 'Sincronizar relações Checklist-Opções',
-    description:
-      'Retorna todas as relações entre checklists e opções de resposta para sincronização mobile',
+    description: 'Com ?since=ISO8601: incremental.',
+  })
+  @ApiQuery({
+    name: 'since',
+    required: false,
+    description: 'Data ISO 8601 para sincronização incremental',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Lista de relações retornada com sucesso',
     type: [ChecklistOpcaoRespostaRelacaoSyncDto],
   })
   @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Token de autenticação inválido ou ausente',
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Parâmetro since inválido',
   })
   @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor',
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou ausente',
   })
-  async syncOpcaoRelacoes(): Promise<ChecklistOpcaoRespostaRelacaoSyncDto[]> {
+  async syncOpcaoRelacoes(
+    @Query('since') since?: string
+  ): Promise<ChecklistOpcaoRespostaRelacaoSyncDto[]> {
+    const s = this.validateSince(since);
     this.logger.log('Iniciando sincronização de relações Checklist-Opções');
-    return this.checklistService.findAllOpcaoRelacoesForSync();
+    return this.checklistSyncService.findAllOpcaoRelacoesForSync(s);
   }
 
-  /**
-   * Retorna todas as relações checklist-tipo de veículo para sincronização mobile
-   */
   @Get('tipos-veiculo/relacoes')
   @ApiOperation({
     summary: 'Sincronizar relações Checklist-Tipo de Veículo',
-    description:
-      'Retorna todas as relações entre checklists e tipos de veículo para sincronização mobile',
+    description: 'Com ?since=ISO8601: incremental.',
+  })
+  @ApiQuery({
+    name: 'since',
+    required: false,
+    description: 'Data ISO 8601 para sincronização incremental',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Lista de relações retornada com sucesso',
     type: [ChecklistTipoVeiculoRelacaoSyncDto],
   })
   @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Token de autenticação inválido ou ausente',
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Parâmetro since inválido',
   })
   @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor',
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou ausente',
   })
-  async syncTipoVeiculoRelacoes(): Promise<
-    ChecklistTipoVeiculoRelacaoSyncDto[]
-  > {
+  async syncTipoVeiculoRelacoes(
+    @Query('since') since?: string
+  ): Promise<ChecklistTipoVeiculoRelacaoSyncDto[]> {
+    const s = this.validateSince(since);
     this.logger.log(
       'Iniciando sincronização de relações Checklist-Tipo de Veículo'
     );
-    return this.checklistService.findAllTipoVeiculoRelacoesForSync();
+    return this.checklistSyncService.findAllTipoVeiculoRelacoesForSync(s);
   }
 
-  /**
-   * Retorna todas as relações checklist-tipo de equipe para sincronização mobile
-   */
   @Get('tipos-equipe/relacoes')
   @ApiOperation({
     summary: 'Sincronizar relações Checklist-Tipo de Equipe',
-    description:
-      'Retorna todas as relações entre checklists e tipos de equipe para sincronização mobile',
+    description: 'Com ?since=ISO8601: incremental.',
+  })
+  @ApiQuery({
+    name: 'since',
+    required: false,
+    description: 'Data ISO 8601 para sincronização incremental',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Lista de relações retornada com sucesso',
     type: [ChecklistTipoEquipeRelacaoSyncDto],
   })
   @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Token de autenticação inválido ou ausente',
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Parâmetro since inválido',
   })
   @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor',
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou ausente',
   })
-  async syncTipoEquipeRelacoes(): Promise<ChecklistTipoEquipeRelacaoSyncDto[]> {
+  async syncTipoEquipeRelacoes(
+    @Query('since') since?: string
+  ): Promise<ChecklistTipoEquipeRelacaoSyncDto[]> {
+    const s = this.validateSince(since);
     this.logger.log(
       'Iniciando sincronização de relações Checklist-Tipo de Equipe'
     );
-    return this.checklistService.findAllTipoEquipeRelacoesForSync();
+    return this.checklistSyncService.findAllTipoEquipeRelacoesForSync(s);
   }
 }

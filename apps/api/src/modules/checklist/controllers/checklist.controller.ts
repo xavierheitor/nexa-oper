@@ -15,11 +15,10 @@
  *
  * ROTAS DISPONÍVEIS:
  * - GET /api/checklist/modelos - Lista checklists (paginado)
- * - POST /api/checklist/modelos - Cria novo checklist
  * - GET /api/checklist/modelos/:id - Busca checklist específico
- * - PUT /api/checklist/modelos/:id - Atualiza checklist existente
- * - DELETE /api/checklist/modelos/:id - Remove checklist (soft delete)
  * - GET /api/checklist/modelos/count - Conta total de checklists ativos
+ *
+ * Criação, atualização e exclusão são feitas no web.
  *
  * PADRÕES IMPLEMENTADOS:
  * - Documentação Swagger completa
@@ -34,29 +33,19 @@
  * # Listar checklists com paginação
  * curl "http://localhost:3001/api/checklist/modelos?page=1&limit=10&search=partida"
  *
- * # Criar novo checklist
- * curl -X POST http://localhost:3001/api/checklist/modelos \
- *   -H "Content-Type: application/json" \
- *   -d '{"nome": "Checklist Pré-Partida", "tipoChecklistId": 3}'
- *
  * # Buscar checklist específico
  * curl http://localhost:3001/api/checklist/modelos/1
  * ```
  */
 
-import { GetUsuarioMobileId } from '@modules/engine/auth/decorators/get-user-id-decorator';
 import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import {
-  Body,
   Controller,
-  Delete,
   Get,
   HttpStatus,
   Logger,
   Param,
   ParseIntPipe,
-  Post,
-  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -73,8 +62,6 @@ import {
   ChecklistListResponseDto,
   ChecklistQueryDto,
   ChecklistResponseDto,
-  CreateChecklistDto,
-  UpdateChecklistDto,
 } from '../dto';
 import { ChecklistService } from '../services/checklist.service';
 
@@ -198,128 +185,6 @@ export class ChecklistController {
   ): Promise<ChecklistResponseDto> {
     this.logger.log(`Buscando checklist por ID: ${id}`);
     return this.checklistService.findOne(id);
-  }
-
-  /**
-   * Cria novo checklist
-   */
-  @Post('modelos')
-  @ApiOperation({
-    summary: 'Criar checklist',
-    description: 'Cria um novo checklist no sistema',
-  })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Checklist criado com sucesso',
-    type: ChecklistResponseDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.CONFLICT,
-    description: 'Já existe um checklist com o mesmo nome',
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Dados inválidos',
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Token de autenticação inválido ou ausente',
-  })
-  @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor',
-  })
-  async create(
-    @Body() createChecklistDto: CreateChecklistDto,
-    @GetUsuarioMobileId() userId?: string
-  ): Promise<ChecklistResponseDto> {
-    this.logger.log(`Criando checklist: ${createChecklistDto.nome}`);
-    return this.checklistService.create(createChecklistDto, userId);
-  }
-
-  /**
-   * Atualiza checklist existente
-   */
-  @Put('modelos/:id')
-  @ApiOperation({
-    summary: 'Atualizar checklist',
-    description: 'Atualiza um checklist existente',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'ID único do checklist',
-    example: 1,
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Checklist atualizado com sucesso',
-    type: ChecklistResponseDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Checklist não encontrado',
-  })
-  @ApiResponse({
-    status: HttpStatus.CONFLICT,
-    description: 'Já existe um checklist com o mesmo nome',
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Dados inválidos',
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Token de autenticação inválido ou ausente',
-  })
-  @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor',
-  })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateChecklistDto: UpdateChecklistDto,
-    @GetUsuarioMobileId() userId?: string
-  ): Promise<ChecklistResponseDto> {
-    this.logger.log(`Atualizando checklist ${id}`);
-    return this.checklistService.update(id, updateChecklistDto, userId);
-  }
-
-  /**
-   * Remove checklist (soft delete)
-   */
-  @Delete('modelos/:id')
-  @ApiOperation({
-    summary: 'Remover checklist',
-    description: 'Remove logicamente um checklist do sistema',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'ID único do checklist',
-    example: 1,
-  })
-  @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
-    description: 'Checklist removido com sucesso',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Checklist não encontrado',
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'ID inválido',
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Token de autenticação inválido ou ausente',
-  })
-  @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor',
-  })
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    this.logger.log(`Removendo checklist: ${id}`);
-    return this.checklistService.remove(id);
   }
 
   /**

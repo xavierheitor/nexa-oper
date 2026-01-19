@@ -5,28 +5,20 @@ import { Module } from '@nestjs/common';
 import { ChecklistSyncController } from './controllers/checklist-sync.controller';
 import { ChecklistController } from './controllers/checklist.controller';
 import { ChecklistService } from './services/checklist.service';
+import { ChecklistSyncService } from './services/checklist-sync.service';
 
 /**
  * Módulo de Checklists
  *
- * Este módulo gerencia todas as funcionalidades relacionadas
- * aos checklists de segurança, incluindo CRUD e sincronização.
- *
- * CONTROLLERS:
- * - ChecklistController: Operações CRUD (listagem paginada, criação, atualização, exclusão)
- * - ChecklistSyncController: Sincronização para clientes mobile
- *
- * SERVICES:
- * - ChecklistService: Lógica de negócio centralizada
- *
- * IMPORTS:
- * - DatabaseModule: Acesso ao banco de dados via Prisma
- * - AuthModule: Autenticação e autorização
+ * - ChecklistController: listagem (findAll, findOne, count). Criação/edição no web.
+ * - ChecklistSyncController: sincronização para mobile (checksum, incremental since).
+ * - ChecklistService: listagem e contagem.
+ * - ChecklistSyncService: checksum, getSyncStatus, 7 findAll*ForSync(since).
  */
 @Module({
   imports: [DatabaseModule, AuthModule],
-  providers: [ChecklistService],
-  exports: [ChecklistService],
+  providers: [ChecklistService, ChecklistSyncService],
+  exports: [ChecklistService, ChecklistSyncService],
   controllers: [ChecklistSyncController, ChecklistController],
 })
 export class ChecklistModule {}
