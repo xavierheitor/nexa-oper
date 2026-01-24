@@ -23,6 +23,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { SyncStatusResponseDto } from '@common/dto/sync-status.dto';
 import { EquipeSyncDto } from '../dto';
 import { EquipeSyncService } from '../services/equipe-sync.service';
 
@@ -49,14 +50,7 @@ export class EquipeSyncController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Status retornado com sucesso',
-    schema: {
-      type: 'object',
-      properties: {
-        changed: { type: 'boolean' },
-        checksum: { type: 'string' },
-        serverTime: { type: 'string', format: 'date-time' },
-      },
-    },
+    type: SyncStatusResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
@@ -65,7 +59,7 @@ export class EquipeSyncController {
   async syncStatus(
     @Query('checksum') checksum: string | undefined,
     @GetUserContracts() allowedContracts: ContractPermission[]
-  ): Promise<{ changed: boolean; checksum: string; serverTime: string }> {
+  ): Promise<SyncStatusResponseDto> {
     this.logger.log('Iniciando verificação de status de sincronização Equipe');
     const ids = extractAllowedContractIds(allowedContracts);
     return this.equipeSyncService.getSyncStatus(checksum, ids);

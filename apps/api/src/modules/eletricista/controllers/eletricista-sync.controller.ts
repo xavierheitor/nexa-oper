@@ -23,6 +23,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { SyncStatusResponseDto } from '@common/dto/sync-status.dto';
 import { EletricistaSyncDto } from '../dto';
 import { EletricistaSyncService } from '../services/eletricista-sync.service';
 
@@ -51,14 +52,7 @@ export class EletricistaSyncController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Status retornado com sucesso',
-    schema: {
-      type: 'object',
-      properties: {
-        changed: { type: 'boolean' },
-        checksum: { type: 'string' },
-        serverTime: { type: 'string', format: 'date-time' },
-      },
-    },
+    type: SyncStatusResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
@@ -67,7 +61,7 @@ export class EletricistaSyncController {
   async syncStatus(
     @Query('checksum') checksum: string | undefined,
     @GetUserContracts() allowedContracts: ContractPermission[]
-  ): Promise<{ changed: boolean; checksum: string; serverTime: string }> {
+  ): Promise<SyncStatusResponseDto> {
     this.logger.log(
       'Iniciando verificação de status de sincronização Eletricista'
     );

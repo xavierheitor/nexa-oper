@@ -49,6 +49,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { SyncStatusResponseDto } from '@common/dto/sync-status.dto';
 import {
   AprOpcaoRespostaRelacaoSyncDto,
   AprOpcaoRespostaSyncDto,
@@ -106,14 +107,7 @@ export class AprSyncController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Status retornado com sucesso',
-    schema: {
-      type: 'object',
-      properties: {
-        changed: { type: 'boolean' },
-        checksum: { type: 'string' },
-        serverTime: { type: 'string', format: 'date-time' },
-      },
-    },
+    type: SyncStatusResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
@@ -121,7 +115,7 @@ export class AprSyncController {
   })
   async syncStatus(
     @Query('checksum') checksum?: string,
-  ): Promise<{ changed: boolean; checksum: string; serverTime: string }> {
+  ): Promise<SyncStatusResponseDto> {
     this.logger.log('Iniciando verificação de status de sincronização APR');
     return this.aprSyncService.getSyncStatus(checksum);
   }
