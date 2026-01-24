@@ -6,6 +6,7 @@
 import { ORDER_CONFIG } from '@common/constants/equipe';
 import { handleCrudError } from '@common/utils/error-handler';
 import { computeSyncChecksum } from '@common/utils/sync-checksum';
+import { normalizeSyncAggregate } from '@common/utils/sync-aggregate';
 import { buildSyncWhereIncremental } from '@common/utils/sync-where';
 import { DatabaseService } from '@database/database.service';
 import { Injectable, Logger } from '@nestjs/common';
@@ -42,10 +43,7 @@ export class EquipeSyncService {
       _count: true,
       _max: { updatedAt: true },
     });
-    const iso = (d: Date | null) => d?.toISOString() ?? null;
-    return {
-      equipe: { count: a._count, maxUpdatedAt: iso(a._max.updatedAt) },
-    };
+    return { equipe: normalizeSyncAggregate(a) };
   }
 
   async getSyncStatus(

@@ -6,6 +6,7 @@
 import { ORDER_CONFIG } from '@common/constants/eletricista';
 import { handleCrudError } from '@common/utils/error-handler';
 import { computeSyncChecksum } from '@common/utils/sync-checksum';
+import { normalizeSyncAggregate } from '@common/utils/sync-aggregate';
 import { buildSyncWhereIncremental } from '@common/utils/sync-where';
 import { DatabaseService } from '@database/database.service';
 import { Injectable, Logger } from '@nestjs/common';
@@ -46,10 +47,7 @@ export class EletricistaSyncService {
       _count: true,
       _max: { updatedAt: true },
     });
-    const iso = (d: Date | null) => d?.toISOString() ?? null;
-    return {
-      eletricista: { count: a._count, maxUpdatedAt: iso(a._max.updatedAt) },
-    };
+    return { eletricista: normalizeSyncAggregate(a) };
   }
 
   async getSyncStatus(

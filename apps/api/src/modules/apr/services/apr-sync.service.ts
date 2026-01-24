@@ -5,6 +5,7 @@
 import { APR_ORDER_CONFIG_COMPAT } from '@common/constants/apr';
 import { handleCrudError } from '@common/utils/error-handler';
 import { computeSyncChecksum } from '@common/utils/sync-checksum';
+import { normalizeSyncAggregate } from '@common/utils/sync-aggregate';
 import { buildSyncWhereIncremental } from '@common/utils/sync-where';
 import { DatabaseService } from '@database/database.service';
 import { Injectable, Logger } from '@nestjs/common';
@@ -68,29 +69,13 @@ export class AprSyncService {
         _max: { updatedAt: true },
       }),
     ]);
-    const iso = (d: Date | null) => d?.toISOString() ?? null;
     return {
-      apr: { count: apr._count, maxUpdatedAt: iso(apr._max.updatedAt) },
-      aprPergunta: {
-        count: aprPergunta._count,
-        maxUpdatedAt: iso(aprPergunta._max.updatedAt),
-      },
-      aprPerguntaRelacao: {
-        count: aprPerguntaRelacao._count,
-        maxUpdatedAt: iso(aprPerguntaRelacao._max.updatedAt),
-      },
-      aprOpcaoResposta: {
-        count: aprOpcaoResposta._count,
-        maxUpdatedAt: iso(aprOpcaoResposta._max.updatedAt),
-      },
-      aprOpcaoRespostaRelacao: {
-        count: aprOpcaoRespostaRelacao._count,
-        maxUpdatedAt: iso(aprOpcaoRespostaRelacao._max.updatedAt),
-      },
-      aprTipoAtividadeRelacao: {
-        count: aprTipoAtividadeRelacao._count,
-        maxUpdatedAt: iso(aprTipoAtividadeRelacao._max.updatedAt),
-      },
+      apr: normalizeSyncAggregate(apr),
+      aprPergunta: normalizeSyncAggregate(aprPergunta),
+      aprPerguntaRelacao: normalizeSyncAggregate(aprPerguntaRelacao),
+      aprOpcaoResposta: normalizeSyncAggregate(aprOpcaoResposta),
+      aprOpcaoRespostaRelacao: normalizeSyncAggregate(aprOpcaoRespostaRelacao),
+      aprTipoAtividadeRelacao: normalizeSyncAggregate(aprTipoAtividadeRelacao),
     };
   }
 

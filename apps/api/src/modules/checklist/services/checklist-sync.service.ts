@@ -8,6 +8,7 @@ import {
 } from '@common/constants/checklist';
 import { handleCrudError } from '@common/utils/error-handler';
 import { computeSyncChecksum } from '@common/utils/sync-checksum';
+import { normalizeSyncAggregate } from '@common/utils/sync-aggregate';
 import { buildSyncWhereIncremental } from '@common/utils/sync-where';
 import { DatabaseService } from '@database/database.service';
 import { Injectable, Logger } from '@nestjs/common';
@@ -82,36 +83,20 @@ export class ChecklistSyncService {
       checklistTipoVeiculoRelacao,
       checklistTipoEquipeRelacao,
     ] = await this.fetchChecklistChecksumAggregates();
-    const iso = (d: Date | null) => d?.toISOString() ?? null;
     return {
-      checklist: {
-        count: checklist._count,
-        maxUpdatedAt: iso(checklist._max.updatedAt),
-      },
-      checklistPergunta: {
-        count: checklistPergunta._count,
-        maxUpdatedAt: iso(checklistPergunta._max.updatedAt),
-      },
-      checklistPerguntaRelacao: {
-        count: checklistPerguntaRelacao._count,
-        maxUpdatedAt: iso(checklistPerguntaRelacao._max.updatedAt),
-      },
-      checklistOpcaoResposta: {
-        count: checklistOpcaoResposta._count,
-        maxUpdatedAt: iso(checklistOpcaoResposta._max.updatedAt),
-      },
-      checklistOpcaoRespostaRelacao: {
-        count: checklistOpcaoRespostaRelacao._count,
-        maxUpdatedAt: iso(checklistOpcaoRespostaRelacao._max.updatedAt),
-      },
-      checklistTipoVeiculoRelacao: {
-        count: checklistTipoVeiculoRelacao._count,
-        maxUpdatedAt: iso(checklistTipoVeiculoRelacao._max.updatedAt),
-      },
-      checklistTipoEquipeRelacao: {
-        count: checklistTipoEquipeRelacao._count,
-        maxUpdatedAt: iso(checklistTipoEquipeRelacao._max.updatedAt),
-      },
+      checklist: normalizeSyncAggregate(checklist),
+      checklistPergunta: normalizeSyncAggregate(checklistPergunta),
+      checklistPerguntaRelacao: normalizeSyncAggregate(checklistPerguntaRelacao),
+      checklistOpcaoResposta: normalizeSyncAggregate(checklistOpcaoResposta),
+      checklistOpcaoRespostaRelacao: normalizeSyncAggregate(
+        checklistOpcaoRespostaRelacao
+      ),
+      checklistTipoVeiculoRelacao: normalizeSyncAggregate(
+        checklistTipoVeiculoRelacao
+      ),
+      checklistTipoEquipeRelacao: normalizeSyncAggregate(
+        checklistTipoEquipeRelacao
+      ),
     };
   }
 
