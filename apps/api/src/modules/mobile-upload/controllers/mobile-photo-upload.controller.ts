@@ -2,6 +2,10 @@
  * Controller responsável pelos uploads de fotos enviados pelo aplicativo mobile.
  */
 
+import {
+  MAX_MOBILE_PHOTO_FILE_SIZE,
+  SUPPORTED_MOBILE_PHOTO_TYPES,
+} from '@common/constants/mobile-upload';
 import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
 import {
   Body,
@@ -25,10 +29,6 @@ import {
 } from '@nestjs/swagger';
 import { memoryStorage } from 'multer';
 
-import {
-  MAX_MOBILE_PHOTO_FILE_SIZE,
-  SUPPORTED_MOBILE_PHOTO_TYPES,
-} from '@common/constants/mobile-upload';
 import { PhotoUploadDto, PhotoUploadResponseDto } from '../dto';
 import { MobilePhotoUploadService } from '../services';
 

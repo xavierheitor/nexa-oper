@@ -14,7 +14,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 import { TipoVeiculoSyncDto } from '../dto';
 import { TipoVeiculoService } from '../services/tipo-veiculo.service';
@@ -32,7 +37,8 @@ export class TipoVeiculoSyncController {
   @Get()
   @ApiOperation({
     summary: 'Sincronizar tipos de veículo',
-    description: 'Retorna todos os tipos de veículo ativos para sincronização mobile',
+    description:
+      'Retorna todos os tipos de veículo ativos para sincronização mobile',
   })
   @ApiResponse({ status: HttpStatus.OK, type: [TipoVeiculoSyncDto] })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED })
@@ -40,7 +46,9 @@ export class TipoVeiculoSyncController {
     this.logger.log('Iniciando sincronização de tipos de veículo');
     try {
       const result = await this.tipoVeiculoService.findAllForSync();
-      this.logger.log(`Sincronização concluída com ${result.length} tipos de veículo`);
+      this.logger.log(
+        `Sincronização concluída com ${result.length} tipos de veículo`
+      );
       return result;
     } catch (error) {
       this.logger.error('Erro na sincronização de tipos de veículo:', error);

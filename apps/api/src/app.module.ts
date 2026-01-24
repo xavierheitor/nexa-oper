@@ -44,7 +44,7 @@ import { ChecklistModule } from '@modules/checklist/checklist.module';
 import { EletricistaModule } from '@modules/eletricista/eletricista.module';
 import { AuthModule } from '@modules/engine/auth/auth.module';
 import { ContractsModule } from '@modules/engine/contracts/contracts.module';
-import { VeiculoModule } from '@modules/veiculo/veiculo.module';
+import { VeiculoModule } from '@modules/veiculo';
 import {
   MiddlewareConsumer,
   Module,
@@ -64,7 +64,6 @@ import { MetricsModule } from './metrics/metrics.module';
 import { AtividadeModule } from './modules/atividade';
 import { EquipeModule } from './modules/equipe';
 import { InternalReconciliacaoModule } from './modules/internal-reconciliacao/internal-reconciliacao.module';
-import { JustificativasModule } from './modules/justificativas/justificativas.module';
 import { MobileUploadModule } from './modules/mobile-upload/mobile-upload.module';
 import { TurnoModule } from './modules/turno';
 import { TurnoRealizadoModule } from './modules/turno-realizado/turno-realizado.module';
@@ -134,7 +133,6 @@ import { WebLogsModule } from './modules/web-logs/web-logs.module';
     HealthModule,
     MetricsModule,
     TurnoRealizadoModule,
-    JustificativasModule,
     WebLogsModule,
     InternalReconciliacaoModule,
 

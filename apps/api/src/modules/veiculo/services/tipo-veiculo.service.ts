@@ -37,7 +37,6 @@ import {
   TipoVeiculoListResponseDto,
   TipoVeiculoResponseDto,
   TipoVeiculoSyncDto,
-  TipoVeiculoQueryDto,
 } from '../dto';
 
 interface FindAllParams {
@@ -59,7 +58,10 @@ export class TipoVeiculoService {
     userContext?: UserContext
   ): Promise<TipoVeiculoListResponseDto> {
     this.logger.log('Listando tipos de veículo', { params });
-    const { page, limit } = normalizePaginationParams(params.page, params.limit);
+    const { page, limit } = normalizePaginationParams(
+      params.page,
+      params.limit
+    );
     validatePaginationParams(page, limit);
     const where = this.buildWhereClause(params.search);
     const orderBy = this.buildOrderBy(params.orderBy, params.orderDir);
@@ -90,7 +92,10 @@ export class TipoVeiculoService {
       const tipo = await this.db.getPrisma().tipoVeiculo.findFirst({
         where: { id, deletedAt: null },
       });
-      if (!tipo) throw new NotFoundException(MODULE_ERROR_MESSAGES.TIPO_VEICULO_NOT_FOUND);
+      if (!tipo)
+        throw new NotFoundException(
+          MODULE_ERROR_MESSAGES.TIPO_VEICULO_NOT_FOUND
+        );
       return this.mapToResponseDto(tipo);
     } catch (error) {
       handleCrudError(error, this.logger, 'find', 'tipo de veículo');
@@ -177,28 +182,61 @@ export class TipoVeiculoService {
   }
 
   private buildOrderBy(orderBy?: string, orderDir?: 'asc' | 'desc'): any {
-    return { [orderBy || ORDER_CONFIG.DEFAULT_ORDER_BY]: orderDir || ORDER_CONFIG.DEFAULT_ORDER_DIR };
+    return {
+      [orderBy || ORDER_CONFIG.DEFAULT_ORDER_BY]:
+        orderDir || ORDER_CONFIG.DEFAULT_ORDER_DIR,
+    };
   }
 
-  private async checkNomeDuplicado(nome: string, excludeId?: number): Promise<void> {
-    const where: any = { nome: { equals: nome, mode: 'insensitive' }, deletedAt: null };
+  private async checkNomeDuplicado(
+    nome: string,
+    excludeId?: number
+  ): Promise<void> {
+    const where: any = {
+      nome: { equals: nome, mode: 'insensitive' },
+      deletedAt: null,
+    };
     if (excludeId) where.id = { not: excludeId };
     const existing = await this.db.getPrisma().tipoVeiculo.findFirst({ where });
-    if (existing) throw new ConflictException(MODULE_ERROR_MESSAGES.TIPO_VEICULO_ALREADY_EXISTS);
+    if (existing)
+      throw new ConflictException(
+        MODULE_ERROR_MESSAGES.TIPO_VEICULO_ALREADY_EXISTS
+      );
   }
 
   private async checkTipoEmUso(id: number): Promise<void> {
     const n = await this.db.getPrisma().veiculo.count({
       where: { tipoVeiculoId: id, deletedAt: null },
     });
-    if (n > 0) throw new BadRequestException(MODULE_ERROR_MESSAGES.CANNOT_DELETE_TIPO_VEICULO_IN_USE);
+    if (n > 0)
+      throw new BadRequestException(
+        MODULE_ERROR_MESSAGES.CANNOT_DELETE_TIPO_VEICULO_IN_USE
+      );
   }
 
   private mapToResponseDto(t: any): TipoVeiculoResponseDto {
-    return { id: t.id, nome: t.nome, createdAt: t.createdAt, createdBy: t.createdBy, updatedAt: t.updatedAt, updatedBy: t.updatedBy, deletedAt: t.deletedAt, deletedBy: t.deletedBy };
+    return {
+      id: t.id,
+      nome: t.nome,
+      createdAt: t.createdAt,
+      createdBy: t.createdBy,
+      updatedAt: t.updatedAt,
+      updatedBy: t.updatedBy,
+      deletedAt: t.deletedAt,
+      deletedBy: t.deletedBy,
+    };
   }
 
   private mapToSyncDto(t: any): TipoVeiculoSyncDto {
-    return { id: t.id, nome: t.nome, createdAt: t.createdAt, createdBy: t.createdBy, updatedAt: t.updatedAt, updatedBy: t.updatedBy, deletedAt: t.deletedAt, deletedBy: t.deletedBy };
+    return {
+      id: t.id,
+      nome: t.nome,
+      createdAt: t.createdAt,
+      createdBy: t.createdBy,
+      updatedAt: t.updatedAt,
+      updatedBy: t.updatedBy,
+      deletedAt: t.deletedAt,
+      deletedBy: t.deletedBy,
+    };
   }
 }
