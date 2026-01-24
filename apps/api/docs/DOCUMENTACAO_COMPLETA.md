@@ -155,23 +155,26 @@ apps/api/src/
 ├── health/                 # Health checks
 ├── metrics/                # Métricas Prometheus
 │
-└── modules/                # Módulos de negócio
-    ├── apr/                # Análise Preliminar de Risco
-    ├── checklist/          # Checklists de segurança
-    ├── turno/              # Turnos de operação
-    ├── veiculo/            # Veículos
-    ├── equipe/             # Equipes
-    ├── eletricista/        # Eletricistas
-    ├── atividade/          # Tipos de atividade
-    ├── tipo-veiculo/       # Tipos de veículo
-    ├── tipo-equipe/        # Tipos de equipe
-    ├── turno-realizado/    # Turnos realizados e reconciliação
-    ├── justificativas/     # Justificativas de faltas
-    ├── mobile-upload/      # Uploads do mobile
-    ├── web-logs/           # Logs do web
-    └── engine/             # Engine (auth, contracts)
-        ├── auth/           # Autenticação e permissões
-        └── contracts/      # Contratos
+├── modules/                # Módulos de negócio (domínio)
+│   ├── apr/                # Análise Preliminar de Risco
+│   ├── checklist/          # Checklists de segurança
+│   ├── turno/              # Turnos de operação
+│   ├── veiculo/            # Veículos
+│   ├── equipe/             # Equipes
+│   ├── eletricista/        # Eletricistas
+│   ├── atividade/          # Tipos de atividade
+│   ├── turno-realizado/    # Turnos realizados e reconciliação
+│   ├── justificativas/     # Justificativas de faltas
+│   └── mobile-upload/      # Uploads do mobile
+│
+├── core/                   # Infraestrutura transversal
+│   ├── auth/               # Autenticação e permissões
+│   ├── contracts/          # Contratos
+│   ├── mobile-users/       # Usuários mobile
+│   └── web-logs/           # Logs do web
+│
+└── internal/               # Processos internos/sistema
+    └── reconciliacao/      # Reconciliação de turnos
 ```
 
 ### 🔑 Conceitos Fundamentais
@@ -814,8 +817,8 @@ async update(id: number, dto: UpdateDto) {
 
 ```typescript
 import { UseGuards } from '@nestjs/common';
-import { ContractPermissionsGuard } from '@modules/engine/auth/guards/contract-permissions.guard';
-import { RequireContractPermission } from '@modules/engine/auth/decorators/contract-permission.decorator';
+import { ContractPermissionsGuard } from '@core/auth/guards/contract-permissions.guard';
+import { RequireContractPermission } from '@core/auth/decorators/contract-permission.decorator';
 
 @Controller('veiculos')
 @UseGuards(ContractPermissionsGuard)
@@ -943,7 +946,7 @@ Checklist
 3. Identifica horas extras (turno aberto em folga)
 4. Cria registros de `TurnoRealizado`
 
-#### 6. Módulo de Autenticação (`engine/auth/`)
+#### 6. Módulo de Autenticação (`core/auth/`)
 
 **Responsabilidades**:
 
@@ -967,7 +970,7 @@ Exemplo completo de um módulo seguindo os padrões:
 // modulo/modulo.module.ts
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '@database/database.module';
-import { AuthModule } from '@modules/engine/auth/auth.module';
+import { AuthModule } from '@core/auth/auth.module';
 import { ModuloController, ModuloSyncController } from './controllers';
 import { ModuloService } from './services';
 
@@ -1022,7 +1025,7 @@ contrato** para autorização.
 #### 1. AuthService
 
 ```typescript
-// modules/engine/auth/services/auth.service.ts
+// core/auth/services/auth.service.ts
 @Injectable()
 export class AuthService {
   async login(matricula: string, senha: string) {
@@ -1046,7 +1049,7 @@ export class AuthService {
 #### 2. JwtStrategy
 
 ```typescript
-// modules/engine/auth/strategies/jwt.strategy.ts
+// core/auth/strategies/jwt.strategy.ts
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
@@ -1200,7 +1203,7 @@ async findAll(allowedContracts: ContractPermission[] | null) {
 ### Helpers de Permissão
 
 ```typescript
-// modules/engine/auth/utils/contract-helpers.ts
+// core/auth/utils/contract-helpers.ts
 
 // Extrai IDs de contratos permitidos
 export function extractAllowedContractIds(

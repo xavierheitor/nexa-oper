@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { MobileUsersService } from '@modules/engine/mobile-users/services/mobile-users.service';
+import { MobileUsersService } from '@core/mobile-users/services/mobile-users.service';
 import { UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';

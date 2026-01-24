@@ -4,30 +4,17 @@
  * GET /api/tipo-veiculo/sync - Sincronizar tipos de veículo para mobile
  */
 
-import { SyncAuditRemoverInterceptor } from '@common/interceptors';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import {
-  Controller,
-  Get,
-  HttpStatus,
-  Logger,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
-import {
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { SyncEndpoint } from '@common/decorators';
+import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
+import { Controller, Get, HttpStatus, Logger, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
 import { TipoVeiculoSyncDto } from '../dto';
 import { TipoVeiculoService } from '../services/tipo-veiculo.service';
 
-@ApiTags('tipo-veiculo-sync')
+@SyncEndpoint('tipo-veiculo-sync')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(SyncAuditRemoverInterceptor)
 @Controller('tipo-veiculo/sync')
 export class TipoVeiculoSyncController {
   private readonly logger = new Logger(TipoVeiculoSyncController.name);

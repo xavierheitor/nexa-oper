@@ -9,7 +9,7 @@ import { ContractPermissionsGuard } from './guards/contract-permissions.guard';
 import { AuthService } from './services/auth.service';
 import { ContractPermissionsService } from './services/contract-permissions.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { MobileUsersModule } from '../mobile-users/mobile-users.module';
+import { MobileUsersModule } from '@core/mobile-users/mobile-users.module';
 
 /**
  * Obtém o JWT_SECRET validado do ConfigService

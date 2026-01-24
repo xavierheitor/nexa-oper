@@ -54,7 +54,7 @@ Cliente → Middlewares Express → Middlewares Nest → Guards → Interceptors
 1. **Middlewares Express** – logging e timeout (`apps/api/src/middleware/index.ts`).
 2. **Middlewares Nest** – `LoggerMiddleware` roda para todas as rotas e o `RateLimitMiddleware`
    protege `POST /auth/login` (`AppModule.configure`).
-3. **Guards** – rotas protegidas usam `JwtAuthGuard` (`apps/api/src/modules/engine/auth/guards/jwt-auth.guard.ts`)
+3. **Guards** – rotas protegidas usam `JwtAuthGuard` (`apps/api/src/core/auth/guards/jwt-auth.guard.ts`)
    para garantir que o token é válido. Alguns endpoints adicionam `ContractPermissionsGuard` para
    checar permissões de contrato.
 4. **Pipes globais** – o `ValidationPipe` transforma e valida DTOs automaticamente; qualquer dado

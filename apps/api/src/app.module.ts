@@ -35,15 +35,20 @@
  * ```
  */
 
-import { OperationLoggingInterceptor } from '@common/interceptors/operation-logging.interceptor';
-import { LoggerMiddleware } from '@common/middleware/logger.middleware';
-import { RateLimitMiddleware } from '@common/middleware/rate-limit.middleware';
+import { OperationLoggingInterceptor } from '@common/interceptors';
+import {
+  LoggerMiddleware,
+  RateLimitMiddleware,
+  timeoutMiddleware,
+} from '@common/middleware';
+import { AuthModule } from '@core/auth/auth.module';
+import { ContractsModule } from '@core/contracts/contracts.module';
+import { WebLogsModule } from '@core/web-logs/web-logs.module';
 import { DatabaseModule } from '@database/database.module';
+import { InternalReconciliacaoModule } from '@internal/reconciliacao/internal-reconciliacao.module';
 import { AprModule } from '@modules/apr/apr.module';
 import { ChecklistModule } from '@modules/checklist/checklist.module';
 import { EletricistaModule } from '@modules/eletricista/eletricista.module';
-import { AuthModule } from '@modules/engine/auth/auth.module';
-import { ContractsModule } from '@modules/engine/contracts/contracts.module';
 import { VeiculoModule } from '@modules/veiculo';
 import {
   MiddlewareConsumer,
@@ -59,15 +64,12 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { envValidationSchema } from './config/validation';
-import { HealthModule } from './health/health.module';
-import { MetricsModule } from './metrics/metrics.module';
+import { HealthModule } from './internal/health/health.module';
 import { AtividadeModule } from './modules/atividade';
 import { EquipeModule } from './modules/equipe';
-import { InternalReconciliacaoModule } from './modules/internal-reconciliacao/internal-reconciliacao.module';
 import { MobileUploadModule } from './modules/mobile-upload/mobile-upload.module';
 import { TurnoModule } from './modules/turno';
 import { TurnoRealizadoModule } from './modules/turno-realizado/turno-realizado.module';
-import { WebLogsModule } from './modules/web-logs/web-logs.module';
 
 /**
  * Módulo raiz da aplicação
@@ -131,7 +133,6 @@ import { WebLogsModule } from './modules/web-logs/web-logs.module';
     ContractsModule,
     MobileUploadModule,
     HealthModule,
-    MetricsModule,
     TurnoRealizadoModule,
     WebLogsModule,
     InternalReconciliacaoModule,
@@ -184,6 +185,9 @@ export class AppModule implements NestModule {
    * ```
    */
   configure(consumer: MiddlewareConsumer): void {
+    // Timeout global (evitar requisições travadas)
+    consumer.apply(timeoutMiddleware).forRoutes('*');
+
     // Aplicar middleware de logging para todas as rotas
     consumer.apply(LoggerMiddleware).forRoutes('*');
 

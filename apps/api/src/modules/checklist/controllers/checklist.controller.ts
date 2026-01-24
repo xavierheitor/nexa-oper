@@ -38,7 +38,7 @@
  * ```
  */
 
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
 import {
   Controller,
   Get,

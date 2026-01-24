@@ -2,7 +2,7 @@
  * Controller responsável pelos uploads de localizações enviados pelo aplicativo mobile.
  */
 
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
 import {
   Body,
   Controller,

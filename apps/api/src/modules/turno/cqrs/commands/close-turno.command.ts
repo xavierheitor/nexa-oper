@@ -16,7 +16,7 @@
  * ```
  */
 
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import { ContractPermission } from '@core/auth/services/contract-permissions.service';
 import { ICommand } from '@nestjs/cqrs';
 
 import { FecharTurnoDto } from '../../dto/fechar-turno.dto';

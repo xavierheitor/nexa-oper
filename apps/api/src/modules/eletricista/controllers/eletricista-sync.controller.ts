@@ -9,19 +9,12 @@
  * - GET /api/eletricistas/sync?since=opcional
  */
 
-import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import { extractAllowedContractIds } from '@modules/engine/auth/utils/contract-helpers';
-import {
-  BadRequestException,
-  Controller,
-  Get,
-  HttpStatus,
-  Logger,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { validateSince } from '@common/utils/sync-params';
+import { GetUserContracts } from '@core/auth/decorators/get-user-contracts.decorator';
+import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
+import { ContractPermission } from '@core/auth/services/contract-permissions.service';
+import { extractAllowedContractIds } from '@core/auth/utils/contract-helpers';
+import { Controller, Get, HttpStatus, Logger, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -43,17 +36,6 @@ export class EletricistaSyncController {
   constructor(
     private readonly eletricistaSyncService: EletricistaSyncService
   ) {}
-
-  private validateSince(since?: string): string | undefined {
-    if (!since) return undefined;
-    const t = new Date(since).getTime();
-    if (Number.isNaN(t)) {
-      throw new BadRequestException(
-        'O parâmetro since deve ser uma data em formato ISO 8601 (ex: 2024-01-15T00:00:00.000Z)'
-      );
-    }
-    return since;
-  }
 
   @Get('status')
   @ApiOperation({
@@ -125,7 +107,7 @@ export class EletricistaSyncController {
     @Query('since') since: string | undefined,
     @GetUserContracts() allowedContracts: ContractPermission[]
   ): Promise<EletricistaSyncDto[]> {
-    const s = this.validateSince(since);
+    const s = validateSince(since);
     const ids = extractAllowedContractIds(allowedContracts);
     this.logger.log(
       `Sincronizando eletricistas para ${allowedContracts?.length || 0} contratos`

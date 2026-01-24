@@ -29,24 +29,12 @@
  * ```
  */
 
-import { SyncAuditRemoverInterceptor } from '@common/interceptors';
-import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import {
-  Controller,
-  Get,
-  HttpStatus,
-  Logger,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
-import {
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { SyncEndpoint } from '@common/decorators';
+import { GetUserContracts } from '@core/auth/decorators/get-user-contracts.decorator';
+import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
+import { ContractPermission } from '@core/auth/services/contract-permissions.service';
+import { Controller, Get, HttpStatus, Logger, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
 import { TurnoSyncDto } from '../dto';
 import { TurnoService } from '../services/turno.service';
@@ -67,10 +55,9 @@ import { TurnoService } from '../services/turno.service';
  * - Ordenação otimizada para mobile (updatedAt desc)
  * - Campos de auditoria incluídos para controle de versão
  */
-@ApiTags('turnos-sync')
+@SyncEndpoint('turnos-sync')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(SyncAuditRemoverInterceptor)
 @Controller('turnos/sync')
 export class TurnoSyncController {
   private readonly logger = new Logger(TurnoSyncController.name);

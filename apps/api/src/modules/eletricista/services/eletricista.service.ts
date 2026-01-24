@@ -16,11 +16,11 @@ import {
   buildBaseWhereClause,
 } from '@common/utils/where-clause';
 import { DatabaseService } from '@database/database.service';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import { ContractPermission } from '@core/auth/services/contract-permissions.service';
 import {
   extractAllowedContractIds,
   ensureContractPermission,
-} from '@modules/engine/auth/utils/contract-helpers';
+} from '@core/auth/utils/contract-helpers';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import {

@@ -369,8 +369,8 @@ Cada serviço tinha métodos privados que eram apenas wrappers dos helpers comun
 - `validateOptionalId()` - Wrappers específicos como `validateTipoEquipeId()`,
   `validateContratoId()`, etc.
 - `getCurrentUserContext()` - Wrapper de `getDefaultUserContext()` de `@common/utils/audit`
-- `extractAllowedContractIds()` - Wrapper direto de `@modules/engine/auth/utils/contract-helpers`
-- `ensureContractPermission()` - Wrapper direto de `@modules/engine/auth/utils/contract-helpers`
+- `extractAllowedContractIds()` - Wrapper direto de `@core/auth/utils/contract-helpers`
+- `ensureContractPermission()` - Wrapper direto de `@core/auth/utils/contract-helpers`
 
 **Solução Implementada:**
 

@@ -4,7 +4,7 @@
  * ROTAS: GET/POST /tipo-veiculo, GET/PUT/DELETE /tipo-veiculo/:id, GET /tipo-veiculo/count
  */
 
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
 import {
   Body,
   Controller,

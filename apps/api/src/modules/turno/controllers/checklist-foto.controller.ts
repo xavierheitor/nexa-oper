@@ -5,8 +5,8 @@
  * de fotos de checklists de forma assíncrona.
  */
 
-import { GetUsuarioMobileId } from '@modules/engine/auth/decorators/get-user-id-decorator';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { GetUsuarioMobileId } from '@core/auth/decorators/get-user-id-decorator';
+import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
 import {
   Controller,
   Post,
@@ -132,22 +132,23 @@ export class ChecklistFotoController {
       throw new Error('Arquivo muito grande. Máximo 10MB');
     }
 
-    // Parse metadados se fornecidos
-    let metadadosParsed: any = null;
-    if (metadados) {
-      try {
-        metadadosParsed = JSON.parse(metadados);
-      } catch (error) {
-        this.logger.warn('Metadados inválidos, ignorando:', error);
-      }
-    }
-
+    const metadadosParsed = this.parseMetadadosFoto(metadados);
     return this.checklistFotoService.sincronizarFoto(
       checklistRespostaId,
       file,
       metadadosParsed,
       userId
     );
+  }
+
+  private parseMetadadosFoto(metadados?: string): unknown {
+    if (!metadados) return null;
+    try {
+      return JSON.parse(metadados);
+    } catch (error) {
+      this.logger.warn('Metadados inválidos, ignorando:', error);
+      return null;
+    }
   }
 
   /**
@@ -217,43 +218,15 @@ export class ChecklistFotoController {
       throw new Error('Nenhum arquivo fornecido');
     }
 
-    // Parse dos arrays JSON
-    let checklistRespostaIdsParsed: number[];
-    let turnoIdsParsed: number[] | undefined;
-    let metadadosArrayParsed: any[] | undefined;
+    const { checklistRespostaIdsParsed, turnoIdsParsed, metadadosArrayParsed } =
+      this.parseLoteBody(checklistRespostaIds, turnoIds, metadadosArray);
 
-    try {
-      checklistRespostaIdsParsed = JSON.parse(checklistRespostaIds);
-    } catch (error) {
-      throw new Error(
-        `checklistRespostaIds deve ser um array JSON válido: ${error}`
-      );
-    }
-
-    if (turnoIds) {
-      try {
-        turnoIdsParsed = JSON.parse(turnoIds);
-      } catch (error) {
-        this.logger.warn('turnoIds inválido, ignorando:', error);
-      }
-    }
-
-    if (metadadosArray) {
-      try {
-        metadadosArrayParsed = JSON.parse(metadadosArray);
-      } catch (error) {
-        this.logger.warn('metadadosArray inválido, ignorando:', error);
-      }
-    }
-
-    // Validar se arrays têm o mesmo tamanho
     if (checklistRespostaIdsParsed.length !== files.length) {
       throw new Error(
         'Número de arquivos deve ser igual ao número de checklistRespostaIds'
       );
     }
 
-    // Preparar dados para processamento
     const fotos = files.map((file, index) => ({
       file,
       data: {
@@ -264,6 +237,49 @@ export class ChecklistFotoController {
     }));
 
     return this.checklistFotoService.sincronizarFotoLote(fotos, userId);
+  }
+
+  private parseLoteBody(
+    checklistRespostaIds: string,
+    turnoIds?: string,
+    metadadosArray?: string
+  ): {
+    checklistRespostaIdsParsed: number[];
+    turnoIdsParsed: number[] | undefined;
+    metadadosArrayParsed: unknown[] | undefined;
+  } {
+    let checklistRespostaIdsParsed: number[];
+    try {
+      checklistRespostaIdsParsed = JSON.parse(checklistRespostaIds);
+    } catch (error) {
+      throw new Error(
+        `checklistRespostaIds deve ser um array JSON válido: ${error}`
+      );
+    }
+
+    let turnoIdsParsed: number[] | undefined;
+    if (turnoIds) {
+      try {
+        turnoIdsParsed = JSON.parse(turnoIds);
+      } catch (error) {
+        this.logger.warn('turnoIds inválido, ignorando:', error);
+      }
+    }
+
+    let metadadosArrayParsed: unknown[] | undefined;
+    if (metadadosArray) {
+      try {
+        metadadosArrayParsed = JSON.parse(metadadosArray);
+      } catch (error) {
+        this.logger.warn('metadadosArray inválido, ignorando:', error);
+      }
+    }
+
+    return {
+      checklistRespostaIdsParsed,
+      turnoIdsParsed,
+      metadadosArrayParsed,
+    };
   }
 
   /**

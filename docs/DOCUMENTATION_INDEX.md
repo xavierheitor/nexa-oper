@@ -90,6 +90,12 @@ Interface → Hooks → Actions → Services → Repositories → Prisma → Dat
 - **Container Pattern** - Injeção de dependência
 - **Schema Validation** - Validação com Zod
 
+### **Padrões da API (NestJS)**
+
+- **[CQRS: quando usar](./CQRS_QUANDO_USAR.md)** – Critérios para adotar CQRS em novos módulos (complexidade, event sourcing, leitura/escrita).
+- **[CQRS, Event Sourcing e Circuit Breaker no Turno](../apps/api/src/modules/turno/CQRS_EVENT_SOURCING_CIRCUIT_BREAKER.md)** – Implementação de referência no módulo de turnos.
+- **[Circuit Breaker](../apps/api/src/common/circuit-breaker/README.md)** – Quando e como usar o `CircuitBreakerService` (chamadas HTTP, integrações, I/O externa).
+
 ## 📋 Guias por Funcionalidade
 
 ### **🔐 Autenticação**

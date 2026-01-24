@@ -11,10 +11,10 @@ import {
   createStandardErrorResponse,
   handleValidationError,
 } from '@common/utils/error-response';
-import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
-import { GetUsuarioMobileId } from '@modules/engine/auth/decorators/get-user-id-decorator';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import { GetUserContracts } from '@core/auth/decorators/get-user-contracts.decorator';
+import { GetUsuarioMobileId } from '@core/auth/decorators/get-user-id-decorator';
+import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
+import { ContractPermission } from '@core/auth/services/contract-permissions.service';
 import {
   Controller,
   Post,
@@ -38,7 +38,12 @@ import {
   MobileFecharTurnoDto,
   MobileFecharTurnoResponseDto,
 } from '../dto';
-import { AbrirTurnoDto, EletricistaTurnoDto, FecharTurnoDto } from '../dto';
+import {
+  AbrirTurnoDto,
+  EletricistaTurnoDto,
+  FecharTurnoDto,
+  TurnoResponseDto,
+} from '../dto';
 import { TurnoService } from '../services/turno.service';
 
 /**
@@ -91,81 +96,81 @@ export class TurnoMobileController {
       eletricistasCount: mobileDto.eletricistas?.length || 0,
       checklistsCount: mobileDto.checklists?.length || 0,
     });
-
-    // Log detalhado dos dados recebidos para debug
     this.logger.debug(
       'Dados completos recebidos:',
       JSON.stringify(mobileDto, null, 2)
     );
 
-    // Validar e aplicar fallback para eletricistaRemoteId nos checklists
     this.validateAndApplyEletricistaFallback(mobileDto);
 
     try {
-      // Converter MobileAbrirTurnoDto para AbrirTurnoDto
       const abrirDto = this.converterParaAbrirTurnoDto(mobileDto);
-
       this.logger.log('Convertendo dados mobile para formato padrão da API');
 
-      // Chamar o serviço real de abertura de turno
       const turnoResult = await this.turnoService.abrirTurno(
         abrirDto,
         allowedContracts,
         userId
       );
-
       this.logger.log(`Turno aberto com sucesso: ID ${turnoResult.id}`);
 
-      // Preparar resposta com informações de checklists se disponíveis
-      const response: any = {
-        success: true,
-        message: 'Turno aberto com sucesso',
-        data: turnoResult,
-        turnoLocalId: mobileDto.turno.idLocal,
-        remoteId: turnoResult.id,
-        timestamp: new Date().toISOString(),
-      };
-
-      // Adicionar informações de checklists se disponíveis
-      const checklistsSalvos = (turnoResult as any).checklistsSalvos;
-      const pendenciasGeradas = (turnoResult as any).pendenciasGeradas;
-      const respostasAguardandoFoto = (turnoResult as any)
-        .respostasAguardandoFoto;
-
-      if (checklistsSalvos !== undefined) {
-        response.checklistsSalvos = checklistsSalvos;
-
-        // Processamento assíncrono
-        if ((turnoResult as any).processamentoAssincrono) {
-          response.processamentoAssincrono = 'Em andamento';
-        } else {
-          // Dados síncronos (caso existam)
-          response.pendenciasGeradas = pendenciasGeradas || 0;
-          response.respostasAguardandoFoto = respostasAguardandoFoto || [];
-
-          this.logger.log(
-            `Checklists processados: ${response.checklistsSalvos} salvos, ${response.pendenciasGeradas || 0} pendências`
-          );
-        }
-      }
-
-      return response;
+      return this.buildAbrirTurnoResponse(mobileDto, turnoResult);
     } catch (error) {
-      this.logger.error('Erro ao abrir turno via mobile:', error);
-
-      // Usar padronização de erros
-      if (error.status === HttpStatus.BAD_REQUEST && error.response?.message) {
-        throw handleValidationError(error, '/api/turno/abrir');
-      }
-
-      // Para outros tipos de erro, usar resposta padronizada
-      throw createStandardErrorResponse(
-        error.message || 'Erro na abertura de turno',
-        '/api/turno/abrir',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
-        error.details
-      );
+      this.handleAbrirTurnoError(error);
     }
+  }
+
+  private buildAbrirTurnoResponse(
+    mobileDto: MobileAbrirTurnoDto,
+    turnoResult: unknown
+  ): object {
+    const t = turnoResult as Record<string, unknown> & { id: number };
+    const response: Record<string, unknown> = {
+      success: true,
+      message: 'Turno aberto com sucesso',
+      data: turnoResult,
+      turnoLocalId: mobileDto.turno.idLocal,
+      remoteId: t.id,
+      timestamp: new Date().toISOString(),
+    };
+    const checklistsSalvos = t.checklistsSalvos as number | undefined;
+    const pendenciasGeradas = t.pendenciasGeradas as number | undefined;
+    const respostasAguardandoFoto = (t.respostasAguardandoFoto ??
+      []) as unknown[];
+    const processamentoAssincrono = t.processamentoAssincrono;
+
+    if (checklistsSalvos !== undefined) {
+      response.checklistsSalvos = checklistsSalvos;
+      if (processamentoAssincrono) {
+        response.processamentoAssincrono = 'Em andamento';
+      } else {
+        response.pendenciasGeradas = pendenciasGeradas ?? 0;
+        response.respostasAguardandoFoto = respostasAguardandoFoto;
+        this.logger.log(
+          `Checklists processados: ${checklistsSalvos} salvos, ${pendenciasGeradas ?? 0} pendências`
+        );
+      }
+    }
+    return response;
+  }
+
+  private handleAbrirTurnoError(error: unknown): never {
+    this.logger.error('Erro ao abrir turno via mobile:', error);
+    const e = error as {
+      status?: number;
+      response?: { message?: unknown };
+      message?: string;
+      details?: unknown;
+    };
+    if (e.status === HttpStatus.BAD_REQUEST && e.response?.message) {
+      throw handleValidationError(e, '/api/turno/abrir');
+    }
+    throw createStandardErrorResponse(
+      e.message || 'Erro na abertura de turno',
+      '/api/turno/abrir',
+      e.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      Array.isArray(e.details) ? (e.details as string[]) : undefined
+    );
   }
 
   /**
@@ -327,92 +332,96 @@ export class TurnoMobileController {
     });
 
     try {
-      // Converter MobileFecharTurnoDto para FecharTurnoDto
-      // Usar parseMobileDate para garantir interpretação correta do timezone
       const fecharDto: FecharTurnoDto = {
         turnoId: mobileDto.turnoId,
         kmFim: mobileDto.kmFinal,
         dataFim: parseMobileDate(mobileDto.horaFim).toISOString(),
       };
-
       this.logger.log('Convertendo dados mobile para formato padrão da API');
 
-      // Chamar o serviço real de fechamento de turno
       const turnoResult = await this.turnoService.fecharTurno(
         fecharDto,
         allowedContracts
       );
 
-      // Verificar se o turno já estava fechado (retorno especial do service)
-      if (turnoResult && (turnoResult as any)._alreadyClosed) {
-        this.logger.log(`Turno já estava fechado: ID ${turnoResult.id}`);
-        // Retornar HTTP 409 com formato JSON específico para o app sincronizar
-        throw new HttpException(
-          {
-            status: 'already_closed',
-            remoteId: turnoResult.id,
-            closedAt:
-              turnoResult.dataFim?.toISOString() || new Date().toISOString(),
-            kmFinal: (turnoResult as any).KmFim || null,
-          },
-          HttpStatus.CONFLICT
-        );
-      }
-
+      this.throwIfAlreadyClosed(turnoResult);
       this.logger.log(`Turno fechado com sucesso: ID ${turnoResult.id}`);
-
-      return {
-        success: true,
-        message: 'Turno fechado com sucesso',
-        data: {
-          id: turnoResult.id,
-          dataSolicitacao: turnoResult.dataSolicitacao.toISOString(),
-          dataInicio: turnoResult.dataInicio.toISOString(),
-          dataFim: turnoResult.dataFim?.toISOString() || '',
-          veiculoId: turnoResult.veiculoId,
-          veiculoPlaca: turnoResult.veiculoPlaca,
-          veiculoModelo: turnoResult.veiculoModelo,
-          equipeId: turnoResult.equipeId,
-          equipeNome: turnoResult.equipeNome,
-          dispositivo: turnoResult.dispositivo,
-          kmInicio: turnoResult.kmInicio,
-          kmFim: turnoResult.kmFim || 0,
-          status: turnoResult.status,
-          eletricistas: turnoResult.eletricistas,
-          createdAt: turnoResult.createdAt.toISOString(),
-          createdBy: turnoResult.createdBy,
-          updatedAt: turnoResult.updatedAt?.toISOString() || '',
-          updatedBy: turnoResult.updatedBy || '',
-          deletedAt: turnoResult.deletedAt?.toISOString() || null,
-          deletedBy: turnoResult.deletedBy || null,
-        },
-        remoteId: turnoResult.id,
-        timestamp: new Date().toISOString(),
-      };
+      return this.buildFecharTurnoResponse(turnoResult);
     } catch (error) {
-      // Se for HttpException com status 409 (Conflict), re-lançar diretamente
-      // Isso permite que o app receba o formato JSON específico para sincronização
-      if (
-        error instanceof HttpException &&
-        error.getStatus() === HttpStatus.CONFLICT
-      ) {
-        throw error;
-      }
-
-      this.logger.error('Erro ao fechar turno via mobile:', error);
-
-      // Usar padronização de erros
-      if (error.status === HttpStatus.BAD_REQUEST && error.response?.message) {
-        throw handleValidationError(error, '/api/turno/fechar');
-      }
-
-      // Para outros tipos de erro, usar resposta padronizada
-      throw createStandardErrorResponse(
-        error.message || 'Erro no fechamento de turno',
-        '/api/turno/fechar',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
-        error.details
-      );
+      this.handleFecharTurnoError(error);
     }
+  }
+
+  private throwIfAlreadyClosed(turnoResult: unknown): void {
+    const t = turnoResult as Record<string, unknown> & {
+      id: number;
+      dataFim?: Date;
+    };
+    if (!t?._alreadyClosed) return;
+    this.logger.log(`Turno já estava fechado: ID ${t.id}`);
+    throw new HttpException(
+      {
+        status: 'already_closed',
+        remoteId: t.id,
+        closedAt: t.dataFim?.toISOString() ?? new Date().toISOString(),
+        kmFinal: (t.KmFim as number | null | undefined) ?? null,
+      },
+      HttpStatus.CONFLICT
+    );
+  }
+
+  private buildFecharTurnoResponse(
+    turno: TurnoResponseDto
+  ): MobileFecharTurnoResponseDto {
+    return {
+      success: true,
+      message: 'Turno fechado com sucesso',
+      data: {
+        id: turno.id,
+        dataSolicitacao: turno.dataSolicitacao.toISOString(),
+        dataInicio: turno.dataInicio.toISOString(),
+        dataFim: turno.dataFim?.toISOString() ?? '',
+        veiculoId: turno.veiculoId,
+        veiculoPlaca: turno.veiculoPlaca,
+        veiculoModelo: turno.veiculoModelo,
+        equipeId: turno.equipeId,
+        equipeNome: turno.equipeNome,
+        dispositivo: turno.dispositivo ?? '',
+        kmInicio: turno.kmInicio,
+        kmFim: turno.kmFim ?? 0,
+        status: turno.status,
+        eletricistas: turno.eletricistas ?? [],
+        createdAt: turno.createdAt.toISOString(),
+        createdBy: turno.createdBy,
+        updatedAt: turno.updatedAt?.toISOString() ?? '',
+        updatedBy: turno.updatedBy ?? '',
+        deletedAt: turno.deletedAt?.toISOString() ?? null,
+        deletedBy: turno.deletedBy ?? null,
+      },
+      remoteId: turno.id,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  private handleFecharTurnoError(error: unknown): never {
+    if (error instanceof HttpException && error.getStatus() === 409) {
+      throw error;
+    }
+    this.logger.error('Erro ao fechar turno via mobile:', error);
+    const e = error as {
+      status?: number;
+      response?: { message?: unknown };
+      message?: string;
+      details?: unknown;
+    };
+    if (e.status === HttpStatus.BAD_REQUEST && e.response?.message) {
+      throw handleValidationError(e, '/api/turno/fechar');
+    }
+    throw createStandardErrorResponse(
+      e.message ?? 'Erro no fechamento de turno',
+      '/api/turno/fechar',
+      e.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+      Array.isArray(e.details) ? (e.details as string[]) : undefined
+    );
   }
 }

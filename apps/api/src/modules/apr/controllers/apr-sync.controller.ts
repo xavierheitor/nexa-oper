@@ -38,16 +38,9 @@
  * ```
  */
 
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import {
-  BadRequestException,
-  Controller,
-  Get,
-  HttpStatus,
-  Logger,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { validateSince } from '@common/utils/sync-params';
+import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
+import { Controller, Get, HttpStatus, Logger, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -90,20 +83,6 @@ export class AprSyncController {
   private readonly logger = new Logger(AprSyncController.name);
 
   constructor(private readonly aprSyncService: AprSyncService) {}
-
-  /**
-   * Valida since (ISO 8601). Se presente e inválido, lança BadRequestException.
-   */
-  private validateSince(since?: string): string | undefined {
-    if (!since) return undefined;
-    const t = new Date(since).getTime();
-    if (Number.isNaN(t)) {
-      throw new BadRequestException(
-        'O parâmetro since deve ser uma data em formato ISO 8601 (ex: 2024-01-15T00:00:00.000Z)',
-      );
-    }
-    return since;
-  }
 
   /**
    * Retorna status de sincronização (checksum). Permite ao mobile verificar
@@ -183,7 +162,7 @@ export class AprSyncController {
   async syncModelos(
     @Query('since') since?: string,
   ): Promise<AprResponseDto[]> {
-    const s = this.validateSince(since);
+    const s = validateSince(since);
     this.logger.log('Iniciando sincronização de modelos APR');
     return this.aprSyncService.findAllForSync(s);
   }
@@ -219,7 +198,7 @@ export class AprSyncController {
   async syncPerguntas(
     @Query('since') since?: string,
   ): Promise<AprPerguntaSyncDto[]> {
-    const s = this.validateSince(since);
+    const s = validateSince(since);
     this.logger.log('Iniciando sincronização de perguntas APR');
     return this.aprSyncService.findAllPerguntasForSync(s);
   }
@@ -255,7 +234,7 @@ export class AprSyncController {
   async syncPerguntaRelacoes(
     @Query('since') since?: string,
   ): Promise<AprPerguntaRelacaoSyncDto[]> {
-    const s = this.validateSince(since);
+    const s = validateSince(since);
     this.logger.log('Iniciando sincronização de relações APR-Perguntas');
     return this.aprSyncService.findAllPerguntaRelacoesForSync(s);
   }
@@ -291,7 +270,7 @@ export class AprSyncController {
   async syncOpcoesResposta(
     @Query('since') since?: string,
   ): Promise<AprOpcaoRespostaSyncDto[]> {
-    const s = this.validateSince(since);
+    const s = validateSince(since);
     this.logger.log('Iniciando sincronização de opções de resposta APR');
     return this.aprSyncService.findAllOpcoesForSync(s);
   }
@@ -327,7 +306,7 @@ export class AprSyncController {
   async syncOpcaoRespostaRelacoes(
     @Query('since') since?: string,
   ): Promise<AprOpcaoRespostaRelacaoSyncDto[]> {
-    const s = this.validateSince(since);
+    const s = validateSince(since);
     this.logger.log(
       'Iniciando sincronização de relações APR-Opções de resposta'
     );
@@ -366,7 +345,7 @@ export class AprSyncController {
   async syncTipoAtividadeRelacoes(
     @Query('since') since?: string,
   ): Promise<AprTipoAtividadeRelacaoSyncDto[]> {
-    const s = this.validateSince(since);
+    const s = validateSince(since);
     this.logger.log(
       'Iniciando sincronização de relações APR-Tipo de Atividade'
     );

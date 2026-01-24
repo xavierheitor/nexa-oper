@@ -9,6 +9,12 @@
 
 import * as crypto from 'crypto';
 
+import {
+  getSaoPauloDayRange,
+  parseDateInput,
+} from '@common/utils/date-timezone';
+import { acquireLock, releaseLock } from '@common/utils/job-lock';
+import { DatabaseService } from '@database/database.service';
 import { Injectable, Logger, ConflictException } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@nexa-oper/db';
 
@@ -32,12 +38,6 @@ import {
   AberturaTurno,
   AberturasPorEletricistaMap,
 } from './types';
-import {
-  getSaoPauloDayRange,
-  parseDateInput,
-} from '../../common/utils/date-timezone';
-import { acquireLock, releaseLock } from '../../common/utils/job-lock';
-import { DatabaseService } from '../../database/database.service';
 
 const JOB_NAME = 'reconciliacao_turnos';
 

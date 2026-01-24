@@ -26,8 +26,6 @@ import {
   configureCors,
   configureSpecialRoutes,
 } from './config';
-// Middlewares
-import { timeoutMiddleware } from './middleware';
 // Utils
 import { setupGracefulShutdown } from './utils/graceful-shutdown';
 
@@ -63,9 +61,6 @@ async function bootstrap(): Promise<void> {
     // Configurações básicas
     configureTrustProxy(expressApp, appConfig.trustProxy, logger);
     configureSpecialRoutes(expressApp);
-
-    // Middlewares
-    expressApp.use(timeoutMiddleware);
 
     // Segurança
     configureSecurity(app, securityConfig, logger);

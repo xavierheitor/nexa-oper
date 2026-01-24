@@ -25,9 +25,8 @@
  * - AuthModule: Autenticação e permissões
  */
 
-import { CircuitBreakerModule } from '@common/circuit-breaker';
 import { DatabaseModule } from '@database/database.module';
-import { AuthModule } from '@modules/engine/auth/auth.module';
+import { AuthModule } from '@core/auth/auth.module';
 import { TurnoRealizadoModule } from '@modules/turno-realizado/turno-realizado.module';
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
@@ -73,7 +72,6 @@ import { TurnoService } from './services/turno.service';
  * - Importa AuthModule para autenticação e permissões
  * - Importa CqrsModule para padrão CQRS (Commands/Queries)
  * - Importa EventEmitterModule para Event Sourcing
- * - Importa CircuitBreakerModule para proteção contra falhas
  * - Declara controllers para endpoints HTTP
  * - Declara services para lógica de negócio
  * - Declara CQRS handlers para Commands e Queries
@@ -92,9 +90,6 @@ import { TurnoService } from './services/turno.service';
 
     // Event Emitter para Event Sourcing
     EventEmitterModule,
-
-    // Circuit Breaker para proteção contra falhas
-    CircuitBreakerModule,
 
     // Multer para upload de arquivos
     MulterModule.register({

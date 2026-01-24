@@ -49,8 +49,8 @@ import {
 import { withTransactionTimeout, withSyncTimeout } from '@common/utils/timeout';
 import { validateId, ensureEntityExists } from '@common/utils/validation';
 import { DatabaseService } from '@database/database.service';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import { extractAllowedContractIds } from '@modules/engine/auth/utils/contract-helpers';
+import { ContractPermission } from '@core/auth/services/contract-permissions.service';
+import { extractAllowedContractIds } from '@core/auth/utils/contract-helpers';
 import { TurnoRealizadoService } from '@modules/turno-realizado/turno-realizado.service';
 import {
   BadRequestException,

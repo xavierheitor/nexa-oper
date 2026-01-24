@@ -1,4 +1,4 @@
-import { MobileUsersService } from '@modules/engine/mobile-users/services/mobile-users.service';
+import { MobileUsersService } from '@core/mobile-users/services/mobile-users.service';
 import {
   ForbiddenException,
   Injectable,

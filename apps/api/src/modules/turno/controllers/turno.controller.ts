@@ -41,9 +41,9 @@
  * ```
  */
 
-import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
+import { GetUserContracts } from '@core/auth/decorators/get-user-contracts.decorator';
+import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
+import { ContractPermission } from '@core/auth/services/contract-permissions.service';
 import {
   Controller,
   Get,
@@ -56,6 +56,7 @@ import {
   Logger,
   UseGuards,
   ParseIntPipe,
+  applyDecorators,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
@@ -81,6 +82,66 @@ import {
   TurnoListResponseDto,
   TurnoQueryDto,
 } from '../dto';
+
+function ApiQueryTurnosList(): MethodDecorator {
+  return applyDecorators(
+    ApiQuery({
+      name: 'page',
+      required: false,
+      description: 'Página da consulta',
+      example: 1,
+    }),
+    ApiQuery({
+      name: 'limit',
+      required: false,
+      description: 'Limite de registros por página',
+      example: 10,
+    }),
+    ApiQuery({
+      name: 'search',
+      required: false,
+      description: 'Termo de busca para filtrar turnos',
+      example: 'ABC1234',
+    }),
+    ApiQuery({
+      name: 'veiculoId',
+      required: false,
+      description: 'ID do veículo para filtrar',
+      example: 1,
+    }),
+    ApiQuery({
+      name: 'equipeId',
+      required: false,
+      description: 'ID da equipe para filtrar',
+      example: 1,
+    }),
+    ApiQuery({
+      name: 'eletricistaId',
+      required: false,
+      description: 'ID do eletricista para filtrar',
+      example: 1,
+    }),
+    ApiQuery({
+      name: 'status',
+      required: false,
+      description: 'Status do turno para filtrar',
+      example: 'ABERTO',
+      enum: ['ABERTO', 'FECHADO', 'CANCELADO'],
+    }),
+    ApiQuery({
+      name: 'dataInicio',
+      required: false,
+      description: 'Data de início para filtrar (formato ISO)',
+      example: '2024-01-01T00:00:00.000Z',
+    }),
+    ApiQuery({
+      name: 'dataFim',
+      required: false,
+      description: 'Data de fim para filtrar (formato ISO)',
+      example: '2024-01-31T23:59:59.999Z',
+    })
+  );
+}
 
 /**
  * Controlador responsável pelas operações de turnos
@@ -256,61 +317,7 @@ export class TurnoController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor',
   })
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    description: 'Página da consulta',
-    example: 1,
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    description: 'Limite de registros por página',
-    example: 10,
-  })
-  @ApiQuery({
-    name: 'search',
-    required: false,
-    description: 'Termo de busca para filtrar turnos',
-    example: 'ABC1234',
-  })
-  @ApiQuery({
-    name: 'veiculoId',
-    required: false,
-    description: 'ID do veículo para filtrar',
-    example: 1,
-  })
-  @ApiQuery({
-    name: 'equipeId',
-    required: false,
-    description: 'ID da equipe para filtrar',
-    example: 1,
-  })
-  @ApiQuery({
-    name: 'eletricistaId',
-    required: false,
-    description: 'ID do eletricista para filtrar',
-    example: 1,
-  })
-  @ApiQuery({
-    name: 'status',
-    required: false,
-    description: 'Status do turno para filtrar',
-    example: 'ABERTO',
-    enum: ['ABERTO', 'FECHADO', 'CANCELADO'],
-  })
-  @ApiQuery({
-    name: 'dataInicio',
-    required: false,
-    description: 'Data de início para filtrar (formato ISO)',
-    example: '2024-01-01T00:00:00.000Z',
-  })
-  @ApiQuery({
-    name: 'dataFim',
-    required: false,
-    description: 'Data de fim para filtrar (formato ISO)',
-    example: '2024-01-31T23:59:59.999Z',
-  })
+  @ApiQueryTurnosList()
   async findAll(
     @Query() query: TurnoQueryDto,
     @GetUserContracts() allowedContracts: ContractPermission[]

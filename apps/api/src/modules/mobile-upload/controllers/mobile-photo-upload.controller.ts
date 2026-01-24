@@ -6,7 +6,7 @@ import {
   MAX_MOBILE_PHOTO_FILE_SIZE,
   SUPPORTED_MOBILE_PHOTO_TYPES,
 } from '@common/constants/mobile-upload';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
 import {
   Body,
   Controller,

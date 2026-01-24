@@ -7,11 +7,9 @@
 
 import { randomUUID } from 'crypto';
 
+import { sanitizeData } from '@common/utils/logger';
 import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
-
-import { MetricsService } from '../../metrics/metrics.service';
-import { sanitizeData } from '../utils/logger';
 
 // Extende Request para permitir anexar requestId
 declare module 'express' {
@@ -23,7 +21,7 @@ declare module 'express' {
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
   private readonly logger = new Logger(LoggerMiddleware.name);
-  constructor(private readonly metricsService?: MetricsService) {}
+  constructor() {}
 
   use(req: Request, res: Response, next: NextFunction): void {
     try {
@@ -73,17 +71,6 @@ export class LoggerMiddleware implements NestMiddleware {
           } else {
             // Sucesso
             this.logger.log(logMsg);
-          }
-
-          // Métricas
-          if (this.metricsService) {
-            const route = originalUrl.split('?')[0];
-            this.metricsService.observeRequest(
-              method,
-              route,
-              status,
-              elapsed / 1000
-            );
           }
         } catch (err) {
           this.logger.error(`Erro ao logar resposta para ${requestId}`, err);

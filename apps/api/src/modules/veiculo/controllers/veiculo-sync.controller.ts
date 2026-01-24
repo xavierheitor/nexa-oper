@@ -6,32 +6,19 @@
  * do usuário autenticado.
  */
 
-import { SyncAuditRemoverInterceptor } from '@common/interceptors';
-import { GetUserContracts } from '@modules/engine/auth/decorators/get-user-contracts.decorator';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import { ContractPermission } from '@modules/engine/auth/services/contract-permissions.service';
-import {
-  Controller,
-  Get,
-  HttpStatus,
-  Logger,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { SyncEndpoint } from '@common/decorators';
+import { GetUserContracts } from '@core/auth/decorators/get-user-contracts.decorator';
+import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
+import { ContractPermission } from '@core/auth/services/contract-permissions.service';
+import { Controller, Get, HttpStatus, Logger, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import { VeiculoSyncDto } from '../dto';
 import { VeiculoService } from '../services/veiculo.service';
 
-@ApiTags('veiculos-sync')
+@SyncEndpoint('veiculos-sync')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(SyncAuditRemoverInterceptor)
 @Controller('veiculos/sync')
 export class VeiculoSyncController {
   private readonly logger = new Logger(VeiculoSyncController.name);

@@ -8,30 +8,17 @@
  * - GET /api/tipo-equipe/sync - Sincronizar tipos de equipe
  */
 
-import { SyncAuditRemoverInterceptor } from '@common/interceptors';
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import {
-  Controller,
-  Get,
-  HttpStatus,
-  Logger,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
-import {
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { SyncEndpoint } from '@common/decorators';
+import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
+import { Controller, Get, HttpStatus, Logger, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
 import { TipoEquipeSyncDto } from '../dto';
 import { TipoEquipeService } from '../services/tipo-equipe.service';
 
-@ApiTags('tipo-equipe-sync')
+@SyncEndpoint('tipo-equipe-sync')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(SyncAuditRemoverInterceptor)
 @Controller('tipo-equipe/sync')
 export class TipoEquipeSyncController {
   private readonly logger = new Logger(TipoEquipeSyncController.name);

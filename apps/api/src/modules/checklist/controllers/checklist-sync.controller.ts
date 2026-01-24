@@ -15,16 +15,9 @@
  * - GET /api/checklist/sync/tipos-equipe/relacoes?since=opcional
  */
 
-import { JwtAuthGuard } from '@modules/engine/auth/guards/jwt-auth.guard';
-import {
-  BadRequestException,
-  Controller,
-  Get,
-  HttpStatus,
-  Logger,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { validateSince } from '@common/utils/sync-params';
+import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
+import { Controller, Get, HttpStatus, Logger, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -52,17 +45,6 @@ export class ChecklistSyncController {
   private readonly logger = new Logger(ChecklistSyncController.name);
 
   constructor(private readonly checklistSyncService: ChecklistSyncService) {}
-
-  private validateSince(since?: string): string | undefined {
-    if (!since) return undefined;
-    const t = new Date(since).getTime();
-    if (Number.isNaN(t)) {
-      throw new BadRequestException(
-        'O parâmetro since deve ser uma data em formato ISO 8601 (ex: 2024-01-15T00:00:00.000Z)'
-      );
-    }
-    return since;
-  }
 
   @Get('status')
   @ApiOperation({
@@ -126,7 +108,7 @@ export class ChecklistSyncController {
   async syncModelos(
     @Query('since') since?: string
   ): Promise<ChecklistResponseDto[]> {
-    const s = this.validateSince(since);
+    const s = validateSince(since);
     this.logger.log('Iniciando sincronização de checklists');
     return this.checklistSyncService.findAllForSync(s);
   }
@@ -154,7 +136,7 @@ export class ChecklistSyncController {
   async syncPerguntas(
     @Query('since') since?: string
   ): Promise<ChecklistPerguntaSyncDto[]> {
-    const s = this.validateSince(since);
+    const s = validateSince(since);
     this.logger.log('Iniciando sincronização de perguntas de checklist');
     return this.checklistSyncService.findAllPerguntasForSync(s);
   }
@@ -184,7 +166,7 @@ export class ChecklistSyncController {
   async syncPerguntaRelacoes(
     @Query('since') since?: string
   ): Promise<ChecklistPerguntaRelacaoSyncDto[]> {
-    const s = this.validateSince(since);
+    const s = validateSince(since);
     this.logger.log('Iniciando sincronização de relações Checklist-Perguntas');
     return this.checklistSyncService.findAllPerguntaRelacoesForSync(s);
   }
@@ -211,7 +193,7 @@ export class ChecklistSyncController {
   async syncOpcoes(
     @Query('since') since?: string
   ): Promise<ChecklistOpcaoRespostaSyncDto[]> {
-    const s = this.validateSince(since);
+    const s = validateSince(since);
     this.logger.log(
       'Iniciando sincronização de opções de resposta de checklist'
     );
@@ -243,7 +225,7 @@ export class ChecklistSyncController {
   async syncOpcaoRelacoes(
     @Query('since') since?: string
   ): Promise<ChecklistOpcaoRespostaRelacaoSyncDto[]> {
-    const s = this.validateSince(since);
+    const s = validateSince(since);
     this.logger.log('Iniciando sincronização de relações Checklist-Opções');
     return this.checklistSyncService.findAllOpcaoRelacoesForSync(s);
   }
@@ -273,7 +255,7 @@ export class ChecklistSyncController {
   async syncTipoVeiculoRelacoes(
     @Query('since') since?: string
   ): Promise<ChecklistTipoVeiculoRelacaoSyncDto[]> {
-    const s = this.validateSince(since);
+    const s = validateSince(since);
     this.logger.log(
       'Iniciando sincronização de relações Checklist-Tipo de Veículo'
     );
@@ -305,7 +287,7 @@ export class ChecklistSyncController {
   async syncTipoEquipeRelacoes(
     @Query('since') since?: string
   ): Promise<ChecklistTipoEquipeRelacaoSyncDto[]> {
-    const s = this.validateSince(since);
+    const s = validateSince(since);
     this.logger.log(
       'Iniciando sincronização de relações Checklist-Tipo de Equipe'
     );
