@@ -3,10 +3,10 @@
  * e payload de eletricistas. Respeita filtro por contratos (allowedContractIds).
  */
 
-import { createHash } from 'crypto';
-
 import { ORDER_CONFIG } from '@common/constants/eletricista';
 import { handleCrudError } from '@common/utils/error-handler';
+import { computeSyncChecksum } from '@common/utils/sync-checksum';
+import { buildSyncWhereIncremental } from '@common/utils/sync-where';
 import { DatabaseService } from '@database/database.service';
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -19,20 +19,6 @@ export class EletricistaSyncService {
   constructor(private readonly db: DatabaseService) {}
 
   /**
-   * Monta o where base para sync: full (deletedAt: null) ou incremental (since).
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OR compatível com EletricistaWhereInput
-  private buildSyncWhereIncremental(since?: string): any {
-    if (!since) return { deletedAt: null };
-    return {
-      OR: [
-        { updatedAt: { gt: new Date(since) }, deletedAt: null },
-        { deletedAt: { gt: new Date(since) } },
-      ],
-    };
-  }
-
-  /**
    * Aplica filtro de contratos ao where quando há allowedContractIds.
    * Se allowedContractIds é [] ou null, o chamador deve ter tratado (retorno vazio ou sem filtro).
    */
@@ -40,7 +26,7 @@ export class EletricistaSyncService {
     since: string | undefined,
     allowedContractIds: number[] | null
   ) {
-    const base = this.buildSyncWhereIncremental(since);
+    const base = buildSyncWhereIncremental(since);
     const hasContractFilter =
       allowedContractIds && allowedContractIds.length > 0;
     return hasContractFilter
@@ -79,9 +65,7 @@ export class EletricistaSyncService {
       'Calculando status de sincronização Eletricista (checksum)'
     );
     const payload = await this.buildSyncChecksumPayload(ids);
-    const checksum = createHash('sha256')
-      .update(JSON.stringify(payload))
-      .digest('hex');
+    const checksum = computeSyncChecksum(payload);
     const serverTime = new Date().toISOString();
     const changed = clientChecksum === undefined || clientChecksum !== checksum;
     this.logger.log(

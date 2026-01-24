@@ -3,10 +3,10 @@
  * e payload de equipes. Respeita filtro por contratos (allowedContractIds).
  */
 
-import { createHash } from 'crypto';
-
 import { ORDER_CONFIG } from '@common/constants/equipe';
 import { handleCrudError } from '@common/utils/error-handler';
+import { computeSyncChecksum } from '@common/utils/sync-checksum';
+import { buildSyncWhereIncremental } from '@common/utils/sync-where';
 import { DatabaseService } from '@database/database.service';
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -18,22 +18,11 @@ export class EquipeSyncService {
 
   constructor(private readonly db: DatabaseService) {}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OR compatível com EquipeWhereInput
-  private buildSyncWhereIncremental(since?: string): any {
-    if (!since) return { deletedAt: null };
-    return {
-      OR: [
-        { updatedAt: { gt: new Date(since) }, deletedAt: null },
-        { deletedAt: { gt: new Date(since) } },
-      ],
-    };
-  }
-
   private buildSyncWhere(
     since: string | undefined,
     allowedContractIds: number[] | null
   ) {
-    const base = this.buildSyncWhereIncremental(since);
+    const base = buildSyncWhereIncremental(since);
     const hasContractFilter =
       allowedContractIds && allowedContractIds.length > 0;
     return hasContractFilter
@@ -70,9 +59,7 @@ export class EquipeSyncService {
     }
     this.logger.log('Calculando status de sincronização Equipe (checksum)');
     const payload = await this.buildSyncChecksumPayload(ids);
-    const checksum = createHash('sha256')
-      .update(JSON.stringify(payload))
-      .digest('hex');
+    const checksum = computeSyncChecksum(payload);
     const serverTime = new Date().toISOString();
     const changed = clientChecksum === undefined || clientChecksum !== checksum;
     this.logger.log(

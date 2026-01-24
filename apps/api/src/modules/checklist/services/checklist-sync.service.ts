@@ -2,13 +2,13 @@
  * Serviço de sincronização de Checklist para mobile: checksum, incremental (since) e os 7 payloads.
  */
 
-import { createHash } from 'crypto';
-
 import {
   CHECKLIST_ORDER_CONFIG_COMPAT,
   ORDER_CONFIG,
 } from '@common/constants/checklist';
 import { handleCrudError } from '@common/utils/error-handler';
+import { computeSyncChecksum } from '@common/utils/sync-checksum';
+import { buildSyncWhereIncremental } from '@common/utils/sync-where';
 import { DatabaseService } from '@database/database.service';
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -27,17 +27,6 @@ export class ChecklistSyncService {
   private readonly logger = new Logger(ChecklistSyncService.name);
 
   constructor(private readonly db: DatabaseService) {}
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- forma do OR é compatível com todos os WhereInput de Checklist
-  private buildSyncWhereIncremental(since?: string): any {
-    if (!since) return { deletedAt: null };
-    return {
-      OR: [
-        { updatedAt: { gt: new Date(since) }, deletedAt: null },
-        { deletedAt: { gt: new Date(since) } },
-      ],
-    };
-  }
 
   private async fetchChecklistChecksumAggregates() {
     const w = { deletedAt: null };
@@ -131,9 +120,7 @@ export class ChecklistSyncService {
   ): Promise<{ changed: boolean; checksum: string; serverTime: string }> {
     this.logger.log('Calculando status de sincronização Checklist (checksum)');
     const payload = await this.buildSyncChecksumPayload();
-    const checksum = createHash('sha256')
-      .update(JSON.stringify(payload))
-      .digest('hex');
+    const checksum = computeSyncChecksum(payload);
     const serverTime = new Date().toISOString();
     const changed = clientChecksum === undefined || clientChecksum !== checksum;
     this.logger.log(
@@ -150,7 +137,7 @@ export class ChecklistSyncService {
     );
     try {
       const data = await this.db.getPrisma().checklist.findMany({
-        where: this.buildSyncWhereIncremental(since),
+        where: buildSyncWhereIncremental(since),
         orderBy: ORDER_CONFIG.SYNC_ORDER,
         select: {
           id: true,
@@ -184,7 +171,7 @@ export class ChecklistSyncService {
     );
     try {
       const data = await this.db.getPrisma().checklistPergunta.findMany({
-        where: this.buildSyncWhereIncremental(since),
+        where: buildSyncWhereIncremental(since),
         orderBy: ORDER_CONFIG.SYNC_ORDER,
         select: {
           id: true,
@@ -216,7 +203,7 @@ export class ChecklistSyncService {
     );
     try {
       const data = await this.db.getPrisma().checklistPerguntaRelacao.findMany({
-        where: this.buildSyncWhereIncremental(since),
+        where: buildSyncWhereIncremental(since),
         orderBy: CHECKLIST_ORDER_CONFIG_COMPAT.PERGUNTA_RELACAO_ORDER,
         select: {
           id: true,
@@ -249,7 +236,7 @@ export class ChecklistSyncService {
     );
     try {
       const data = await this.db.getPrisma().checklistOpcaoResposta.findMany({
-        where: this.buildSyncWhereIncremental(since),
+        where: buildSyncWhereIncremental(since),
         orderBy: ORDER_CONFIG.SYNC_ORDER,
         select: {
           id: true,
@@ -289,7 +276,7 @@ export class ChecklistSyncService {
       const data = await this.db
         .getPrisma()
         .checklistOpcaoRespostaRelacao.findMany({
-          where: this.buildSyncWhereIncremental(since),
+          where: buildSyncWhereIncremental(since),
           orderBy: CHECKLIST_ORDER_CONFIG_COMPAT.OPCAO_RELACAO_ORDER,
           select: {
             id: true,
@@ -329,7 +316,7 @@ export class ChecklistSyncService {
       const data = await this.db
         .getPrisma()
         .checklistTipoVeiculoRelacao.findMany({
-          where: this.buildSyncWhereIncremental(since),
+          where: buildSyncWhereIncremental(since),
           orderBy: CHECKLIST_ORDER_CONFIG_COMPAT.TIPO_VEICULO_RELACAO_ORDER,
           select: {
             id: true,
@@ -369,7 +356,7 @@ export class ChecklistSyncService {
       const data = await this.db
         .getPrisma()
         .checklistTipoEquipeRelacao.findMany({
-          where: this.buildSyncWhereIncremental(since),
+          where: buildSyncWhereIncremental(since),
           orderBy: CHECKLIST_ORDER_CONFIG_COMPAT.TIPO_EQUIPE_RELACAO_ORDER,
           select: {
             id: true,

@@ -2,10 +2,10 @@
  * Serviço de sincronização APR para mobile: checksum, incremental (since) e os 6 payloads.
  */
 
-import { createHash } from 'crypto';
-
 import { APR_ORDER_CONFIG_COMPAT } from '@common/constants/apr';
 import { handleCrudError } from '@common/utils/error-handler';
+import { computeSyncChecksum } from '@common/utils/sync-checksum';
+import { buildSyncWhereIncremental } from '@common/utils/sync-where';
 import { DatabaseService } from '@database/database.service';
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -23,17 +23,6 @@ export class AprSyncService {
   private readonly logger = new Logger(AprSyncService.name);
 
   constructor(private readonly db: DatabaseService) {}
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- forma do OR é compatível com todos os WhereInput de APR
-  private buildSyncWhereIncremental(since?: string): any {
-    if (!since) return { deletedAt: null };
-    return {
-      OR: [
-        { updatedAt: { gt: new Date(since) }, deletedAt: null },
-        { deletedAt: { gt: new Date(since) } },
-      ],
-    };
-  }
 
   private async buildSyncChecksumPayload(): Promise<
     Record<string, { count: number; maxUpdatedAt: string | null }>
@@ -110,9 +99,7 @@ export class AprSyncService {
   ): Promise<{ changed: boolean; checksum: string; serverTime: string }> {
     this.logger.log('Calculando status de sincronização APR (checksum)');
     const payload = await this.buildSyncChecksumPayload();
-    const checksum = createHash('sha256')
-      .update(JSON.stringify(payload))
-      .digest('hex');
+    const checksum = computeSyncChecksum(payload);
     const serverTime = new Date().toISOString();
     const changed = clientChecksum === undefined || clientChecksum !== checksum;
     this.logger.log(
@@ -129,7 +116,7 @@ export class AprSyncService {
     );
     try {
       const data = await this.db.getPrisma().apr.findMany({
-        where: this.buildSyncWhereIncremental(since),
+        where: buildSyncWhereIncremental(since),
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }, { id: 'asc' }],
         select: {
           id: true,
@@ -159,7 +146,7 @@ export class AprSyncService {
     );
     try {
       const data = await this.db.getPrisma().aprPergunta.findMany({
-        where: this.buildSyncWhereIncremental(since),
+        where: buildSyncWhereIncremental(since),
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }, { id: 'asc' }],
         select: {
           id: true,
@@ -191,7 +178,7 @@ export class AprSyncService {
     );
     try {
       const data = await this.db.getPrisma().aprPerguntaRelacao.findMany({
-        where: this.buildSyncWhereIncremental(since),
+        where: buildSyncWhereIncremental(since),
         orderBy: APR_ORDER_CONFIG_COMPAT.PERGUNTA_RELACAO_ORDER,
         select: {
           id: true,
@@ -225,7 +212,7 @@ export class AprSyncService {
     );
     try {
       const data = await this.db.getPrisma().aprOpcaoResposta.findMany({
-        where: this.buildSyncWhereIncremental(since),
+        where: buildSyncWhereIncremental(since),
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }, { id: 'asc' }],
         select: {
           id: true,
@@ -257,7 +244,7 @@ export class AprSyncService {
     );
     try {
       const data = await this.db.getPrisma().aprOpcaoRespostaRelacao.findMany({
-        where: this.buildSyncWhereIncremental(since),
+        where: buildSyncWhereIncremental(since),
         orderBy: APR_ORDER_CONFIG_COMPAT.OPCAO_RELACAO_ORDER,
         select: {
           id: true,
@@ -290,7 +277,7 @@ export class AprSyncService {
     );
     try {
       const data = await this.db.getPrisma().aprTipoAtividadeRelacao.findMany({
-        where: this.buildSyncWhereIncremental(since),
+        where: buildSyncWhereIncremental(since),
         orderBy: APR_ORDER_CONFIG_COMPAT.TIPO_ATIVIDADE_RELACAO_ORDER,
         select: {
           id: true,
