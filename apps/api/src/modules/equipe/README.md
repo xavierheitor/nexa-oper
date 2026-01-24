@@ -23,7 +23,7 @@ Listagem e sincronização de equipes. Criação, atualização e exclusão são
 
 ### Status (checksum)
 
-- `GET /api/equipes/sync/status?checksum=opcional` — `{ changed, checksum, serverTime }`. Escopo pelos contratos do usuário. Se `changed=false`, o mobile pode pular o download.
+- `GET /api/equipes/sync/status?checksum=opcional` — Resposta no DTO **SyncStatusResponseDto** (`changed`, `checksum`, `serverTime`). Escopo pelos contratos do usuário. Se `changed=false`, o mobile pode pular o download.
 
 ### Dados
 

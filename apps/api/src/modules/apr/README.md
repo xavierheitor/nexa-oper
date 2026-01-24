@@ -35,7 +35,7 @@ Constantes: `@common/constants/apr`.
 ### Status (checksum)
 
 - `GET /api/apr/sync/status?checksum=opcional` — Verifica se houve mudanças sem baixar os payloads.
-  - **Resposta:** `{ changed: boolean, checksum: string, serverTime: string }`
+  - **Resposta (SyncStatusResponseDto):** `changed` (boolean), `checksum` (string), `serverTime` (string, ISO).
   - Se o cliente envia `checksum` e é igual ao atual: `changed: false` (não é necessário sincronizar).
   - `serverTime` pode ser usado como `since` na próxima sincronização incremental.
 

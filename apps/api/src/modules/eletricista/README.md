@@ -23,7 +23,7 @@ Listagem e sincronização de eletricistas. Criação, atualização e exclusão
 
 ### Status (checksum)
 
-- `GET /api/eletricistas/sync/status?checksum=opcional` — `{ changed, checksum, serverTime }`. Escopo pelos contratos do usuário. Se `changed=false`, o mobile pode pular o download.
+- `GET /api/eletricistas/sync/status?checksum=opcional` — Resposta no DTO **SyncStatusResponseDto** (`changed`, `checksum`, `serverTime`). Escopo pelos contratos do usuário. Se `changed=false`, o mobile pode pular o download.
 
 ### Dados
 

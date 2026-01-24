@@ -45,7 +45,7 @@ Constantes: `@common/constants/checklist`.
 
 ### Status (checksum)
 
-- `GET /api/checklist/sync/status?checksum=opcional` — `{ changed, checksum, serverTime }`. Se `changed=false`, o mobile pode pular o download.
+- `GET /api/checklist/sync/status?checksum=opcional` — Resposta no DTO **SyncStatusResponseDto** (`changed`, `checksum`, `serverTime`). Se `changed=false`, o mobile pode pular o download.
 
 ### Dados (full ou incremental)
 
