@@ -1,1 +1,1 @@
-export { EletricistaController } from './eletricista.controller';
+export { EletricistaSyncController } from './eletricista-sync.controller';

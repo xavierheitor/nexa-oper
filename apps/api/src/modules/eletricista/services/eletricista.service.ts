@@ -1,13 +1,6 @@
+import { ORDER_CONFIG, PAGINATION_CONFIG } from '@common/constants/eletricista';
 import { ERROR_MESSAGES } from '@common/constants/errors';
-import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
-import {
-  getDefaultUserContext,
-  createAuditData,
-  updateAuditData,
-  deleteAuditData,
-} from '@common/utils/audit';
 import { handleCrudError } from '@common/utils/error-handler';
-import { handlePrismaUniqueError } from '@common/utils/error-handler';
 import {
   buildPaginationMeta,
   validatePaginationParams,
@@ -16,7 +9,6 @@ import {
   validateId,
   validateOptionalId,
   validateEstadoFormat,
-  ensureContratoExists,
 } from '@common/utils/validation';
 import {
   buildSearchWhereClause,
@@ -29,26 +21,12 @@ import {
   extractAllowedContractIds,
   ensureContractPermission,
 } from '@modules/engine/auth/utils/contract-helpers';
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import {
-  ORDER_CONFIG,
-  PAGINATION_CONFIG,
-} from '@common/constants/eletricista';
-import {
-  CreateEletricistaDto,
   EletricistaListResponseDto,
   EletricistaQueryDto,
   EletricistaResponseDto,
-  EletricistaSyncDto,
-  UpdateEletricistaDto,
 } from '../dto';
 
 interface FindAllParams {
@@ -57,12 +35,6 @@ interface FindAllParams {
   search?: string;
   estado?: string;
   contratoId?: number;
-}
-
-interface UserContext {
-  userId: string;
-  userName: string;
-  roles: string[];
 }
 
 @Injectable()
@@ -101,6 +73,46 @@ export class EletricistaService {
     }
 
     return whereClause;
+  }
+
+  private async fetchEletricistasPage(
+    whereClause: Record<string, unknown>,
+    page: number,
+    limit: number
+  ): Promise<{
+    data: EletricistaResponseDto[];
+    meta: ReturnType<typeof buildPaginationMeta>;
+  }> {
+    const skip = (page - 1) * limit;
+    const [data, total] = await Promise.all([
+      this.db.getPrisma().eletricista.findMany({
+        where: whereClause,
+        orderBy: ORDER_CONFIG.DEFAULT_ORDER,
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          nome: true,
+          matricula: true,
+          telefone: true,
+          estado: true,
+          admissao: true,
+          cargoId: true,
+          cargo: { select: { id: true, nome: true } },
+          contratoId: true,
+          contrato: { select: { id: true, nome: true, numero: true } },
+          createdAt: true,
+          createdBy: true,
+          updatedAt: true,
+          updatedBy: true,
+          deletedAt: true,
+          deletedBy: true,
+        },
+      }),
+      this.db.getPrisma().eletricista.count({ where: whereClause }),
+    ]);
+    const meta = buildPaginationMeta(total, page, limit);
+    return { data: data as EletricistaResponseDto[], meta };
   }
 
   /**
@@ -156,56 +168,12 @@ export class EletricistaService {
         contratoId,
         allowedContractIds
       );
-
-      const skip = (page - 1) * limit;
-
-      const [data, total] = await Promise.all([
-        this.db.getPrisma().eletricista.findMany({
-          where: whereClause,
-          orderBy: ORDER_CONFIG.DEFAULT_ORDER,
-          skip,
-          take: limit,
-          select: {
-            id: true,
-            nome: true,
-            matricula: true,
-            telefone: true,
-            estado: true,
-            admissao: true,
-            cargoId: true,
-            cargo: {
-              select: {
-                id: true,
-                nome: true,
-              },
-            },
-            contratoId: true,
-            contrato: {
-              select: {
-                id: true,
-                nome: true,
-                numero: true,
-              },
-            },
-            createdAt: true,
-            createdBy: true,
-            updatedAt: true,
-            updatedBy: true,
-            deletedAt: true,
-            deletedBy: true,
-          },
-        }),
-        this.db.getPrisma().eletricista.count({ where: whereClause }),
-      ]);
-
-      const meta = buildPaginationMeta(total, page, limit);
-
-      return {
-        data: data as EletricistaResponseDto[],
-        meta,
-        search,
-        timestamp: new Date(),
-      };
+      const { data, meta } = await this.fetchEletricistasPage(
+        whereClause,
+        page,
+        limit
+      );
+      return { data, meta, search, timestamp: new Date() };
     } catch (error) {
       handleCrudError(error, this.logger, 'list', 'eletricistas');
     }
@@ -283,244 +251,6 @@ export class EletricistaService {
   }
 
   /**
-   * Cria novo eletricista com validações e auditoria
-   *
-   * @param createEletricistaDto - Dados do eletricista a ser criado
-   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
-   * @returns Eletricista criado
-   * @throws ConflictException - Se matrícula já existir
-   * @throws NotFoundException - Se contrato não for encontrado
-   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
-   */
-  async create(
-    createEletricistaDto: CreateEletricistaDto,
-    allowedContracts?: ContractPermission[]
-  ): Promise<EletricistaResponseDto> {
-    const { nome, matricula, telefone, estado, contratoId } =
-      createEletricistaDto;
-    const userContext = getDefaultUserContext();
-
-    this.logger.log(
-      `Criando eletricista ${matricula} - Contrato: ${contratoId}`
-    );
-
-    const allowedContractIds = extractAllowedContractIds(allowedContracts);
-    ensureContractPermission(
-      contratoId,
-      allowedContractIds,
-      ERROR_MESSAGES.FORBIDDEN_CONTRACT
-    );
-
-    try {
-      await ensureContratoExists(this.db.getPrisma(), contratoId);
-
-      const eletricista = await this.db.getPrisma().eletricista.create({
-        data: {
-          nome: nome.trim(),
-          matricula: matricula.trim(),
-          telefone: telefone.trim(),
-          estado: estado.toUpperCase(),
-          admissao: createEletricistaDto.admissao || new Date(),
-          cargo: { connect: { id: createEletricistaDto.cargoId } },
-          contrato: { connect: { id: contratoId } },
-          ...createAuditData(userContext),
-        },
-        select: {
-          id: true,
-          nome: true,
-          matricula: true,
-          telefone: true,
-          estado: true,
-          admissao: true,
-          cargoId: true,
-          cargo: {
-            select: {
-              id: true,
-              nome: true,
-            },
-          },
-          contratoId: true,
-          contrato: {
-            select: {
-              id: true,
-              nome: true,
-              numero: true,
-            },
-          },
-          createdAt: true,
-          createdBy: true,
-          updatedAt: true,
-          updatedBy: true,
-          deletedAt: true,
-          deletedBy: true,
-        },
-      });
-
-      this.logger.log(`Eletricista criado com sucesso - ID: ${eletricista.id}`);
-      return eletricista as EletricistaResponseDto;
-    } catch (error) {
-      // Tratar erro de constraint única do Prisma primeiro
-      handlePrismaUniqueError(error, this.logger, 'eletricista');
-      // Se não for erro de constraint única, tratar como erro CRUD genérico
-      handleCrudError(error, this.logger, 'create', 'eletricista');
-    }
-  }
-
-  /**
-   * Atualiza eletricista existente com validações
-   *
-   * @param id - ID do eletricista
-   * @param updateEletricistaDto - Dados para atualização
-   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
-   * @returns Eletricista atualizado
-   * @throws NotFoundException - Se eletricista não for encontrado
-   * @throws ConflictException - Se nova matrícula já existir
-   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
-   */
-  async update(
-    id: number,
-    updateEletricistaDto: UpdateEletricistaDto,
-    allowedContracts?: ContractPermission[]
-  ): Promise<EletricistaResponseDto> {
-    const { nome, matricula, telefone, estado, admissao, cargoId, contratoId } =
-      updateEletricistaDto;
-    const userContext = getDefaultUserContext();
-
-    this.logger.log(`Atualizando eletricista ${id}`);
-    validateId(id, 'ID do eletricista');
-
-    const allowedContractIds = extractAllowedContractIds(allowedContracts);
-
-    try {
-      const existingEletricista = await this.db
-        .getPrisma()
-        .eletricista.findFirst({
-          where: { id, deletedAt: null },
-        });
-
-      if (!existingEletricista) {
-        throw new NotFoundException(ERROR_MESSAGES.ELETRICISTA_NOT_FOUND);
-      }
-
-      ensureContractPermission(
-        existingEletricista.contratoId,
-        allowedContractIds,
-        ERROR_MESSAGES.FORBIDDEN_CONTRACT
-      );
-
-      if (contratoId && contratoId !== existingEletricista.contratoId) {
-        ensureContractPermission(
-          contratoId,
-          allowedContractIds,
-          ERROR_MESSAGES.FORBIDDEN_CONTRACT
-        );
-        await ensureContratoExists(this.db.getPrisma(), contratoId);
-      }
-
-      const eletricista = await this.db.getPrisma().eletricista.update({
-        where: { id },
-        data: {
-          ...(nome && { nome: nome.trim() }),
-          ...(matricula && { matricula: matricula.trim() }),
-          ...(telefone && { telefone: telefone.trim() }),
-          ...(estado && {
-            estado: estado.trim().toUpperCase(),
-          }),
-          ...(admissao && { admissao }),
-          ...(cargoId && {
-            cargo: { connect: { id: cargoId } },
-          }),
-          ...(contratoId && {
-            contrato: { connect: { id: contratoId } },
-          }),
-          ...updateAuditData(userContext),
-        },
-        select: {
-          id: true,
-          nome: true,
-          matricula: true,
-          telefone: true,
-          estado: true,
-          admissao: true,
-          cargoId: true,
-          cargo: {
-            select: {
-              id: true,
-              nome: true,
-            },
-          },
-          contratoId: true,
-          contrato: {
-            select: {
-              id: true,
-              nome: true,
-              numero: true,
-            },
-          },
-          createdAt: true,
-          createdBy: true,
-          updatedAt: true,
-          updatedBy: true,
-          deletedAt: true,
-          deletedBy: true,
-        },
-      });
-
-      this.logger.log(`Eletricista ${id} atualizado com sucesso`);
-      return eletricista as EletricistaResponseDto;
-    } catch (error) {
-      // Tratar erro de constraint única do Prisma primeiro
-      handlePrismaUniqueError(error, this.logger, 'eletricista');
-      // Se não for erro de constraint única, tratar como erro CRUD genérico
-      handleCrudError(error, this.logger, 'update', 'eletricista');
-    }
-  }
-
-  /**
-   * Remove eletricista (soft delete)
-   *
-   * @param id - ID do eletricista
-   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
-   * @throws NotFoundException - Se eletricista não for encontrado
-   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
-   */
-  async remove(
-    id: number,
-    allowedContracts?: ContractPermission[]
-  ): Promise<void> {
-    this.logger.log(`Removendo eletricista ${id}`);
-    validateId(id, 'ID do eletricista');
-
-    const userContext = getDefaultUserContext();
-    const allowedContractIds = extractAllowedContractIds(allowedContracts);
-
-    try {
-      const eletricista = await this.db.getPrisma().eletricista.findFirst({
-        where: { id, deletedAt: null },
-      });
-
-      if (!eletricista) {
-        throw new NotFoundException(ERROR_MESSAGES.ELETRICISTA_NOT_FOUND);
-      }
-
-      ensureContractPermission(
-        eletricista.contratoId,
-        allowedContractIds,
-        ERROR_MESSAGES.FORBIDDEN_CONTRACT
-      );
-
-      await this.db.getPrisma().eletricista.update({
-        where: { id },
-        data: deleteAuditData(userContext),
-      });
-
-      this.logger.log(`Eletricista ${id} removido com sucesso (soft delete)`);
-    } catch (error) {
-      handleCrudError(error, this.logger, 'delete', 'eletricista');
-    }
-  }
-
-  /**
    * Conta total de eletricistas ativos respeitando permissões
    *
    * @param allowedContracts - Contratos permitidos para o usuário (opcional)
@@ -563,51 +293,5 @@ export class EletricistaService {
       estado: query.estado,
       contratoId: query.contratoId,
     };
-  }
-
-  /**
-   * Lista todos os eletricistas ativos para sincronização mobile
-   *
-   * Retorna todos os eletricistas ativos sem paginação para permitir
-   * que clientes mobile mantenham seus dados em sincronia.
-   *
-   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
-   * @returns Lista completa de eletricistas ativos para sincronização
-   */
-  async findAllForSync(
-    allowedContracts?: ContractPermission[]
-  ): Promise<EletricistaSyncDto[]> {
-    this.logger.log(
-      `Sincronizando eletricistas para ${allowedContracts?.length || 0} contratos`
-    );
-
-    const allowedContractIds = extractAllowedContractIds(allowedContracts);
-
-    if (allowedContractIds && allowedContractIds.length === 0) {
-      this.logger.log('Nenhum contrato permitido, retornando lista vazia');
-      return [];
-    }
-
-    try {
-      const whereClause: any = {
-        deletedAt: null,
-        ...(allowedContractIds && {
-          contratoId: { in: allowedContractIds },
-        }),
-      };
-
-      const eletricistas = await this.db.getPrisma().eletricista.findMany({
-        where: whereClause,
-        orderBy: ORDER_CONFIG.SYNC_ORDER,
-      });
-
-      this.logger.log(
-        `Sincronização concluída - ${eletricistas.length} eletricistas retornados`
-      );
-
-      return eletricistas;
-    } catch (error) {
-      handleCrudError(error, this.logger, 'sync', 'eletricistas');
-    }
   }
 }
