@@ -10,9 +10,14 @@ export { EquipeModule } from './equipe.module';
 
 // Serviços
 export { EquipeService } from './services/equipe.service';
+export { TipoEquipeService } from './services/tipo-equipe.service';
 
 // Controllers
-export { EquipeController, EquipeSyncController } from './controllers';
+export {
+  EquipeSyncController,
+  TipoEquipeController,
+  TipoEquipeSyncController,
+} from './controllers';
 
 // DTOs
 export {
@@ -21,6 +26,13 @@ export {
   EquipeResponseDto,
   EquipeListResponseDto,
   EquipeSyncDto,
+  CreateTipoEquipeDto,
+  UpdateTipoEquipeDto,
+  TipoEquipeResponseDto,
+  TipoEquipeListResponseDto,
+  TipoEquipeQueryDto,
+  OrderDirection,
+  TipoEquipeSyncDto,
 } from './dto';
 
 // Constantes

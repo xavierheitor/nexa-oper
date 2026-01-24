@@ -66,8 +66,6 @@ import { EquipeModule } from './modules/equipe';
 import { InternalReconciliacaoModule } from './modules/internal-reconciliacao/internal-reconciliacao.module';
 import { JustificativasModule } from './modules/justificativas/justificativas.module';
 import { MobileUploadModule } from './modules/mobile-upload/mobile-upload.module';
-import { TipoEquipeModule } from './modules/tipo-equipe/tipo-equipe.module';
-import { TipoVeiculoModule } from './modules/tipo-veiculo/tipo-veiculo.module';
 import { TurnoModule } from './modules/turno';
 import { TurnoRealizadoModule } from './modules/turno-realizado/turno-realizado.module';
 import { WebLogsModule } from './modules/web-logs/web-logs.module';
@@ -124,8 +122,6 @@ import { WebLogsModule } from './modules/web-logs/web-logs.module';
     AprModule,
     ChecklistModule,
     VeiculoModule,
-    TipoVeiculoModule,
-    TipoEquipeModule,
     EletricistaModule,
     EquipeModule,
     AtividadeModule,

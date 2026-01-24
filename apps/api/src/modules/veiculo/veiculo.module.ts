@@ -2,21 +2,30 @@ import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@modules/engine/auth/auth.module';
 import { Module } from '@nestjs/common';
 
-import { VeiculoSyncController } from './controllers/veiculo-sync.controller';
-import { VeiculoController } from './controllers/veiculo.controller';
+import {
+  VeiculoController,
+  VeiculoSyncController,
+  TipoVeiculoController,
+  TipoVeiculoSyncController,
+} from './controllers';
+import { TipoVeiculoService } from './services/tipo-veiculo.service';
 import { VeiculoService } from './services/veiculo.service';
 
 /**
  * Módulo de Veículos
  *
- * Centraliza todos os componentes responsáveis pela gestão
- * de veículos na API, incluindo CRUD, sincronização e
- * integração com permissões de contrato.
+ * - VeiculoController, VeiculoSyncController: CRUD e sync de veículos.
+ * - TipoVeiculoController, TipoVeiculoSyncController: CRUD e sync de tipos de veículo.
  */
 @Module({
   imports: [DatabaseModule, AuthModule],
-  controllers: [VeiculoSyncController, VeiculoController],
-  providers: [VeiculoService],
-  exports: [VeiculoService],
+  controllers: [
+    VeiculoSyncController,
+    VeiculoController,
+    TipoVeiculoController,
+    TipoVeiculoSyncController,
+  ],
+  providers: [VeiculoService, TipoVeiculoService],
+  exports: [VeiculoService, TipoVeiculoService],
 })
 export class VeiculoModule {}

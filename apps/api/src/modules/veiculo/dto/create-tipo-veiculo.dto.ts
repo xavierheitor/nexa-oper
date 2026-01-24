@@ -1,27 +1,20 @@
 /**
- * DTO para criação de tipos de equipe
- *
- * Define a estrutura de dados necessária para criar
- * um novo tipo de equipe no sistema.
+ * DTO para criação de tipos de veículo
  */
 
+import { VALIDATION_CONFIG } from '@common/constants/tipo-veiculo';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 
-import { VALIDATION_CONFIG } from '@common/constants/tipo-equipe';
-
-/**
- * DTO para criação de tipos de equipe
- */
-export class CreateTipoEquipeDto {
+export class CreateTipoVeiculoDto {
   @ApiProperty({
-    description: 'Nome do tipo de equipe',
-    example: 'Linha Viva',
+    description: 'Nome do tipo de veículo',
+    example: 'Caminhão Basculante',
     minLength: VALIDATION_CONFIG.NOME_MIN_LENGTH,
     maxLength: VALIDATION_CONFIG.NOME_MAX_LENGTH,
   })
-  @IsString({ message: 'Nome deve ser uma string' })
-  @IsNotEmpty({ message: 'Nome é obrigatório' })
+  @IsString()
+  @IsNotEmpty()
   @MinLength(VALIDATION_CONFIG.NOME_MIN_LENGTH, {
     message: 'Nome deve ter pelo menos 2 caracteres',
   })

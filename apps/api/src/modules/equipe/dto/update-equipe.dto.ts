@@ -5,6 +5,7 @@
  * uma equipe existente no sistema. Todos os campos são opcionais.
  */
 
+import { EQUIPE_VALIDATION_CONFIG } from '@common/constants/equipe';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsOptional,
@@ -13,8 +14,6 @@ import {
   MinLength,
   MaxLength,
 } from 'class-validator';
-
-import { EQUIPE_VALIDATION_CONFIG } from '@common/constants/equipe';
 
 /**
  * DTO para atualização de equipe

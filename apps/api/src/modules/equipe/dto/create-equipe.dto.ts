@@ -5,6 +5,7 @@
  * para criar uma nova equipe no sistema.
  */
 
+import { EQUIPE_VALIDATION_CONFIG } from '@common/constants/equipe';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNotEmpty,
@@ -13,8 +14,6 @@ import {
   MinLength,
   MaxLength,
 } from 'class-validator';
-
-import { EQUIPE_VALIDATION_CONFIG } from '@common/constants/equipe';
 
 /**
  * DTO para criação de equipe

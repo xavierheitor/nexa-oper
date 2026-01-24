@@ -1,59 +1,18 @@
 /**
  * Serviço de Equipes
  *
- * Este serviço implementa toda a lógica de negócio relacionada
- * às equipes da operação, incluindo CRUD completo, validações,
- * auditoria e integração com permissões de contrato.
- *
- * RESPONSABILIDADES:
- * - Operações CRUD de equipes
- * - Validações de regras de negócio
- * - Integração com permissões de contrato
- * - Transformação de dados entre DTOs e entidades
- * - Logging estruturado de operações
- * - Tratamento de erros específicos
- * - Integração com banco de dados via Prisma
- *
- * DIFERENCIAIS:
- * - Listagem restrita aos contratos permitidos para o usuário
- * - Validação de duplicidade de nome
- * - Verificação de existência de tipo de equipe e contrato
- * - Auditoria automática em todas as operações
- *
- * @example
- * ```typescript
- * // Listar equipes com restrição por contrato
- * const result = await equipeService.findAll({
- *   page: 1,
- *   limit: 10,
- *   search: 'ABC',
- * }, allowedContracts);
- *
- * // Criar equipe com validação de permissões
- * const equipe = await equipeService.create(createDto, allowedContracts);
- * ```
+ * Listagem e contagem. Criação, atualização e exclusão são feitas no web.
+ * Sincronização para mobile em EquipeSyncService.
  */
 
+import { ORDER_CONFIG } from '@common/constants/equipe';
 import { ERROR_MESSAGES } from '@common/constants/errors';
-import { PaginationMetaDto } from '@common/dto/pagination-meta.dto';
-import {
-  getDefaultUserContext,
-  createAuditData,
-  updateAuditData,
-  deleteAuditData,
-} from '@common/utils/audit';
 import { handleCrudError } from '@common/utils/error-handler';
-import { handlePrismaUniqueError } from '@common/utils/error-handler';
 import {
   buildPaginationMeta,
   validatePaginationParams,
 } from '@common/utils/pagination';
-import {
-  validateId,
-  validateOptionalId,
-  ensureContratoExists,
-  ensureTipoEquipeExists,
-} from '@common/utils/validation';
+import { validateId, validateOptionalId } from '@common/utils/validation';
 import {
   buildSearchWhereClause,
   buildContractFilter,
@@ -66,41 +25,20 @@ import {
   ensureContractPermission,
 } from '@modules/engine/auth/utils/contract-helpers';
 import {
-  BadRequestException,
-  ConflictException,
   ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 
-import { ORDER_CONFIG } from '@common/constants/equipe';
-import {
-  CreateEquipeDto,
-  UpdateEquipeDto,
-  EquipeListResponseDto,
-  EquipeResponseDto,
-  EquipeSyncDto,
-} from '../dto';
+import { EquipeListResponseDto, EquipeResponseDto } from '../dto';
 
-/**
- * Interface de parâmetros para consulta paginada interna
- */
 interface FindAllParams {
   page: number;
   limit: number;
   search?: string;
   tipoEquipeId?: number;
   contratoId?: number;
-}
-
-/**
- * Interface para contexto de usuário (placeholder)
- */
-interface UserContext {
-  userId: string;
-  userName: string;
-  roles: string[];
 }
 
 /**
@@ -245,80 +183,6 @@ export class EquipeService {
   }
 
   /**
-   * Lista equipes para sincronização mobile (sem paginação)
-   *
-   * Retorna todas as equipes ativas sem paginação para permitir
-   * que clientes mobile mantenham seus dados em sincronia.
-   *
-   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
-   * @returns Lista completa de equipes ativas para sincronização
-   */
-  async findAllForSync(
-    allowedContracts?: ContractPermission[]
-  ): Promise<EquipeSyncDto[]> {
-    this.logger.log('Sincronizando equipes para cliente mobile');
-    this.logger.debug(
-      `Contratos recebidos no service: ${JSON.stringify(allowedContracts)}`
-    );
-    this.logger.debug(
-      `Tipo dos contratos no service: ${typeof allowedContracts}`
-    );
-    this.logger.debug(`É array no service: ${Array.isArray(allowedContracts)}`);
-
-    const allowedContractIds = extractAllowedContractIds(allowedContracts);
-    this.logger.debug(
-      `IDs de contratos extraídos: ${JSON.stringify(allowedContractIds)}`
-    );
-
-    if (allowedContractIds && allowedContractIds.length === 0) {
-      this.logger.warn(
-        'Nenhum contrato permitido encontrado, retornando array vazio'
-      );
-      return [];
-    }
-
-    try {
-      const whereClause = {
-        deletedAt: null,
-        ...(allowedContractIds && {
-          contratoId: { in: allowedContractIds },
-        }),
-      };
-
-      this.logger.debug(
-        `Where clause para busca: ${JSON.stringify(whereClause)}`
-      );
-
-      const data = await this.db.getPrisma().equipe.findMany({
-        where: whereClause,
-        orderBy: ORDER_CONFIG.SYNC_ORDER,
-        select: {
-          id: true,
-          nome: true,
-          tipoEquipeId: true,
-          contratoId: true,
-          createdAt: true,
-          createdBy: true,
-          updatedAt: true,
-          updatedBy: true,
-          deletedAt: true,
-          deletedBy: true,
-        },
-      });
-
-      this.logger.log(
-        `Sincronização de equipes retornou ${data.length} registros`
-      );
-      this.logger.debug(
-        `Dados retornados: ${JSON.stringify(data.slice(0, 2))}...`
-      );
-      return data as EquipeSyncDto[];
-    } catch (error) {
-      handleCrudError(error, this.logger, 'sync', 'equipes');
-    }
-  }
-
-  /**
    * Busca equipe por ID respeitando permissões
    *
    * @param id - ID da equipe
@@ -383,229 +247,6 @@ export class EquipeService {
       return equipe as EquipeResponseDto;
     } catch (error) {
       handleCrudError(error, this.logger, 'find', 'equipe');
-    }
-  }
-
-  /**
-   * Cria nova equipe com validações e auditoria
-   *
-   * @param createEquipeDto - Dados da equipe a ser criada
-   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
-   * @returns Equipe criada
-   * @throws ConflictException - Se nome já existir
-   * @throws NotFoundException - Se tipo de equipe ou contrato não forem encontrados
-   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
-   */
-  async create(
-    createEquipeDto: CreateEquipeDto,
-    allowedContracts?: ContractPermission[]
-  ): Promise<EquipeResponseDto> {
-    const { nome, tipoEquipeId, contratoId } = createEquipeDto;
-    const userContext = getDefaultUserContext();
-
-    this.logger.log(
-      `Criando equipe ${nome} - Contrato: ${contratoId}, Tipo: ${tipoEquipeId}`
-    );
-
-    const allowedContractIds = extractAllowedContractIds(allowedContracts);
-    ensureContractPermission(
-      contratoId,
-      allowedContractIds,
-      ERROR_MESSAGES.FORBIDDEN_CONTRACT
-    );
-
-    try {
-      await ensureTipoEquipeExists(this.db.getPrisma(), tipoEquipeId);
-      await ensureContratoExists(this.db.getPrisma(), contratoId);
-
-      const equipe = await this.db.getPrisma().equipe.create({
-        data: {
-          nome: nome.trim(),
-          tipoEquipe: { connect: { id: tipoEquipeId } },
-          contrato: { connect: { id: contratoId } },
-          ...createAuditData(userContext),
-        },
-        select: {
-          id: true,
-          nome: true,
-          tipoEquipeId: true,
-          tipoEquipe: {
-            select: {
-              id: true,
-              nome: true,
-            },
-          },
-          contratoId: true,
-          contrato: {
-            select: {
-              id: true,
-              nome: true,
-              numero: true,
-            },
-          },
-          createdAt: true,
-          createdBy: true,
-          updatedAt: true,
-          updatedBy: true,
-          deletedAt: true,
-          deletedBy: true,
-        },
-      });
-
-      this.logger.log(`Equipe criada com sucesso - ID: ${equipe.id}`);
-      return equipe as EquipeResponseDto;
-    } catch (error) {
-      // Tratar erro de constraint única do Prisma primeiro
-      handlePrismaUniqueError(error, this.logger, 'equipe');
-      // Se não for erro de constraint única, tratar como erro CRUD genérico
-      handleCrudError(error, this.logger, 'create', 'equipe');
-    }
-  }
-
-  /**
-   * Atualiza equipe existente com validações
-   *
-   * @param id - ID da equipe
-   * @param updateEquipeDto - Dados para atualização
-   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
-   * @returns Equipe atualizada
-   * @throws NotFoundException - Se equipe não for encontrada
-   * @throws ConflictException - Se novo nome já existir
-   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
-   */
-  async update(
-    id: number,
-    updateEquipeDto: UpdateEquipeDto,
-    allowedContracts?: ContractPermission[]
-  ): Promise<EquipeResponseDto> {
-    const { nome, tipoEquipeId, contratoId } = updateEquipeDto;
-    const userContext = getDefaultUserContext();
-
-    this.logger.log(`Atualizando equipe ${id}`);
-    validateId(id, 'ID da equipe');
-
-    const allowedContractIds = extractAllowedContractIds(allowedContracts);
-
-    try {
-      const existingEquipe = await this.db.getPrisma().equipe.findFirst({
-        where: { id, deletedAt: null },
-      });
-
-      if (!existingEquipe) {
-        this.logger.warn(`Tentativa de atualizar equipe inexistente: ${id}`);
-        throw new NotFoundException(ERROR_MESSAGES.EQUIPE_NOT_FOUND);
-      }
-
-      ensureContractPermission(
-        existingEquipe.contratoId,
-        allowedContractIds,
-        ERROR_MESSAGES.FORBIDDEN_CONTRACT
-      );
-
-      if (contratoId && contratoId !== existingEquipe.contratoId) {
-        ensureContractPermission(
-          contratoId,
-          allowedContractIds,
-          ERROR_MESSAGES.FORBIDDEN_CONTRACT
-        );
-        await ensureContratoExists(this.db.getPrisma(), contratoId);
-      }
-
-      if (tipoEquipeId) {
-        await ensureTipoEquipeExists(this.db.getPrisma(), tipoEquipeId);
-      }
-
-      const equipe = await this.db.getPrisma().equipe.update({
-        where: { id },
-        data: {
-          ...(nome && { nome: nome.trim() }),
-          ...(tipoEquipeId && {
-            tipoEquipe: { connect: { id: tipoEquipeId } },
-          }),
-          ...(contratoId && {
-            contrato: { connect: { id: contratoId } },
-          }),
-          ...updateAuditData(userContext),
-        },
-        select: {
-          id: true,
-          nome: true,
-          tipoEquipeId: true,
-          tipoEquipe: {
-            select: {
-              id: true,
-              nome: true,
-            },
-          },
-          contratoId: true,
-          contrato: {
-            select: {
-              id: true,
-              nome: true,
-              numero: true,
-            },
-          },
-          createdAt: true,
-          createdBy: true,
-          updatedAt: true,
-          updatedBy: true,
-          deletedAt: true,
-          deletedBy: true,
-        },
-      });
-
-      this.logger.log(`Equipe ${id} atualizada com sucesso`);
-      return equipe as EquipeResponseDto;
-    } catch (error) {
-      // Tratar erro de constraint única do Prisma primeiro
-      handlePrismaUniqueError(error, this.logger, 'equipe');
-      // Se não for erro de constraint única, tratar como erro CRUD genérico
-      handleCrudError(error, this.logger, 'update', 'equipe');
-    }
-  }
-
-  /**
-   * Remove equipe (soft delete)
-   *
-   * @param id - ID da equipe
-   * @param allowedContracts - Contratos permitidos para o usuário (opcional)
-   * @throws NotFoundException - Se equipe não for encontrada
-   * @throws ForbiddenException - Se usuário não tiver permissão para o contrato
-   */
-  async remove(
-    id: number,
-    allowedContracts?: ContractPermission[]
-  ): Promise<void> {
-    this.logger.log(`Removendo equipe ${id}`);
-    validateId(id, 'ID da equipe');
-
-    const userContext = getDefaultUserContext();
-    const allowedContractIds = extractAllowedContractIds(allowedContracts);
-
-    try {
-      const equipe = await this.db.getPrisma().equipe.findFirst({
-        where: { id, deletedAt: null },
-      });
-
-      if (!equipe) {
-        this.logger.warn(`Tentativa de remover equipe inexistente: ${id}`);
-        throw new NotFoundException(ERROR_MESSAGES.EQUIPE_NOT_FOUND);
-      }
-
-      ensureContractPermission(
-        equipe.contratoId,
-        allowedContractIds,
-        ERROR_MESSAGES.FORBIDDEN_CONTRACT
-      );
-
-      await this.db.getPrisma().equipe.update({
-        where: { id },
-        data: deleteAuditData(userContext),
-      });
-
-      this.logger.log(`Equipe ${id} removida com sucesso (soft delete)`);
-    } catch (error) {
-      handleCrudError(error, this.logger, 'delete', 'equipe');
     }
   }
 

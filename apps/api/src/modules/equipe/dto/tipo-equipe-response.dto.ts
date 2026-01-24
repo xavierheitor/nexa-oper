@@ -1,39 +1,29 @@
 /**
- * DTO para resposta individual de tipos de veículo
- *
- * Define a estrutura de dados retornada em respostas
- * individuais de tipos de veículo.
+ * DTO para resposta individual de tipos de equipe
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsDate,
-  IsInt,
   IsNumber,
   IsOptional,
   IsPositive,
   IsString,
 } from 'class-validator';
 
-/**
- * DTO para resposta individual de tipos de veículo
- */
-export class TipoVeiculoResponseDto {
-  @ApiProperty({ description: 'ID do tipo de veículo', example: 1 })
+export class TipoEquipeResponseDto {
+  @ApiProperty({ description: 'ID do tipo de equipe', example: 1 })
   @IsNumber()
   @IsPositive()
   id: number;
 
-  @ApiProperty({
-    description: 'Nome do tipo de veículo',
-    example: 'Caminhão Basculante',
-  })
+  @ApiProperty({ description: 'Nome do tipo de equipe', example: 'Linha Viva' })
   @IsString()
   nome: string;
 
   @ApiProperty({
-    description: 'Data de criação do tipo de veículo',
+    description: 'Data de criação do tipo de equipe',
     example: '2024-01-15T10:30:00.000Z',
   })
   @IsDate()

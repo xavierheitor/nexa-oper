@@ -1,10 +1,12 @@
 /**
  * DTO para parâmetros de consulta de tipos de equipe
- *
- * Define os parâmetros aceitos para filtrar e paginar
- * listagens de tipos de equipe.
  */
 
+import {
+  ORDER_CONFIG,
+  PAGINATION_CONFIG,
+  SEARCH_CONFIG,
+} from '@common/constants/tipo-equipe';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
@@ -19,19 +21,11 @@ import {
   MinLength,
 } from 'class-validator';
 
-import { ORDER_CONFIG, PAGINATION_CONFIG, SEARCH_CONFIG } from '@common/constants/tipo-equipe';
-
-/**
- * Direções de ordenação permitidas
- */
 export enum OrderDirection {
   ASC = 'asc',
   DESC = 'desc',
 }
 
-/**
- * DTO para parâmetros de consulta de tipos de equipe
- */
 export class TipoEquipeQueryDto {
   @ApiPropertyOptional({
     description: 'Número da página (começando em 1)',
