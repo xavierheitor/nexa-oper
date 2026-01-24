@@ -6,6 +6,7 @@
 export * from './constants';
 export * from './decorators';
 export { PaginationMetaDto } from './dto/pagination-meta.dto';
+export { SyncStatusResponseDto } from './dto/sync-status.dto';
 
 // Cross-cutting implementations
 export * from './filters/all-exceptions.filter';
@@ -16,4 +17,7 @@ export * from './middleware/logger.middleware';
 export * from './utils/audit';
 export * from './utils/logger';
 export * from './utils/pagination';
+export * from './utils/sync-aggregate';
+export * from './utils/sync-checksum';
+export * from './utils/sync-where';
 export * from './utils/validation';
