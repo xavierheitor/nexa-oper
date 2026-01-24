@@ -23,10 +23,13 @@ export class MobileLocationUploadService {
    * Registra uma localização enviada pelo aplicativo mobile garantindo idempotência.
    */
   async handleUpload(
-    payload: LocationUploadDto
+    payload: LocationUploadDto,
+    userId?: string
   ): Promise<LocationUploadResponseDto> {
     const signature = this.buildSignature(payload);
-    const audit = createAuditData(getDefaultUserContext());
+    const audit = createAuditData(
+      userId ? { userId, userName: userId, roles: ['mobile'] } : getDefaultUserContext()
+    );
 
     const prisma = this.db.getPrisma();
 
@@ -133,6 +136,7 @@ export class MobileLocationUploadService {
       payload.accuracy ?? 'null',
       payload.provider ?? 'null',
       payload.tagType ?? 'null',
+      payload.tagDetail ?? 'null',
       payload.capturedAt ?? 'null',
     ];
 

@@ -56,9 +56,9 @@ export class OperationLoggingInterceptor implements NestInterceptor {
     const className = context.getClass().name;
     const methodName = context.getHandler().name;
 
-    // Criar contexto base
+    // Criar contexto base (reutiliza requestId do LoggerMiddleware quando existir)
     const baseContext: LogContext = {
-      requestId: this.generateRequestId(),
+      requestId: (request as { requestId?: string }).requestId ?? this.generateRequestId(),
       operation: logOptions.operation,
       module: className,
       metadata: {

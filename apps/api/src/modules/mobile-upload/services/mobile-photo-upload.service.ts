@@ -3,7 +3,7 @@
  */
 
 import { randomUUID, createHash } from 'crypto';
-import { mkdir, writeFile } from 'fs/promises';
+import { mkdir, unlink, writeFile } from 'fs/promises';
 import { dirname, extname, join, sep } from 'path';
 
 import { createAuditData, getDefaultUserContext } from '@common/utils/audit';
@@ -47,7 +47,8 @@ export class MobilePhotoUploadService {
    */
   async handleUpload(
     file: MulterFile | undefined,
-    payload: PhotoUploadDto
+    payload: PhotoUploadDto,
+    userId?: string
   ): Promise<PhotoUploadResponseDto> {
     this.logger.debug(
       `[UPLOAD] Iniciando upload - tipo: ${payload.tipo}, turnoId: ${payload.turnoId}`
@@ -103,26 +104,54 @@ export class MobilePhotoUploadService {
     // Montar path relativo para o banco (sem URL base, apenas /mobile/photos/...)
     const relativeUrlPath = `/mobile/photos/${relativePath.urlPath}`;
 
-    const audit = createAuditData(getDefaultUserContext());
+    const audit = createAuditData(
+      userId ? { userId, userName: userId, roles: ['mobile'] } : getDefaultUserContext()
+    );
 
-    const mobilePhoto = await this.db.getPrisma().mobilePhoto.create({
-      data: {
-        turnoId: payload.turnoId,
-        tipo: this.normalizePhotoType(payload.tipo),
-        checklistUuid: payload.checklistUuid ?? null,
-        checklistPerguntaId: payload.checklistPerguntaId ?? null,
-        sequenciaAssinatura: payload.sequenciaAssinatura ?? null,
-        servicoId: payload.servicoId ?? null,
-        fileName: relativePath.fileName,
-        mimeType: file.mimetype,
-        fileSize: file.size,
-        checksum,
-        storagePath: absolutePath,
-        url: relativeUrlPath,
-        capturedAt: new Date(),
-        ...audit,
-      },
-    });
+    let mobilePhoto;
+    try {
+      mobilePhoto = await this.db.getPrisma().mobilePhoto.create({
+        data: {
+          turnoId: payload.turnoId,
+          tipo: this.normalizePhotoType(payload.tipo),
+          checklistUuid: payload.checklistUuid ?? null,
+          checklistPerguntaId: payload.checklistPerguntaId ?? null,
+          sequenciaAssinatura: payload.sequenciaAssinatura ?? null,
+          servicoId: payload.servicoId ?? null,
+          fileName: relativePath.fileName,
+          mimeType: file.mimetype,
+          fileSize: file.size,
+          checksum,
+          storagePath: absolutePath,
+          url: relativeUrlPath,
+          capturedAt: new Date(),
+          ...audit,
+        },
+      });
+    } catch (err: unknown) {
+      try {
+        await unlink(absolutePath);
+      } catch (unlinkErr) {
+        this.logger.warn(
+          `[UPLOAD] Falha ao remover arquivo órfão após erro no create: ${absolutePath}`,
+          unlinkErr
+        );
+      }
+      const e = err as { code?: string };
+      if (e?.code === 'P2002') {
+        const existing = await this.db
+          .getPrisma()
+          .mobilePhoto.findUnique({ where: { checksum } });
+        if (existing) {
+          return {
+            status: 'duplicate',
+            url: existing.url,
+            checksum: existing.checksum,
+          };
+        }
+      }
+      throw err;
+    }
 
     this.logger.debug(
       `[UPLOAD] Foto mobile salva - ID: ${mobilePhoto.id}, tipo: ${mobilePhoto.tipo}`

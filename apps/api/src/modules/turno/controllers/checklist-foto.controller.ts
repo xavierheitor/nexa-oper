@@ -8,6 +8,7 @@
 import { GetUsuarioMobileId } from '@core/auth/decorators/get-user-id-decorator';
 import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
 import {
+  BadRequestException,
   Controller,
   Post,
   Get,
@@ -117,19 +118,21 @@ export class ChecklistFotoController {
     this.logger.log(`Sincronizando foto para resposta ${checklistRespostaId}`);
 
     if (!file) {
-      throw new Error('Arquivo não fornecido');
+      throw new BadRequestException('Arquivo não fornecido');
     }
 
     // Validar tipo de arquivo
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.mimetype)) {
-      throw new Error('Tipo de arquivo não permitido. Use JPEG, PNG ou WebP');
+      throw new BadRequestException(
+        'Tipo de arquivo não permitido. Use JPEG, PNG ou WebP'
+      );
     }
 
     // Validar tamanho (máximo 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      throw new Error('Arquivo muito grande. Máximo 10MB');
+      throw new BadRequestException('Arquivo muito grande. Máximo 10MB');
     }
 
     const metadadosParsed = this.parseMetadadosFoto(metadados);
@@ -215,14 +218,14 @@ export class ChecklistFotoController {
     this.logger.log(`Sincronizando ${files.length} fotos em lote`);
 
     if (!files || files.length === 0) {
-      throw new Error('Nenhum arquivo fornecido');
+      throw new BadRequestException('Nenhum arquivo fornecido');
     }
 
     const { checklistRespostaIdsParsed, turnoIdsParsed, metadadosArrayParsed } =
       this.parseLoteBody(checklistRespostaIds, turnoIds, metadadosArray);
 
     if (checklistRespostaIdsParsed.length !== files.length) {
-      throw new Error(
+      throw new BadRequestException(
         'Número de arquivos deve ser igual ao número de checklistRespostaIds'
       );
     }
@@ -252,7 +255,7 @@ export class ChecklistFotoController {
     try {
       checklistRespostaIdsParsed = JSON.parse(checklistRespostaIds);
     } catch (error) {
-      throw new Error(
+      throw new BadRequestException(
         `checklistRespostaIds deve ser um array JSON válido: ${error}`
       );
     }

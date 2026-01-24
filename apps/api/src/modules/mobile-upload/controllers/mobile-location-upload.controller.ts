@@ -2,6 +2,7 @@
  * Controller responsável pelos uploads de localizações enviados pelo aplicativo mobile.
  */
 
+import { GetUsuarioMobileId } from '@core/auth/decorators/get-user-id-decorator';
 import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
 import {
   Body,
@@ -65,11 +66,15 @@ export class MobileLocationUploadController {
   })
   async uploadLocation(
     @Body() body: LocationUploadDto,
+    @GetUsuarioMobileId() userId: string | undefined,
     @Res({ passthrough: true }) res: Response
   ): Promise<LocationUploadResponseDto> {
     this.logger.log(`Recebendo localização do turno ${body.turnoId}`);
 
-    const result = await this.mobileLocationUploadService.handleUpload(body);
+    const result = await this.mobileLocationUploadService.handleUpload(
+      body,
+      userId
+    );
 
     res.status(result.alreadyExisted ? HttpStatus.OK : HttpStatus.CREATED);
 

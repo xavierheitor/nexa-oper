@@ -7,7 +7,7 @@
 
 import { randomUUID } from 'crypto';
 import { createWriteStream, mkdirSync, existsSync } from 'fs';
-import { join } from 'path';
+import { join, relative, sep } from 'path';
 
 import { DatabaseService } from '@database/database.service';
 import {
@@ -27,7 +27,9 @@ import {
 @Injectable()
 export class ChecklistFotoService {
   private readonly logger = new Logger(ChecklistFotoService.name);
-  private readonly uploadsPath = join(process.cwd(), 'uploads', 'checklists');
+  private readonly uploadsPath = process.env.UPLOAD_ROOT
+    ? join(process.env.UPLOAD_ROOT, 'checklists')
+    : join(process.cwd(), 'uploads', 'checklists');
 
   constructor(private readonly db: DatabaseService) {
     // Criar diretório de uploads se não existir
@@ -263,8 +265,11 @@ export class ChecklistFotoService {
    * @returns URL pública
    */
   gerarUrlPublica(caminhoArquivo: string): string {
-    // Por enquanto, retorna caminho relativo
-    // TODO: Implementar CDN ou storage em nuvem
+    const base = (process.env.UPLOAD_BASE_URL || '').replace(/\/$/, '');
+    if (base) {
+      const rel = relative(this.uploadsPath, caminhoArquivo).split(sep).join('/');
+      return `${base}/checklists/${rel}`;
+    }
     const relativePath = caminhoArquivo.replace(process.cwd(), '');
     return `/uploads${relativePath}`;
   }

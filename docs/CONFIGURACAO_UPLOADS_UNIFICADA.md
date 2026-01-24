@@ -40,9 +40,10 @@ Quando `UPLOAD_ROOT` está configurada, a estrutura será:
 │   └── anexos/
 │       └── {justificativaId}/
 │           └── {arquivos}.pdf
-└── checklists/ (se implementado)
+└── checklists/   ← utilizada pela API (ChecklistFotoService) para fotos de respostas de checklist
     └── {turnoId}/
-        └── {arquivos}.jpg
+        └── {checklistRespostaId}/
+            └── {arquivos}.jpg
 ```
 
 ### `UPLOAD_BASE_URL` (Opcional)
@@ -77,6 +78,10 @@ UPLOAD_BASE_URL=https://cdn.nexaoper.com.br
 **Fotos Mobile:**
 - Caminho no servidor: `{UPLOAD_ROOT}/mobile/photos/{turnoId}/{timestamp}_{uuid}.{ext}`
 - URL pública: `{UPLOAD_BASE_URL}/mobile/photos/{turnoId}/{arquivo}` ou `/uploads/mobile/photos/{turnoId}/{arquivo}`
+
+**Fotos de Checklists:**
+- Caminho no servidor: `{UPLOAD_ROOT}/checklists/{turnoId}/{checklistRespostaId}/{arquivo}`
+- URL pública: `{UPLOAD_BASE_URL}/checklists/{turnoId}/{checklistRespostaId}/{arquivo}` ou `/uploads/checklists/{turnoId}/{checklistRespostaId}/{arquivo}`
 
 ### Web (Next.js)
 

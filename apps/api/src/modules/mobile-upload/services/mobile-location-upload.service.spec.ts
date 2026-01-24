@@ -42,9 +42,9 @@ describe('MobileLocationUploadService', () => {
   });
 
   it('retorna sucesso sem persistir quando assinatura já existir', async () => {
-    prismaMock.mobileLocation.findUnique.mockResolvedValue({
-      id: 1,
-      signature: 'existing',
+    prismaMock.mobileLocation.create.mockRejectedValue({
+      code: 'P2002',
+      meta: { target: ['signature'] },
     });
 
     const dto: LocationUploadDto = {
@@ -57,6 +57,6 @@ describe('MobileLocationUploadService', () => {
 
     expect(result.status).toBe('ok');
     expect(result.alreadyExisted).toBe(true);
-    expect(prismaMock.mobileLocation.create).not.toHaveBeenCalled();
+    expect(prismaMock.mobileLocation.create).toHaveBeenCalledTimes(1);
   });
 });

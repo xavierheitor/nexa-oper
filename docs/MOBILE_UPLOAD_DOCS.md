@@ -11,10 +11,22 @@
 - `file`: File (obrigatório) - Arquivo da foto
 - `turnoId`: number (obrigatório) - ID do turno
 - `tipo`: string (obrigatório) - Tipo da foto
-- `checklistPreenchidoId`: number (opcional)
-- `checklistRespostaId`: number (opcional)
+- `checklistUuid`: string (opcional) - UUID único do checklist preenchido (gerado pelo app mobile)
+- `checklistPerguntaId`: number (opcional) - ID remoto da pergunta que gerou a pendência (enviado como checklistPerguntaId pelo app)
 - `sequenciaAssinatura`: number (opcional) - 1 ou 2
 - `servicoId`: number (opcional)
+
+### Exemplo de payload (campos do multipart além de `file`)
+Exemplo completo com todos os campos opcionais preenchidos:
+
+| Campo | Tipo | Exemplo |
+|-------|------|---------|
+| turnoId | number | 123 |
+| tipo | string | pendencia |
+| checklistUuid | string | 550e8400-e29b-41d4-a716-446655440000 |
+| checklistPerguntaId | number | 654 |
+| sequenciaAssinatura | number | 1 |
+| servicoId | number | 456 |
 
 ### Tipos de Foto Aceitos
 - `checklistReprova`
@@ -25,8 +37,12 @@
 - `documento`
 - `outro`
 
+### Validações Especiais
+- **checklistUuid obrigatório**: Quando `tipo` for `checklistReprova` ou `assinatura`, o campo `checklistUuid` é obrigatório. O backend rejeita a requisição (400) se estiver ausente ou vazio.
+- **checklistPerguntaId para vinculação**: Em fotos de pendência (`pendencia` e `checklistReprova`), o `checklistPerguntaId` é usado para vincular a foto à resposta/pergunta correta. Deve ser enviado sempre que existir no contexto do app (ex.: pergunta que gerou a pendência ou que exige assinatura).
+
 ### Formato de Arquivo
-- **MIME Types permitidos**: `image/jpeg`, `image/png`, `image/webp`, `image/heic`
+- **MIME Types permitidos**: `image/jpeg`, `image/png`, `image/webp`, `image/heic`, `image/heif`
 - **Tamanho máximo**: Definido em MAX_MOBILE_PHOTO_FILE_SIZE
 
 ### Fluxo de Processamento
@@ -70,8 +86,8 @@ Campos principais:
 - `storagePath`: String - Caminho completo no servidor
 - `url`: String - URL pública da foto
 - `capturedAt`: DateTime? - Data de captura
-- `checklistPreenchidoId`: Int? - Relacionamento opcional
-- `checklistRespostaId`: Int? - Relacionamento opcional
+- `checklistUuid`: String? - UUID do checklist preenchido
+- `checklistPerguntaId`: Int? - ID remoto da pergunta que gerou a pendência
 - `sequenciaAssinatura`: Int? - 1 ou 2
 - `servicoId`: Int? - Relacionamento opcional
 - Campos de auditoria: `createdAt`, `updatedAt`, `deletedAt`, `createdBy`, `updatedBy`, `deletedBy`
