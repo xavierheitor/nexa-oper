@@ -5,8 +5,8 @@
 
 import { ORDER_CONFIG } from '@common/constants/eletricista';
 import { handleCrudError } from '@common/utils/error-handler';
-import { computeSyncChecksum } from '@common/utils/sync-checksum';
 import { normalizeSyncAggregate } from '@common/utils/sync-aggregate';
+import { buildSyncStatusResponse } from '@common/utils/sync-status';
 import { buildSyncWhereIncremental } from '@common/utils/sync-where';
 import { SyncStatusResponseDto } from '@common/dto/sync-status.dto';
 import { DatabaseService } from '@database/database.service';
@@ -64,13 +64,11 @@ export class EletricistaSyncService {
       'Calculando status de sincronização Eletricista (checksum)'
     );
     const payload = await this.buildSyncChecksumPayload(ids);
-    const checksum = computeSyncChecksum(payload);
-    const serverTime = new Date().toISOString();
-    const changed = clientChecksum === undefined || clientChecksum !== checksum;
+    const result = buildSyncStatusResponse(payload, clientChecksum);
     this.logger.log(
-      `Status Eletricista: checksum=${checksum.slice(0, 16)}..., changed=${changed}`
+      `Status Eletricista: checksum=${result.checksum.slice(0, 16)}..., changed=${result.changed}`
     );
-    return { changed, checksum, serverTime };
+    return result;
   }
 
   async findAllForSync(

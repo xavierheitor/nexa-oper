@@ -19,5 +19,6 @@ export * from './utils/logger';
 export * from './utils/pagination';
 export * from './utils/sync-aggregate';
 export * from './utils/sync-checksum';
+export * from './utils/sync-status';
 export * from './utils/sync-where';
 export * from './utils/validation';
