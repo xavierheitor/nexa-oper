@@ -22,7 +22,7 @@ describe('LocalDiskStorageAdapter', () => {
   describe('put', () => {
     it('chama mkdir com recursive: true, writeFile com buffer e retorna { key, size }', async () => {
       const key = 'a/b.jpg';
-      const buffer = Buffer.from('conteúdo');
+      const buffer = Buffer.from('conteudo');
       const result = await adapter.put({
         key,
         buffer,
@@ -38,7 +38,7 @@ describe('LocalDiskStorageAdapter', () => {
       expect(fsPromises.writeFile).toHaveBeenCalledTimes(1);
       expect(fsPromises.writeFile).toHaveBeenCalledWith(fullPath, buffer);
 
-      expect(result).toEqual({ key: 'a/b.jpg', size: 9 });
+      expect(result).toEqual({ key: 'a/b.jpg', size: 8 });
     });
   });
 
