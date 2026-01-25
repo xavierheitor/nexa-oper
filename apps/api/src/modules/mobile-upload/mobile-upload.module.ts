@@ -9,8 +9,7 @@ import {
   MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX,
   MOBILE_PHOTO_UPLOAD_ROOT,
 } from '@common/constants/mobile-upload';
-import { LocalDiskStorageAdapter } from '@common/storage/local-disk-storage.adapter';
-import { STORAGE_PORT } from '@common/storage/storage.port';
+import { StorageModule } from '@common/storage/storage.module';
 import {
   MobilePhotoUploadController,
   MobileLocationUploadController,
@@ -28,6 +27,10 @@ import {
   imports: [
     DatabaseModule,
     AuthModule,
+    StorageModule.forRoot({
+      rootPath: MOBILE_PHOTO_UPLOAD_ROOT,
+      publicPrefix: MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX,
+    }),
     MulterModule.register({
       storage: memoryStorage(),
       limits: {
@@ -37,13 +40,6 @@ import {
   ],
   controllers: [MobilePhotoUploadController, MobileLocationUploadController],
   providers: [
-    {
-      provide: STORAGE_PORT,
-      useValue: new LocalDiskStorageAdapter(
-        MOBILE_PHOTO_UPLOAD_ROOT,
-        MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX
-      ),
-    },
     FotoPendenciaProcessorService,
     MobilePhotoUploadService,
     MobileLocationUploadService,

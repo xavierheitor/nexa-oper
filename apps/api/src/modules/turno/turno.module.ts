@@ -36,8 +36,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 
-import { LocalDiskStorageAdapter } from '@common/storage/local-disk-storage.adapter';
-import { STORAGE_PORT } from '@common/storage/storage.port';
+import { StorageModule } from '@common/storage/storage.module';
 import {
   TurnoController,
   TurnoSyncController,
@@ -104,6 +103,11 @@ const checklistStoragePrefix = process.env.UPLOAD_BASE_URL
     // Event Emitter para Event Sourcing
     EventEmitterModule,
 
+    StorageModule.forRoot({
+      rootPath: checklistStorageRoot,
+      publicPrefix: checklistStoragePrefix,
+    }),
+
     // Multer para upload de arquivos
     MulterModule.register({
       storage: memoryStorage(),
@@ -119,13 +123,6 @@ const checklistStoragePrefix = process.env.UPLOAD_BASE_URL
     ChecklistFotoController,
   ],
   providers: [
-    {
-      provide: STORAGE_PORT,
-      useValue: new LocalDiskStorageAdapter(
-        checklistStorageRoot,
-        checklistStoragePrefix
-      ),
-    },
     // Services
     TurnoService,
     ChecklistPreenchidoService,
