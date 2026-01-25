@@ -44,6 +44,15 @@ Decorator para endpoints de sincronização:
 - Aplica automaticamente o `SyncAuditRemoverInterceptor`
 - Adiciona tag Swagger para documentação
 
+## Sync Helpers
+
+Helpers em `utils/` usados pelos serviços de sync (APR, Checklist, Equipe, Eletricista):
+
+- **sync-where.ts** — Where incremental para sincronização (since).
+- **sync-checksum.ts** — Gera checksum SHA-256 do payload para comparação com o cliente.
+- **sync-aggregate.ts** — Normaliza o resultado de aggregate Prisma para o formato do payload de checksum.
+- **sync-status.ts** — Monta a resposta padrão de status (changed, checksum, serverTime).
+
 ## 📊 Benefícios
 
 ### ✅ **DRY (Don't Repeat Yourself)**

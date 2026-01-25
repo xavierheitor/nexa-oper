@@ -31,6 +31,15 @@ describe('normalizeSyncAggregate', () => {
     expect(result.count).toBe(42);
     expect(result.maxUpdatedAt).toBe('2024-06-15T12:00:00.000Z');
   });
+
+  it('quando _max.updatedAt é null, maxUpdatedAt deve ser null', () => {
+    const result = normalizeSyncAggregate({
+      _count: 0,
+      _max: { updatedAt: null },
+    });
+    expect(result.count).toBe(0);
+    expect(result.maxUpdatedAt).toBeNull();
+  });
 });
 
 describe('buildSyncStatusResponse', () => {
@@ -49,5 +58,12 @@ describe('buildSyncStatusResponse', () => {
     expect(result.changed).toBe(true);
     expect(result.checksum).toBe(computeSyncChecksum(payload));
     expect(result.serverTime).toBeDefined();
+  });
+
+  it('quando clientChecksum é diferente, changed deve ser true', () => {
+    const payload = { x: 1 };
+    const result = buildSyncStatusResponse(payload, 'checksum-diferente');
+    expect(result.changed).toBe(true);
+    expect(result.checksum).toBe(computeSyncChecksum(payload));
   });
 });
