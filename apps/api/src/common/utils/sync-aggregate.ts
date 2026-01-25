@@ -1,7 +1,7 @@
 /**
+ * Uso recomendado: serviços de sync para normalizar aggregate Prisma antes do checksum.
  * Converte o resultado de aggregate Prisma (_count, _max.updatedAt)
  * para o formato do payload de checksum (count, maxUpdatedAt em ISO).
- * Usado por APR, Checklist, Equipe e Eletricista sync.
  */
 export function normalizeSyncAggregate(aggregate: {
   _count: number;

@@ -2,8 +2,8 @@ import { SyncStatusResponseDto } from '@common/dto/sync-status.dto';
 import { computeSyncChecksum } from './sync-checksum';
 
 /**
+ * Uso recomendado: serviços de sync (APR, Checklist, Equipe, Eletricista) para padronizar a resposta de status.
  * Monta a resposta do endpoint de status de sync (checksum, changed, serverTime).
- * Usado por APR, Checklist, Equipe e Eletricista sync.
  */
 export function buildSyncStatusResponse(
   payload: unknown,

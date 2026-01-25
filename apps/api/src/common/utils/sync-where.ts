@@ -1,6 +1,6 @@
 /**
+ * Uso recomendado: serviços de sync para montar o where incremental (since) nas consultas.
  * Helper de where incremental para sincronização (since).
- * Compartilhado por APR, Checklist, Equipe e Eletricista sync.
  */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- forma do OR é compatível com WhereInput de vários modelos Prisma
