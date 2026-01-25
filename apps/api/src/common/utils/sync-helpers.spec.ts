@@ -1,6 +1,25 @@
 import { buildSyncStatusResponse } from './sync-status';
 import { computeSyncChecksum } from './sync-checksum';
 import { normalizeSyncAggregate } from './sync-aggregate';
+import { buildSyncWhereIncremental } from './sync-where';
+
+describe('buildSyncWhereIncremental', () => {
+  it('quando since é undefined, retorna { deletedAt: null }', () => {
+    expect(buildSyncWhereIncremental(undefined)).toEqual({ deletedAt: null });
+    expect(buildSyncWhereIncremental()).toEqual({ deletedAt: null });
+  });
+
+  it('quando since é definido, retorna o OR com updatedAt.gt, deletedAt null e deletedAt.gt', () => {
+    const since = '2024-01-15T00:00:00.000Z';
+    const result = buildSyncWhereIncremental(since);
+    expect(result.OR).toHaveLength(2);
+    expect(result.OR[0]).toEqual({
+      updatedAt: { gt: new Date(since) },
+      deletedAt: null,
+    });
+    expect(result.OR[1]).toEqual({ deletedAt: { gt: new Date(since) } });
+  });
+});
 
 describe('normalizeSyncAggregate', () => {
   it('retorna count e maxUpdatedAt em ISO', () => {
