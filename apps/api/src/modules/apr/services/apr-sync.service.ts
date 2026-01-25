@@ -7,6 +7,7 @@ import { handleCrudError } from '@common/utils/error-handler';
 import { computeSyncChecksum } from '@common/utils/sync-checksum';
 import { normalizeSyncAggregate } from '@common/utils/sync-aggregate';
 import { buildSyncWhereIncremental } from '@common/utils/sync-where';
+import { SyncStatusResponseDto } from '@common/dto/sync-status.dto';
 import { DatabaseService } from '@database/database.service';
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -81,7 +82,7 @@ export class AprSyncService {
 
   async getSyncStatus(
     clientChecksum?: string
-  ): Promise<{ changed: boolean; checksum: string; serverTime: string }> {
+  ): Promise<SyncStatusResponseDto> {
     this.logger.log('Calculando status de sincronização APR (checksum)');
     const payload = await this.buildSyncChecksumPayload();
     const checksum = computeSyncChecksum(payload);

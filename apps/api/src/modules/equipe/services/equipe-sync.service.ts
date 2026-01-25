@@ -8,6 +8,7 @@ import { handleCrudError } from '@common/utils/error-handler';
 import { computeSyncChecksum } from '@common/utils/sync-checksum';
 import { normalizeSyncAggregate } from '@common/utils/sync-aggregate';
 import { buildSyncWhereIncremental } from '@common/utils/sync-where';
+import { SyncStatusResponseDto } from '@common/dto/sync-status.dto';
 import { DatabaseService } from '@database/database.service';
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -49,7 +50,7 @@ export class EquipeSyncService {
   async getSyncStatus(
     clientChecksum?: string,
     allowedContractIds?: number[] | null
-  ): Promise<{ changed: boolean; checksum: string; serverTime: string }> {
+  ): Promise<SyncStatusResponseDto> {
     const ids = allowedContractIds ?? null;
     if (ids && ids.length === 0) {
       const serverTime = new Date().toISOString();
