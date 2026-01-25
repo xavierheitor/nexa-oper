@@ -34,6 +34,7 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MulterModule } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 
 import { LocalDiskStorageAdapter } from '@common/storage/local-disk-storage.adapter';
 import { STORAGE_PORT } from '@common/storage/storage.port';
@@ -105,7 +106,7 @@ const checklistStoragePrefix = process.env.UPLOAD_BASE_URL
 
     // Multer para upload de arquivos
     MulterModule.register({
-      dest: './uploads/checklists',
+      storage: memoryStorage(),
       limits: {
         fileSize: 10 * 1024 * 1024, // 10MB
       },

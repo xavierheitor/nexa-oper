@@ -58,7 +58,9 @@ export class OperationLoggingInterceptor implements NestInterceptor {
 
     // Criar contexto base (reutiliza requestId do LoggerMiddleware quando existir)
     const baseContext: LogContext = {
-      requestId: (request as { requestId?: string }).requestId ?? this.generateRequestId(),
+      requestId:
+        (request as { requestId?: string }).requestId ??
+        this.generateRequestId(),
       operation: logOptions.operation,
       module: className,
       metadata: {

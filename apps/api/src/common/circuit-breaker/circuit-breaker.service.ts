@@ -28,7 +28,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import CircuitBreaker = require('opossum');
+import CircuitBreaker from 'opossum';
 
 /**
  * Opções de configuração do Circuit Breaker
@@ -67,7 +67,7 @@ export interface CircuitBreakerOptions {
   /**
    * Função de fallback quando o circuito está aberto
    */
-  fallback?: () => Promise<any> | any;
+  fallback?: () => unknown;
 }
 
 /**
@@ -107,10 +107,7 @@ export class CircuitBreakerService {
 
     // Cria novo Circuit Breaker
     const breaker = new CircuitBreaker<[], T>(
-      async (): Promise<T> => {
-        // Esta função será substituída quando usar .fire()
-        throw new Error('Função não fornecida');
-      },
+      (): Promise<T> => Promise.reject(new Error('Função não fornecida')),
       {
         timeout: config.timeout,
         errorThresholdPercentage: config.errorThresholdPercentage,
