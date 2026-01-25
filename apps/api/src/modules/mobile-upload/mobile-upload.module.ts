@@ -4,7 +4,13 @@ import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 
-import { MAX_MOBILE_PHOTO_FILE_SIZE } from '@common/constants/mobile-upload';
+import {
+  MAX_MOBILE_PHOTO_FILE_SIZE,
+  MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX,
+  MOBILE_PHOTO_UPLOAD_ROOT,
+} from '@common/constants/mobile-upload';
+import { LocalDiskStorageAdapter } from '@common/storage/local-disk-storage.adapter';
+import { STORAGE_PORT } from '@common/storage/storage.port';
 import {
   MobilePhotoUploadController,
   MobileLocationUploadController,
@@ -29,7 +35,17 @@ import {
     }),
   ],
   controllers: [MobilePhotoUploadController, MobileLocationUploadController],
-  providers: [MobilePhotoUploadService, MobileLocationUploadService],
+  providers: [
+    {
+      provide: STORAGE_PORT,
+      useValue: new LocalDiskStorageAdapter(
+        MOBILE_PHOTO_UPLOAD_ROOT,
+        MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX
+      ),
+    },
+    MobilePhotoUploadService,
+    MobileLocationUploadService,
+  ],
   exports: [MobilePhotoUploadService, MobileLocationUploadService],
 })
 export class MobileUploadModule {}

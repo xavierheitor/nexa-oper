@@ -1,11 +1,3 @@
-jest.mock('fs/promises', () => ({
-  mkdir: jest.fn(() => Promise.resolve()),
-  unlink: jest.fn(() => Promise.resolve()),
-  writeFile: jest.fn(() => Promise.resolve()),
-}));
-
-import * as fsPromises from 'fs/promises';
-
 import { DatabaseService } from '@database/database.service';
 
 import { MobilePhotoUploadService } from './mobile-photo-upload.service';
@@ -23,7 +15,13 @@ describe('MobilePhotoUploadService', () => {
     getPrisma: () => prismaMock,
   } as unknown as DatabaseService;
 
-  const service = new MobilePhotoUploadService(databaseServiceMock);
+  const storageMock = {
+    put: jest.fn().mockResolvedValue({ key: '1/file.jpg', size: 123 }),
+    delete: jest.fn().mockResolvedValue(undefined),
+    getPublicUrl: jest.fn((key: string) => '/uploads/mobile/photos/' + key),
+  };
+
+  const service = new MobilePhotoUploadService(databaseServiceMock, storageMock);
 
   const fileMock = (overrides?: Partial<Express.Multer.File>) =>
     ({
@@ -36,9 +34,9 @@ describe('MobilePhotoUploadService', () => {
     }) as Express.Multer.File;
 
   beforeEach(() => {
-    (fsPromises.mkdir as jest.Mock).mockClear();
-    (fsPromises.unlink as jest.Mock).mockClear();
-    (fsPromises.writeFile as jest.Mock).mockClear();
+    storageMock.put.mockClear();
+    storageMock.delete.mockClear();
+    storageMock.getPublicUrl.mockClear();
     prismaMock.mobilePhoto.findUnique.mockReset();
     prismaMock.mobilePhoto.create.mockReset();
   });
@@ -61,7 +59,7 @@ describe('MobilePhotoUploadService', () => {
     expect(result.status).toBe('stored');
     expect(result.url).toContain('/uploads/mobile/photos/1/');
     expect(prismaMock.mobilePhoto.create).toHaveBeenCalledTimes(1);
-    expect(fsPromises.writeFile).toHaveBeenCalledTimes(1);
+    expect(storageMock.put).toHaveBeenCalledTimes(1);
   });
 
   it('retorna duplicidade quando foto já existir', async () => {
@@ -81,7 +79,7 @@ describe('MobilePhotoUploadService', () => {
     expect(result.status).toBe('duplicate');
     expect(result.url).toBe('/uploads/mobile/photos/1/existing.jpg');
     expect(prismaMock.mobilePhoto.create).not.toHaveBeenCalled();
-    expect(fsPromises.writeFile).not.toHaveBeenCalled();
+    expect(storageMock.put).not.toHaveBeenCalled();
   });
 
   it('ao lançar P2002 no create, remove arquivo (unlink) e retorna duplicate quando findUnique acha existente', async () => {
@@ -101,6 +99,6 @@ describe('MobilePhotoUploadService', () => {
     expect(result.status).toBe('duplicate');
     expect(result.url).toBe('/mobile/photos/1/existing-race.jpg');
     expect(result.checksum).toBe('checksum-race');
-    expect(fsPromises.unlink).toHaveBeenCalledTimes(1);
+    expect(storageMock.delete).toHaveBeenCalledTimes(1);
   });
 });

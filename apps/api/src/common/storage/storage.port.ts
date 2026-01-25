@@ -3,6 +3,8 @@
  * Implementações: LocalDiskStorageAdapter, futuros adapters (S3, etc.).
  */
 
+export const STORAGE_PORT = 'STORAGE_PORT';
+
 export interface StoragePort {
   put(input: {
     key: string;

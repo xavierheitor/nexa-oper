@@ -3,21 +3,20 @@
  */
 
 import { randomUUID, createHash } from 'crypto';
-import { mkdir, unlink, writeFile } from 'fs/promises';
-import { dirname, extname, join, sep } from 'path';
+import { extname, join } from 'path';
 
 import { createAuditData, getDefaultUserContext } from '@common/utils/audit';
 import { sanitizeData } from '@common/utils/logger';
-import { DatabaseService } from '@database/database.service';
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-
 import {
   ALLOWED_MOBILE_PHOTO_MIME_TYPES,
   MAX_MOBILE_PHOTO_FILE_SIZE,
-  MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX,
   MOBILE_PHOTO_UPLOAD_ROOT,
   SUPPORTED_MOBILE_PHOTO_TYPES,
 } from '@common/constants/mobile-upload';
+import { StoragePort } from '@common/storage/storage.port';
+import { STORAGE_PORT } from '@common/storage/storage.port';
+import { DatabaseService } from '@database/database.service';
+import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { PhotoUploadDto, PhotoUploadResponseDto } from '../dto';
 
 type MulterFile = Express.Multer.File;
@@ -40,7 +39,10 @@ const MIME_EXTENSION_MAP: Record<string, string> = {
 export class MobilePhotoUploadService {
   private readonly logger = new Logger(MobilePhotoUploadService.name);
 
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    @Inject(STORAGE_PORT) private readonly storage: StoragePort
+  ) {}
 
   /**
    * Processa o upload de uma foto recebida do aplicativo mobile.
@@ -96,10 +98,15 @@ export class MobilePhotoUploadService {
 
     const extension = this.resolveExtension(file);
     const relativePath = this.buildRelativePath(payload.turnoId, extension);
-    const absolutePath = join(MOBILE_PHOTO_UPLOAD_ROOT, ...relativePath.parts);
+    const key = relativePath.urlPath;
 
-    await this.ensureDirectory(dirname(absolutePath));
-    await writeFile(absolutePath, file.buffer);
+    await this.storage.put({
+      key,
+      buffer: file.buffer,
+      contentType: file.mimetype,
+    });
+
+    const absolutePath = join(MOBILE_PHOTO_UPLOAD_ROOT, ...relativePath.parts);
 
     // Montar path relativo para o banco (sem URL base, apenas /mobile/photos/...)
     const relativeUrlPath = `/mobile/photos/${relativePath.urlPath}`;
@@ -130,11 +137,11 @@ export class MobilePhotoUploadService {
       });
     } catch (err: unknown) {
       try {
-        await unlink(absolutePath);
-      } catch (unlinkErr) {
+        await this.storage.delete(key);
+      } catch (deleteErr) {
         this.logger.warn(
-          `[UPLOAD] Falha ao remover arquivo órfão após erro no create: ${absolutePath}`,
-          unlinkErr
+          `[UPLOAD] Falha ao remover arquivo órfão após erro no create: ${key}`,
+          deleteErr
         );
       }
       const e = err as { code?: string };
@@ -196,8 +203,7 @@ export class MobilePhotoUploadService {
       `Foto armazenada com sucesso: turno ${payload.turnoId} - ${relativePath.fileName}`
     );
 
-    // Montar URL completa para retorno ao mobile (com UPLOAD_BASE_URL se configurada)
-    const fullUrl = this.buildPublicUrl(relativePath.urlPath);
+    const fullUrl = this.storage.getPublicUrl(key);
 
     return {
       status: 'stored',
@@ -280,24 +286,6 @@ export class MobilePhotoUploadService {
     const urlPath = parts.join('/');
 
     return { parts, fileName, urlPath };
-  }
-
-  /**
-   * Garante que o diretório existe antes de salvar o arquivo.
-   */
-  private async ensureDirectory(directory: string): Promise<void> {
-    await mkdir(directory, { recursive: true });
-  }
-
-  /**
-   * Constrói a URL pública a partir do caminho relativo.
-   */
-  private buildPublicUrl(relativePath: string): string {
-    const normalized = relativePath.split(sep).join('/');
-    const baseUrl = MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX.endsWith('/')
-      ? MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX.slice(0, -1)
-      : MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX;
-    return `${baseUrl}/${normalized}`;
   }
 
   /**
