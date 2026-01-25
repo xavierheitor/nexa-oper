@@ -46,6 +46,8 @@ describe('MobilePhotoUploadService', () => {
     storageMock.put.mockClear();
     storageMock.delete.mockClear();
     storageMock.getPublicUrl.mockClear();
+    pendenciaProcessorMock.processarSemUuid.mockClear();
+    pendenciaProcessorMock.processarComUuid.mockClear();
     prismaMock.mobilePhoto.findUnique.mockReset();
     prismaMock.mobilePhoto.create.mockReset();
   });
@@ -109,5 +111,57 @@ describe('MobilePhotoUploadService', () => {
     expect(result.url).toBe('/mobile/photos/1/existing-race.jpg');
     expect(result.checksum).toBe('checksum-race');
     expect(storageMock.delete).toHaveBeenCalledTimes(1);
+  });
+
+  it('quando tipo=pendencia e checklistPerguntaId existe, chama pendenciaProcessor.processarSemUuid', async () => {
+    prismaMock.mobilePhoto.findUnique.mockResolvedValue(null);
+    prismaMock.mobilePhoto.create.mockResolvedValue({
+      id: 1,
+      url: '/mobile/photos/1/foto.jpg',
+      checksum: 'checksum',
+    });
+
+    const dto: PhotoUploadDto = {
+      turnoId: 1,
+      tipo: 'pendencia',
+      checklistPerguntaId: 123,
+    };
+
+    await service.handleUpload(fileMock(), dto);
+
+    expect(pendenciaProcessorMock.processarSemUuid).toHaveBeenCalledTimes(1);
+    expect(pendenciaProcessorMock.processarSemUuid).toHaveBeenCalledWith(
+      1,
+      1,
+      123
+    );
+    expect(pendenciaProcessorMock.processarComUuid).not.toHaveBeenCalled();
+  });
+
+  it('quando tipo=checklistReprova com checklistUuid e checklistPerguntaId, chama pendenciaProcessor.processarComUuid', async () => {
+    prismaMock.mobilePhoto.findUnique.mockResolvedValue(null);
+    prismaMock.mobilePhoto.create.mockResolvedValue({
+      id: 2,
+      url: '/mobile/photos/1/foto.jpg',
+      checksum: 'checksum',
+    });
+
+    const dto: PhotoUploadDto = {
+      turnoId: 1,
+      tipo: 'checklistReprova',
+      checklistUuid: 'abc-123',
+      checklistPerguntaId: 456,
+    };
+
+    await service.handleUpload(fileMock(), dto);
+
+    expect(pendenciaProcessorMock.processarComUuid).toHaveBeenCalledTimes(1);
+    expect(pendenciaProcessorMock.processarComUuid).toHaveBeenCalledWith(
+      2,
+      1,
+      'abc-123',
+      456
+    );
+    expect(pendenciaProcessorMock.processarSemUuid).not.toHaveBeenCalled();
   });
 });
