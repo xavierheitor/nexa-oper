@@ -25,6 +25,8 @@
  * - AuthModule: Autenticação e permissões
  */
 
+import { join } from 'path';
+
 import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@core/auth/auth.module';
 import { TurnoRealizadoModule } from '@modules/turno-realizado/turno-realizado.module';
@@ -33,6 +35,8 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MulterModule } from '@nestjs/platform-express';
 
+import { LocalDiskStorageAdapter } from '@common/storage/local-disk-storage.adapter';
+import { STORAGE_PORT } from '@common/storage/storage.port';
 import {
   TurnoController,
   TurnoSyncController,
@@ -78,6 +82,14 @@ import { TurnoService } from './services/turno.service';
  * - Declara Event handlers para Event Sourcing
  * - Exporta services para uso em outros módulos
  */
+const checklistStorageRoot = process.env.UPLOAD_ROOT
+  ? join(process.env.UPLOAD_ROOT, 'checklists')
+  : join(process.cwd(), 'uploads', 'checklists');
+
+const checklistStoragePrefix = process.env.UPLOAD_BASE_URL
+  ? `${process.env.UPLOAD_BASE_URL.replace(/\/$/, '')}/checklists`
+  : '/uploads/checklists';
+
 @Module({
   imports: [
     // Módulos básicos
@@ -106,6 +118,13 @@ import { TurnoService } from './services/turno.service';
     ChecklistFotoController,
   ],
   providers: [
+    {
+      provide: STORAGE_PORT,
+      useValue: new LocalDiskStorageAdapter(
+        checklistStorageRoot,
+        checklistStoragePrefix
+      ),
+    },
     // Services
     TurnoService,
     ChecklistPreenchidoService,

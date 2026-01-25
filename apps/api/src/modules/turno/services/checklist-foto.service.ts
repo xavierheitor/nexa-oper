@@ -6,11 +6,13 @@
  */
 
 import { randomUUID } from 'crypto';
-import { createWriteStream, mkdirSync, existsSync } from 'fs';
 import { join, relative, sep } from 'path';
 
+import type { StoragePort } from '@common/storage/storage.port';
+import { STORAGE_PORT } from '@common/storage/storage.port';
 import { DatabaseService } from '@database/database.service';
 import {
+  Inject,
   Injectable,
   Logger,
   BadRequestException,
@@ -31,10 +33,10 @@ export class ChecklistFotoService {
     ? join(process.env.UPLOAD_ROOT, 'checklists')
     : join(process.cwd(), 'uploads', 'checklists');
 
-  constructor(private readonly db: DatabaseService) {
-    // Criar diretório de uploads se não existir
-    this.ensureUploadsDirectory();
-  }
+  constructor(
+    private readonly db: DatabaseService,
+    @Inject(STORAGE_PORT) private readonly storage: StoragePort
+  ) {}
 
   /**
    * Sincroniza uma foto individual
@@ -226,36 +228,21 @@ export class ChecklistFotoService {
     const extension = file.originalname.split('.').pop() || 'jpg';
     const filename = `${timestamp}_${randomId}.${extension}`;
 
-    // Criar estrutura de pastas: uploads/checklists/{turnoId}/{checklistRespostaId}/
     const turnoId = await this.buscarTurnoIdDaResposta(checklistRespostaId);
-    const dirPath = join(
-      this.uploadsPath,
-      turnoId.toString(),
-      checklistRespostaId.toString()
-    );
+    const key = `${turnoId}/${checklistRespostaId}/${filename}`;
 
-    if (!existsSync(dirPath)) {
-      mkdirSync(dirPath, { recursive: true });
+    try {
+      await this.storage.put({
+        key,
+        buffer: file.buffer,
+        contentType: file.mimetype,
+      });
+    } catch (error) {
+      this.logger.error('Erro ao salvar arquivo:', error);
+      throw new BadRequestException('Erro ao salvar arquivo');
     }
 
-    const filePath = join(dirPath, filename);
-
-    // Salvar arquivo
-    return new Promise((resolve, reject) => {
-      const writeStream = createWriteStream(filePath);
-
-      writeStream.on('error', error => {
-        this.logger.error('Erro ao salvar arquivo:', error);
-        reject(new BadRequestException('Erro ao salvar arquivo'));
-      });
-
-      writeStream.on('finish', () => {
-        resolve(filePath);
-      });
-
-      writeStream.write(file.buffer);
-      writeStream.end();
-    });
+    return join(this.uploadsPath, ...key.split('/'));
   }
 
   /**
@@ -265,13 +252,8 @@ export class ChecklistFotoService {
    * @returns URL pública
    */
   gerarUrlPublica(caminhoArquivo: string): string {
-    const base = (process.env.UPLOAD_BASE_URL || '').replace(/\/$/, '');
-    if (base) {
-      const rel = relative(this.uploadsPath, caminhoArquivo).split(sep).join('/');
-      return `${base}/checklists/${rel}`;
-    }
-    const relativePath = caminhoArquivo.replace(process.cwd(), '');
-    return `/uploads${relativePath}`;
+    const key = relative(this.uploadsPath, caminhoArquivo).split(sep).join('/');
+    return this.storage.getPublicUrl(key);
   }
 
   /**
@@ -398,15 +380,5 @@ export class ChecklistFotoService {
     }
 
     return resposta.checklistPreenchido.turnoId;
-  }
-
-  /**
-   * Garante que o diretório de uploads existe
-   */
-  private ensureUploadsDirectory(): void {
-    if (!existsSync(this.uploadsPath)) {
-      mkdirSync(this.uploadsPath, { recursive: true });
-      this.logger.log(`Diretório de uploads criado: ${this.uploadsPath}`);
-    }
   }
 }
