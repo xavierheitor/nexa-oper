@@ -21,7 +21,16 @@ describe('MobilePhotoUploadService', () => {
     getPublicUrl: jest.fn((key: string) => '/uploads/mobile/photos/' + key),
   };
 
-  const service = new MobilePhotoUploadService(databaseServiceMock, storageMock);
+  const pendenciaProcessorMock = {
+    processarSemUuid: jest.fn().mockResolvedValue(undefined),
+    processarComUuid: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const service = new MobilePhotoUploadService(
+    databaseServiceMock,
+    storageMock,
+    pendenciaProcessorMock as never
+  );
 
   const fileMock = (overrides?: Partial<Express.Multer.File>) =>
     ({

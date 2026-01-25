@@ -16,6 +16,7 @@ import {
   MobileLocationUploadController,
 } from './controllers';
 import {
+  FotoPendenciaProcessorService,
   MobilePhotoUploadService,
   MobileLocationUploadService,
 } from './services';
@@ -43,6 +44,7 @@ import {
         MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX
       ),
     },
+    FotoPendenciaProcessorService,
     MobilePhotoUploadService,
     MobileLocationUploadService,
   ],

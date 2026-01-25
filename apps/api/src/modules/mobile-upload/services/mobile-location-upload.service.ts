@@ -28,7 +28,9 @@ export class MobileLocationUploadService {
   ): Promise<LocationUploadResponseDto> {
     const signature = this.buildSignature(payload);
     const audit = createAuditData(
-      userId ? { userId, userName: userId, roles: ['mobile'] } : getDefaultUserContext()
+      userId
+        ? { userId, userName: userId, roles: ['mobile'] }
+        : getDefaultUserContext()
     );
 
     const prisma = this.db.getPrisma();
@@ -50,7 +52,6 @@ export class MobileLocationUploadService {
             alreadyExisted: false,
           };
         }
-
         // Permitir salvar localizações mesmo para turnos fechados (pode ser localização de fechamento)
         // Mas logar para monitoramento
         if (turno.dataFim) {
@@ -59,7 +60,6 @@ export class MobileLocationUploadService {
           );
         }
       }
-
       // Tentar inserir diretamente - se já existir, será capturado pelo catch
       await prisma.mobileLocation.create({
         data: {
@@ -84,43 +84,42 @@ export class MobileLocationUploadService {
       this.logger.log(
         `Localização armazenada com sucesso para turno ${payload.turnoId}`
       );
-
       return {
         status: 'ok',
         alreadyExisted: false,
       };
-    } catch (error: any) {
-      // Se for erro de constraint única, significa que já existe
-      if (error.code === 'P2002' && error.meta?.target?.includes('signature')) {
-        this.logger.debug(
-          `Localização duplicada detectada (signature=${signature}), ignorando nova inserção`
-        );
-
-        return {
-          status: 'ok',
-          alreadyExisted: true,
-        };
-      }
-
-      // Se for erro de foreign key (turno não existe), logar e retornar ok
-      if (error.code === 'P2003' || error.code === 'P2025') {
-        this.logger.warn(
-          `Erro ao salvar localização - Turno não encontrado ou inválido - Turno ID: ${payload.turnoId}, Erro: ${error.message}`
-        );
-
-        return {
-          status: 'ok',
-          alreadyExisted: false,
-        };
-      }
-
-      // Se for outro erro, logar e relançar
-      this.logger.error(
-        `Erro ao salvar localização para turno ${payload.turnoId}:`,
-        error
-      );
-      throw error;
+    } catch (error: unknown) {
+      return this.handleLocationUploadError(error, signature, payload.turnoId);
     }
+  }
+
+  private handleLocationUploadError(
+    error: unknown,
+    signature: string,
+    turnoId: number | undefined
+  ): LocationUploadResponseDto | never {
+    const e = error as {
+      code?: string;
+      meta?: { target?: string[] };
+      message?: string;
+    };
+    if (e?.code === 'P2002' && e?.meta?.target?.includes('signature')) {
+      this.logger.debug(
+        `Localização duplicada detectada (signature=${signature}), ignorando nova inserção`
+      );
+      return { status: 'ok', alreadyExisted: true };
+    }
+    if (e?.code === 'P2003' || e?.code === 'P2025') {
+      this.logger.warn(
+        `Erro ao salvar localização - Turno não encontrado ou inválido - Turno ID: ${turnoId}, Erro: ${e?.message ?? 'unknown'}`
+      );
+      return { status: 'ok', alreadyExisted: false };
+    }
+    this.logger.error(
+      `Erro ao salvar localização para turno ${turnoId}:`,
+      error
+    );
+    throw error;
   }
 
   /**
