@@ -13,6 +13,10 @@ export * from './filters/all-exceptions.filter';
 export * from './interceptors';
 export * from './middleware/logger.middleware';
 
+// Storage (port + adapter)
+export * from './storage/storage.port';
+export * from './storage/local-disk-storage.adapter';
+
 // Helper utilities
 export * from './utils/audit';
 export * from './utils/logger';
