@@ -4,11 +4,11 @@
  */
 
 import { ORDER_CONFIG } from '@common/constants/equipe';
+import { SyncStatusResponseDto } from '@common/dto/sync-status.dto';
 import { handleCrudError } from '@common/utils/error-handler';
-import { normalizeSyncAggregate } from '@common/utils/sync-aggregate';
+import { buildSyncPayloadFromAggregates } from '@common/utils/sync-payload';
 import { buildSyncStatusResponse } from '@common/utils/sync-status';
 import { buildSyncWhereIncremental } from '@common/utils/sync-where';
-import { SyncStatusResponseDto } from '@common/dto/sync-status.dto';
 import { DatabaseService } from '@database/database.service';
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -44,7 +44,7 @@ export class EquipeSyncService {
       _count: true,
       _max: { updatedAt: true },
     });
-    return { equipe: normalizeSyncAggregate(a) };
+    return buildSyncPayloadFromAggregates({ equipe: a });
   }
 
   async getSyncStatus(

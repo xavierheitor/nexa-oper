@@ -5,7 +5,7 @@
 
 import { ORDER_CONFIG } from '@common/constants/eletricista';
 import { handleCrudError } from '@common/utils/error-handler';
-import { normalizeSyncAggregate } from '@common/utils/sync-aggregate';
+import { buildSyncPayloadFromAggregates } from '@common/utils/sync-payload';
 import { buildSyncStatusResponse } from '@common/utils/sync-status';
 import { buildSyncWhereIncremental } from '@common/utils/sync-where';
 import { SyncStatusResponseDto } from '@common/dto/sync-status.dto';
@@ -48,7 +48,7 @@ export class EletricistaSyncService {
       _count: true,
       _max: { updatedAt: true },
     });
-    return { eletricista: normalizeSyncAggregate(a) };
+    return buildSyncPayloadFromAggregates({ eletricista: a });
   }
 
   async getSyncStatus(

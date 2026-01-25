@@ -4,7 +4,7 @@
 
 import { APR_ORDER_CONFIG_COMPAT } from '@common/constants/apr';
 import { handleCrudError } from '@common/utils/error-handler';
-import { normalizeSyncAggregate } from '@common/utils/sync-aggregate';
+import { buildSyncPayloadFromAggregates } from '@common/utils/sync-payload';
 import { buildSyncStatusResponse } from '@common/utils/sync-status';
 import { buildSyncWhereIncremental } from '@common/utils/sync-where';
 import { SyncStatusResponseDto } from '@common/dto/sync-status.dto';
@@ -70,14 +70,14 @@ export class AprSyncService {
         _max: { updatedAt: true },
       }),
     ]);
-    return {
-      apr: normalizeSyncAggregate(apr),
-      aprPergunta: normalizeSyncAggregate(aprPergunta),
-      aprPerguntaRelacao: normalizeSyncAggregate(aprPerguntaRelacao),
-      aprOpcaoResposta: normalizeSyncAggregate(aprOpcaoResposta),
-      aprOpcaoRespostaRelacao: normalizeSyncAggregate(aprOpcaoRespostaRelacao),
-      aprTipoAtividadeRelacao: normalizeSyncAggregate(aprTipoAtividadeRelacao),
-    };
+    return buildSyncPayloadFromAggregates({
+      apr,
+      aprPergunta,
+      aprPerguntaRelacao,
+      aprOpcaoResposta,
+      aprOpcaoRespostaRelacao,
+      aprTipoAtividadeRelacao,
+    });
   }
 
   async getSyncStatus(

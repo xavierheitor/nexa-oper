@@ -7,7 +7,7 @@ import {
   ORDER_CONFIG,
 } from '@common/constants/checklist';
 import { handleCrudError } from '@common/utils/error-handler';
-import { normalizeSyncAggregate } from '@common/utils/sync-aggregate';
+import { buildSyncPayloadFromAggregates } from '@common/utils/sync-payload';
 import { buildSyncStatusResponse } from '@common/utils/sync-status';
 import { buildSyncWhereIncremental } from '@common/utils/sync-where';
 import { SyncStatusResponseDto } from '@common/dto/sync-status.dto';
@@ -84,21 +84,15 @@ export class ChecklistSyncService {
       checklistTipoVeiculoRelacao,
       checklistTipoEquipeRelacao,
     ] = await this.fetchChecklistChecksumAggregates();
-    return {
-      checklist: normalizeSyncAggregate(checklist),
-      checklistPergunta: normalizeSyncAggregate(checklistPergunta),
-      checklistPerguntaRelacao: normalizeSyncAggregate(checklistPerguntaRelacao),
-      checklistOpcaoResposta: normalizeSyncAggregate(checklistOpcaoResposta),
-      checklistOpcaoRespostaRelacao: normalizeSyncAggregate(
-        checklistOpcaoRespostaRelacao
-      ),
-      checklistTipoVeiculoRelacao: normalizeSyncAggregate(
-        checklistTipoVeiculoRelacao
-      ),
-      checklistTipoEquipeRelacao: normalizeSyncAggregate(
-        checklistTipoEquipeRelacao
-      ),
-    };
+    return buildSyncPayloadFromAggregates({
+      checklist,
+      checklistPergunta,
+      checklistPerguntaRelacao,
+      checklistOpcaoResposta,
+      checklistOpcaoRespostaRelacao,
+      checklistTipoVeiculoRelacao,
+      checklistTipoEquipeRelacao,
+    });
   }
 
   async getSyncStatus(

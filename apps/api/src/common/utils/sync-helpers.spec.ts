@@ -1,7 +1,30 @@
 import { buildSyncStatusResponse } from './sync-status';
 import { computeSyncChecksum } from './sync-checksum';
 import { normalizeSyncAggregate } from './sync-aggregate';
+import { buildSyncPayloadFromAggregates } from './sync-payload';
 import { buildSyncWhereIncremental } from './sync-where';
+
+describe('buildSyncPayloadFromAggregates', () => {
+  it('retorna chaves corretas e count/maxUpdatedAt em ISO para cada aggregate', () => {
+    const map = {
+      foo: {
+        _count: 3,
+        _max: { updatedAt: new Date('2024-03-10T14:30:00.000Z') },
+      },
+      bar: {
+        _count: 0,
+        _max: { updatedAt: null },
+      },
+    };
+    const result = buildSyncPayloadFromAggregates(map);
+    expect(Object.keys(result).sort()).toEqual(['bar', 'foo']);
+    expect(result.foo).toEqual({
+      count: 3,
+      maxUpdatedAt: '2024-03-10T14:30:00.000Z',
+    });
+    expect(result.bar).toEqual({ count: 0, maxUpdatedAt: null });
+  });
+});
 
 describe('buildSyncWhereIncremental', () => {
   it('quando since é undefined, retorna { deletedAt: null }', () => {
