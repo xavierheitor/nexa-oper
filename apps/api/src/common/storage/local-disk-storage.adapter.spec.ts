@@ -55,5 +55,10 @@ describe('LocalDiskStorageAdapter', () => {
       const url = adapter.getPublicUrl('/a/b.jpg');
       expect(url).toBe('https://cdn.exemplo.com/a/b.jpg');
     });
+
+    it('publicPrefix vazio e key a/b.jpg → a/b.jpg (sem barra extra)', () => {
+      const adapterSemPrefixo = new LocalDiskStorageAdapter('/tmp', '');
+      expect(adapterSemPrefixo.getPublicUrl('a/b.jpg')).toBe('a/b.jpg');
+    });
   });
 });
