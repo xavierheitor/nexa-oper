@@ -31,6 +31,7 @@ import {
   ApiConsumes,
   ApiBody,
 } from '@nestjs/swagger';
+import { memoryStorage } from 'multer';
 
 import {
   FotoResponseDto,
@@ -62,7 +63,12 @@ export class ChecklistFotoController {
    * @returns Dados da foto sincronizada
    */
   @Post('sincronizar')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 10 * 1024 * 1024 },
+    })
+  )
   @ApiOperation({
     summary: 'Sincroniza uma foto individual',
     description:
@@ -164,7 +170,12 @@ export class ChecklistFotoController {
    * @returns Resultado do processamento em lote
    */
   @Post('sincronizar-lote')
-  @UseInterceptors(FilesInterceptor('files', 10)) // Máximo 10 arquivos
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      storage: memoryStorage(),
+      limits: { fileSize: 10 * 1024 * 1024 },
+    })
+  )
   @ApiOperation({
     summary: 'Sincroniza múltiplas fotos em lote',
     description: 'Endpoint para upload de múltiplas fotos de uma vez',
