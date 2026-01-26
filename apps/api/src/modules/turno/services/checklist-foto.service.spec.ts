@@ -1,5 +1,6 @@
 import { join } from 'path';
 
+import { BadRequestException } from '@nestjs/common';
 import { DatabaseService } from '@database/database.service';
 
 import { ChecklistFotoService } from './checklist-foto.service';
@@ -53,6 +54,23 @@ describe('ChecklistFotoService', () => {
         })
       );
       expect(path).toContain('/checklists/10/123/');
+    });
+
+    it('lança BadRequestException quando storage.put rejeita', async () => {
+      prismaMock.checklistResposta.findUnique.mockResolvedValue({
+        checklistPreenchido: { turnoId: 10 },
+      });
+      storageMock.put.mockRejectedValue(new Error('fail'));
+
+      const file = {
+        buffer: Buffer.from('x'),
+        mimetype: 'image/jpeg',
+        originalname: 'foto.jpg',
+      };
+
+      await expect(service.salvarArquivo(file, 123)).rejects.toThrow(
+        new BadRequestException('Erro ao salvar arquivo')
+      );
     });
   });
 
