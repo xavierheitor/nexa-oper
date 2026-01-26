@@ -37,6 +37,7 @@ import { memoryStorage } from 'multer';
 import {
   CHECKLIST_UPLOAD_PUBLIC_PREFIX,
   CHECKLIST_UPLOAD_ROOT,
+  MAX_CHECKLIST_PHOTO_FILE_SIZE,
 } from '@common/constants/checklist-upload';
 import { StorageModule } from '@common/storage';
 import {
@@ -106,7 +107,7 @@ import { TurnoService } from './services/turno.service';
     MulterModule.register({
       storage: memoryStorage(),
       limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB
+        fileSize: MAX_CHECKLIST_PHOTO_FILE_SIZE,
       },
     }),
   ],

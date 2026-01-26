@@ -20,3 +20,8 @@ export const CHECKLIST_UPLOAD_ROOT = process.env.UPLOAD_ROOT
 export const CHECKLIST_UPLOAD_PUBLIC_PREFIX = process.env.UPLOAD_BASE_URL
   ? `${process.env.UPLOAD_BASE_URL.replace(/\/$/, '')}/checklists`
   : '/uploads/checklists';
+
+/**
+ * Tamanho máximo aceito para arquivos de foto de checklist (10MB).
+ */
+export const MAX_CHECKLIST_PHOTO_FILE_SIZE = 10 * 1024 * 1024;

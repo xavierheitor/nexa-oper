@@ -33,6 +33,7 @@ import {
 } from '@nestjs/swagger';
 import { memoryStorage } from 'multer';
 
+import { MAX_CHECKLIST_PHOTO_FILE_SIZE } from '@common/constants/checklist-upload';
 import {
   FotoResponseDto,
   FotoLoteResponseDto,
@@ -66,7 +67,7 @@ export class ChecklistFotoController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
-      limits: { fileSize: 10 * 1024 * 1024 },
+      limits: { fileSize: MAX_CHECKLIST_PHOTO_FILE_SIZE },
     })
   )
   @ApiOperation({
@@ -136,8 +137,7 @@ export class ChecklistFotoController {
     }
 
     // Validar tamanho (máximo 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
+    if (file.size > MAX_CHECKLIST_PHOTO_FILE_SIZE) {
       throw new BadRequestException('Arquivo muito grande. Máximo 10MB');
     }
 
@@ -173,7 +173,7 @@ export class ChecklistFotoController {
   @UseInterceptors(
     FilesInterceptor('files', 10, {
       storage: memoryStorage(),
-      limits: { fileSize: 10 * 1024 * 1024 },
+      limits: { fileSize: MAX_CHECKLIST_PHOTO_FILE_SIZE },
     })
   )
   @ApiOperation({
