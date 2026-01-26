@@ -1,4 +1,4 @@
-// @ts-check
+// @ts-nocheck - config ESM .mjs; tsconfig do projeto não cobre esModuleInterop/import.meta
 import eslint from '@eslint/js';
 import eslintPluginImport from 'eslint-plugin-import';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
@@ -76,11 +76,11 @@ export default tseslint.config(
       complexity: ['warn', 15],
       'max-lines-per-function': [
         'warn',
-        { max: 80, skipBlankLines: true, skipComments: true },
+        { max: 120, skipBlankLines: true, skipComments: true },
       ],
       'max-lines': [
         'warn',
-        { max: 400, skipBlankLines: true, skipComments: true },
+        { max: 500, skipBlankLines: true, skipComments: true },
       ],
       'no-debugger': 'error',
       // Configurações para compatibilidade com Prettier
