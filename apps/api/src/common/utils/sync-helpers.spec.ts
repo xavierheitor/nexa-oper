@@ -24,6 +24,10 @@ describe('buildSyncPayloadFromAggregates', () => {
     });
     expect(result.bar).toEqual({ count: 0, maxUpdatedAt: null });
   });
+
+  it('retorna {} quando o mapa é vazio', () => {
+    expect(buildSyncPayloadFromAggregates({})).toEqual({});
+  });
 });
 
 describe('buildSyncWhereIncremental', () => {
