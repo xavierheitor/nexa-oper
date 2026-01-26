@@ -25,3 +25,12 @@ export const CHECKLIST_UPLOAD_PUBLIC_PREFIX = process.env.UPLOAD_BASE_URL
  * Tamanho máximo aceito para arquivos de foto de checklist (10MB).
  */
 export const MAX_CHECKLIST_PHOTO_FILE_SIZE = 10 * 1024 * 1024;
+
+/**
+ * Tipos MIME permitidos para upload de fotos de checklist.
+ */
+export const CHECKLIST_ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+] as const;

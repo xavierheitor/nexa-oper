@@ -33,7 +33,10 @@ import {
 } from '@nestjs/swagger';
 import { memoryStorage } from 'multer';
 
-import { MAX_CHECKLIST_PHOTO_FILE_SIZE } from '@common/constants/checklist-upload';
+import {
+  CHECKLIST_ALLOWED_MIME_TYPES,
+  MAX_CHECKLIST_PHOTO_FILE_SIZE,
+} from '@common/constants/checklist-upload';
 import {
   FotoResponseDto,
   FotoLoteResponseDto,
@@ -129,10 +132,13 @@ export class ChecklistFotoController {
     }
 
     // Validar tipo de arquivo
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.mimetype)) {
+    if (
+      !CHECKLIST_ALLOWED_MIME_TYPES.includes(
+        file.mimetype as (typeof CHECKLIST_ALLOWED_MIME_TYPES)[number]
+      )
+    ) {
       throw new BadRequestException(
-        'Tipo de arquivo não permitido. Use JPEG, PNG ou WebP'
+        `Tipo de arquivo não permitido. Use: ${CHECKLIST_ALLOWED_MIME_TYPES.join(', ')}`
       );
     }
 
