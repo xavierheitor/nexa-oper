@@ -262,3 +262,5 @@ server {
 
 5. **Segurança:** Se usar domínio dedicado para servir arquivos, configure autenticação/autorização conforme necessário.
 
+6. **Permissões e hardening:** O diretório de uploads deve ter escrita apenas para o usuário que roda o serviço (API/Web). Evite `chmod 777`. Recomenda-se `chmod 750` no diretório e `chown` para o usuário do processo (ex.: `chown -R www-data:www-data {UPLOAD_ROOT}`).
+
