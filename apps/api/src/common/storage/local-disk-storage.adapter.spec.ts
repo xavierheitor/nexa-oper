@@ -48,6 +48,12 @@ describe('LocalDiskStorageAdapter', () => {
 
       await expect(adapter.delete('x/y.z')).resolves.toBeUndefined();
     });
+
+    it('lança quando unlink rejeita com código diferente de ENOENT (ex: EACCES)', async () => {
+      jest.mocked(fsPromises.unlink).mockRejectedValueOnce({ code: 'EACCES' });
+
+      await expect(adapter.delete('x/y.z')).rejects.toEqual({ code: 'EACCES' });
+    });
   });
 
   describe('getPublicUrl', () => {
