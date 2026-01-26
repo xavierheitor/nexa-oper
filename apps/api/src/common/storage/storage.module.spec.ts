@@ -1,3 +1,4 @@
+import { LocalDiskStorageAdapter } from './local-disk-storage.adapter';
 import { STORAGE_PORT } from './storage.port';
 import { StorageModule } from './storage.module';
 
@@ -10,7 +11,12 @@ describe('StorageModule', () => {
       });
 
       expect(mod.providers).toEqual(
-        expect.arrayContaining([expect.objectContaining({ provide: STORAGE_PORT })])
+        expect.arrayContaining([
+          expect.objectContaining({
+            provide: STORAGE_PORT,
+            useValue: expect.any(LocalDiskStorageAdapter),
+          }),
+        ])
       );
       expect(mod.exports).toContain(STORAGE_PORT);
     });
