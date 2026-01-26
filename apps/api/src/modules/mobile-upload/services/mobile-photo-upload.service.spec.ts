@@ -71,6 +71,29 @@ describe('MobilePhotoUploadService', () => {
     expect(result.url).toContain('/uploads/mobile/photos/1/');
     expect(prismaMock.mobilePhoto.create).toHaveBeenCalledTimes(1);
     expect(storageMock.put).toHaveBeenCalledTimes(1);
+    expect(storageMock.delete).not.toHaveBeenCalled();
+  });
+
+  it('chama storage.getPublicUrl com o key correto quando upload é armazenado com sucesso', async () => {
+    prismaMock.mobilePhoto.findUnique.mockResolvedValue(null);
+    prismaMock.mobilePhoto.create.mockResolvedValue({
+      id: 1,
+      url: '/uploads/mobile/photos/1/file.jpg',
+      checksum: 'checksum',
+    });
+    storageMock.put.mockResolvedValue({ key: '1/timestamp_uuid.jpg', size: 123 });
+
+    const dto: PhotoUploadDto = {
+      turnoId: 1,
+      tipo: 'servico',
+    };
+
+    await service.handleUpload(fileMock(), dto);
+
+    expect(storageMock.put).toHaveBeenCalledTimes(1);
+    const putCall = storageMock.put.mock.calls[0][0];
+    const keyUsed = putCall.key;
+    expect(storageMock.getPublicUrl).toHaveBeenCalledWith(keyUsed);
   });
 
   it('retorna duplicidade quando foto já existir', async () => {
