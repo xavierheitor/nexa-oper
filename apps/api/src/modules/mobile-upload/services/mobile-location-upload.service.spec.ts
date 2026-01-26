@@ -59,4 +59,31 @@ describe('MobileLocationUploadService', () => {
     expect(result.alreadyExisted).toBe(true);
     expect(prismaMock.mobileLocation.create).toHaveBeenCalledTimes(1);
   });
+
+  it('retorna { status: "ok", alreadyExisted: false } quando create rejeita com P2003 (foreign key)', async () => {
+    prismaMock.mobileLocation.create.mockRejectedValueOnce({ code: 'P2003' });
+
+    const dto = {
+      turnoId: undefined,
+      latitude: -19.12,
+      longitude: -43.98,
+    } as unknown as LocationUploadDto;
+
+    const result = await service.handleUpload(dto);
+
+    expect(result).toEqual({ status: 'ok', alreadyExisted: false });
+  });
+
+  it('lança erro quando create rejeita com código genérico (ex: P5000)', async () => {
+    const err = { code: 'P5000' };
+    prismaMock.mobileLocation.create.mockRejectedValueOnce(err);
+
+    const dto = {
+      turnoId: undefined,
+      latitude: -19.12,
+      longitude: -43.98,
+    } as unknown as LocationUploadDto;
+
+    await expect(service.handleUpload(dto)).rejects.toEqual(err);
+  });
 });
