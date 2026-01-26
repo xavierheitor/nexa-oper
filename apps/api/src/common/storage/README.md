@@ -14,3 +14,7 @@ import { StorageModule } from '@common/storage/storage.module';
 })
 export class MeuModulo {}
 ```
+
+## Testes
+
+**StoragePort** é uma abstração (porta); em testes unitários pode ser mockada injetando um objeto com `put`, `delete` e `getPublicUrl` — evita gravação em disco e acelera os testes.
