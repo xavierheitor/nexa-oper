@@ -40,6 +40,22 @@ describe('LocalDiskStorageAdapter', () => {
 
       expect(result).toEqual({ key: 'a/b.jpg', size: 8 });
     });
+
+    it('com contentType: image/png, retorna { key, size } correto e writeFile é chamado com buffer', async () => {
+      const key = 'x/y.png';
+      const buffer = Buffer.from('png-data');
+      const result = await adapter.put({
+        key,
+        buffer,
+        contentType: 'image/png',
+      });
+
+      expect(fsPromises.writeFile).toHaveBeenCalledWith(
+        join(rootPath, key),
+        buffer
+      );
+      expect(result).toEqual({ key: 'x/y.png', size: 8 });
+    });
   });
 
   describe('delete', () => {
@@ -65,6 +81,11 @@ describe('LocalDiskStorageAdapter', () => {
     it('publicPrefix vazio e key a/b.jpg → a/b.jpg (sem barra extra)', () => {
       const adapterSemPrefixo = new LocalDiskStorageAdapter('/tmp', '');
       expect(adapterSemPrefixo.getPublicUrl('a/b.jpg')).toBe('a/b.jpg');
+    });
+
+    it('publicPrefix /uploads e key string vazia → /uploads/', () => {
+      const adapterComPrefixo = new LocalDiskStorageAdapter('/tmp', '/uploads');
+      expect(adapterComPrefixo.getPublicUrl('')).toBe('/uploads/');
     });
   });
 });

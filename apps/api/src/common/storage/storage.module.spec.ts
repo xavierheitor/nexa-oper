@@ -19,6 +19,7 @@ describe('StorageModule', () => {
         ])
       );
       expect(mod.exports).toContain(STORAGE_PORT);
+      expect(mod.module).toBe(StorageModule);
     });
   });
 });

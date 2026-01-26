@@ -17,4 +17,4 @@ export class MeuModulo {}
 
 ## Testes
 
-**StoragePort** é uma abstração (porta); em testes unitários pode ser mockada injetando um objeto com `put`, `delete` e `getPublicUrl` — evita gravação em disco e acelera os testes.
+**StoragePort** é uma abstração (porta); em testes unitários pode ser mockada injetando um objeto com `put`, `delete` e `getPublicUrl` — evita gravação em disco e acelera os testes. Isso elimina dependência de disco local ou S3 durante os testes.
