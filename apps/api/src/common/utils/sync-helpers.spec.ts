@@ -89,4 +89,10 @@ describe('buildSyncStatusResponse', () => {
     expect(result.changed).toBe(true);
     expect(result.checksum).toBe(computeSyncChecksum(payload));
   });
+
+  it('serverTime é uma string ISO válida', () => {
+    const payload = { a: 1 };
+    const result = buildSyncStatusResponse(payload);
+    expect(new Date(result.serverTime).toISOString()).toBe(result.serverTime);
+  });
 });
