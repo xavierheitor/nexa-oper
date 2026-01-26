@@ -52,6 +52,7 @@ Helpers em `utils/` usados pelos serviços de sync (APR, Checklist, Equipe, Elet
 - **sync-checksum.ts** — Gera checksum SHA-256 do payload para comparação com o cliente.
 - **sync-aggregate.ts** — Normaliza o resultado de aggregate Prisma para o formato do payload de checksum.
 - **sync-status.ts** — Monta a resposta padrão de status (changed, checksum, serverTime).
+- **Storage** — [storage/README.md](storage/README.md)
 
 ## 📊 Benefícios
 
