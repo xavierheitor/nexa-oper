@@ -100,5 +100,12 @@ export default tseslint.config(
         },
       ],
     },
+  },
+  {
+    files: ['**/*.spec.ts'],
+    rules: {
+      'max-lines': 'off',
+      'max-lines-per-function': 'off',
+    },
   }
 );
