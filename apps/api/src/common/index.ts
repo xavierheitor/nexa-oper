@@ -25,4 +25,5 @@ export * from './utils/sync-checksum';
 export * from './utils/sync-payload';
 export * from './utils/sync-status';
 export * from './utils/sync-where';
+export * from './utils/upload-validation';
 export * from './utils/validation';

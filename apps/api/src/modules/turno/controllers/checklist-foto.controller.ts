@@ -37,6 +37,7 @@ import {
   CHECKLIST_ALLOWED_MIME_TYPES,
   MAX_CHECKLIST_PHOTO_FILE_SIZE,
 } from '@common/constants/checklist-upload';
+import { validateFileOrThrow } from '@common/utils/upload-validation';
 import {
   FotoResponseDto,
   FotoLoteResponseDto,
@@ -131,21 +132,13 @@ export class ChecklistFotoController {
       throw new BadRequestException('Arquivo não fornecido');
     }
 
-    // Validar tipo de arquivo
-    if (
-      !CHECKLIST_ALLOWED_MIME_TYPES.includes(
-        file.mimetype as (typeof CHECKLIST_ALLOWED_MIME_TYPES)[number]
-      )
-    ) {
-      throw new BadRequestException(
-        `Tipo de arquivo não permitido. Use: ${CHECKLIST_ALLOWED_MIME_TYPES.join(', ')}`
-      );
-    }
-
-    // Validar tamanho (máximo 10MB)
-    if (file.size > MAX_CHECKLIST_PHOTO_FILE_SIZE) {
-      throw new BadRequestException('Arquivo muito grande. Máximo 10MB');
-    }
+    validateFileOrThrow({
+      file,
+      maxSize: MAX_CHECKLIST_PHOTO_FILE_SIZE,
+      allowedMimeTypes: CHECKLIST_ALLOWED_MIME_TYPES,
+      invalidTypeMessage: `Tipo de arquivo não permitido. Use: ${CHECKLIST_ALLOWED_MIME_TYPES.join(', ')}`,
+      sizeExceededMessage: 'Arquivo muito grande. Máximo 10MB',
+    });
 
     const metadadosParsed = this.parseMetadadosFoto(metadados);
     return this.checklistFotoService.sincronizarFoto(
