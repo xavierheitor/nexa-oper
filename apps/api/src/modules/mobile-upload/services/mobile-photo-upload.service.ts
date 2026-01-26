@@ -11,7 +11,7 @@ import {
   MOBILE_PHOTO_UPLOAD_ROOT,
   SUPPORTED_MOBILE_PHOTO_TYPES,
 } from '@common/constants/mobile-upload';
-import { STORAGE_PORT, type StoragePort } from '@common/storage/storage.port';
+import { STORAGE_PORT, type StoragePort } from '@common/storage';
 import { createAuditData, getDefaultUserContext } from '@common/utils/audit';
 import { sanitizeData } from '@common/utils/logger';
 import { DatabaseService } from '@database/database.service';

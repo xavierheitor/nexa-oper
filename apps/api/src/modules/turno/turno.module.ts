@@ -36,7 +36,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 
-import { StorageModule } from '@common/storage/storage.module';
+import { StorageModule } from '@common/storage';
 import {
   TurnoController,
   TurnoSyncController,

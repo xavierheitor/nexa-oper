@@ -9,7 +9,7 @@ import {
   MOBILE_PHOTO_UPLOAD_PUBLIC_PREFIX,
   MOBILE_PHOTO_UPLOAD_ROOT,
 } from '@common/constants/mobile-upload';
-import { StorageModule } from '@common/storage/storage.module';
+import { StorageModule } from '@common/storage';
 import {
   MobilePhotoUploadController,
   MobileLocationUploadController,
