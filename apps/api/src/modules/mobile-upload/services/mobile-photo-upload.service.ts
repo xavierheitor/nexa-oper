@@ -11,7 +11,7 @@ import {
   MOBILE_PHOTO_UPLOAD_ROOT,
   SUPPORTED_MOBILE_PHOTO_TYPES,
 } from '@common/constants/mobile-upload';
-import { STORAGE_PORT } from '@common/storage/storage.port';
+import { STORAGE_PORT, type StoragePort } from '@common/storage/storage.port';
 import { createAuditData, getDefaultUserContext } from '@common/utils/audit';
 import { sanitizeData } from '@common/utils/logger';
 import { DatabaseService } from '@database/database.service';
@@ -24,8 +24,6 @@ import {
 
 import { FotoPendenciaProcessorService } from './foto-pendencia-processor.service';
 import { PhotoUploadDto, PhotoUploadResponseDto } from '../dto';
-
-import type { StoragePort } from '@common/storage/storage.port';
 
 type MulterFile = Express.Multer.File;
 

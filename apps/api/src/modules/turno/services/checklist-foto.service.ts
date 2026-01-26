@@ -8,8 +8,7 @@
 import { randomUUID } from 'crypto';
 import { join, relative, sep } from 'path';
 
-import type { StoragePort } from '@common/storage/storage.port';
-import { STORAGE_PORT } from '@common/storage/storage.port';
+import { STORAGE_PORT, type StoragePort } from '@common/storage/storage.port';
 import { DatabaseService } from '@database/database.service';
 import {
   Inject,
