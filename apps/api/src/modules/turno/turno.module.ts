@@ -25,8 +25,6 @@
  * - AuthModule: Autenticação e permissões
  */
 
-import { join } from 'path';
-
 import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@core/auth/auth.module';
 import { TurnoRealizadoModule } from '@modules/turno-realizado/turno-realizado.module';
@@ -36,6 +34,10 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 
+import {
+  CHECKLIST_UPLOAD_PUBLIC_PREFIX,
+  CHECKLIST_UPLOAD_ROOT,
+} from '@common/constants/checklist-upload';
 import { StorageModule } from '@common/storage';
 import {
   TurnoController,
@@ -82,14 +84,6 @@ import { TurnoService } from './services/turno.service';
  * - Declara Event handlers para Event Sourcing
  * - Exporta services para uso em outros módulos
  */
-const checklistStorageRoot = process.env.UPLOAD_ROOT
-  ? join(process.env.UPLOAD_ROOT, 'checklists')
-  : join(process.cwd(), 'uploads', 'checklists');
-
-const checklistStoragePrefix = process.env.UPLOAD_BASE_URL
-  ? `${process.env.UPLOAD_BASE_URL.replace(/\/$/, '')}/checklists`
-  : '/uploads/checklists';
-
 @Module({
   imports: [
     // Módulos básicos
@@ -104,8 +98,8 @@ const checklistStoragePrefix = process.env.UPLOAD_BASE_URL
     EventEmitterModule,
 
     StorageModule.forRoot({
-      rootPath: checklistStorageRoot,
-      publicPrefix: checklistStoragePrefix,
+      rootPath: CHECKLIST_UPLOAD_ROOT,
+      publicPrefix: CHECKLIST_UPLOAD_PUBLIC_PREFIX,
     }),
 
     // Multer para upload de arquivos

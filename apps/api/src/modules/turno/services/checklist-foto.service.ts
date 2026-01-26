@@ -8,6 +8,7 @@
 import { randomUUID } from 'crypto';
 import { join, relative, sep } from 'path';
 
+import { CHECKLIST_UPLOAD_ROOT } from '@common/constants/checklist-upload';
 import { STORAGE_PORT, type StoragePort } from '@common/storage';
 import { DatabaseService } from '@database/database.service';
 import {
@@ -28,9 +29,7 @@ import {
 @Injectable()
 export class ChecklistFotoService {
   private readonly logger = new Logger(ChecklistFotoService.name);
-  private readonly uploadsPath = process.env.UPLOAD_ROOT
-    ? join(process.env.UPLOAD_ROOT, 'checklists')
-    : join(process.cwd(), 'uploads', 'checklists');
+  private readonly uploadsPath = CHECKLIST_UPLOAD_ROOT;
 
   constructor(
     private readonly db: DatabaseService,
