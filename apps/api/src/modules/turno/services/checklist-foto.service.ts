@@ -58,13 +58,7 @@ export class ChecklistFotoService {
     const caminhoArquivo = await this.salvarArquivo(file, checklistRespostaId);
 
     // Gerar URL pública
-    const turnoId = await this.buscarTurnoIdDaResposta(checklistRespostaId);
-    const timestamp = Date.now();
-    const randomId = randomUUID().substring(0, 8);
-    const extension = file.originalname.split('.').pop() || 'jpg';
-    const filename = `${timestamp}_${randomId}.${extension}`;
-    const key = `${turnoId}/${checklistRespostaId}/${filename}`;
-    const urlPublica = this.mediaService.getPublicUrl(key);
+    const urlPublica = this.gerarUrlPublica(caminhoArquivo);
 
     // Salvar no banco de dados
     const createdBy = userId || 'system';
