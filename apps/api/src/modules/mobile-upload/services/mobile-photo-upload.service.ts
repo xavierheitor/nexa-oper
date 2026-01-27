@@ -12,6 +12,7 @@ import {
   SUPPORTED_MOBILE_PHOTO_TYPES,
 } from '@common/constants/mobile-upload';
 import { MediaService } from '@common/storage';
+import { validateFileOrThrow } from '@common/utils/upload-validation';
 import { createAuditData, getDefaultUserContext } from '@common/utils/audit';
 import { sanitizeData } from '@common/utils/logger';
 import { DatabaseService } from '@database/database.service';
@@ -135,7 +136,13 @@ export class MobilePhotoUploadService {
         `Fotos do tipo '${payload.tipo}' devem incluir checklistUuid obrigatório`
       );
     }
-    this.validateFile(file);
+    validateFileOrThrow({
+      file,
+      maxSize: MAX_MOBILE_PHOTO_FILE_SIZE,
+      allowedMimeTypes: ALLOWED_MOBILE_PHOTO_MIME_TYPES,
+      invalidTypeMessage: 'Tipo de arquivo não suportado',
+      sizeExceededMessage: 'Arquivo excede o tamanho máximo permitido',
+    });
     return file;
   }
 
@@ -257,21 +264,6 @@ export class MobilePhotoUploadService {
       }
     } else {
       this.logger.debug(`[UPLOAD] Pulando processamento de pendência`);
-    }
-  }
-
-  /**
-   * Garante que o arquivo está dentro dos limites aceitos.
-   */
-  private validateFile(file: MulterFile): void {
-    if (file.size > MAX_MOBILE_PHOTO_FILE_SIZE) {
-      throw new BadRequestException(
-        'Arquivo excede o tamanho máximo permitido'
-      );
-    }
-
-    if (!ALLOWED_MOBILE_PHOTO_MIME_TYPES.includes(file.mimetype as any)) {
-      throw new BadRequestException('Tipo de arquivo não suportado');
     }
   }
 
