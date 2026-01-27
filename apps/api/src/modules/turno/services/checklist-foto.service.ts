@@ -6,13 +6,12 @@
  */
 
 import { randomUUID } from 'crypto';
-import { join, relative, sep } from 'path';
+import { relative, sep } from 'path';
 
 import { CHECKLIST_UPLOAD_ROOT } from '@common/constants/checklist-upload';
-import { STORAGE_PORT, type StoragePort } from '@common/storage';
+import { MediaService } from '@common/storage';
 import { DatabaseService } from '@database/database.service';
 import {
-  Inject,
   Injectable,
   Logger,
   BadRequestException,
@@ -33,7 +32,7 @@ export class ChecklistFotoService {
 
   constructor(
     private readonly db: DatabaseService,
-    @Inject(STORAGE_PORT) private readonly storage: StoragePort
+    private readonly mediaService: MediaService
   ) {}
 
   /**
@@ -59,7 +58,13 @@ export class ChecklistFotoService {
     const caminhoArquivo = await this.salvarArquivo(file, checklistRespostaId);
 
     // Gerar URL pública
-    const urlPublica = this.gerarUrlPublica(caminhoArquivo);
+    const turnoId = await this.buscarTurnoIdDaResposta(checklistRespostaId);
+    const timestamp = Date.now();
+    const randomId = randomUUID().substring(0, 8);
+    const extension = file.originalname.split('.').pop() || 'jpg';
+    const filename = `${timestamp}_${randomId}.${extension}`;
+    const key = `${turnoId}/${checklistRespostaId}/${filename}`;
+    const urlPublica = this.mediaService.getPublicUrl(key);
 
     // Salvar no banco de dados
     const createdBy = userId || 'system';
@@ -230,17 +235,17 @@ export class ChecklistFotoService {
     const key = `${turnoId}/${checklistRespostaId}/${filename}`;
 
     try {
-      await this.storage.put({
+      const saveResult = await this.mediaService.saveBuffer({
         key,
         buffer: file.buffer,
         contentType: file.mimetype,
+        rootPath: CHECKLIST_UPLOAD_ROOT,
       });
+      return saveResult.absolutePath;
     } catch (error) {
       this.logger.error('Erro ao salvar arquivo:', error);
       throw new BadRequestException('Erro ao salvar arquivo');
     }
-
-    return join(this.uploadsPath, ...key.split('/'));
   }
 
   /**
@@ -251,7 +256,7 @@ export class ChecklistFotoService {
    */
   gerarUrlPublica(caminhoArquivo: string): string {
     const key = relative(this.uploadsPath, caminhoArquivo).split(sep).join('/');
-    return this.storage.getPublicUrl(key);
+    return this.mediaService.getPublicUrl(key);
   }
 
   /**

@@ -3,7 +3,7 @@
  */
 
 import { randomUUID, createHash } from 'crypto';
-import { extname, join } from 'path';
+import { extname } from 'path';
 
 import {
   ALLOWED_MOBILE_PHOTO_MIME_TYPES,
@@ -11,13 +11,12 @@ import {
   MOBILE_PHOTO_UPLOAD_ROOT,
   SUPPORTED_MOBILE_PHOTO_TYPES,
 } from '@common/constants/mobile-upload';
-import { STORAGE_PORT, type StoragePort } from '@common/storage';
+import { MediaService } from '@common/storage';
 import { createAuditData, getDefaultUserContext } from '@common/utils/audit';
 import { sanitizeData } from '@common/utils/logger';
 import { DatabaseService } from '@database/database.service';
 import {
   BadRequestException,
-  Inject,
   Injectable,
   Logger,
 } from '@nestjs/common';
@@ -47,7 +46,7 @@ export class MobilePhotoUploadService {
 
   constructor(
     private readonly db: DatabaseService,
-    @Inject(STORAGE_PORT) private readonly storage: StoragePort,
+    private readonly mediaService: MediaService,
     private readonly pendenciaProcessor: FotoPendenciaProcessorService
   ) {}
 
@@ -77,13 +76,14 @@ export class MobilePhotoUploadService {
     const relativePath = this.buildRelativePath(payload.turnoId, extension);
     const key = relativePath.urlPath;
 
-    await this.storage.put({
+    const saveResult = await this.mediaService.saveBuffer({
       key,
       buffer: file.buffer,
       contentType: file.mimetype,
+      rootPath: MOBILE_PHOTO_UPLOAD_ROOT,
     });
 
-    const absolutePath = join(MOBILE_PHOTO_UPLOAD_ROOT, ...relativePath.parts);
+    const absolutePath = saveResult.absolutePath;
     const relativeUrlPath = `/mobile/photos/${relativePath.urlPath}`;
     const audit = createAuditData(
       userId
@@ -115,7 +115,7 @@ export class MobilePhotoUploadService {
     );
     return {
       status: 'stored',
-      url: this.storage.getPublicUrl(key),
+      url: saveResult.publicUrl,
       checksum,
     };
   }
@@ -200,7 +200,7 @@ export class MobilePhotoUploadService {
       return { mobilePhoto };
     } catch (err: unknown) {
       try {
-        await this.storage.delete(key);
+        await this.mediaService.deleteByKey(key);
       } catch (deleteErr) {
         this.logger.warn(
           `[UPLOAD] Falha ao remover arquivo órfão após erro no create: ${key}`,

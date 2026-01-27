@@ -1,4 +1,5 @@
 import { DatabaseService } from '@database/database.service';
+import { MediaService } from '@common/storage';
 
 import { MobilePhotoUploadService } from './mobile-photo-upload.service';
 import { PhotoUploadDto } from '../dto';
@@ -15,9 +16,13 @@ describe('MobilePhotoUploadService', () => {
     getPrisma: () => prismaMock,
   } as unknown as DatabaseService;
 
-  const storageMock = {
-    put: jest.fn().mockResolvedValue({ key: '1/file.jpg', size: 123 }),
-    delete: jest.fn().mockResolvedValue(undefined),
+  const mediaMock = {
+    saveBuffer: jest.fn().mockResolvedValue({
+      key: '1/file.jpg',
+      absolutePath: '/uploads/mobile/photos/1/file.jpg',
+      publicUrl: '/uploads/mobile/photos/1/file.jpg',
+    }),
+    deleteByKey: jest.fn().mockResolvedValue(undefined),
     getPublicUrl: jest.fn((key: string) => '/uploads/mobile/photos/' + key),
   };
 
@@ -28,7 +33,7 @@ describe('MobilePhotoUploadService', () => {
 
   const service = new MobilePhotoUploadService(
     databaseServiceMock,
-    storageMock,
+    mediaMock as unknown as MediaService,
     pendenciaProcessorMock as never
   );
 
@@ -43,9 +48,9 @@ describe('MobilePhotoUploadService', () => {
     }) as Express.Multer.File;
 
   beforeEach(() => {
-    storageMock.put.mockClear();
-    storageMock.delete.mockClear();
-    storageMock.getPublicUrl.mockClear();
+    mediaMock.saveBuffer.mockClear();
+    mediaMock.deleteByKey.mockClear();
+    mediaMock.getPublicUrl.mockClear();
     pendenciaProcessorMock.processarSemUuid.mockClear();
     pendenciaProcessorMock.processarComUuid.mockClear();
     prismaMock.mobilePhoto.findUnique.mockReset();
@@ -70,30 +75,32 @@ describe('MobilePhotoUploadService', () => {
     expect(result.status).toBe('stored');
     expect(result.url).toContain('/uploads/mobile/photos/1/');
     expect(prismaMock.mobilePhoto.create).toHaveBeenCalledTimes(1);
-    expect(storageMock.put).toHaveBeenCalledTimes(1);
-    expect(storageMock.delete).not.toHaveBeenCalled();
+    expect(mediaMock.saveBuffer).toHaveBeenCalledTimes(1);
+    expect(mediaMock.deleteByKey).not.toHaveBeenCalled();
   });
 
-  it('chama storage.getPublicUrl com o key correto quando upload é armazenado com sucesso', async () => {
+  it('chama mediaService.saveBuffer e usa publicUrl do resultado quando upload é armazenado com sucesso', async () => {
     prismaMock.mobilePhoto.findUnique.mockResolvedValue(null);
     prismaMock.mobilePhoto.create.mockResolvedValue({
       id: 1,
       url: '/uploads/mobile/photos/1/file.jpg',
       checksum: 'checksum',
     });
-    storageMock.put.mockResolvedValue({ key: '1/timestamp_uuid.jpg', size: 123 });
+    mediaMock.saveBuffer.mockResolvedValue({
+      key: '1/timestamp_uuid.jpg',
+      absolutePath: '/uploads/mobile/photos/1/timestamp_uuid.jpg',
+      publicUrl: '/uploads/mobile/photos/1/timestamp_uuid.jpg',
+    });
 
     const dto: PhotoUploadDto = {
       turnoId: 1,
       tipo: 'servico',
     };
 
-    await service.handleUpload(fileMock(), dto);
+    const result = await service.handleUpload(fileMock(), dto);
 
-    expect(storageMock.put).toHaveBeenCalledTimes(1);
-    const putCall = storageMock.put.mock.calls[0][0];
-    const keyUsed = putCall.key;
-    expect(storageMock.getPublicUrl).toHaveBeenCalledWith(keyUsed);
+    expect(mediaMock.saveBuffer).toHaveBeenCalledTimes(1);
+    expect(result.url).toBe('/uploads/mobile/photos/1/timestamp_uuid.jpg');
   });
 
   it('retorna duplicidade quando foto já existir', async () => {
@@ -113,7 +120,7 @@ describe('MobilePhotoUploadService', () => {
     expect(result.status).toBe('duplicate');
     expect(result.url).toBe('/uploads/mobile/photos/1/existing.jpg');
     expect(prismaMock.mobilePhoto.create).not.toHaveBeenCalled();
-    expect(storageMock.put).not.toHaveBeenCalled();
+    expect(mediaMock.saveBuffer).not.toHaveBeenCalled();
   });
 
   it('ao lançar P2002 no create, remove arquivo (unlink) e retorna duplicate quando findUnique acha existente', async () => {
@@ -133,7 +140,7 @@ describe('MobilePhotoUploadService', () => {
     expect(result.status).toBe('duplicate');
     expect(result.url).toBe('/mobile/photos/1/existing-race.jpg');
     expect(result.checksum).toBe('checksum-race');
-    expect(storageMock.delete).toHaveBeenCalledTimes(1);
+    expect(mediaMock.deleteByKey).toHaveBeenCalledTimes(1);
   });
 
   it('quando tipo=pendencia e checklistPerguntaId existe, chama pendenciaProcessor.processarSemUuid', async () => {
