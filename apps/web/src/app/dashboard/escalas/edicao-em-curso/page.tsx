@@ -30,6 +30,7 @@ import {
   SearchOutlined,
   EditOutlined,
   UserSwitchOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { getEscalasPublicadasProcessadas } from '@/lib/actions/escala/getEscalasPublicadasProcessadas';
@@ -65,6 +66,104 @@ const getEquipeStripeColor = (equipeId: number) =>
 const getEquipeCellStyle = (record: { equipeId: number }) => ({
   backgroundColor: getEquipeStripeColor(record.equipeId),
 });
+
+/** Converte estado do slot para letra no CSV: T=trabalho, F=folga, X=falta, E=exceção */
+function estadoParaLetra(estado: string | null): string {
+  if (!estado) return '';
+  const map: Record<string, string> = {
+    TRABALHO: 'T',
+    FOLGA: 'F',
+    FALTA: 'X',
+    EXCECAO: 'E',
+  };
+  return map[estado] ?? estado;
+}
+
+/**
+ * Exporta a escala visível (respeitando filtros de dia) para CSV.
+ * Uma linha por eletricista; base, prefixo e horário repetidos em cada linha da equipe.
+ */
+function exportarEscalaCSV(
+  tableData: any[],
+  dias: Date[],
+  filtrosDias: Record<string, string | null>
+) {
+  // Aplicar filtros por dia: só manter linhas que passam em todos os filtros ativos
+  let linhas = tableData;
+  const filtrosDiasEntries = Object.entries(filtrosDias).filter(
+    ([_, v]) => v != null && v !== ''
+  );
+  if (filtrosDiasEntries.length > 0) {
+    linhas = tableData.filter(row => {
+      return filtrosDiasEntries.every(
+        ([diaKey, valor]) => row[diaKey] === valor
+      );
+    });
+  }
+
+  if (linhas.length === 0) {
+    return { ok: false as const, error: 'Nenhum dado para exportar (filtros podem ter deixado a lista vazia).' };
+  }
+
+  const BOM = '\uFEFF';
+  const sep = ';';
+
+  // Cabeçalho: base, prefixo, horario, eletricista, matricula, depois um por dia
+  const mesmoMes =
+    dias.length > 0 &&
+    dias.every(
+      d =>
+        d.getMonth() === dias[0].getMonth() &&
+        d.getFullYear() === dias[0].getFullYear()
+    );
+  const headers = [
+    'Base',
+    'Prefixo',
+    'Horário',
+    'Eletricista',
+    'Matrícula',
+    ...dias.map(d =>
+      mesmoMes ? String(d.getDate()) : `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`
+    ),
+  ];
+
+  const csvRows = [
+    headers.map(h => `"${String(h).replace(/"/g, '""')}"`).join(sep),
+    ...linhas.map(row => {
+      const campos = [
+        row.base ?? '',
+        row.prefixo ?? '',
+        row.horario ?? '',
+        row.eletricista ?? '',
+        row.matricula ?? '',
+        ...dias.map(d => {
+          const diaKey = d.toISOString().split('T')[0];
+          return estadoParaLetra(row[diaKey] ?? null);
+        }),
+      ];
+      return campos.map(f => `"${String(f).replace(/"/g, '""')}"`).join(sep);
+    }),
+  ];
+
+  const csvContent = csvRows.join('\n');
+  const blob = new Blob([BOM + csvContent], {
+    type: 'text/csv;charset=utf-8;',
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  const dataStr = new Date().toISOString().slice(0, 10);
+  const periodoStr =
+    dias.length > 0
+      ? `${dias[0].getDate().toString().padStart(2, '0')}-${(dias[0].getMonth() + 1).toString().padStart(2, '0')}_a_${dias[dias.length - 1].getDate().toString().padStart(2, '0')}-${(dias[dias.length - 1].getMonth() + 1).toString().padStart(2, '0')}`
+      : dataStr;
+  link.setAttribute('download', `escala_edicao_em_curso_${periodoStr}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  return { ok: true as const };
+}
 
 interface Slot {
   id: number;
@@ -642,6 +741,33 @@ export default function EdicaoEmCursoPage() {
               />
             </Col>
             <Col xs={24} sm={12} lg={8}>
+              <div style={{ marginBottom: 4, fontSize: '12px', fontWeight: 'bold' }}>
+                Exportar
+              </div>
+              <Button
+                icon={<DownloadOutlined />}
+                onClick={() => {
+                  const result = exportarEscalaCSV(
+                    tableData,
+                    dias,
+                    filtrosDias
+                  );
+                  if (result.ok) {
+                    message.success('Exportação concluída. Arquivo CSV baixado.');
+                  } else {
+                    message.warning(result.error);
+                  }
+                }}
+                disabled={!tableData.length}
+                style={{ width: '100%' }}
+              >
+                Exportar escala (CSV/Excel)
+              </Button>
+            </Col>
+            <Col xs={24} sm={12} lg={8}>
+              <div style={{ marginBottom: 4, fontSize: '12px', fontWeight: 'bold' }}>
+                Filtros
+              </div>
               <Button
                 onClick={() => {
                   setFiltroBase(null);
