@@ -201,8 +201,8 @@ export const authOptions: NextAuthOptions = {
     error: '/login', // Página de erro (redireciona para login)
   },
 
-  // Secret para assinar JWT tokens
-  secret: process.env.NEXTAUTH_SECRET,
+  // Secret para assinar JWT tokens (NEXTAUTH_SECRET ou AUTH_SECRET no .env.local)
+  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
 
   // Modo debug (apenas em desenvolvimento)
   debug: process.env.NODE_ENV === 'development',
