@@ -1,3 +1,25 @@
+/// Evidências genéricas de upload (reprovas, assinaturas, APR, etc.)
+model UploadEvidence {
+  id Int @id @default(autoincrement())
+
+  tipo       String @db.VarChar(100)
+  entityType String @db.VarChar(100)
+  entityId   String @db.VarChar(50)
+
+  url          String  @db.VarChar(1024)
+  path         String  @db.VarChar(1024)
+  tamanho      Int
+  mimeType     String? @db.VarChar(100)
+  nomeArquivo  String? @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String?   @db.VarChar(255)
+
+  @@index([tipo])
+  @@index([entityType, entityId])
+  @@map("UploadEvidences")
+}
+
 model MobilePhoto {
   id Int @id @default(autoincrement())
 

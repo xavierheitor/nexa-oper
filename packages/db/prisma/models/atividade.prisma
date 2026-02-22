@@ -1,7 +1,15 @@
 model TipoAtividade {
-  id   Int    @id @default(autoincrement())
-  nome String @db.VarChar(255)
+  id     Int     @id @default(autoincrement())
+  nome   String  @db.VarChar(255)
+  codigo String? @db.VarChar(100)
+  ativo  Boolean @default(true)
+  versao Int     @default(1)
 
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+  tipoAtividadeServicos   TipoAtividadeServico[]
+  atividadeExecucoes      AtividadeExecucao[]
   AprTipoAtividadeRelacao AprTipoAtividadeRelacao[]
 
   createdAt DateTime  @default(now())
@@ -11,6 +19,338 @@ model TipoAtividade {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  @@unique([nome])
-  @@index([nome])
+  @@unique([contratoId, nome], map: "uq_tipo_atividade_contrato_nome")
+  @@unique([contratoId, codigo], map: "uq_tipo_atividade_contrato_codigo")
+  @@index([contratoId])
+  @@index([updatedAt])
+  @@index([deletedAt])
+}
+
+model TipoAtividadeServico {
+  id     Int     @id @default(autoincrement())
+  nome   String  @db.VarChar(255)
+  codigo String? @db.VarChar(100)
+  ativo  Boolean @default(true)
+  versao Int     @default(1)
+
+  atividadeTipoId Int
+  atividadeTipo   TipoAtividade @relation(fields: [atividadeTipoId], references: [id])
+
+  atividadeExecucoes               AtividadeExecucao[]
+  atividadeFormTipoServicoRelacao AtividadeFormTipoServicoRelacao[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([atividadeTipoId, nome], map: "uq_tipo_atividade_servico_tipo_nome")
+  @@unique([atividadeTipoId, codigo], map: "uq_tipo_atividade_servico_tipo_codigo")
+  @@index([atividadeTipoId])
+  @@index([updatedAt])
+  @@index([deletedAt])
+}
+
+model AtividadeFormTemplate {
+  id             Int     @id @default(autoincrement())
+  nome           String  @db.VarChar(255)
+  descricao      String? @db.VarChar(500)
+  ativo          Boolean @default(true)
+  versaoTemplate Int     @default(1)
+
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+  atividadeExecucoes                AtividadeExecucao[]
+  atividadeFormPerguntas           AtividadeFormPergunta[]
+  atividadeFormTipoServicoRelacoes AtividadeFormTipoServicoRelacao[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@index([contratoId])
+  @@index([updatedAt])
+  @@index([deletedAt])
+}
+
+model AtividadeFormPergunta {
+  id Int @id @default(autoincrement())
+
+  atividadeFormTemplateId Int
+  atividadeFormTemplate   AtividadeFormTemplate @relation(fields: [atividadeFormTemplateId], references: [id])
+
+  perguntaChave String  @db.VarChar(120)
+  ordem         Int     @default(0)
+  titulo        String  @db.VarChar(255)
+  hintResposta  String? @db.VarChar(255)
+  tipoResposta  String  @default("texto") @db.VarChar(50)
+  obrigaFoto    Boolean @default(false)
+  ativo         Boolean @default(true)
+  versao        Int     @default(1)
+
+  atividadeFormRespostas AtividadeFormResposta[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([atividadeFormTemplateId, perguntaChave], map: "uq_form_pergunta_template_chave")
+  @@index([atividadeFormTemplateId, ordem])
+  @@index([updatedAt])
+  @@index([deletedAt])
+}
+
+model AtividadeFormTipoServicoRelacao {
+  id Int @id @default(autoincrement())
+
+  atividadeFormTemplateId Int
+  atividadeFormTemplate   AtividadeFormTemplate @relation(fields: [atividadeFormTemplateId], references: [id])
+
+  atividadeTipoServicoId Int
+  atividadeTipoServico   TipoAtividadeServico @relation(fields: [atividadeTipoServicoId], references: [id])
+
+  ativo Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([atividadeFormTemplateId, atividadeTipoServicoId], map: "uq_form_template_tipo_servico")
+  @@index([atividadeTipoServicoId])
+  @@index([updatedAt])
+  @@index([deletedAt])
+}
+
+model MaterialCatalogo {
+  id            Int     @id @default(autoincrement())
+  codigo        String  @db.VarChar(100)
+  descricao     String  @db.VarChar(255)
+  unidadeMedida String  @db.VarChar(30)
+  ativo         Boolean @default(true)
+  versao        Int     @default(1)
+
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+  atividadeMateriaisAplicados AtividadeMaterialAplicado[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([contratoId, codigo], map: "uq_material_catalogo_contrato_codigo")
+  @@index([contratoId])
+  @@index([updatedAt])
+  @@index([deletedAt])
+}
+
+model AtividadeExecucao {
+  id Int @id @default(autoincrement())
+
+  atividadeUuid String @unique @db.VarChar(36)
+  remoteId      Int?
+
+  turnoId Int
+  turno   Turno @relation(fields: [turnoId], references: [id])
+
+  tipoAtividadeId      Int?
+  tipoAtividade        TipoAtividade? @relation(fields: [tipoAtividadeId], references: [id])
+  tipoAtividadeServicoId Int?
+  tipoAtividadeServico TipoAtividadeServico? @relation(fields: [tipoAtividadeServicoId], references: [id])
+  atividadeFormTemplateId Int?
+  atividadeFormTemplate   AtividadeFormTemplate? @relation(fields: [atividadeFormTemplateId], references: [id])
+
+  tipoAtividadeNomeSnapshot String? @db.VarChar(255)
+  tipoServicoNomeSnapshot   String? @db.VarChar(255)
+
+  tipoLigacao     String? @db.VarChar(100)
+  numeroDocumento String? @db.VarChar(100)
+
+  aplicaMedidor  Boolean @default(false)
+  aplicaRamal    Boolean @default(false)
+  aplicaMaterial Boolean @default(false)
+
+  statusFluxo String @default("em_execucao") @db.VarChar(60)
+  etapaAtual  String @default("identificacao") @db.VarChar(60)
+
+  aprPreenchidaEm       DateTime?
+  finalizadaEm          DateTime?
+  observacoesFinalizacao String? @db.Text
+
+  syncStatus   String @default("received") @db.VarChar(30)
+  attemptCount Int    @default(0)
+  syncError    String? @db.Text
+  lastAttemptAt DateTime?
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  atividadeFotos              AtividadeFoto[]
+  atividadeMedidor            AtividadeMedidor?
+  atividadeMateriaisAplicados AtividadeMaterialAplicado[]
+  atividadeFormRespostas      AtividadeFormResposta[]
+  atividadeEventos            AtividadeEvento[]
+
+  @@index([turnoId, statusFluxo])
+  @@index([syncStatus, attemptCount])
+  @@index([updatedAt])
+  @@index([deletedAt])
+}
+
+model AtividadeFoto {
+  id Int @id @default(autoincrement())
+
+  atividadeExecucaoId Int
+  atividadeExecucao   AtividadeExecucao @relation(fields: [atividadeExecucaoId], references: [id], onDelete: Cascade)
+
+  atividadeUuid String @db.VarChar(36)
+  ref          String? @db.VarChar(120)
+  contexto     String? @db.VarChar(120)
+
+  checksum   String @db.VarChar(128)
+  mimeType   String @db.VarChar(100)
+  fileName   String @db.VarChar(255)
+  fileSize   Int
+  storagePath String @db.VarChar(1024)
+  url        String @db.VarChar(1024)
+  capturedAt DateTime?
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  respostas                 AtividadeFormResposta[] @relation("AtividadeFormRespostaFoto")
+  medidoresInstalados       AtividadeMedidor[] @relation("AtividadeMedidorInstaladoFoto")
+  medidoresRetirados        AtividadeMedidor[] @relation("AtividadeMedidorRetiradoFoto")
+
+  @@unique([atividadeExecucaoId, checksum], map: "uq_atividade_foto_exec_checksum")
+  @@index([atividadeExecucaoId])
+  @@index([ref])
+}
+
+model AtividadeMedidor {
+  id Int @id @default(autoincrement())
+
+  atividadeExecucaoId Int @unique
+  atividadeExecucao   AtividadeExecucao @relation(fields: [atividadeExecucaoId], references: [id], onDelete: Cascade)
+
+  somenteRetirada Boolean @default(false)
+
+  instaladoNumero         String? @db.VarChar(100)
+  instaladoFotoId         Int?
+  instaladoFoto           AtividadeFoto? @relation("AtividadeMedidorInstaladoFoto", fields: [instaladoFotoId], references: [id], onDelete: SetNull)
+  instaladoFotoExternalId Int?
+
+  retiradoStatus          String? @db.VarChar(100)
+  retiradoNumero          String? @db.VarChar(100)
+  retiradoLeitura         String? @db.VarChar(100)
+  retiradoFotoId          Int?
+  retiradoFoto            AtividadeFoto? @relation("AtividadeMedidorRetiradoFoto", fields: [retiradoFotoId], references: [id], onDelete: SetNull)
+  retiradoFotoExternalId  Int?
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+}
+
+model AtividadeMaterialAplicado {
+  id Int @id @default(autoincrement())
+
+  atividadeExecucaoId Int
+  atividadeExecucao   AtividadeExecucao @relation(fields: [atividadeExecucaoId], references: [id], onDelete: Cascade)
+
+  materialCatalogoId Int?
+  materialCatalogo   MaterialCatalogo? @relation(fields: [materialCatalogoId], references: [id])
+
+  materialCatalogoRemoteId Int?
+  materialCodigoSnapshot   String @db.VarChar(100)
+  materialDescricaoSnapshot String @db.VarChar(255)
+  unidadeMedidaSnapshot    String @db.VarChar(30)
+  quantidade              Float
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+
+  @@index([atividadeExecucaoId])
+  @@index([materialCatalogoId])
+}
+
+model AtividadeFormResposta {
+  id Int @id @default(autoincrement())
+
+  atividadeExecucaoId Int
+  atividadeExecucao   AtividadeExecucao @relation(fields: [atividadeExecucaoId], references: [id], onDelete: Cascade)
+
+  perguntaRemoteId Int?
+  pergunta         AtividadeFormPergunta? @relation(fields: [perguntaRemoteId], references: [id])
+
+  perguntaChaveSnapshot  String @db.VarChar(120)
+  perguntaTituloSnapshot String @db.VarChar(255)
+  ordem                  Int    @default(0)
+  respostaTexto          String? @db.Text
+  obrigaFotoSnapshot     Boolean @default(false)
+
+  fotoId         Int?
+  foto           AtividadeFoto? @relation("AtividadeFormRespostaFoto", fields: [fotoId], references: [id], onDelete: SetNull)
+  fotoExternalId Int?
+
+  dataResposta DateTime @default(now())
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+
+  @@unique([atividadeExecucaoId, perguntaChaveSnapshot], map: "uq_atividade_resposta_pergunta")
+  @@index([perguntaRemoteId])
+}
+
+model AtividadeEvento {
+  id Int @id @default(autoincrement())
+
+  atividadeExecucaoId Int
+  atividadeExecucao   AtividadeExecucao @relation(fields: [atividadeExecucaoId], references: [id], onDelete: Cascade)
+
+  tipoEvento String @db.VarChar(80)
+  locationTrackId Int?
+  latitude    Float?
+  longitude   Float?
+  accuracy    Float?
+  detalhe     String? @db.Text
+  capturadoEm DateTime @default(now())
+  signature   String? @db.VarChar(128)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+
+  @@unique([atividadeExecucaoId, signature], map: "uq_atividade_evento_signature")
+  @@index([atividadeExecucaoId, capturadoEm])
+  @@index([tipoEvento])
 }

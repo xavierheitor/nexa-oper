@@ -11,7 +11,8 @@ model Turno {
   equipeId Int
   equipe   Equipe @relation(fields: [equipeId], references: [id])
 
-  dispositivo String @db.VarChar(255)
+  dispositivo String? @db.VarChar(255)
+  versaoApp   String? @db.VarChar(255)
 
   kmInicio Int
   KmFim    Int?
@@ -28,6 +29,7 @@ model Turno {
   ChecklistPendencias  ChecklistPendencia[]
   TurnoRealizado       TurnoRealizado[]
   AderenciaEscalaSnapshot AderenciaEscalaSnapshot[]
+  AtividadeExecucoes   AtividadeExecucao[]
 }
 
 model TurnoEletricista {
