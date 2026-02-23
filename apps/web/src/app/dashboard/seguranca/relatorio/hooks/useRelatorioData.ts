@@ -5,7 +5,7 @@ import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { getReprovasPorPergunta } from '@/lib/actions/seguranca/getReprovasPorPergunta';
 import { getReprovasPorEquipe } from '@/lib/actions/seguranca/getReprovasPorEquipe';
 import { getReprovasPorTipoChecklist } from '@/lib/actions/seguranca/getReprovasPorTipoChecklist';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 

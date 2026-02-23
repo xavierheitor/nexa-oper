@@ -6,7 +6,7 @@ import ConsolidacaoPorBase from './components/ConsolidacaoPorBase';
 import ComparacaoEntreBases from './components/ComparacaoEntreBases';
 import EletricistasNaoEscalados from './components/EletricistasNaoEscalados';
 import { useEntityData } from '@/lib/hooks/useEntityData';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useSelectOptions } from '@/lib/hooks/useSelectOptions';
 import { useTableFilters } from '@/lib/hooks/useTableFilters';

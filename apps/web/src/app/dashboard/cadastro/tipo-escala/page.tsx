@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Badge, Tag } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';

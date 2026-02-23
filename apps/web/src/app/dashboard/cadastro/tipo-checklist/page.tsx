@@ -4,7 +4,7 @@ import { createTipoChecklist } from '@/lib/actions/tipoChecklist/create';
 import { deleteTipoChecklist } from '@/lib/actions/tipoChecklist/delete';
 import { listTiposChecklist } from '@/lib/actions/tipoChecklist/list';
 import { updateTipoChecklist } from '@/lib/actions/tipoChecklist/update';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';

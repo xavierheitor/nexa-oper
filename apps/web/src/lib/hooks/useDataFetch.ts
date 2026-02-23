@@ -47,6 +47,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import type { ActionResult } from '../types/common';
+import { handleRedirectToLogin } from '../utils/redirectHandler';
 
 /**
  * Opções de configuração do hook
@@ -188,10 +189,7 @@ export function useDataFetch<T>(
         const actionResult = result as ActionResult<T>;
 
         // Verifica se precisa redirecionar para login
-        if (actionResult.redirectToLogin) {
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-          }
+        if (handleRedirectToLogin(actionResult)) {
           return; // Interrompe o processamento
         }
 
@@ -305,4 +303,3 @@ export function useDataFetch<T>(
     reset,
   };
 }
-

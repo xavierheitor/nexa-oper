@@ -19,7 +19,7 @@ import {
   FilterOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useSelectOptions } from '@/lib/hooks/useSelectOptions';

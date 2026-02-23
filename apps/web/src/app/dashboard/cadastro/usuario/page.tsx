@@ -6,7 +6,7 @@ import { listUsers } from '@/lib/actions/user/list';
 import { resetUserPassword } from '@/lib/actions/user/resetPassword';
 import { updateUser } from '@/lib/actions/user/update';
 import CrudPage from '@/lib/components/CrudPage';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';

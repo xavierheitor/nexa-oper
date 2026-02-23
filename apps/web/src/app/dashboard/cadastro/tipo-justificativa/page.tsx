@@ -5,7 +5,7 @@ import { createTipoJustificativa } from '@/lib/actions/tipo-justificativa/create
 import { updateTipoJustificativa } from '@/lib/actions/tipo-justificativa/update';
 import { deleteTipoJustificativa } from '@/lib/actions/tipo-justificativa/delete';
 import { listTiposJustificativa } from '@/lib/actions/tipo-justificativa/list';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';

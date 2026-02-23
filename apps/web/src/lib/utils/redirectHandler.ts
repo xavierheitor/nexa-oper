@@ -23,6 +23,20 @@
 
 import type { ActionResult } from '../types/common';
 
+const LOGIN_PATH = '/login';
+
+export function redirectToLogin(path = LOGIN_PATH): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  if (window.location.pathname !== path) {
+    window.location.assign(path);
+  }
+
+  return true;
+}
+
 /**
  * Verifica se o resultado de uma action requer redirecionamento para login
  * e executa o redirecionamento se necessário.
@@ -32,11 +46,7 @@ import type { ActionResult } from '../types/common';
  */
 export function handleRedirectToLogin<T>(result: ActionResult<T>): boolean {
   if (result.redirectToLogin) {
-    // No cliente, redireciona usando window.location
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login';
-      return true;
-    }
+    if (redirectToLogin()) return true;
 
     // No servidor, lança erro para ser capturado pelo middleware
     // ou retorna redirect do Next.js
@@ -63,4 +73,3 @@ export async function withAuthCheck<T>(
 
   return result;
 }
-

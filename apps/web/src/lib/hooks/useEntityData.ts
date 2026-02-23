@@ -126,6 +126,7 @@ import { TableProps } from 'antd';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { PaginatedParams, PaginatedResult } from '../types/common';
+import { buildEntityCacheKey } from '../utils/entityCacheKey';
 
 /**
  * Tipo de retorno para modo paginado
@@ -151,7 +152,7 @@ type UseEntityDataPaginated<T> = {
   /** Função para revalidar dados */
   mutate: () => void;
   /** Chave usada pelo SWR */
-  mutateKey: [string, PaginatedParams];
+  mutateKey: string;
   /** Configuração de paginação para Ant Design Table */
   pagination: TableProps<T>['pagination'];
   /** Handler de mudança de tabela (paginação, ordenação, filtros) */
@@ -189,6 +190,7 @@ export function useEntityData<T>(options: {
     params?: PaginatedParams
   ) => Promise<PaginatedResult<T> | T[]>;
   initialParams?: Partial<PaginatedParams>;
+  initialData?: PaginatedResult<T> | T[];
   paginationEnabled: true;
 }): UseEntityDataPaginated<T>;
 
@@ -204,6 +206,7 @@ export function useEntityData<T>(options: {
     params?: PaginatedParams
   ) => Promise<PaginatedResult<T> | T[]>;
   initialParams?: Partial<PaginatedParams>;
+  initialData?: PaginatedResult<T> | T[];
   paginationEnabled?: false;
 }): UseEntityDataSimple<T>;
 
@@ -227,6 +230,7 @@ export function useEntityData<T>(options: {
     params?: PaginatedParams
   ) => Promise<PaginatedResult<T> | T[]>;
   initialParams?: Partial<PaginatedParams>;
+  initialData?: PaginatedResult<T> | T[];
   paginationEnabled?: boolean;
 }): UseEntityDataPaginated<T> | UseEntityDataSimple<T> {
   // Extrai configurações com valores padrão
@@ -235,6 +239,7 @@ export function useEntityData<T>(options: {
     key,
     fetcherAction: fetcher,
     initialParams = {},
+    initialData,
     paginationEnabled = false,
   } = options;
 
@@ -258,8 +263,10 @@ export function useEntityData<T>(options: {
   }, [params, key]);
 
   // Chave do SWR - inclui params apenas se paginação estiver habilitada
-  // Serializa params para garantir que SWR detecte mudanças
-  const swrKey = paginationEnabled ? `${key}-${JSON.stringify(params)}` : key;
+  const swrKey = buildEntityCacheKey(
+    key,
+    paginationEnabled ? params : undefined
+  );
 
   // Integração com SWR para cache e sincronização
   const { data, error, isLoading, mutate } = useSWR(
@@ -270,6 +277,7 @@ export function useEntityData<T>(options: {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       keepPreviousData: true, // Mantém dados anteriores durante loading
+      fallbackData: initialData,
     }
   );
 
@@ -336,7 +344,7 @@ export function useEntityData<T>(options: {
       isLoading,
       error,
       mutate,
-      mutateKey: [key, params] as [string, PaginatedParams],
+      mutateKey: swrKey,
       pagination: {
         current: params.page,
         pageSize: params.pageSize,
@@ -356,6 +364,6 @@ export function useEntityData<T>(options: {
     isLoading,
     error,
     mutate,
-    mutateKey: key,
+    mutateKey: swrKey,
   };
 }

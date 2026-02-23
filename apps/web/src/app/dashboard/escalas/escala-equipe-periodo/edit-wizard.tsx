@@ -23,7 +23,7 @@ import {
   App,
 } from 'antd';
 import { useEntityData } from '@/lib/hooks/useEntityData';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listEquipes } from '@/lib/actions/equipe/list';
 import { listTiposEscala } from '@/lib/actions/escala/tipoEscala';
 import { listEletricistas } from '@/lib/actions/eletricista/list';

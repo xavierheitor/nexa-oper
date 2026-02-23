@@ -7,7 +7,7 @@ import EletricistasPorLotacao from './components/EletricistasPorLotacao';
 import EletricistasPorTipoEquipe from './components/EletricistasPorTipoEquipe';
 import EletricistasDetalhado from './components/EletricistasDetalhado';
 import { useEntityData } from '@/lib/hooks/useEntityData';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listContratos } from '@/lib/actions/contrato/list';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';

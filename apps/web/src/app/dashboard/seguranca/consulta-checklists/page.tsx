@@ -20,7 +20,7 @@ import { EyeOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { listChecklistsPreenchidos } from '@/lib/actions/checklist/listPreenchidos';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { listEquipes } from '@/lib/actions/equipe/list';

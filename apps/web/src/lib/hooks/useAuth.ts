@@ -39,6 +39,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useCallback } from 'react';
 import type { Permission, Role } from '@/lib/types/permissions';
+import { redirectToLogin as redirectToLoginPage } from '@/lib/utils/redirectHandler';
 
 interface UseAuthReturn {
   /** Dados do usuário da sessão */
@@ -93,9 +94,7 @@ export function useAuth(options?: {
       redirectToLogin &&
       typeof window !== 'undefined'
     ) {
-      // Usa window.location.href para forçar redirecionamento completo
-      // Isso garante que a página seja completamente recarregada e não mostre conteúdo zerado
-      window.location.href = '/login';
+      redirectToLoginPage();
     }
   }, [isAuthenticated, isLoading, redirectToLogin]);
 

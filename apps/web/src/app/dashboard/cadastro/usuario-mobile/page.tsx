@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Card, Table, Modal, Button, Space, Tag, Spin } from 'antd';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { MobileOutlined, UserOutlined, KeyOutlined } from '@ant-design/icons';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';

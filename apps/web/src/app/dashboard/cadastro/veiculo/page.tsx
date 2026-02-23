@@ -10,7 +10,7 @@ import { transferVeiculoBase } from '@/lib/actions/veiculo/transferBase';
 import { updateVeiculo } from '@/lib/actions/veiculo/update';
 
 // Importações dos hooks e utilitários da aplicação
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';

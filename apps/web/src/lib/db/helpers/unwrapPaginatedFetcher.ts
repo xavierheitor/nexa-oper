@@ -28,6 +28,7 @@
  */
 
 import { ActionResult, PaginatedResult } from '../../types/common';
+import { handleRedirectToLogin } from '../../utils/redirectHandler';
 
 /**
  * Cria um wrapper que desempacota respostas paginadas de Server Actions
@@ -66,11 +67,8 @@ export function unwrapPaginatedFetcher<T>(
 
       // Verifica se a operação foi bem-sucedida
       if (!res.success) {
-        // Se é erro de autenticação, redireciona para login
-        if (res.redirectToLogin) {
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-          }
+        if (handleRedirectToLogin(res)) {
+          throw new Error('Sessão expirada. Redirecionando para login.');
         }
         throw new Error(res.error ?? 'Erro ao buscar dados.');
       }
@@ -109,4 +107,3 @@ export function unwrapPaginatedFetcher<T>(
     }
   };
 }
-

@@ -128,6 +128,8 @@ import { useState } from 'react';
 import { mutate } from 'swr';
 import type { ActionResult } from '../types/common';
 import { errorHandler } from '../utils/errorHandler';
+import { isEntityCacheKeyMatch } from '../utils/entityCacheKey';
+import { handleRedirectToLogin } from '../utils/redirectHandler';
 
 /**
  * Interface de retorno do hook useCrudController
@@ -152,7 +154,7 @@ export interface CrudController<T> {
   open: (item?: T) => void;
 
   /** Fecha o modal e limpa estado */
-  close: () => void;
+  close: () => Promise<void>;
 
   /**
    * Executa uma ação CRUD com tratamento completo
@@ -180,7 +182,7 @@ export interface CrudController<T> {
  * @returns Interface completa para controle CRUD
  */
 export function useCrudController<T>(
-  mutateKey: string | Array<string | any>
+  mutateKey: string | Array<string | unknown>
 ): CrudController<T> {
   // Hook do Ant Design para mensagens
   const { message } = App.useApp();
@@ -189,6 +191,31 @@ export function useCrudController<T>(
   const [isOpen, setIsOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const invalidateKey = async (keyToInvalidate: unknown) => {
+    if (typeof keyToInvalidate === 'string') {
+      await mutate((cacheKey) =>
+        cacheKey === keyToInvalidate ||
+        isEntityCacheKeyMatch(cacheKey, keyToInvalidate)
+      );
+      return;
+    }
+
+    await mutate(keyToInvalidate as any);
+  };
+
+  const revalidateCache = async () => {
+    if (!mutateKey) {
+      return;
+    }
+
+    if (Array.isArray(mutateKey)) {
+      await Promise.all(mutateKey.map((key) => invalidateKey(key)));
+      return;
+    }
+
+    await invalidateKey(mutateKey);
+  };
 
   /**
    * Abre o modal para criação ou edição
@@ -210,16 +237,7 @@ export function useCrudController<T>(
   const close = async () => {
     setIsOpen(false);
     setEditingItem(null);
-
-    // ✅ CORREÇÃO: Revalidar cache automaticamente ao fechar modal
-    // Isso garante que a tabela seja atualizada mesmo quando o modal é fechado sem salvar
-    if (mutateKey) {
-      if (Array.isArray(mutateKey)) {
-        await Promise.all(mutateKey.map(key => mutate(key)));
-      } else {
-        await mutate(mutateKey);
-      }
-    }
+    await revalidateCache();
   };
 
   /**
@@ -254,19 +272,14 @@ export function useCrudController<T>(
         message.success(successMessage);
 
         // Revalida cache do SWR
-        if (Array.isArray(mutateKey)) {
-          // Revalida múltiplas chaves
-          await Promise.all(mutateKey.map(key => mutate(key)));
-        } else {
-          // Revalida chave única
-          await mutate(mutateKey);
-        }
+        await revalidateCache();
 
         // Executa callback customizado se fornecido
         onSuccess?.();
 
-        // Fecha modal após sucesso
-        close();
+        // Fecha modal após sucesso sem dupla revalidação
+        setIsOpen(false);
+        setEditingItem(null);
       } else {
         // Trata erro retornado pela ação
         const errorMessage = result.error || 'Erro desconhecido';
@@ -279,12 +292,8 @@ export function useCrudController<T>(
           message.error(errorMessage);
         }
 
-        // Verifica se precisa redirecionar para login
-        if (result.redirectToLogin) {
-          // Usar window.location para forçar redirecionamento
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-          }
+        if (handleRedirectToLogin(result)) {
+          return;
         }
       }
     } catch (error) {

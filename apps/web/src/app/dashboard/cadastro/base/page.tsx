@@ -7,7 +7,7 @@ import { listBases } from '@/lib/actions/base/list';
 import { updateBase } from '@/lib/actions/base/update';
 
 // Importações dos hooks e utilitários da aplicação
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';

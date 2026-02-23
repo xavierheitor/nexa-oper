@@ -5,7 +5,7 @@ import { deleteChecklist } from '@/lib/actions/checklist/delete';
 import { getChecklist } from '@/lib/actions/checklist/get';
 import { listChecklists } from '@/lib/actions/checklist/list';
 import { updateChecklist } from '@/lib/actions/checklist/update';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';

@@ -14,7 +14,7 @@ import { Button, Card, DatePicker, Select, Space, Typography } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useEntityData } from '@/lib/hooks/useEntityData';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listContratos } from '@/lib/actions/contrato/list';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';

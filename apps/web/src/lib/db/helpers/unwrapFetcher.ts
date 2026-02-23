@@ -110,6 +110,7 @@
  */
 
 import { ActionResult, PaginatedResult, PaginatedParams } from '../../types/common';
+import { handleRedirectToLogin } from '../../utils/redirectHandler';
 
 /**
  * Cria um wrapper que desempacota respostas de Server Actions
@@ -150,12 +151,8 @@ export function unwrapFetcher<T>(
 
       // Verifica se a operação foi bem-sucedida
       if (!res.success) {
-        // Se é erro de autenticação, redireciona para login
-        if (res.redirectToLogin) {
-          // Usar window.location para forçar redirecionamento no cliente
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-          }
+        if (handleRedirectToLogin(res)) {
+          throw new Error('Sessão expirada. Redirecionando para login.');
         }
         throw new Error(res.error ?? 'Erro ao buscar dados.');
       }

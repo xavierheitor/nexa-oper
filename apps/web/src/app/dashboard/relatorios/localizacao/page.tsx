@@ -5,7 +5,7 @@ import { Button, Card, Col, DatePicker, Row, Select, Space, Typography } from 'a
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useEntityData } from '@/lib/hooks/useEntityData';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';

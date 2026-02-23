@@ -4,7 +4,7 @@ import { createTipoAtividade } from '@/lib/actions/tipoAtividade/create';
 import { deleteTipoAtividade } from '@/lib/actions/tipoAtividade/delete';
 import { listTiposAtividade } from '@/lib/actions/tipoAtividade/list';
 import { updateTipoAtividade } from '@/lib/actions/tipoAtividade/update';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';

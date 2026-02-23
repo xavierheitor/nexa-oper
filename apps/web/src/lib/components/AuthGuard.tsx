@@ -30,8 +30,8 @@
 
 import { useAuth } from '@/lib/hooks/useAuth';
 import type { Permission } from '@/lib/types/permissions';
+import { redirectToLogin as redirectToLoginPage } from '@/lib/utils/redirectHandler';
 import { Spin } from 'antd';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 interface AuthGuardProps {
@@ -64,7 +64,6 @@ export default function AuthGuard({
     redirectToLogin,
     requiredPermission,
   });
-  const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
@@ -94,9 +93,8 @@ export default function AuthGuard({
 
   // Se não autenticado e redirectToLogin está ativo, redireciona para login
   if (!isAuthenticated) {
-    if (redirectToLogin && typeof window !== 'undefined') {
-      // Usa window.location.href para forçar redirecionamento completo
-      window.location.href = '/login';
+    if (redirectToLogin) {
+      redirectToLoginPage();
     }
     return null;
   }
@@ -124,4 +122,3 @@ export default function AuthGuard({
   // Renderiza conteúdo se autenticado e com permissão (se necessário)
   return <>{children}</>;
 }
-

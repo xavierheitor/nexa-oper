@@ -9,7 +9,7 @@ import ComparacaoFolgaTrabalho from './components/ComparacaoFolgaTrabalho';
 import EscaladosPorDia from './components/EscaladosPorDia';
 import TurnosPorPeriodo from '../turnos-por-periodo/components/TurnosPorPeriodo';
 import { useEntityData } from '@/lib/hooks/useEntityData';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listContratos } from '@/lib/actions/contrato/list';
 

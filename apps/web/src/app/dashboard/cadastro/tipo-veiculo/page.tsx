@@ -7,7 +7,7 @@ import { listTiposVeiculo } from '@/lib/actions/tipoVeiculo/list';
 import { updateTipoVeiculo } from '@/lib/actions/tipoVeiculo/update';
 
 // Importações dos hooks e utilitários da aplicação
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';

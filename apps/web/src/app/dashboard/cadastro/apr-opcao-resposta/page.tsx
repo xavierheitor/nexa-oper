@@ -5,7 +5,7 @@ import { deleteAprOpcaoResposta } from '@/lib/actions/aprOpcaoResposta/delete';
 import { listAprOpcoesResposta } from '@/lib/actions/aprOpcaoResposta/list';
 import { updateAprOpcaoResposta } from '@/lib/actions/aprOpcaoResposta/update';
 import CrudPage from '@/lib/components/CrudPage';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';

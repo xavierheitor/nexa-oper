@@ -3,7 +3,7 @@
 import { getChecklistPendencia } from '@/lib/actions/checklistPendencia/get';
 import { listChecklistPendencias } from '@/lib/actions/checklistPendencia/list';
 import { updateChecklistPendencia } from '@/lib/actions/checklistPendencia/update';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';

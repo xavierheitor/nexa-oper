@@ -52,6 +52,7 @@ import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { getDateRangeInSaoPaulo } from '@/lib/utils/dateHelpers';
+import { handleRedirectToLogin } from '@/lib/utils/redirectHandler';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -152,8 +153,7 @@ export default function HistoricoPage() {
           const turnos = result.data.data || [];
           const turnosMapeados: TurnoData[] = turnos.map(mapTurnoToTurnoData);
           setTurnosHistorico(turnosMapeados);
-        } else if (result.redirectToLogin) {
-          window.location.href = '/login';
+        } else if (handleRedirectToLogin(result)) {
           return;
         }
       } catch (error) {

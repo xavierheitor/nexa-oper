@@ -5,7 +5,7 @@ import { deleteCargo } from '@/lib/actions/cargo/delete';
 import { listCargos } from '@/lib/actions/cargo/list';
 import { updateCargo } from '@/lib/actions/cargo/update';
 import CrudPage from '@/lib/components/CrudPage';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
 import { useEntityData } from '@/lib/hooks/useEntityData';

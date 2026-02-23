@@ -7,7 +7,7 @@ import EquipesEscaladas from './components/EquipesEscaladas';
 import EquipesPorHorario from './components/EquipesPorHorario';
 import EquipesSemHorario from './components/EquipesSemHorario';
 import { useEntityData } from '@/lib/hooks/useEntityData';
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listContratos } from '@/lib/actions/contrato/list';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';

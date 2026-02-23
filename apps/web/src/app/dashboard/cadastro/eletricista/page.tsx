@@ -16,7 +16,7 @@ import { Base, Cargo, Contrato, Eletricista } from '@nexa-oper/db';
 import { StatusEletricistaLabels, StatusEletricistaColors, StatusEletricista } from '@/lib/schemas/eletricistaStatusSchema';
 
 // Importações do hook e utilitários da aplicação
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';

@@ -10,7 +10,7 @@ import { listContratos } from '@/lib/actions/contrato/list';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { listBases } from '@/lib/actions/base/list';
 
-import { unwrapFetcher } from '@/lib/db/helpers/unrapFetcher';
+import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
