@@ -73,6 +73,14 @@ export const envSchema = z.object({
 
   // Upload storage: local | s3
   UPLOAD_STORAGE: z.enum(['local', 's3']).default('local'),
+  UPLOAD_ROOT: z
+    .string()
+    .optional()
+    .transform((v) => v?.trim() || undefined),
+  UPLOAD_BASE_URL: z
+    .string()
+    .optional()
+    .transform((v) => v?.trim() || undefined),
   UPLOAD_MAX_FILE_SIZE_BYTES: z.coerce
     .number()
     .int()

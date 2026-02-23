@@ -33,6 +33,14 @@ JWT_SECRET=seu-secret-com-pelo-menos-32-caracteres
 
 O módulo **env.ts** faz o parse na carga; se faltar variável obrigatória, a app falha na inicialização (Zod).
 
+Carregamento de variáveis (prioridade maior para menor):
+
+1. variáveis já presentes no ambiente do processo
+2. `apps/api/.env.local`
+3. `apps/api/.env`
+4. `.env.local` da raiz
+5. `.env` da raiz
+
 ### 1.2 Bootstrap (main.ts)
 
 Para usar o módulo config completo, chame **configureApp(app)** no bootstrap após criar a app e antes de `listen`. Garanta que **NestPinoLogger** esteja registrado no módulo (configureApp usa `app.get(NestPinoLogger)` para logar).
@@ -113,6 +121,15 @@ Todas as variáveis são definidas e validadas em **env.ts**. Booleans aceitam: 
 | **RATE_LIMIT_WINDOW_MS** | number | 60_000 | Janela em ms (uso futuro). |
 | **RATE_LIMIT_MAX_PER_IP** | number | 20 | Máximo por IP (uso futuro). |
 | **RATE_LIMIT_MAX_PER_USER** | number | 5 | Máximo por usuário (uso futuro). |
+
+### Uploads
+
+| Nome | Tipo | Default | Descrição |
+|------|------|---------|-----------|
+| **UPLOAD_STORAGE** | `local` \| `s3` | local | Estratégia de armazenamento usada pelo módulo de upload. |
+| **UPLOAD_ROOT** | string | `<workspaceRoot>/uploads` | Diretório base local dos uploads quando `UPLOAD_STORAGE=local`. Caminho relativo é resolvido a partir da raiz do monorepo. |
+| **UPLOAD_BASE_URL** | string (opcional) | (vazio) | Quando definido, a API retorna URLs absolutas com essa base para uploads locais. |
+| **UPLOAD_MAX_FILE_SIZE_BYTES** | number | 10_485_760 | Tamanho máximo por arquivo em bytes para endpoints de upload. |
 
 ---
 

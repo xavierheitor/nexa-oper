@@ -58,7 +58,7 @@ A lista dinâmica pode ser consultada em `GET /api/upload/types`.
 
 `UPLOAD_STORAGE=local|s3`
 
-- `local`: salva em `./uploads` e serve por `/uploads/...`
+- `local`: salva em `${UPLOAD_ROOT}` (padrão: `<workspaceRoot>/uploads`) e serve por `/uploads/...` ou `UPLOAD_BASE_URL`
 - `s3`: requer bucket/região e credenciais
 
 Variáveis principais:

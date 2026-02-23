@@ -5,7 +5,6 @@ import type { ValidationError } from 'class-validator';
 
 import type { Express, RequestHandler } from 'express';
 import * as express from 'express';
-import * as path from 'node:path';
 import helmet from 'helmet';
 
 import {
@@ -15,6 +14,7 @@ import {
 } from '@nestjs/swagger';
 
 import { env, isProd } from './env';
+import { resolveUploadRoot } from './workspace-paths';
 import { NestPinoLogger } from '../logger';
 
 import { AppError } from '../errors/app-error';
@@ -104,7 +104,7 @@ export function configureApp(app: INestApplication) {
   expressApp.get('/__ping', (_req, res) => res.status(200).send('ok'));
 
   // Arquivos de upload (fora do prefixo /api)
-  const uploadsDir = path.join(process.cwd(), 'uploads');
+  const uploadsDir = resolveUploadRoot(env.UPLOAD_ROOT);
   expressApp.use(
     '/uploads',
     express.static(uploadsDir, {
@@ -114,6 +114,7 @@ export function configureApp(app: INestApplication) {
       redirect: false,
     }),
   );
+  logger.log(`Uploads locais expostos em /uploads -> ${uploadsDir}`);
 
   // Swagger (dev/staging)
   if (env.SWAGGER_ENABLED && !isProd) {

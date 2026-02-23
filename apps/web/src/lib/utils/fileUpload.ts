@@ -3,20 +3,58 @@
  */
 
 import { writeFile, mkdir } from 'fs/promises';
-import { dirname, join } from 'path';
+import { existsSync, readFileSync } from 'fs';
+import { dirname, isAbsolute, join } from 'path';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
+
+function hasWorkspaceConfig(dir: string): boolean {
+  const packageJsonPath = join(dir, 'package.json');
+  if (!existsSync(packageJsonPath)) return false;
+
+  try {
+    const raw = readFileSync(packageJsonPath, 'utf8');
+    const parsed = JSON.parse(raw) as { workspaces?: unknown };
+    return Boolean(parsed.workspaces);
+  } catch {
+    return false;
+  }
+}
+
+function findWorkspaceRoot(startDir: string): string {
+  let current = startDir;
+
+  while (true) {
+    if (hasWorkspaceConfig(current)) return current;
+    const parent = dirname(current);
+    if (parent === current) return startDir;
+    current = parent;
+  }
+}
+
+function resolveSharedUploadRoot(configuredRoot?: string): string {
+  const workspaceRoot = findWorkspaceRoot(process.cwd());
+  const raw = configuredRoot?.trim();
+
+  if (!raw) {
+    return join(workspaceRoot, 'uploads');
+  }
+
+  return isAbsolute(raw) ? raw : join(workspaceRoot, raw);
+}
 
 /**
  * Diretório base (absoluto) para uploads de anexos de justificativas.
  * Configurável via variável de ambiente UPLOAD_ROOT
  *
  * Se UPLOAD_ROOT estiver configurada, usa: {UPLOAD_ROOT}/justificativas/anexos
- * Caso contrário, usa: {process.cwd()}/uploads/justificativas/anexos
+ * Caso contrário, usa: {workspaceRoot}/uploads/justificativas/anexos
  */
-const UPLOAD_ROOT = process.env.UPLOAD_ROOT
-  ? join(process.env.UPLOAD_ROOT, 'justificativas', 'anexos')
-  : join(process.cwd(), 'uploads', 'justificativas', 'anexos');
+const UPLOAD_ROOT = join(
+  resolveSharedUploadRoot(process.env.UPLOAD_ROOT),
+  'justificativas',
+  'anexos'
+);
 
 /**
  * URL base pública para acessar os anexos.
@@ -135,4 +173,3 @@ export async function uploadFile(
     mimeType: file.type,
   };
 }
-

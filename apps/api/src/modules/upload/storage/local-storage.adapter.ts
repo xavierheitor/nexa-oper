@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import { env } from '../../../core/config/env';
 import { AppError } from '../../../core/errors/app-error';
+import { resolveUploadRoot } from '../../../core/config/workspace-paths';
 import {
   StorageAdapter,
   type StorageUploadInput,
@@ -10,7 +12,7 @@ import {
 
 @Injectable()
 export class LocalStorageAdapter implements StorageAdapter {
-  private basePath = path.resolve(process.cwd(), 'uploads');
+  private readonly basePath = resolveUploadRoot(env.UPLOAD_ROOT);
 
   async upload(input: StorageUploadInput): Promise<StorageUploadResult> {
     const relativePath = String(input.path).replace(/^[/\\]+/, '');
@@ -26,12 +28,16 @@ export class LocalStorageAdapter implements StorageAdapter {
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
     await fs.writeFile(fullPath, input.buffer);
 
-    const urlPath = relativePath.split(path.sep).join('/');
+    const urlPath = relativePath.replace(/[\\]+/g, '/');
+    const publicBaseUrl = env.UPLOAD_BASE_URL?.replace(/\/+$/g, '');
+    const url = publicBaseUrl
+      ? `${publicBaseUrl}/${urlPath}`
+      : `/uploads/${urlPath}`;
 
     return {
       path: relativePath,
       size: input.size,
-      url: `/uploads/${urlPath}`,
+      url,
       mimeType: input.mimeType,
       filename: path.basename(relativePath),
     };

@@ -111,9 +111,9 @@ NEXT_PUBLIC_APP_VERSION="1.0.0"
 # CONFIGURAÇÃO DE UPLOADS
 # ============================================
 
-# UPLOAD_ROOT: Caminho absoluto para pasta raiz de uploads
+# UPLOAD_ROOT: Caminho para pasta raiz de uploads
 # Deve ser o MESMO valor configurado na API para que ambos salvem na mesma estrutura
-# Se não configurado, usa: ./uploads (relativo ao diretório de execução)
+# Se não configurado, usa: <raiz-do-monorepo>/uploads
 # Exemplos:
 #   - Desenvolvimento: deixe vazio ou comente
 #   - Produção local: /var/www/nexa-oper/storage
@@ -125,7 +125,7 @@ UPLOAD_ROOT=
 
 # UPLOAD_BASE_URL: URL pública para acesso aos uploads
 # Deve ser o MESMO valor configurado na API para URLs consistentes
-# Se não configurado, usa paths relativos servidos pelo próprio Next.js
+# Se não configurado, usa paths relativos (/uploads/...) e o Next faz proxy para a API
 # Exemplos:
 #   - Desenvolvimento: deixe vazio ou comente (usa /uploads/justificativas/anexos)
 #   - Produção com subdomínio: https://storage.nexaoper.com.br
@@ -133,6 +133,11 @@ UPLOAD_ROOT=
 # IMPORTANTE: Não inclua /mobile/photos ou /justificativas/anexos na URL
 # O sistema adiciona automaticamente esses paths
 UPLOAD_BASE_URL=
+
+# UPLOAD_PROXY_TARGET: destino do proxy /uploads/* no Next
+# Opcional. Se vazio, usa NEXT_PUBLIC_API_URL
+# Exemplo: http://localhost:3001
+UPLOAD_PROXY_TARGET=
 
 # Logs (opcional)
 # LOG_PATH=./logs
