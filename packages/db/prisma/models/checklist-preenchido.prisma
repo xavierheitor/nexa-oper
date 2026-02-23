@@ -141,6 +141,7 @@ model ChecklistRespostaFoto {
   urlPublica     String? @db.VarChar(500)
   tamanhoBytes   BigInt
   mimeType       String  @db.VarChar(100)
+  checksum       String? @db.VarChar(64)
 
   // Sincronização
   sincronizadoEm DateTime
@@ -156,6 +157,7 @@ model ChecklistRespostaFoto {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
+  @@unique([checklistRespostaId, checksum], map: "uk_checklist_resposta_foto_checksum")
   @@map("ChecklistRespostaFotos")
 }
 

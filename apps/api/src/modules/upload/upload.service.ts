@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { createHash } from 'node:crypto';
 import * as path from 'node:path';
 import type {
   UploadEvidenceFileContract,
@@ -7,6 +8,7 @@ import type {
 } from '../../contracts/upload/upload.contract';
 import { AppLogger } from '../../core/logger/app-logger';
 import type { UploadProcessorPort } from './domain/ports/upload-processor.port';
+import type { UploadFingerprint } from './evidence/evidence.handler';
 import type { StorageAdapter } from './storage/storage.adapter';
 import { UploadRegistry } from './upload.registry';
 
@@ -43,6 +45,10 @@ function sanitizeFilename(filename: string): string {
     .replace(/^\.+/, '');
   const trimmed = clean.slice(0, 120);
   return trimmed || 'file';
+}
+
+function sha256Hex(buffer: Buffer): string {
+  return createHash('sha256').update(buffer).digest('hex');
 }
 
 /**
@@ -90,6 +96,23 @@ export class UploadService implements UploadProcessorPort {
     await handler.validate(ctx);
 
     const safeFilename = sanitizeFilename(file.originalname);
+    const fingerprint: UploadFingerprint = {
+      checksum: sha256Hex(file.buffer),
+      size: file.size,
+      mimeType: file.mimetype,
+      filename: safeFilename,
+    };
+
+    const existing = await handler.findExisting?.(ctx, fingerprint);
+    if (existing) {
+      this.logger.debug('Upload duplicado detectado (idempotência)', {
+        type: ctx.type,
+        entityId: ctx.entityId,
+        checksum: fingerprint.checksum,
+      });
+      return existing;
+    }
+
     const path = handler.buildStoragePath(ctx, safeFilename);
 
     const uploadResult = await this.storage.upload({
@@ -99,11 +122,16 @@ export class UploadService implements UploadProcessorPort {
       path,
     });
 
+    let persistedResult: UploadEvidenceResponseContract | void;
     try {
-      await handler.persist(ctx, {
-        ...uploadResult,
-        filename: safeFilename,
-      });
+      persistedResult = await handler.persist(
+        ctx,
+        {
+          ...uploadResult,
+          filename: safeFilename,
+        },
+        fingerprint,
+      );
     } catch (error: unknown) {
       try {
         await this.storage.delete(uploadResult.path);
@@ -115,6 +143,23 @@ export class UploadService implements UploadProcessorPort {
         );
       }
       throw error;
+    }
+
+    if (persistedResult && persistedResult.path !== uploadResult.path) {
+      try {
+        await this.storage.delete(uploadResult.path);
+      } catch (cleanupError: unknown) {
+        this.logger.error(
+          'Falha ao remover arquivo duplicado após deduplicação',
+          cleanupError,
+          { path: uploadResult.path, type: ctx.type, entityId: ctx.entityId },
+        );
+      }
+      return persistedResult;
+    }
+
+    if (persistedResult) {
+      return persistedResult;
     }
 
     return uploadResult;

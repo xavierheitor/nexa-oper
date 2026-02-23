@@ -11,12 +11,15 @@ model UploadEvidence {
   tamanho      Int
   mimeType     String? @db.VarChar(100)
   nomeArquivo  String? @db.VarChar(255)
+  checksum     String? @db.VarChar(64)
+  idempotencyKey String? @unique(map: "uk_upload_evidence_idempotency") @db.VarChar(255)
 
   createdAt DateTime  @default(now())
   createdBy String?   @db.VarChar(255)
 
   @@index([tipo])
   @@index([entityType, entityId])
+  @@index([checksum], map: "idx_upload_evidence_checksum")
   @@map("UploadEvidences")
 }
 
