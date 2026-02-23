@@ -1,34 +1,29 @@
 'use server';
 
 import { prisma } from '@/lib/db/db.service';
+import { z } from 'zod';
+import { handleServerAction } from '../common/actionHandler';
 
-export async function getEletricistaCurrentBase(eletricistaId: number) {
-  const { userId } = auth();
-  if (!userId) {
-    return { success: false, error: 'Usuário não autenticado.' };
-  }
+const getEletricistaCurrentBaseSchema = z.object({
+  eletricistaId: z.number().int().positive(),
+});
 
-  try {
-    const currentBase = await prisma.eletricistaBaseHistorico.findFirst({
-      where: {
-        eletricistaId: eletricistaId,
-        dataFim: null, // Base ativa (sem data de fim)
-      },
-      include: {
-        base: true,
-      },
-    });
+export const getEletricistaCurrentBase = async (eletricistaId: number) =>
+  handleServerAction(
+    getEletricistaCurrentBaseSchema,
+    async (data) => {
+      const currentBase = await prisma.eletricistaBaseHistorico.findFirst({
+        where: {
+          eletricistaId: data.eletricistaId,
+          dataFim: null, // Base ativa (sem data de fim)
+        },
+        include: {
+          base: true,
+        },
+      });
 
-    return {
-      success: true,
-      data: currentBase?.base || null
-    };
-  } catch (error) {
-    console.error('Erro ao buscar base atual do eletricista:', error);
-    return { success: false, error: 'Erro ao buscar base atual do eletricista.' };
-  }
-}
-function auth(): { userId: any; } {
-  throw new Error('Function not implemented.');
-}
-
+      return currentBase?.base ?? null;
+    },
+    { eletricistaId },
+    { entityName: 'EletricistaBaseHistorico', actionType: 'get' }
+  );

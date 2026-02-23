@@ -1,36 +1,70 @@
 'use server';
 
+import { PERMISSIONS } from '@/lib/types/permissions';
 import { prisma } from '@/lib/db/db.service';
 import bcrypt from 'bcrypt';
-export async function cadastrarUsuario(formData: FormData) {
-  const username = formData.get('username')?.toString();
-  const email = formData.get('email')?.toString();
-  const password = formData.get('password')?.toString();
-  const name = formData.get('name')?.toString();
+import { z } from 'zod';
+import { handleServerAction } from './actionHandler';
 
-  if (!username || !password || !name) {
-    return {
-      success: false,
-      message: 'Preencha todos os campos obrigatórios.',
-    };
-  }
+const cadastrarUsuarioSchema = z.object({
+  username: z.string().trim().min(1, 'Usuário é obrigatório'),
+  email: z
+    .string()
+    .trim()
+    .email('E-mail inválido')
+    .optional()
+    .or(z.literal('')),
+  password: z.string().min(1, 'Senha é obrigatória'),
+  name: z.string().trim().min(1, 'Nome é obrigatório'),
+});
 
-  const existing = await prisma.user.findUnique({ where: { username } });
-  if (existing) {
-    return { success: false, message: 'Usuário já existe.' };
-  }
+export const cadastrarUsuario = async (rawData: unknown) =>
+  handleServerAction(
+    cadastrarUsuarioSchema,
+    async (data, session) => {
+      const hasPermission =
+        session.user.roles.includes('admin') ||
+        session.user.permissions.includes(PERMISSIONS.USERS_CREATE) ||
+        session.user.permissions.includes(PERMISSIONS.USUARIO_MANAGE);
 
-  const hashed = await bcrypt.hash(password, 10);
+      if (!hasPermission) {
+        throw new Error('Sem permissão para cadastrar usuários.');
+      }
 
-  await prisma.user.create({
-    data: {
-      username,
-      email: email ?? '',
-      password: hashed,
-      nome: name ?? '',
-      createdBy: 'system',
+      const existing = await prisma.user.findUnique({
+        where: { username: data.username },
+      });
+
+      if (existing) {
+        throw new Error('Usuário já existe.');
+      }
+
+      if (data.email) {
+        const existingEmail = await prisma.user.findFirst({
+          where: { email: data.email },
+        });
+
+        if (existingEmail) {
+          throw new Error('E-mail já está em uso.');
+        }
+      }
+
+      const hashed = await bcrypt.hash(data.password, 10);
+
+      const created = await prisma.user.create({
+        data: {
+          username: data.username,
+          email: data.email ?? '',
+          password: hashed,
+          nome: data.name,
+          createdBy: session.user.id,
+        },
+      });
+
+      return {
+        id: created.id,
+      };
     },
-  });
-
-  return { success: true, message: 'Usuário cadastrado com sucesso!' };
-}
+    rawData,
+    { entityName: 'User', actionType: 'create' }
+  );

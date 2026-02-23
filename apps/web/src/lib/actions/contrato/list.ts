@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { z } from 'zod';
+import { handleServerAction } from '../common/actionHandler';
 
 const listContratosSchema = z.object({
   page: z.number().int().positive().default(1),
@@ -11,48 +12,41 @@ const listContratosSchema = z.object({
   search: z.string().optional(),
 });
 
-export async function listContratos(rawData: any = {}) {
-  try {
-    const params = listContratosSchema.parse(rawData);
+export const listContratos = async (rawData: unknown = {}) =>
+  handleServerAction(
+    listContratosSchema,
+    async (params) => {
+      const where: Record<string, unknown> = {
+        deletedAt: null,
+      };
 
-    const where: any = {
-      deletedAt: null,
-    };
+      if (params.search) {
+        where.OR = [
+          { nome: { contains: params.search } },
+          { numero: { contains: params.search } },
+        ];
+      }
 
-    if (params.search) {
-      where.OR = [
-        { nome: { contains: params.search } },
-        { numero: { contains: params.search } },
-      ];
-    }
+      const [data, total] = await Promise.all([
+        prisma.contrato.findMany({
+          where,
+          skip: (params.page - 1) * params.pageSize,
+          take: params.pageSize,
+          orderBy: {
+            [params.orderBy]: params.orderDir,
+          } as Record<string, 'asc' | 'desc'>,
+        }),
+        prisma.contrato.count({ where }),
+      ]);
 
-    const [data, total] = await Promise.all([
-      prisma.contrato.findMany({
-        where,
-        skip: (params.page - 1) * params.pageSize,
-        take: params.pageSize,
-        orderBy: {
-          [params.orderBy]: params.orderDir,
-        },
-      }),
-      prisma.contrato.count({ where }),
-    ]);
-
-    return {
-      success: true,
-      data: {
+      return {
         data,
         total,
         page: params.page,
         pageSize: params.pageSize,
         totalPages: Math.ceil(total / params.pageSize),
-      },
-    };
-  } catch (error) {
-    console.error('Erro ao listar contratos:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Erro interno',
-    };
-  }
-}
+      };
+    },
+    rawData,
+    { entityName: 'Contrato', actionType: 'list' }
+  );

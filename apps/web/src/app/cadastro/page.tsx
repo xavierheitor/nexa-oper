@@ -9,6 +9,7 @@ const { Title } = Typography;
 
 export default function CadastroPage() {
   const [loading, setLoading] = useState(false);
+  const [form] = Form.useForm<CadastroFormValues>();
 
   interface CadastroFormValues {
     username: string;
@@ -19,19 +20,14 @@ export default function CadastroPage() {
 
   const onFinish = async (values: CadastroFormValues) => {
     setLoading(true);
-    const formData = new FormData();
-    formData.append('username', values.username);
-    formData.append('email', values.email);
-    formData.append('password', values.password);
-    formData.append('name', values.name);
-
-    const result = await cadastrarUsuario(formData);
+    const result = await cadastrarUsuario(values);
 
     setLoading(false);
     if (result.success) {
-      message.success(result.message);
+      message.success('Usuário cadastrado com sucesso!');
+      form.resetFields();
     } else {
-      message.error(result.message);
+      message.error(result.error ?? 'Erro ao cadastrar usuário.');
     }
   };
 
@@ -48,7 +44,7 @@ export default function CadastroPage() {
         <Title level={3} style={{ textAlign: 'center' }}>
           Cadastro
         </Title>
-        <Form layout='vertical' onFinish={onFinish}>
+        <Form form={form} layout='vertical' onFinish={onFinish}>
           <Form.Item name='name' label='Nome' rules={[{ required: true }]}>
             <Input placeholder='Seu nome' />
           </Form.Item>

@@ -52,5 +52,6 @@ export default withAuth(
 export const config = {
   matcher: [
     '/dashboard/:path*', // Protege todas as rotas /dashboard/*
+    '/cadastro/:path*', // Protege rota de cadastro de usuário web
   ],
 };

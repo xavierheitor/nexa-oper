@@ -1,34 +1,29 @@
 'use server';
 
 import { prisma } from '@/lib/db/db.service';
+import { z } from 'zod';
+import { handleServerAction } from '../common/actionHandler';
 
-export async function getVeiculoCurrentBase(veiculoId: number) {
-  const { userId } = auth();
-  if (!userId) {
-    return { success: false, error: 'Usuário não autenticado.' };
-  }
+const getVeiculoCurrentBaseSchema = z.object({
+  veiculoId: z.number().int().positive(),
+});
 
-  try {
-    const currentBase = await prisma.veiculoBaseHistorico.findFirst({
-      where: {
-        veiculoId: veiculoId,
-        dataFim: null, // Base ativa (sem data de fim)
-      },
-      include: {
-        base: true,
-      },
-    });
+export const getVeiculoCurrentBase = async (veiculoId: number) =>
+  handleServerAction(
+    getVeiculoCurrentBaseSchema,
+    async (data) => {
+      const currentBase = await prisma.veiculoBaseHistorico.findFirst({
+        where: {
+          veiculoId: data.veiculoId,
+          dataFim: null, // Base ativa (sem data de fim)
+        },
+        include: {
+          base: true,
+        },
+      });
 
-    return {
-      success: true,
-      data: currentBase?.base || null
-    };
-  } catch (error) {
-    console.error('Erro ao buscar base atual do veículo:', error);
-    return { success: false, error: 'Erro ao buscar base atual do veículo.' };
-  }
-}
-function auth(): { userId: any; } {
-  throw new Error('Function not implemented.');
-}
-
+      return currentBase?.base ?? null;
+    },
+    { veiculoId },
+    { entityName: 'VeiculoBaseHistorico', actionType: 'get' }
+  );
