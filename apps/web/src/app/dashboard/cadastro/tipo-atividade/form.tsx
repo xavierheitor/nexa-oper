@@ -1,9 +1,14 @@
 'use client';
 
-import { Button, Form, Input, Spin } from 'antd';
-import { useEffect } from 'react';
+import { listContratos } from '@/lib/actions/contrato/list';
+import { Contrato } from '@nexa-oper/db';
+import { Button, Form, Input, Select, Spin, App } from 'antd';
+import { useEffect, useState } from 'react';
 
-export interface TipoAtividadeFormData { nome: string }
+export interface TipoAtividadeFormData {
+  nome: string;
+  contratoId: number;
+}
 
 interface Props {
   onSubmit: (values: TipoAtividadeFormData) => void;
@@ -12,7 +17,32 @@ interface Props {
 }
 
 export default function TipoAtividadeForm({ onSubmit, initialValues, loading = false }: Props) {
+  const { message } = App.useApp();
   const [form] = Form.useForm<TipoAtividadeFormData>();
+  const [contratos, setContratos] = useState<Contrato[]>([]);
+  const [loadingSelects, setLoadingSelects] = useState(false);
+
+  useEffect(() => {
+    const loadContratos = async () => {
+      try {
+        setLoadingSelects(true);
+        const contratosResponse = await listContratos({
+          page: 1,
+          pageSize: 100,
+          orderBy: 'nome',
+          orderDir: 'asc',
+        });
+        setContratos(contratosResponse.data?.data || []);
+      } catch (error) {
+        console.error('Erro ao carregar contratos:', error);
+        message.error('Erro ao carregar contratos');
+      } finally {
+        setLoadingSelects(false);
+      }
+    };
+
+    loadContratos();
+  }, [message]);
 
   useEffect(() => {
     if (initialValues) form.setFieldsValue(initialValues);
@@ -32,11 +62,25 @@ export default function TipoAtividadeForm({ onSubmit, initialValues, loading = f
       >
         <Input autoFocus placeholder="Digite o nome do tipo" maxLength={255} />
       </Form.Item>
+      <Form.Item
+        name="contratoId"
+        label="Contrato"
+        rules={[{ required: true, message: 'Contrato é obrigatório' }]}
+      >
+        <Select
+          placeholder="Selecione o contrato"
+          loading={loadingSelects}
+          showSearch
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+          options={contratos.map((c) => ({ value: c.id, label: `${c.nome} (${c.numero})` }))}
+        />
+      </Form.Item>
       <Form.Item>
-        <Button type="primary" htmlType="submit" block loading={loading}>Salvar</Button>
+        <Button type="primary" htmlType="submit" block loading={loading || loadingSelects}>Salvar</Button>
       </Form.Item>
     </Form>
     </Spin>
   );
 }
-

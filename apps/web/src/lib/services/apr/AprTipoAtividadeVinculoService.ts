@@ -77,7 +77,6 @@ export class AprTipoAtividadeVinculoService extends AbstractCrudService<
    */
   constructor() {
     const repo = new AprTipoAtividadeRelacaoRepository();
-    // @ts-expect-error - O repositório tem tipos de input diferentes (usa objetos Prisma), mas funciona no runtime
     super(repo);
     this.customRepo = repo;
   }
@@ -243,4 +242,3 @@ export class AprTipoAtividadeVinculoService extends AbstractCrudService<
 
 // Exporta o schema para uso nas actions
 export { setAprTipoAtividadeSchema };
-

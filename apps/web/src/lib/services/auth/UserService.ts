@@ -347,7 +347,7 @@ export class UserService extends AbstractCrudService<
     let emailSent = false;
     if (data.sendEmail) {
       // TODO: Implementar envio de email real
-      console.log(`📧 Enviando nova senha para ${user.email}: ${newPassword}`);
+      // Não registrar senha em logs. Quando houver integração real, enviar por canal seguro.
       emailSent = true;
     }
 

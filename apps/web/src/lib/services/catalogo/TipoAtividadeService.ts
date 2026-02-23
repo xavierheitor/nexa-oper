@@ -17,7 +17,8 @@ export class TipoAtividadeService extends AbstractCrudService<
   Create,
   Update,
   Filter,
-  TipoAtividade
+  TipoAtividade,
+  TipoAtividadeRepository
 > {
   private tipoAtividadeRepo: TipoAtividadeRepository;
 
@@ -40,7 +41,14 @@ export class TipoAtividadeService extends AbstractCrudService<
    * @returns Tipo de atividade criado
    */
   async create(data: Create, userId: string): Promise<TipoAtividade> {
-    return this.tipoAtividadeRepo.create({ nome: data.nome, createdBy: userId }, userId);
+    return this.tipoAtividadeRepo.create(
+      {
+        nome: data.nome,
+        contrato: { connect: { id: data.contratoId } },
+        createdBy: userId,
+      },
+      userId
+    );
   }
 
   /**
@@ -52,7 +60,13 @@ export class TipoAtividadeService extends AbstractCrudService<
    */
   async update(data: Update, userId: string): Promise<TipoAtividade> {
     const { id, ...rest } = data;
-    return this.tipoAtividadeRepo.update(id, rest, userId);
+    return this.tipoAtividadeRepo.update(
+      id,
+      {
+        nome: rest.nome,
+        contrato: { connect: { id: rest.contratoId } },
+      },
+      userId
+    );
   }
 }
-

@@ -22,7 +22,6 @@ export class ChecklistTipoEquipeVinculoService extends AbstractCrudService<
 
   constructor() {
     const repo = new ChecklistTipoEquipeRelacaoRepository();
-    // @ts-expect-error - O repositório tem tipos de input diferentes (usa objetos Prisma), mas funciona no runtime
     super(repo);
     this.customRepo = repo;
   }

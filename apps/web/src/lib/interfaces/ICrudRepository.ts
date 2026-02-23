@@ -6,6 +6,6 @@ export interface IBaseCrudRepository<T, F> {
 }
 
 export interface ICrudRepository<T, F> extends IBaseCrudRepository<T, F> {
-  create(data: T): Promise<T>;
-  update(id: string | number, data: Partial<T>): Promise<T>;
+  create(data: unknown): Promise<T>;
+  update(id: string | number, data: unknown): Promise<T>;
 }
