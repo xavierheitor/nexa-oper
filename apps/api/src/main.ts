@@ -1,131 +1,30 @@
-/**
- * Ponto de Entrada da API NestJS - Nexa Oper
- *
- * Bootstrap da aplicação, delegando configurações específicas
- * para módulos de configuração dedicados.
- */
-
-import { AllExceptionsFilter } from '@common/filters/all-exceptions.filter';
-import { StandardLogger } from '@common/utils/logger';
-import { ensurePortFree } from '@common/utils/ports';
-import { Logger } from '@nestjs/common';
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
-import { Express } from 'express';
-
 import { AppModule } from './app.module';
-// Configurações
-import {
-  getAppConfig,
-  configureTrustProxy,
-  configureGlobalPrefix,
-  configureValidationPipe,
-  configureBodyParser,
-  getSecurityConfig,
-  configureSecurity,
-  configureSwagger,
-  configureCors,
-  configureSpecialRoutes,
-} from './config';
-// Middlewares
-import { timeoutMiddleware } from './middleware';
-// Utils
-import { setupGracefulShutdown } from './utils/graceful-shutdown';
+import { configureApp } from './core/config/configure-app';
+import { env } from './core/config/env';
+import { AppLogger, NestPinoLogger } from './core/logger';
+import { GlobalExceptionFilter } from './core/errors/global-exception.filter';
 
-/**
- * Função principal de bootstrap da aplicação
- */
-async function bootstrap(): Promise<void> {
-  const logger = new StandardLogger('Bootstrap');
+async function bootstrap() {
+  // Timezone padrão do processo (Date, Prisma, logs)
+  process.env.TZ = env.TZ;
 
-  try {
-    logger.log('Iniciando aplicação Nexa Oper API...');
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
-    // Carregar configurações
-    const appConfig = getAppConfig();
-    const securityConfig = getSecurityConfig();
+  // 1) Primeiro liga o logger do Nest
+  app.useLogger(app.get(NestPinoLogger));
 
-    // Em dev, garante a porta livre (mata processo preso)
-    if (process.env.NODE_ENV !== 'production') {
-      await ensurePortFree(appConfig.port, msg => logger.log(msg));
-    } else {
-      logger.debug('Verificação de porta/kill desabilitada em produção');
-    }
+  // 2) Depois configura app (vai logar usando Pino)
+  configureApp(app);
 
-    // Cria app
-    const app = await NestFactory.create(AppModule, {
-      logger: ['log', 'error', 'warn', 'debug'],
-      abortOnError: false,
-    });
-    (global as any).NEST_APP = app;
+  // 3) Filtro global com DI
+  app.useGlobalFilters(new GlobalExceptionFilter(app.get(AppLogger)));
 
-    const expressApp = app.getHttpAdapter().getInstance() as Express;
+  await app.listen(env.PORT);
 
-    // Configurações básicas
-    configureTrustProxy(expressApp, appConfig.trustProxy, logger);
-    configureSpecialRoutes(expressApp);
-
-    // Middlewares
-    expressApp.use(timeoutMiddleware);
-
-    // Segurança
-    configureSecurity(app, securityConfig, logger);
-
-    // Body parser
-    configureBodyParser(
-      expressApp,
-      appConfig.jsonLimit,
-      appConfig.urlencodedLimit,
-      logger
-    );
-
-    // CORS
-    configureCors(app, logger);
-
-    // Timeout de requests (já configurado via middleware, apenas log)
-    logger.log(
-      `✅ Timeout de requisições configurado para ${appConfig.requestTimeout / 1000}s`
-    );
-
-    // Validação global
-    configureValidationPipe(app, logger);
-
-    // Filtro global de exceções
-    app.useGlobalFilters(new AllExceptionsFilter());
-    logger.log('Filtro global de exceções configurado');
-
-    // Swagger (apenas em desenvolvimento)
-    configureSwagger(app, logger);
-
-    // Prefixo global e shutdown hooks
-    configureGlobalPrefix(app, appConfig.globalPrefix, logger);
-
-    // Graceful shutdown
-    setupGracefulShutdown(app, logger);
-
-    // Sobe server
-    await app.listen(appConfig.port, '0.0.0.0');
-
-    // Logs finais
-    logger.log('API Nexa Oper iniciada com sucesso!');
-    logger.log(`Porta: ${appConfig.port}`);
-    logger.log(`Ambiente: ${process.env.NODE_ENV ?? 'development'}`);
-    logger.log(
-      `Base URL: http://localhost:${appConfig.port}/${appConfig.globalPrefix}`
-    );
-    if (process.env.NODE_ENV !== 'production') {
-      logger.log(
-        `Docs: http://localhost:${appConfig.port}/${appConfig.globalPrefix}/docs`
-      );
-    }
-  } catch (error) {
-    logger.error('Falha crítica na inicialização da aplicação:', error);
-    process.exit(1);
-  }
+  const url = await app.getUrl();
+  const logger = app.get(NestPinoLogger);
+  logger.log(`Server listening on ${url}`, 'Bootstrap');
 }
-
-bootstrap().catch((error: unknown) => {
-  const logger = new Logger('Bootstrap');
-  logger.error('Erro fatal durante inicialização:', error);
-  logger.error('Stack trace completo:', error);
-  process.exit(1);
-});
+void bootstrap();

@@ -1,0 +1,60 @@
+import { Injectable } from '@nestjs/common';
+import { promises as fs } from 'fs';
+import * as path from 'path';
+import { AppError } from '../../../core/errors/app-error';
+import {
+  StorageAdapter,
+  type StorageUploadInput,
+  type StorageUploadResult,
+} from './storage.adapter';
+
+@Injectable()
+export class LocalStorageAdapter implements StorageAdapter {
+  private basePath = path.resolve(process.cwd(), 'uploads');
+
+  async upload(input: StorageUploadInput): Promise<StorageUploadResult> {
+    const relativePath = String(input.path).replace(/^[/\\]+/, '');
+    const fullPath = path.resolve(this.basePath, relativePath);
+    const baseWithSep = this.basePath.endsWith(path.sep)
+      ? this.basePath
+      : `${this.basePath}${path.sep}`;
+
+    if (!fullPath.startsWith(baseWithSep)) {
+      throw AppError.validation('Caminho de upload inválido');
+    }
+
+    await fs.mkdir(path.dirname(fullPath), { recursive: true });
+    await fs.writeFile(fullPath, input.buffer);
+
+    const urlPath = relativePath.split(path.sep).join('/');
+
+    return {
+      path: relativePath,
+      size: input.size,
+      url: `/uploads/${urlPath}`,
+      mimeType: input.mimeType,
+      filename: path.basename(relativePath),
+    };
+  }
+
+  async delete(filePath: string): Promise<void> {
+    const relativePath = String(filePath).replace(/^[/\\]+/, '');
+    const fullPath = path.resolve(this.basePath, relativePath);
+    const baseWithSep = this.basePath.endsWith(path.sep)
+      ? this.basePath
+      : `${this.basePath}${path.sep}`;
+
+    if (!fullPath.startsWith(baseWithSep)) {
+      throw AppError.validation('Caminho de upload inválido');
+    }
+
+    try {
+      await fs.unlink(fullPath);
+    } catch (error: unknown) {
+      const err = error as NodeJS.ErrnoException;
+      if (err.code !== 'ENOENT') {
+        throw err;
+      }
+    }
+  }
+}

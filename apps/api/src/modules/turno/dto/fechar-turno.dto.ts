@@ -1,60 +1,111 @@
-/**
- * DTO para fechamento de turno
- *
- * Este DTO define a estrutura de dados necessária
- * para fechar um turno existente no sistema.
- */
-
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsInt, Min, Max, IsDateString } from 'class-validator';
-
-import { TURNO_VALIDATION_CONFIG } from '../constants/turno.constants';
+import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsDate, IsInt, IsOptional, IsPositive } from 'class-validator';
 
 /**
- * DTO para fechamento de turno
+ * DTO para PATCH :id/fechar — turnoId vem da rota, body pode omitir.
  */
 export class FecharTurnoDto {
-  /**
-   * ID do turno a ser fechado
-   * @example 1
-   */
+  @ApiPropertyOptional({
+    description: 'ID do turno a ser fechado',
+    example: 123,
+  })
+  @IsOptional()
+  @IsInt()
+  turnoId?: number;
+
+  @ApiPropertyOptional({ description: 'Quilometragem final', example: 12400 })
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  kmFim?: number;
+
+  @ApiPropertyOptional({
+    description: 'Data/hora de fechamento (ISO)',
+    example: '2025-12-31T18:00:00Z',
+  })
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  dataFim?: Date;
+
+  @ApiPropertyOptional({
+    description: 'Alias para kmFim (compatibilidade mobile)',
+    example: 12400,
+  })
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  kmFinal?: number;
+
+  @ApiPropertyOptional({
+    description: 'Alias para dataFim (compatibilidade mobile)',
+  })
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  horaFim?: Date;
+
+  @ApiPropertyOptional({ description: 'Latitude no fechamento' })
+  @IsOptional()
+  latitude?: string;
+
+  @ApiPropertyOptional({ description: 'Longitude no fechamento' })
+  @IsOptional()
+  longitude?: string;
+}
+
+/**
+ * DTO para POST /fechar — turnoId é obrigatório no body (compatibilidade mobile).
+ * Demais campos iguais a FecharTurnoDto (opcionais).
+ */
+export class FecharTurnoPostDto {
   @ApiProperty({
     description: 'ID do turno a ser fechado',
-    example: 1,
+    example: 123,
   })
-  @IsNotEmpty({ message: 'ID do turno é obrigatório' })
-  @IsInt({ message: 'ID do turno deve ser um número inteiro' })
-  turnoId: number;
+  @IsInt()
+  @IsPositive()
+  @Type(() => Number)
+  turnoId!: number;
 
-  /**
-   * Data e hora de fechamento do turno
-   * @example "2024-01-01T17:00:00.000Z"
-   */
-  @ApiProperty({
-    description: 'Data e hora de fechamento do turno',
-    example: '2024-01-01T17:00:00.000Z',
-  })
-  @IsNotEmpty({ message: 'Data de fechamento é obrigatória' })
-  @IsDateString({}, { message: 'Data de fechamento deve ser uma data válida' })
-  dataFim: string;
+  @ApiPropertyOptional({ description: 'Quilometragem final', example: 12400 })
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  kmFim?: number;
 
-  /**
-   * Quilometragem do veículo no fechamento do turno
-   * @example 50120
-   */
-  @ApiProperty({
-    description: 'Quilometragem do veículo no fechamento do turno',
-    example: 50120,
-    minimum: TURNO_VALIDATION_CONFIG.MIN_KM,
-    maximum: TURNO_VALIDATION_CONFIG.MAX_KM,
+  @ApiPropertyOptional({
+    description: 'Data/hora de fechamento (ISO)',
+    example: '2025-12-31T18:00:00Z',
   })
-  @IsNotEmpty({ message: 'Quilometragem de fechamento é obrigatória' })
-  @IsInt({ message: 'Quilometragem deve ser um número inteiro' })
-  @Min(TURNO_VALIDATION_CONFIG.MIN_KM, {
-    message: `Quilometragem deve ser no mínimo ${TURNO_VALIDATION_CONFIG.MIN_KM}`,
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  dataFim?: Date;
+
+  @ApiPropertyOptional({
+    description: 'Alias para kmFim (compatibilidade mobile)',
+    example: 12400,
   })
-  @Max(TURNO_VALIDATION_CONFIG.MAX_KM, {
-    message: `Quilometragem deve ser no máximo ${TURNO_VALIDATION_CONFIG.MAX_KM}`,
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  kmFinal?: number;
+
+  @ApiPropertyOptional({
+    description: 'Alias para dataFim (compatibilidade mobile)',
   })
-  kmFim: number;
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  horaFim?: Date;
+
+  @ApiPropertyOptional({ description: 'Latitude no fechamento' })
+  @IsOptional()
+  latitude?: string;
+
+  @ApiPropertyOptional({ description: 'Longitude no fechamento' })
+  @IsOptional()
+  longitude?: string;
 }

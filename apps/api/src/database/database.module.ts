@@ -1,20 +1,9 @@
-import { Module } from '@nestjs/common';
-import { PrismaClient } from '@nexa-oper/db';
+import { Global, Module } from '@nestjs/common';
+import { PrismaService } from './prisma.service';
 
-import { DatabaseService } from './database.service';
-
+@Global()
 @Module({
-  controllers: [],
-  providers: [
-    DatabaseService,
-    {
-      provide: PrismaClient,
-      useFactory: (databaseService: DatabaseService) => {
-        return databaseService.getPrisma();
-      },
-      inject: [DatabaseService],
-    },
-  ],
-  exports: [DatabaseService, PrismaClient],
+  providers: [PrismaService],
+  exports: [PrismaService],
 })
 export class DatabaseModule {}

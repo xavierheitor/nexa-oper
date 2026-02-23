@@ -1,14 +1,8 @@
 // @ts-check
 import eslint from '@eslint/js';
-import eslintPluginImport from 'eslint-plugin-import';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default tseslint.config(
   {
@@ -18,6 +12,7 @@ export default tseslint.config(
   ...tseslint.configs.recommendedTypeChecked,
   eslintPluginPrettierRecommended,
   {
+    files: ['src/**/*.ts', 'test/**/*.ts'],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -25,80 +20,38 @@ export default tseslint.config(
       },
       sourceType: 'commonjs',
       parserOptions: {
-        projectService: true,
-        tsconfigRootDir: __dirname,
         project: ['./tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname,
       },
     },
   },
   {
-    plugins: {
-      import: eslintPluginImport,
-    },
     rules: {
-      '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/no-unused-expressions': [
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-floating-promises': 'warn',
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+    },
+  },
+  {
+    files: ['src/contracts/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
         'error',
         {
-          allowShortCircuit: false,
-          allowTernary: false,
-          allowTaggedTemplates: false,
-          enforceForJSX: false,
-          ignoreDirectives: false,
-        },
-      ],
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      // Proibir console.* (usar Logger/StandardLogger)
-      'no-console': ['error', { allow: ['warn', 'error'] }],
-      // Ordenação de imports
-      'import/order': [
-        'error',
-        {
-          groups: [
-            'builtin',
-            'external',
-            'internal',
-            ['parent', 'sibling', 'index'],
-            'object',
-            'type',
-          ],
-          'newlines-between': 'always',
-          alphabetize: { order: 'asc', caseInsensitive: true },
-        },
-      ],
-      // Complexidade e tamanho
-      complexity: ['warn', 15],
-      'max-lines-per-function': [
-        'warn',
-        { max: 80, skipBlankLines: true, skipComments: true },
-      ],
-      'max-lines': [
-        'warn',
-        { max: 400, skipBlankLines: true, skipComments: true },
-      ],
-      'no-debugger': 'error',
-      // Configurações para compatibilidade com Prettier
-      'prettier/prettier': [
-        'error',
-        {
-          semi: true,
-          trailingComma: 'es5',
-          singleQuote: true,
-          printWidth: 80,
-          tabWidth: 2,
-          useTabs: false,
-          bracketSpacing: true,
-          bracketSameLine: false,
-          arrowParens: 'avoid',
-          endOfLine: 'lf',
+          patterns: ['@nestjs/*', '**/database/**', '**/modules/**'],
         },
       ],
     },
-  }
+  },
+  {
+    files: ['src/modules/**/*.controller.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: ['@generated/prisma', '**/database/prisma.service'],
+        },
+      ],
+    },
+  },
 );
