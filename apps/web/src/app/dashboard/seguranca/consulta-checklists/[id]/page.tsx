@@ -274,13 +274,17 @@ export default function ChecklistDetalhesPage({ params }: { params: Promise<{ id
                       {temFoto && (
                         <Row gutter={[16, 16]}>
                           {resposta.ChecklistRespostaFoto.map((foto) => {
-                            const photoUrl = foto.urlPublica || buildPhotoUrl(foto.caminhoArquivo);
+                            const photoUrl = buildPhotoUrl(
+                              foto.urlPublica,
+                              foto.caminhoArquivo
+                            );
+                            const hasValidPhoto = isValidPhotoPath(photoUrl);
                             return (
                               <Col xs={24} sm={12} md={8} lg={6} key={foto.id}>
                                 <Card
                                   size="small"
                                   cover={
-                                    isValidPhotoPath(foto.caminhoArquivo) || foto.urlPublica ? (
+                                    hasValidPhoto ? (
                                       <Image
                                         src={photoUrl}
                                         alt={`Foto ${foto.id}`}
@@ -360,10 +364,14 @@ export default function ChecklistDetalhesPage({ params }: { params: Promise<{ id
                             <Card size="small" title={<><CameraOutlined /> Fotos ({resposta.ChecklistRespostaFoto.length})</>}>
                               <Row gutter={[16, 16]}>
                                 {resposta.ChecklistRespostaFoto.map((foto) => {
-                                  const photoUrl = foto.urlPublica || buildPhotoUrl(foto.caminhoArquivo);
+                                  const photoUrl = buildPhotoUrl(
+                                    foto.urlPublica,
+                                    foto.caminhoArquivo
+                                  );
+                                  const hasValidPhoto = isValidPhotoPath(photoUrl);
                                   return (
                                     <Col xs={24} sm={12} md={12} lg={8} key={foto.id}>
-                                      {isValidPhotoPath(foto.caminhoArquivo) || foto.urlPublica ? (
+                                      {hasValidPhoto ? (
                                         <Image
                                           src={photoUrl}
                                           alt={`Foto ${foto.id}`}
@@ -420,4 +428,3 @@ export default function ChecklistDetalhesPage({ params }: { params: Promise<{ id
     </div>
   );
 }
-

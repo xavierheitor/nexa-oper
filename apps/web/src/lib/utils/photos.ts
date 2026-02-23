@@ -22,6 +22,8 @@
  * NEXT_PUBLIC_PHOTOS_BASE_URL=http://localhost:3001
  * ou
  * NEXT_PUBLIC_PHOTOS_BASE_URL=https://storage.nexaoper.com.br
+ * ou
+ * NEXT_PUBLIC_UPLOAD_BASE_URL=https://storage.nexaoper.com.br/uploads
  *
  * SEGURANÇA:
  * - Usa variáveis de ambiente públicas (NEXT_PUBLIC_*)
@@ -43,8 +45,8 @@
  * @example
  * ```typescript
  * // Com URL base configurada:
- * buildPhotoUrl('/mobile/photos/123/photo.jpg')
- * // => 'https://storage.nexaoper.com.br/mobile/photos/123/photo.jpg'
+ * buildPhotoUrl('/uploads/checklists/123/photo.jpg')
+ * // => 'https://storage.nexaoper.com.br/uploads/checklists/123/photo.jpg'
  *
  * // Sem URL base:
  * buildPhotoUrl('/mobile/photos/123/photo.jpg')
@@ -55,33 +57,65 @@
  * // => 'https://storage.nexaoper.com.br/mobile/photos/default.jpg'
  * ```
  */
-export function buildPhotoUrl(photoPath?: string | null, fallbackPath?: string): string {
-  // Determinar qual path usar (photoPath ou fallback)
-  const path = photoPath || fallbackPath || '';
+function isAbsoluteUrl(value: string): boolean {
+  if (value.startsWith('data:') || value.startsWith('blob:')) return true;
+  if (value.startsWith('//')) return true;
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
 
-  if (!path || path.trim() === '') {
+function normalizePhotoPath(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+
+  if (isAbsoluteUrl(trimmed)) return trimmed;
+  if (trimmed.startsWith('/uploads/')) return trimmed;
+  if (trimmed.startsWith('uploads/')) return `/${trimmed}`;
+  if (trimmed.startsWith('/')) return trimmed;
+
+  // storagePath legado salvo sem prefixo público (ex.: "checklists/...")
+  return `/uploads/${trimmed}`;
+}
+
+function resolvePhotoBaseUrl(): string {
+  const base =
+    process.env.NEXT_PUBLIC_PHOTOS_BASE_URL ||
+    process.env.NEXT_PUBLIC_UPLOAD_BASE_URL ||
+    '';
+  return base.trim();
+}
+
+export function buildPhotoUrl(photoPath?: string | null, fallbackPath?: string): string {
+  const rawPath = photoPath || fallbackPath || '';
+  if (!rawPath || rawPath.trim() === '') {
     return '';
   }
 
-  // Obter URL base da variável de ambiente
-  const baseUrl = process.env.NEXT_PUBLIC_PHOTOS_BASE_URL;
+  const normalizedPath = normalizePhotoPath(rawPath);
+  if (!normalizedPath) return '';
+  if (isAbsoluteUrl(normalizedPath)) return normalizedPath;
 
-  // Se não houver URL base configurada, retornar path relativo
+  const baseUrl = resolvePhotoBaseUrl();
   if (!baseUrl || baseUrl.trim() === '') {
-    return path;
+    return normalizedPath;
   }
 
-  // Normalizar URL base (remover trailing slash se existir)
   const normalizedBaseUrl = baseUrl.endsWith('/')
     ? baseUrl.slice(0, -1)
     : baseUrl;
 
-  // Normalizar path (garantir que começa com /)
-  const normalizedPath = path.startsWith('/')
-    ? path
-    : `/${path}`;
+  // Evita duplicação quando a base já contém "/uploads"
+  if (
+    normalizedBaseUrl.endsWith('/uploads') &&
+    normalizedPath.startsWith('/uploads/')
+  ) {
+    return `${normalizedBaseUrl}${normalizedPath.slice('/uploads'.length)}`;
+  }
 
-  // Construir e retornar URL completa
   return `${normalizedBaseUrl}${normalizedPath}`;
 }
 

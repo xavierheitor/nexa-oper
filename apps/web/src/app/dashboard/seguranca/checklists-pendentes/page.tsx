@@ -9,6 +9,7 @@ import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 import { ActionResult } from '@/lib/types/common';
+import { buildPhotoUrl } from '@/lib/utils/photos';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { ChecklistPendencia, StatusPendencia } from '@nexa-oper/db';
 import { Button, Card, Modal, Spin, Table, Tag, Image, Space, Typography } from 'antd';
@@ -146,7 +147,7 @@ export default function ChecklistPendenciasPage() {
                   key={idx}
                   width={40}
                   height={40}
-                  src={foto.urlPublica || foto.caminhoArquivo || ''}
+                  src={buildPhotoUrl(foto.urlPublica, foto.caminhoArquivo)}
                   alt={`Foto ${idx + 1}`}
                   preview={fotos.length > 1}
                 />

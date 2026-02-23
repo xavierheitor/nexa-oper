@@ -2,6 +2,7 @@
 
 import { ChecklistPendencia, StatusPendencia } from '@nexa-oper/db';
 import { Button, Form, Input, Select, Space, Typography, Image, Descriptions, Tag } from 'antd';
+import { buildPhotoUrl } from '@/lib/utils/photos';
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -132,7 +133,7 @@ export default function ChecklistPendenciaForm({ initialValues, onSubmit, loadin
                 key={idx}
                 width={150}
                 height={150}
-                src={foto.urlPublica || foto.caminhoArquivo || ''}
+                src={buildPhotoUrl(foto.urlPublica, foto.caminhoArquivo)}
                 alt={`Foto ${idx + 1}`}
                 style={{ objectFit: 'cover' }}
               />
