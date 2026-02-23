@@ -63,11 +63,11 @@ npm run install:all
 #### **Configurar Variáveis de Ambiente**
 
 ```bash
-# Copiar arquivo de exemplo
-cp packages/db/.env.example packages/db/.env
+# Copiar arquivo de exemplo na raiz do monorepo
+cp .env.example .env
 
-# Editar configurações do banco
-nano packages/db/.env
+# Editar configurações do banco e app
+nano .env
 ```
 
 #### **Exemplo de `.env`**
@@ -75,13 +75,15 @@ nano packages/db/.env
 ```env
 # Database
 DATABASE_URL="postgresql://username:password@localhost:5432/nexa_oper"
+SHADOW_DATABASE_URL="postgresql://username:password@localhost:5432/nexa_oper_shadow"
 
 # NextAuth
 NEXTAUTH_SECRET="your-secret-key-here"
 NEXTAUTH_URL="http://localhost:3000"
 
-# Logging
-LOG_LEVEL="info"
+# API/Web
+NEXT_PUBLIC_API_URL="http://localhost:3001"
+JWT_SECRET="seu-secret-com-32-ou-mais-caracteres"
 ```
 
 #### **Executar Migrações**
@@ -96,33 +98,9 @@ npm run db:migrate
 # (Opcional) Popular com dados de teste
 npm run db:seed
 ```
-
-### **4. Configuração do Frontend**
-
-```bash
-# Navegar para o frontend
-cd apps/web
-
-# Copiar variáveis de ambiente
-cp .env.example .env.local
-
-# Configurar variáveis
-nano .env.local
-```
-
-#### **Exemplo de `.env.local`**
-
-```env
-# NextAuth
-NEXTAUTH_SECRET="same-as-packages-db"
-NEXTAUTH_URL="http://localhost:3000"
-
-# API
-NEXT_PUBLIC_API_URL="http://localhost:3001"
-
-# Database (mesmo do packages/db)
-DATABASE_URL="postgresql://username:password@localhost:5432/nexa_oper"
-```
+As aplicações `apps/api` e `apps/web` já conseguem carregar `.env` da raiz.
+Arquivos `apps/*/.env` e `apps/*/.env.local` ficam opcionais para override local.
+Referência: `docs/ENV_MONOREPO_GUIDE.md`.
 
 ## 🚀 Executando o Projeto
 
@@ -335,7 +313,7 @@ datasource db {
 npm run db:studio
 
 # Verificar variáveis de ambiente
-cat packages/db/.env
+cat .env
 
 # Regenerar cliente Prisma
 npm run db:generate

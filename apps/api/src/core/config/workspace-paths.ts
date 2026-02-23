@@ -26,11 +26,15 @@ export function findWorkspaceRoot(startDir: string): string {
 }
 
 export function resolveUploadRoot(configuredRoot?: string): string {
+  const legacyAppRoot = path.join(process.cwd(), 'uploads');
   const workspaceRoot = findWorkspaceRoot(process.cwd());
+  const workspaceDefault = path.join(workspaceRoot, 'uploads');
   const raw = configuredRoot?.trim();
 
   if (!raw) {
-    return path.join(workspaceRoot, 'uploads');
+    if (existsSync(workspaceDefault)) return workspaceDefault;
+    if (existsSync(legacyAppRoot)) return legacyAppRoot;
+    return workspaceDefault;
   }
 
   if (path.isAbsolute(raw)) {

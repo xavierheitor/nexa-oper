@@ -33,11 +33,15 @@ function findWorkspaceRoot(startDir: string): string {
 }
 
 function resolveSharedUploadRoot(configuredRoot?: string): string {
+  const legacyAppRoot = join(process.cwd(), 'uploads');
   const workspaceRoot = findWorkspaceRoot(process.cwd());
+  const workspaceDefault = join(workspaceRoot, 'uploads');
   const raw = configuredRoot?.trim();
 
   if (!raw) {
-    return join(workspaceRoot, 'uploads');
+    if (existsSync(workspaceDefault)) return workspaceDefault;
+    if (existsSync(legacyAppRoot)) return legacyAppRoot;
+    return workspaceDefault;
   }
 
   return isAbsolute(raw) ? raw : join(workspaceRoot, raw);

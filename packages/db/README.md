@@ -10,6 +10,19 @@ Pacote compartilhado de banco de dados com Prisma para o monorepo Nexa Oper.
 - **Monorepo Ready**: Configurado para ser importado por outros pacotes
 - **Sem Build Necessário**: Funciona diretamente com o que o Prisma gera
 
+## 🌱 Variáveis de Ambiente no Monorepo
+
+Os scripts do `packages/db` carregam variáveis nesta ordem:
+
+1. `packages/db/.env.local`
+2. `packages/db/.env`
+3. `/.env.local` (raiz do monorepo)
+4. `/.env` (raiz do monorepo)
+
+Na prática, você pode manter apenas `/.env` com `DATABASE_URL` e
+`SHADOW_DATABASE_URL` e usar arquivos locais no `packages/db` só quando quiser
+override específico.
+
 ## 📦 Instalação
 
 ```bash

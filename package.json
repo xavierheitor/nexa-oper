@@ -21,6 +21,7 @@
     "install:api": "npm install --workspace=apps/api",
     "install:db": "npm install --workspace=packages/db",
     "db:generate": "npm run db:generate --workspace=packages/db",
+    "db:migrate": "npm run migrate:dev --workspace=packages/db",
     "db:migrate:dev": "npm run migrate:dev --workspace=packages/db",
     "db:migrate:deploy": "npm run migrate:deploy --workspace=packages/db",
     "db:studio": "npm run studio --workspace=packages/db",

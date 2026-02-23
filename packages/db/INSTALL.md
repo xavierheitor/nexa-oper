@@ -41,11 +41,15 @@ pnpm install
 
 ### 2. Variáveis de Ambiente
 
-Criar arquivo `.env` na raiz da sua aplicação:
+No monorepo, use preferencialmente o arquivo `/.env` da raiz:
 
 ```env
 DATABASE_URL="mysql://usuario:senha@localhost:3306/banco"
+SHADOW_DATABASE_URL="mysql://usuario:senha@localhost:3306/banco_shadow"
 ```
+
+Também é possível sobrescrever no `packages/db/.env` ou
+`packages/db/.env.local` quando necessário.
 
 ## 🚀 Uso Básico
 

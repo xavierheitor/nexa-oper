@@ -46,6 +46,10 @@ npm run setup
 
 ### 2. Configuração de Ambiente (Variáveis .env)
 
+> Atualização: o fluxo recomendado agora é centralizar no arquivo `/.env` da
+> raiz do monorepo, com arquivos em `apps/*/.env*` apenas para override local.
+> Guia oficial: `docs/ENV_MONOREPO_GUIDE.md`.
+
 O monorepo usa uma **hierarquia com herança** para gerenciar variáveis de ambiente, centralizando
 configurações comuns e permitindo configurações específicas por aplicação.
 
