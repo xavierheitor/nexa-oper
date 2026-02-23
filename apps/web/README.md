@@ -1,184 +1,30 @@
-# Web App - Nexa Oper
+# Nexa Web
 
-Aplicação web frontend da Nexa Oper, construída com Next.js 15.
+Aplicação web Next.js do monorepo Nexa Oper.
 
-## 🚀 Tecnologias
-
-- **Next.js 15** - Framework React para aplicações web
-- **TypeScript** - Linguagem de programação tipada
-- **React** - Biblioteca para interfaces de usuário
-- **Prisma** - ORM para banco de dados (via pacote compartilhado `@nexa-oper/db`)
-
-## 📦 Instalação
+## Execução
 
 ```bash
-# Instalar dependências
-npm install
-
-# Gerar cliente Prisma (se necessário)
-npm run db:generate
+npm run dev --workspace=apps/web
 ```
 
-## 🔧 Scripts Disponíveis
+## Build
 
 ```bash
-# Desenvolvimento
-npm run dev          # Servidor de desenvolvimento
-npm run build        # Build de produção
-npm run start        # Iniciar servidor de produção
-npm run lint         # Executar ESLint
+npm run build --workspace=apps/web
 ```
 
-## 🌐 Estrutura da Aplicação
+## Pontos de entrada importantes
 
-```bash
-src/
-├── app/                    # App Router (Next.js 13+)
-│   ├── layout.tsx         # Layout principal
-│   ├── page.tsx           # Página inicial
-│   ├── globals.css        # Estilos globais
-│   └── favicon.ico        # Ícone da aplicação
-├── components/             # Componentes React reutilizáveis
-├── lib/                    # Utilitários e configurações
-└── types/                  # Definições de tipos TypeScript
-```
+- app router: `apps/web/src/app`
+- actions: `apps/web/src/lib/actions`
+- services/repositories: `apps/web/src/lib/services`, `apps/web/src/lib/repositories`
+- config next: `apps/web/next.config.ts`
 
-### 🗓️ Gestão de Escalas
+## Documentação oficial
 
-O fluxo completo para administração das escalas de eletricistas está
-disponível em `/dashboard/cadastro/escala`. A tela combina:
-
-- **Tabela paginada** com filtros e ações de edição/remoção
-- **Formulário modal** para criar/editar escalas com definição de horários
-- **Drawer de alocações** para vincular eletricistas e gerar agendas
-
-> Consulte também o índice geral em [`DOCUMENTATION_INDEX.md`](../../DOCUMENTATION_INDEX.md)
-> para encontrar rapidamente outros guias e manuais relacionados.
-
-## 🔗 Integração com Banco de Dados
-
-Esta aplicação utiliza o pacote compartilhado `@nexa-oper/db` para acesso ao banco de dados:
-
-```typescript
-import { PrismaClient } from '@nexa-oper/db';
-
-// Exemplo de uso em Server Components
-const prisma = new PrismaClient();
-const tests = await prisma.test.findMany();
-
-// Sempre desconectar ao finalizar
-await prisma.$disconnect();
-```
-
-### Exemplo em API Routes
-
-```typescript
-// app/api/tests/route.ts
-import { PrismaClient } from '@nexa-oper/db';
-
-export async function GET() {
-  const prisma = new PrismaClient();
-
-  try {
-    const tests = await prisma.test.findMany();
-    return Response.json({ data: tests });
-  } finally {
-    await prisma.$disconnect();
-  }
-}
-```
-
-## 📝 Variáveis de Ambiente
-
-Criar arquivo `.env.local` na pasta `apps/web/`:
-
-```env
-# NextAuth
-NEXTAUTH_SECRET="seu_nextauth_secret_muito_longo_e_seguro"
-NEXTAUTH_URL=http://localhost:3000
-
-# API
-NEXT_PUBLIC_API_URL="http://localhost:3001"
-
-# Banco de Dados
-DATABASE_URL="mysql://usuario:senha@localhost:3306/banco"
-
-# App
-NEXT_PUBLIC_APP_NAME="Nexa Oper"
-NEXT_PUBLIC_APP_VERSION="1.0.0"
-
-# ============================================
-# CONFIGURAÇÃO DE UPLOADS
-# ============================================
-
-# UPLOAD_ROOT: Caminho para pasta raiz de uploads
-# Deve ser o MESMO valor configurado na API para que ambos salvem na mesma estrutura
-# Se não configurado, usa: <raiz-do-monorepo>/uploads
-# Exemplos:
-#   - Desenvolvimento: deixe vazio ou comente
-#   - Produção local: /var/www/nexa-oper/storage
-#   - Produção remota: /mnt/nas/storage-nexa
-# Estrutura criada automaticamente:
-#   {UPLOAD_ROOT}/mobile/photos/ (fotos do mobile - se usado pela API)
-#   {UPLOAD_ROOT}/justificativas/anexos/ (anexos de justificativas)
-UPLOAD_ROOT=
-
-# UPLOAD_BASE_URL: URL pública para acesso aos uploads
-# Deve ser o MESMO valor configurado na API para URLs consistentes
-# Se não configurado, usa paths relativos (/uploads/...) e o Next faz proxy para a API
-# Exemplos:
-#   - Desenvolvimento: deixe vazio ou comente (usa /uploads/justificativas/anexos)
-#   - Produção com subdomínio: https://storage.nexaoper.com.br
-#   - Produção com CDN: https://cdn.nexaoper.com.br
-# IMPORTANTE: Não inclua /mobile/photos ou /justificativas/anexos na URL
-# O sistema adiciona automaticamente esses paths
-UPLOAD_BASE_URL=
-
-# UPLOAD_PROXY_TARGET: destino do proxy /uploads/* no Next
-# Opcional. Se vazio, usa NEXT_PUBLIC_API_URL
-# Exemplo: http://localhost:3001
-UPLOAD_PROXY_TARGET=
-
-# Logs (opcional)
-# LOG_PATH=./logs
-```
-
-## 🚀 Desenvolvimento
-
-1. **Iniciar servidor de desenvolvimento:**
-
-   ```bash
-   npm run dev
-   ```
-
-2. **Abrir no navegador:** [http://localhost:3000](http://localhost:3000)
-
-3. **Editar arquivos:**
-   - `src/app/page.tsx` - Página inicial
-   - `src/app/layout.tsx` - Layout principal
-   - `src/components/` - Componentes
-
-## 🏗️ Build e Deploy
-
-```bash
-# Build de produção
-npm run build
-
-# Iniciar servidor de produção
-npm run start
-
-# Deploy no Vercel
-vercel --prod
-```
-
-## 📚 Documentação
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [React Documentation](https://react.dev)
-- [Prisma Documentation](https://www.prisma.io/docs)
-- [Monorepo Setup](./../../README.md)
-
-## 🔄 Hot Reload
-
-A aplicação possui hot reload automático. Qualquer alteração nos arquivos será refletida
-imediatamente no navegador durante o desenvolvimento.
+- `docs/README.md`
+- `docs/01-arquitetura-monorepo.md`
+- `docs/02-configuracao-env.md`
+- `docs/04-guia-criacao-modulo-web.md`
+- `docs/05-upload-fotos-e-arquivos.md`

@@ -1,28 +1,12 @@
-# Documentação - Nexa API
+# API Docs (Redirecionado)
 
-Guia central da API Nexa.
+A documentação oficial consolidada do monorepo está em:
 
-## Conteúdo
+- `/Users/xavier/projetos/nexa/nexa-oper/docs/README.md`
 
-- Configuração e execução: `docs/setup.md`
-- Arquitetura geral: `docs/architecture.md`
-- Modelo de dados do módulo Atividades: `docs/atividade-data-model.md`
+Guias mais relevantes para API:
 
-## Documentação por módulo
-
-- Auth: `src/modules/auth/README.md`
-- Contract Permissions: `src/modules/auth/modules/contract-permissions/README.md`
-- Turno: `src/modules/turno/README.md`
-- Sync: `src/modules/sync/README.md`
-- Upload: `src/modules/upload/README.md`
-- Localização: `src/modules/localizacao/README.md`
-- Atividade Upload: `src/modules/atividade-upload/README.md`
-
-## Componentes transversais
-
-- Core: `src/core/README.md`
-- Erros: `src/core/errors/README.md`
-- Logger: `src/core/logger/README.md`
-- Config: `src/core/config/README.md`
-- Interceptor de envelope: `src/core/http/interceptors/README.md`
-- Contracts: `src/contracts/README.md`
+- `/Users/xavier/projetos/nexa/nexa-oper/docs/01-arquitetura-monorepo.md`
+- `/Users/xavier/projetos/nexa/nexa-oper/docs/02-configuracao-env.md`
+- `/Users/xavier/projetos/nexa/nexa-oper/docs/03-guia-criacao-modulo-api.md`
+- `/Users/xavier/projetos/nexa/nexa-oper/docs/05-upload-fotos-e-arquivos.md`

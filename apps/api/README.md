@@ -1,59 +1,30 @@
 # Nexa API
 
-API backend em NestJS para operação mobile de turnos, sincronização de cadastros, upload de evidências e controle de permissões por contrato.
-
-## Stack
-
-- NestJS 11
-- Prisma + MariaDB (`@prisma/adapter-mariadb`)
-- JWT (auth mobile)
-- Jest (unit + e2e)
-
-## Documentação
-
-- Visão geral: `docs/index.md`
-- Setup: `docs/setup.md`
-- Arquitetura: `docs/architecture.md`
-- Contratos externos: `src/contracts/README.md`
-
-## Módulos de domínio
-
-- Auth: `src/modules/auth/README.md`
-- Turno: `src/modules/turno/README.md`
-- Sync: `src/modules/sync/README.md`
-- Upload: `src/modules/upload/README.md`
-- Localização: `src/modules/localizacao/README.md`
+API NestJS do monorepo Nexa Oper.
 
 ## Execução
 
 ```bash
-npm install
-npm run start:dev
+npm run start:dev --workspace=apps/api
 ```
 
-## Build e qualidade
+## Build
 
 ```bash
-npm run lint
-npm run build
-npm test -- --runInBand --watchman=false --passWithNoTests
-npm run test:e2e -- --watchman=false
+npm run build --workspace=apps/api
 ```
 
-## Variáveis obrigatórias
+## Pontos de entrada importantes
 
-- `DATABASE_URL`
-- `JWT_SECRET` (mínimo 32 caracteres)
+- bootstrap: `apps/api/src/main.ts`
+- configuração global: `apps/api/src/core/config/configure-app.ts`
+- env: `apps/api/src/core/config/env.ts`
+- módulos: `apps/api/src/modules/*`
 
-Referência completa: `src/core/config/README.md`.
+## Documentação oficial
 
-## Arquitetura (resumo)
-
-- Casos de uso em `application/use-cases`
-- Portas (interfaces) em `domain/ports`
-- Adaptadores concretos (Prisma/storage) em `services`
-- Contratos HTTP estáveis em `src/contracts`
-
-## Licença
-
-UNLICENSED
+- `docs/README.md`
+- `docs/01-arquitetura-monorepo.md`
+- `docs/02-configuracao-env.md`
+- `docs/03-guia-criacao-modulo-api.md`
+- `docs/05-upload-fotos-e-arquivos.md`
