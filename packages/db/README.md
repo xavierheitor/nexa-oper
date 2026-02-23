@@ -4,16 +4,9 @@ Pacote Prisma compartilhado do monorepo.
 
 ## Responsabilidade
 
-- manter schema e migrations
-- gerar Prisma Client consumido por `apps/api` e `apps/web`
-
-## Comandos principais
-
-```bash
-npm run db:generate --workspace=packages/db
-npm run migrate:dev --workspace=packages/db
-npm run migrate:deploy --workspace=packages/db
-```
+- centralizar schema de banco
+- versionar migrations
+- gerar Prisma Client único consumido por API e Web
 
 ## Estrutura
 
@@ -23,16 +16,36 @@ packages/db/
 │   ├── schema.prisma
 │   ├── *.prisma
 │   └── migrations/
-└── prisma/generated/prisma/
+├── prisma/generated/prisma/
+└── scripts/with-env.mjs
 ```
 
-## Observações
+## Comandos
 
-- scripts carregam env via `packages/db/scripts/with-env.mjs`
-- em produção, usar `migrate:deploy`
+```bash
+npm run db:generate --workspace=packages/db
+npm run migrate:dev --workspace=packages/db
+npm run migrate:deploy --workspace=packages/db
+npm run studio --workspace=packages/db
+```
 
-## Documentação oficial
+## Fluxo recomendado
 
-- `docs/README.md`
-- `docs/02-configuracao-env.md`
-- `docs/06-build-release.md`
+1. alterar modelo em `prisma/models/*.prisma`
+2. rodar migration de dev
+3. validar aplicação local
+4. promover migration para produção com `migrate:deploy`
+
+## Ambiente
+
+Scripts Prisma carregam env na cadeia:
+
+1. `packages/db/.env.local`
+2. `packages/db/.env`
+3. `.env.local` (raiz)
+4. `.env` (raiz)
+
+## Referências
+
+- configuração de env: `docs/02-configuracao-env.md`
+- build/release: `docs/06-build-release.md`

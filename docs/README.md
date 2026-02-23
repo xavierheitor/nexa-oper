@@ -1,39 +1,34 @@
-# Documentação do Monorepo
+# Documentação Oficial
 
-Este diretório é a fonte oficial para documentação técnica do Nexa Oper.
+Este diretório concentra a documentação ativa do monorepo.
 
-## Ordem recomendada de leitura
+## Núcleo ativo
 
 1. `docs/01-arquitetura-monorepo.md`
 2. `docs/02-configuracao-env.md`
-3. `docs/06-build-release.md`
-4. `docs/07-deploy-producao-pm2.md`
+3. `docs/03-guia-criacao-modulo-api.md`
+4. `docs/04-guia-criacao-modulo-web.md`
+5. `docs/05-upload-fotos-e-arquivos.md`
+6. `docs/06-build-release.md`
+7. `docs/07-deploy-producao-pm2.md`
 
-Para implementação:
+## Quando usar cada guia
 
-- API: `docs/03-guia-criacao-modulo-api.md`
-- Web: `docs/04-guia-criacao-modulo-web.md`
-- Upload/fotos: `docs/05-upload-fotos-e-arquivos.md`
+- visão de sistema e limites: `01`
+- variáveis e configuração por ambiente: `02`
+- criar módulo backend: `03`
+- criar módulo frontend: `04`
+- pipeline de arquivos e fotos: `05`
+- build/release técnico: `06`
+- operação em produção com PM2: `07`
 
-## Escopo oficial (ativo)
+## Política de manutenção
 
-- arquitetura e decisões de estrutura
-- configuração de ambiente (dev e prod)
-- padrões para novos módulos
-- fluxo de upload (local/S3), deduplicação e acesso web
-- manuais de build, release e deploy com PM2
+- guias ativos vivem em `docs/` (nível raiz)
+- materiais históricos ficam em `docs/archive/*`
+- qualquer conflito deve ser resolvido a favor dos guias `01..07`
 
 ## Legado
 
-Conteúdo histórico foi movido para:
-
-- `docs/archive/legacy-root/`
-- `apps/web/docs/archive/legacy/`
-
-Use esses arquivos apenas como referência histórica.
-
-## Regra de governança
-
-- novos guias de operação devem entrar em `docs/` seguindo a numeração principal
-- documentos temporários de análise devem ir para `*/docs/archive/legacy/`
-- em caso de conflito, os guias `01..07` prevalecem
+- raiz legado: `docs/archive/legacy-root/`
+- legado da web: `apps/web/docs/archive/legacy/`

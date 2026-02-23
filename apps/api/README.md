@@ -1,6 +1,13 @@
 # Nexa API
 
-API NestJS do monorepo Nexa Oper.
+Backend NestJS do monorepo Nexa Oper.
+
+## Função no sistema
+
+- autenticação mobile
+- abertura/fechamento/sincronização de turnos
+- upload de evidências (fotos/arquivos)
+- endpoints de suporte ao backoffice
 
 ## Execução
 
@@ -12,14 +19,33 @@ npm run start:dev --workspace=apps/api
 
 ```bash
 npm run build --workspace=apps/api
+npm run start:prod --workspace=apps/api
 ```
 
-## Pontos de entrada importantes
+## Entrada e estrutura
 
 - bootstrap: `apps/api/src/main.ts`
-- configuração global: `apps/api/src/core/config/configure-app.ts`
-- env: `apps/api/src/core/config/env.ts`
-- módulos: `apps/api/src/modules/*`
+- módulo raiz: `apps/api/src/app.module.ts`
+- configuração HTTP/env: `apps/api/src/core/config/*`
+- domínio: `apps/api/src/modules/*`
+- contratos públicos: `apps/api/src/contracts/*`
+
+## Variáveis essenciais
+
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `PORT` (normalmente `3001`)
+- variáveis de upload quando aplicável (`UPLOAD_*`)
+
+Referência completa: `docs/02-configuracao-env.md`.
+
+## Módulos-chave
+
+- `apps/api/src/modules/turno`
+- `apps/api/src/modules/sync`
+- `apps/api/src/modules/upload`
+- `apps/api/src/modules/localizacao`
+- `apps/api/src/modules/atividade-upload`
 
 ## Documentação oficial
 

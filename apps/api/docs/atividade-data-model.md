@@ -4,4 +4,4 @@ Este documento foi mantido apenas como referência de contexto específico de at
 
 Para arquitetura e padrões atuais, use:
 
-- `/Users/xavier/projetos/nexa/nexa-oper/docs/01-arquitetura-monorepo.md`
+- `../../../docs/01-arquitetura-monorepo.md`

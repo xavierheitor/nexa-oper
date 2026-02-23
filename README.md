@@ -1,18 +1,19 @@
-# Nexa Oper Monorepo
+# Nexa Oper
 
-Monorepo com três pilares:
+Monorepo oficial do Nexa Oper.
 
-- `apps/web`: frontend Next.js 15
-- `apps/api`: backend NestJS 11
-- `packages/db`: schema/migrations Prisma compartilhados
+## Aplicações
+
+- `apps/web`: frontend Next.js 15 (backoffice)
+- `apps/api`: backend NestJS 11 (mobile + integrações)
+- `packages/db`: Prisma schema, migrations e client compartilhado
 
 ## Stack
 
 - Node.js 20+
 - npm workspaces + Turborepo
 - Next.js + React + TypeScript
-- NestJS + Prisma
-- MySQL/MariaDB
+- NestJS + Prisma + MySQL/MariaDB
 
 ## Estrutura
 
@@ -28,55 +29,73 @@ nexa-oper/
 └── package.json
 ```
 
-## Quick Start
-
-1. Instalar dependências:
+## Setup rápido
 
 ```bash
 npm run install:all
+cp .env.example .env
+npm run db:generate
+npm run dev
 ```
 
-2. Configurar ambiente (copie e ajuste):
+Ambiente local padrão:
+
+- Web: `http://localhost:3000`
+- API: `http://localhost:3001`
+- Health API: `http://localhost:3001/__ping`
+
+## Fluxos principais
+
+### Desenvolvimento
 
 ```bash
-cp .env.example .env
+npm run dev
+# ou separado
+npm run web:dev
+npm run api:dev
 ```
 
-3. Gerar Prisma Client:
+### Banco
 
 ```bash
 npm run db:generate
-```
-
-4. Subir ambiente de desenvolvimento:
-
-```bash
-npm run dev
-```
-
-## Comandos úteis
-
-```bash
-npm run dev
-npm run build
-npm run lint
-npm run test
 npm run db:migrate:dev
 npm run db:migrate:deploy
+npm run db:studio
 ```
+
+### Qualidade e build
+
+```bash
+npm run lint
+npm run test
+npm run build
+```
+
+## Uploads e fotos
+
+- API expõe arquivos locais em `/uploads/*`
+- Web pode acessar via rewrite/proxy ou URL pública direta
+- guia oficial: `docs/05-upload-fotos-e-arquivos.md`
+
+## Produção
+
+- build/release: `docs/06-build-release.md`
+- deploy PM2/ecosystem: `docs/07-deploy-producao-pm2.md`
 
 ## Documentação oficial
 
-Comece em `docs/README.md`.
+Comece por `docs/README.md`.
 
-- Arquitetura: `docs/01-arquitetura-monorepo.md`
-- Configuração `.env`: `docs/02-configuracao-env.md`
-- Criar módulo API: `docs/03-guia-criacao-modulo-api.md`
-- Criar módulo Web: `docs/04-guia-criacao-modulo-web.md`
-- Upload e fotos: `docs/05-upload-fotos-e-arquivos.md`
-- Build/release: `docs/06-build-release.md`
-- Deploy com PM2: `docs/07-deploy-producao-pm2.md`
+- arquitetura: `docs/01-arquitetura-monorepo.md`
+- env/config: `docs/02-configuracao-env.md`
+- criar módulo API: `docs/03-guia-criacao-modulo-api.md`
+- criar módulo Web: `docs/04-guia-criacao-modulo-web.md`
+- upload/fotos: `docs/05-upload-fotos-e-arquivos.md`
+- build/release: `docs/06-build-release.md`
+- deploy PM2: `docs/07-deploy-producao-pm2.md`
 
-## Estado desta revisão
+## Histórico
 
-Esta é a base consolidada da documentação (iteração 1), com foco em fonte única de verdade para setup, arquitetura, upload e produção.
+- changelog: `CHANGELOG.md`
+- notas antigas de release: `docs/archive/releases/`
