@@ -32,7 +32,7 @@ export class AtividadeUploadController {
   @ApiOperation({
     summary: 'Upload de atividade realizada',
     description:
-      'Recebe execução da atividade (medidor, materiais, respostas, eventos e fotos inline) em um único payload JSON.',
+      'Recebe execução da atividade (medidor, materiais, respostas, eventos, APR e fotos inline) em um único payload JSON.',
   })
   @ApiBody({
     description: 'Payload da atividade realizada no app mobile',

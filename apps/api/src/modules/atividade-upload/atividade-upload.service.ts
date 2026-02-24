@@ -3,6 +3,7 @@ import type { Prisma } from '@nexa-oper/db';
 import { Inject, Injectable } from '@nestjs/common';
 import * as path from 'node:path';
 import type {
+  AtividadeUploadAprContract,
   AtividadeUploadPhotoContract,
   AtividadeUploadRequestContract,
   AtividadeUploadResponseContract,
@@ -30,6 +31,15 @@ interface StoredPhotoRecord {
   path: string;
 }
 
+interface TurnoEletricistaSnapshot {
+  id: number;
+  eletricistaId: number;
+  eletricista: {
+    nome: string;
+    matricula: string;
+  };
+}
+
 function sanitizeFilename(filename: string): string {
   const base = path.basename(filename);
   const ascii = base.replace(/[^\x20-\x7E]/g, '');
@@ -55,6 +65,10 @@ function parseDateOrNull(value?: string | null): Date | null {
 
 function sha256Hex(buffer: Buffer): string {
   return createHash('sha256').update(buffer).digest('hex');
+}
+
+function sha256Text(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
 }
 
 function inferMimeTypeFromDataUrl(base64: string): string | null {
@@ -204,6 +218,12 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
           createdBy,
         );
         await this.persistEventos(tx, execucao.id, payload, createdBy);
+        await this.persistAprs(
+          tx as PrismaService,
+          execucao.id,
+          payload,
+          createdBy,
+        );
       });
     } catch (error: unknown) {
       await this.cleanupCreatedPhotos(createdPhotos);
@@ -394,6 +414,274 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
         createdBy,
       })),
     });
+  }
+
+  private async persistAprs(
+    tx: PrismaService,
+    atividadeExecucaoId: number,
+    payload: AtividadeUploadRequestContract,
+    createdBy: string,
+  ) {
+    if (!payload.aprs?.length) return;
+
+    const turnoEletricistas = await tx.turnoEletricista.findMany({
+      where: {
+        turnoId: payload.turnoId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        eletricistaId: true,
+        eletricista: {
+          select: {
+            nome: true,
+            matricula: true,
+          },
+        },
+      },
+    });
+
+    const turnoEletricistasById = new Map(
+      turnoEletricistas.map((item) => [item.id, item]),
+    );
+    const turnoEletricistasByEletricistaId = new Map(
+      turnoEletricistas.map((item) => [item.eletricistaId, item]),
+    );
+
+    for (const apr of payload.aprs) {
+      const aprTurnoId = apr.turnoId ?? payload.turnoId;
+      if (aprTurnoId !== payload.turnoId) {
+        throw AppError.validation(
+          `APR ${apr.aprUuid} informada com turnoId diferente do upload`,
+        );
+      }
+
+      const assinaturas = this.resolveAprAssinaturas(
+        apr,
+        turnoEletricistas,
+        turnoEletricistasById,
+        turnoEletricistasByEletricistaId,
+      );
+
+      const preenchidaEm = parseDateOrNull(apr.preenchidaEm) ?? new Date();
+      const vinculadaAoServico = apr.vinculadaAoServico ?? true;
+      const aprSignature = sha256Text(
+        `${apr.aprUuid}|${preenchidaEm.toISOString()}|${normalizeString(apr.observacoes) ?? ''}`,
+      );
+
+      const aprPreenchida = await tx.atividadeAprPreenchida.upsert({
+        where: { aprUuid: apr.aprUuid },
+        create: {
+          aprUuid: apr.aprUuid,
+          remoteId: apr.aprRemoteId ?? null,
+          turnoId: payload.turnoId,
+          atividadeExecucaoId: vinculadaAoServico ? atividadeExecucaoId : null,
+          aprId: apr.aprModeloId ?? null,
+          tipoAtividadeId:
+            apr.tipoAtividadeRemoteId ?? payload.tipoAtividadeRemoteId ?? null,
+          tipoAtividadeServicoId:
+            apr.tipoServicoRemoteId ?? payload.tipoServicoRemoteId ?? null,
+          observacoes: normalizeString(apr.observacoes),
+          preenchidaEm,
+          latitude: apr.latitude ?? null,
+          longitude: apr.longitude ?? null,
+          vinculadaAoServico,
+          signature: aprSignature,
+          createdBy,
+        },
+        update: {
+          remoteId: apr.aprRemoteId ?? null,
+          turnoId: payload.turnoId,
+          atividadeExecucaoId: vinculadaAoServico ? atividadeExecucaoId : null,
+          aprId: apr.aprModeloId ?? null,
+          tipoAtividadeId:
+            apr.tipoAtividadeRemoteId ?? payload.tipoAtividadeRemoteId ?? null,
+          tipoAtividadeServicoId:
+            apr.tipoServicoRemoteId ?? payload.tipoServicoRemoteId ?? null,
+          observacoes: normalizeString(apr.observacoes),
+          preenchidaEm,
+          latitude: apr.latitude ?? null,
+          longitude: apr.longitude ?? null,
+          vinculadaAoServico,
+          signature: aprSignature,
+          updatedBy: createdBy,
+        },
+        select: { id: true },
+      });
+
+      await tx.atividadeAprResposta.deleteMany({
+        where: {
+          atividadeAprPreenchidaId: aprPreenchida.id,
+        },
+      });
+      await tx.atividadeAprAssinatura.deleteMany({
+        where: {
+          atividadeAprPreenchidaId: aprPreenchida.id,
+        },
+      });
+
+      if (apr.respostas.length) {
+        const respostasData = apr.respostas.map((resposta, idx) => {
+          const perguntaNomeSnapshot = normalizeString(
+            resposta.aprPerguntaNomeSnapshot,
+          );
+          if (!perguntaNomeSnapshot) {
+            throw AppError.validation(
+              `APR ${apr.aprUuid} com resposta sem nome da pergunta (índice ${idx})`,
+            );
+          }
+
+          const tipoRespostaSnapshot = normalizeString(
+            resposta.tipoRespostaSnapshot,
+          );
+          if (!tipoRespostaSnapshot) {
+            throw AppError.validation(
+              `APR ${apr.aprUuid} com resposta sem tipoRespostaSnapshot (índice ${idx})`,
+            );
+          }
+
+          return {
+            atividadeAprPreenchidaId: aprPreenchida.id,
+            aprGrupoPerguntaId: resposta.aprGrupoPerguntaId ?? null,
+            aprPerguntaId: resposta.aprPerguntaId ?? null,
+            aprOpcaoRespostaId: resposta.aprOpcaoRespostaId ?? null,
+            grupoNomeSnapshot: normalizeString(
+              resposta.aprGrupoPerguntaNomeSnapshot,
+            ),
+            perguntaNomeSnapshot,
+            tipoRespostaSnapshot,
+            opcaoNomeSnapshot: normalizeString(
+              resposta.aprOpcaoRespostaNomeSnapshot,
+            ),
+            respostaTexto: normalizeString(resposta.respostaTexto),
+            marcado:
+              typeof resposta.marcado === 'boolean' ? resposta.marcado : null,
+            ordemGrupo: resposta.ordemGrupo ?? 0,
+            ordemPergunta: resposta.ordemPergunta ?? 0,
+            dataResposta: parseDateOrNull(resposta.dataResposta) ?? preenchidaEm,
+            createdBy,
+          };
+        });
+
+        await tx.atividadeAprResposta.createMany({
+          data: respostasData,
+        });
+      }
+
+      await tx.atividadeAprAssinatura.createMany({
+        data: assinaturas.map((assinatura) => ({
+          atividadeAprPreenchidaId: aprPreenchida.id,
+          turnoEletricistaId: assinatura.turnoEletricistaId,
+          eletricistaId: assinatura.eletricistaId,
+          nomeAssinante: assinatura.nomeAssinante,
+          matriculaAssinante: assinatura.matriculaAssinante,
+          assinaturaHash: assinatura.assinaturaHash,
+          assinaturaData: assinatura.assinaturaData,
+          assinanteExtra: assinatura.assinanteExtra,
+          createdBy,
+        })),
+      });
+    }
+  }
+
+  private resolveAprAssinaturas(
+    apr: AtividadeUploadAprContract,
+    turnoEletricistas: TurnoEletricistaSnapshot[],
+    turnoEletricistasById: Map<number, TurnoEletricistaSnapshot>,
+    turnoEletricistasByEletricistaId: Map<number, TurnoEletricistaSnapshot>,
+  ) {
+    if (!apr.assinaturas.length) {
+      throw AppError.validation(
+        `APR ${apr.aprUuid} deve conter pelo menos uma assinatura`,
+      );
+    }
+
+    const assinaramTurno = new Set<number>();
+
+    const assinaturas = apr.assinaturas.map((assinatura, assinaturaIndex) => {
+      const turnoEletricistaById =
+        assinatura.turnoEletricistaId != null
+          ? turnoEletricistasById.get(assinatura.turnoEletricistaId)
+          : null;
+
+      if (assinatura.turnoEletricistaId != null && !turnoEletricistaById) {
+        throw AppError.validation(
+          `APR ${apr.aprUuid} com assinatura vinculada a turnoEletricistaId inválido (${assinatura.turnoEletricistaId})`,
+        );
+      }
+
+      const turnoEletricistaByEletricista =
+        assinatura.eletricistaId != null
+          ? turnoEletricistasByEletricistaId.get(assinatura.eletricistaId)
+          : null;
+
+      if (
+        turnoEletricistaById &&
+        turnoEletricistaByEletricista &&
+        turnoEletricistaById.id !== turnoEletricistaByEletricista.id
+      ) {
+        throw AppError.validation(
+          `APR ${apr.aprUuid} com assinatura inconsistente entre turnoEletricistaId e eletricistaId`,
+        );
+      }
+
+      const turnoEletricista =
+        turnoEletricistaById ?? turnoEletricistaByEletricista ?? null;
+      if (turnoEletricista) {
+        assinaramTurno.add(turnoEletricista.id);
+      }
+
+      const eletricistaId =
+        assinatura.eletricistaId ?? turnoEletricista?.eletricistaId ?? null;
+      const nomeAssinante =
+        normalizeString(assinatura.nomeAssinante) ??
+        normalizeString(turnoEletricista?.eletricista.nome) ??
+        null;
+
+      if (!nomeAssinante) {
+        throw AppError.validation(
+          `APR ${apr.aprUuid} com assinatura sem identificação de nome`,
+        );
+      }
+
+      const matriculaAssinante =
+        normalizeString(assinatura.matriculaAssinante) ??
+        normalizeString(turnoEletricista?.eletricista.matricula);
+      const assinaturaData =
+        parseDateOrNull(assinatura.assinaturaData) ??
+        parseDateOrNull(apr.preenchidaEm) ??
+        new Date();
+      const assinaturaHash =
+        normalizeString(assinatura.assinaturaHash) ??
+        sha256Text(
+          `${apr.aprUuid}|${nomeAssinante}|${matriculaAssinante ?? ''}|${assinaturaData.toISOString()}|${assinaturaIndex}`,
+        );
+      const assinanteExtra = assinatura.assinanteExtra ?? !turnoEletricista;
+
+      return {
+        turnoEletricistaId: turnoEletricista?.id ?? null,
+        eletricistaId,
+        nomeAssinante,
+        matriculaAssinante,
+        assinaturaHash,
+        assinaturaData,
+        assinanteExtra,
+      };
+    });
+
+    const faltantes = turnoEletricistas.filter(
+      (item) => !assinaramTurno.has(item.id),
+    );
+    if (faltantes.length) {
+      const faltantesLabel = faltantes
+        .map((item) => item.eletricista.nome)
+        .join(', ');
+      throw AppError.validation(
+        `APR ${apr.aprUuid} sem assinatura de todos os componentes do turno. Faltantes: ${faltantesLabel}`,
+      );
+    }
+
+    return assinaturas;
   }
 
   private resolvePhotoRef(

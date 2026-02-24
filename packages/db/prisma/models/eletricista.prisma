@@ -20,6 +20,7 @@ model Eletricista {
   contrato   Contrato @relation(fields: [contratoId], references: [id])
 
   TurnoEletricistas        TurnoEletricista[]
+  AtividadeAprAssinaturas  AtividadeAprAssinatura[]
   EletricistaBaseHistorico EletricistaBaseHistorico[]
   ChecklistPreenchidos     ChecklistPreenchido[]
 

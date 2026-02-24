@@ -52,6 +52,47 @@ export interface AtividadeUploadEventoContract {
   capturadoEm?: string;
 }
 
+export interface AtividadeUploadAprRespostaContract {
+  aprGrupoPerguntaId?: number | null;
+  aprGrupoPerguntaNomeSnapshot?: string | null;
+  aprPerguntaId?: number | null;
+  aprPerguntaNomeSnapshot: string;
+  tipoRespostaSnapshot: string;
+  aprOpcaoRespostaId?: number | null;
+  aprOpcaoRespostaNomeSnapshot?: string | null;
+  respostaTexto?: string | null;
+  marcado?: boolean | null;
+  ordemGrupo?: number;
+  ordemPergunta?: number;
+  dataResposta?: string;
+}
+
+export interface AtividadeUploadAprAssinaturaContract {
+  turnoEletricistaId?: number | null;
+  eletricistaId?: number | null;
+  nomeAssinante?: string | null;
+  matriculaAssinante?: string | null;
+  assinaturaHash?: string | null;
+  assinaturaData?: string;
+  assinanteExtra?: boolean;
+}
+
+export interface AtividadeUploadAprContract {
+  aprUuid: string;
+  aprRemoteId?: number | null;
+  aprModeloId?: number | null;
+  turnoId?: number | null;
+  tipoAtividadeRemoteId?: number | null;
+  tipoServicoRemoteId?: number | null;
+  vinculadaAoServico?: boolean;
+  observacoes?: string | null;
+  preenchidaEm?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  respostas: AtividadeUploadAprRespostaContract[];
+  assinaturas: AtividadeUploadAprAssinaturaContract[];
+}
+
 export interface AtividadeUploadRequestContract {
   atividadeUuid: string;
   atividadeRemoteId?: number | null;
@@ -77,6 +118,7 @@ export interface AtividadeUploadRequestContract {
   materiais?: AtividadeUploadMaterialContract[];
   respostas?: AtividadeUploadRespostaContract[];
   eventos?: AtividadeUploadEventoContract[];
+  aprs?: AtividadeUploadAprContract[];
   fotos?: AtividadeUploadPhotoContract[];
 }
 

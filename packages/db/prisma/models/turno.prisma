@@ -30,6 +30,7 @@ model Turno {
   TurnoRealizado       TurnoRealizado[]
   AderenciaEscalaSnapshot AderenciaEscalaSnapshot[]
   AtividadeExecucoes   AtividadeExecucao[]
+  AtividadeAprPreenchidas AtividadeAprPreenchida[]
 }
 
 model TurnoEletricista {
@@ -40,6 +41,8 @@ model TurnoEletricista {
 
   eletricistaId Int
   eletricista   Eletricista @relation(fields: [eletricistaId], references: [id])
+
+  atividadeAprAssinaturas AtividadeAprAssinatura[]
 
   motorista Boolean @default(false)
 

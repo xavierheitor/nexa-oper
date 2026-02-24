@@ -11,6 +11,7 @@ model TipoAtividade {
   tipoAtividadeServicos   TipoAtividadeServico[]
   atividadeExecucoes      AtividadeExecucao[]
   AprTipoAtividadeRelacao AprTipoAtividadeRelacao[]
+  atividadeAprPreenchidas AtividadeAprPreenchida[]
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -38,6 +39,7 @@ model TipoAtividadeServico {
 
   atividadeExecucoes               AtividadeExecucao[]
   atividadeFormTipoServicoRelacao AtividadeFormTipoServicoRelacao[]
+  atividadeAprPreenchidas         AtividadeAprPreenchida[]
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -209,6 +211,7 @@ model AtividadeExecucao {
   atividadeMateriaisAplicados AtividadeMaterialAplicado[]
   atividadeFormRespostas      AtividadeFormResposta[]
   atividadeEventos            AtividadeEvento[]
+  atividadeAprPreenchidas     AtividadeAprPreenchida[]
 
   @@index([turnoId, statusFluxo])
   @@index([syncStatus, attemptCount])
@@ -353,4 +356,117 @@ model AtividadeEvento {
   @@unique([atividadeExecucaoId, signature], map: "uq_atividade_evento_signature")
   @@index([atividadeExecucaoId, capturadoEm])
   @@index([tipoEvento])
+}
+
+model AtividadeAprPreenchida {
+  id Int @id @default(autoincrement())
+
+  aprUuid String @unique @db.VarChar(36)
+  remoteId Int?
+
+  turnoId Int
+  turno   Turno @relation(fields: [turnoId], references: [id], onDelete: Cascade)
+
+  atividadeExecucaoId Int?
+  atividadeExecucao   AtividadeExecucao? @relation(fields: [atividadeExecucaoId], references: [id], onDelete: SetNull)
+
+  aprId Int?
+  apr   Apr? @relation(fields: [aprId], references: [id])
+
+  tipoAtividadeId Int?
+  tipoAtividade   TipoAtividade? @relation(fields: [tipoAtividadeId], references: [id])
+
+  tipoAtividadeServicoId Int?
+  tipoAtividadeServico   TipoAtividadeServico? @relation(fields: [tipoAtividadeServicoId], references: [id])
+
+  observacoes        String? @db.Text
+  preenchidaEm       DateTime @default(now())
+  latitude           Float?
+  longitude          Float?
+  vinculadaAoServico Boolean @default(true)
+  signature          String? @db.VarChar(128)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  respostas  AtividadeAprResposta[]
+  assinaturas AtividadeAprAssinatura[]
+
+  @@index([turnoId, preenchidaEm])
+  @@index([atividadeExecucaoId])
+  @@index([aprId])
+  @@index([tipoAtividadeId])
+  @@index([tipoAtividadeServicoId])
+  @@index([updatedAt])
+  @@index([deletedAt])
+}
+
+model AtividadeAprResposta {
+  id Int @id @default(autoincrement())
+
+  atividadeAprPreenchidaId Int
+  atividadeAprPreenchida   AtividadeAprPreenchida @relation(fields: [atividadeAprPreenchidaId], references: [id], onDelete: Cascade)
+
+  aprGrupoPerguntaId Int?
+  aprGrupoPergunta   AprGrupoPergunta? @relation(fields: [aprGrupoPerguntaId], references: [id])
+
+  aprPerguntaId Int?
+  aprPergunta   AprPergunta? @relation(fields: [aprPerguntaId], references: [id])
+
+  aprOpcaoRespostaId Int?
+  aprOpcaoResposta   AprOpcaoResposta? @relation(fields: [aprOpcaoRespostaId], references: [id])
+
+  grupoNomeSnapshot      String? @db.VarChar(255)
+  perguntaNomeSnapshot   String  @db.VarChar(255)
+  tipoRespostaSnapshot   String  @db.VarChar(30)
+  opcaoNomeSnapshot      String? @db.VarChar(255)
+  respostaTexto          String? @db.Text
+  marcado                Boolean?
+  ordemGrupo             Int     @default(0)
+  ordemPergunta          Int     @default(0)
+  dataResposta           DateTime @default(now())
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+
+  @@index([atividadeAprPreenchidaId, ordemGrupo, ordemPergunta])
+  @@index([aprGrupoPerguntaId])
+  @@index([aprPerguntaId])
+  @@index([aprOpcaoRespostaId])
+}
+
+model AtividadeAprAssinatura {
+  id Int @id @default(autoincrement())
+
+  atividadeAprPreenchidaId Int
+  atividadeAprPreenchida   AtividadeAprPreenchida @relation(fields: [atividadeAprPreenchidaId], references: [id], onDelete: Cascade)
+
+  turnoEletricistaId Int?
+  turnoEletricista   TurnoEletricista? @relation(fields: [turnoEletricistaId], references: [id], onDelete: SetNull)
+
+  eletricistaId Int?
+  eletricista   Eletricista? @relation(fields: [eletricistaId], references: [id], onDelete: SetNull)
+
+  nomeAssinante     String  @db.VarChar(255)
+  matriculaAssinante String? @db.VarChar(100)
+  assinaturaHash    String? @db.VarChar(128)
+  assinaturaData    DateTime @default(now())
+  assinanteExtra    Boolean @default(false)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+
+  @@index([atividadeAprPreenchidaId])
+  @@index([turnoEletricistaId])
+  @@index([eletricistaId])
+  @@index([assinaturaData])
+  @@unique([atividadeAprPreenchidaId, assinaturaHash], map: "uq_atividade_apr_assinatura_hash")
 }

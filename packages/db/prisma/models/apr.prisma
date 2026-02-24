@@ -13,6 +13,7 @@ model Apr {
   AprOpcaoRespostaRelacao AprOpcaoRespostaRelacao[]
   AprGrupoRelacao         AprGrupoRelacao[]
   AprTipoAtividadeRelacao AprTipoAtividadeRelacao[]
+  AtividadeAprPreenchidas AtividadeAprPreenchida[]
 }
 
 model AprPergunta {
@@ -28,6 +29,7 @@ model AprPergunta {
 
   AprPerguntaRelacao      AprPerguntaRelacao[]
   AprGrupoPerguntaRelacao AprGrupoPerguntaRelacao[]
+  AtividadeAprRespostas   AtividadeAprResposta[]
 }
 
 model AprPerguntaRelacao {
@@ -62,6 +64,7 @@ model AprOpcaoResposta {
 
   AprOpcaoRespostaRelacao      AprOpcaoRespostaRelacao[]
   AprGrupoOpcaoRespostaRelacao AprGrupoOpcaoRespostaRelacao[]
+  AtividadeAprRespostas        AtividadeAprResposta[]
 }
 
 model AprGrupoPergunta {
@@ -73,6 +76,7 @@ model AprGrupoPergunta {
   AprGrupoRelacao              AprGrupoRelacao[]
   AprGrupoPerguntaRelacao      AprGrupoPerguntaRelacao[]
   AprGrupoOpcaoRespostaRelacao AprGrupoOpcaoRespostaRelacao[]
+  AtividadeAprRespostas        AtividadeAprResposta[]
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)

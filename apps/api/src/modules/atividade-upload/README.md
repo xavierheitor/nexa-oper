@@ -14,13 +14,17 @@ Um único JSON com:
 - `materiais` (opcional)
 - `respostas` (opcional)
 - `eventos` (opcional)
+- `aprs` (opcional) com respostas e assinaturas da APR preenchida
 - `fotos` (opcional, em base64) e/ou fotos inline em `medidor` e `respostas`
 
 ## Comportamento
 
 - Idempotência por `atividadeUuid` (`upsert`)
+- Idempotência por `aprUuid` dentro de `aprs`
 - Persistência de fotos em storage configurado (`local`/`s3`)
-- Persistência transacional de medidor, materiais, respostas e eventos
+- Persistência transacional de medidor, materiais, respostas, eventos e APR
+- APR vinculada obrigatoriamente a um `turno` e opcionalmente ao serviço (`vinculadaAoServico`)
+- Validação de assinaturas: todos os componentes do turno precisam assinar cada APR (aceita assinantes extras)
 - Retorno `201` quando cria e `200` quando atualiza
 
 ## Resposta
