@@ -26,6 +26,7 @@ import {
   Select,
 } from 'antd';
 import {
+  AppstoreOutlined,
   CalendarOutlined,
   SearchOutlined,
   CheckOutlined,
@@ -47,6 +48,7 @@ import ChecklistSelectorModal, {
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 import TurnoLocationMapModal from '@/ui/components/TurnoLocationMapModal';
 import FecharTurnoModal from '@/ui/components/FecharTurnoModal';
+import TurnoAtividadesModal from '@/ui/components/TurnoAtividadesModal';
 import { useLoadingStates } from '@/lib/hooks/useLoadingStates';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
@@ -126,6 +128,11 @@ export default function HistoricoPage() {
   // Estados para o modal de localização
   const [locationMapVisible, setLocationMapVisible] = useState(false);
   const [selectedTurnoForLocation, setSelectedTurnoForLocation] =
+    useState<TurnoData | null>(null);
+
+  // Estados para modal de atividades por turno
+  const [atividadesModalVisible, setAtividadesModalVisible] = useState(false);
+  const [selectedTurnoForAtividades, setSelectedTurnoForAtividades] =
     useState<TurnoData | null>(null);
 
   // Estados para o modal de fechar turno
@@ -230,6 +237,11 @@ export default function HistoricoPage() {
   const handleViewLocation = (turno: TurnoData) => {
     setSelectedTurnoForLocation(turno);
     setLocationMapVisible(true);
+  };
+
+  const handleViewAtividades = (turno: TurnoData) => {
+    setSelectedTurnoForAtividades(turno);
+    setAtividadesModalVisible(true);
   };
 
   const handleSelectChecklist = (checklist: any) => {
@@ -490,7 +502,7 @@ export default function HistoricoPage() {
     {
       title: 'Ações',
       key: 'actions',
-      width: 220,
+      width: 280,
       render: (_: unknown, record: TurnoData) => (
         <Space>
           <Tooltip title='Ver Checklists'>
@@ -499,6 +511,14 @@ export default function HistoricoPage() {
               size='small'
               icon={<CheckOutlined />}
               onClick={() => handleViewChecklists(record)}
+            />
+          </Tooltip>
+          <Tooltip title='Ver Atividades do Turno'>
+            <Button
+              type='default'
+              size='small'
+              icon={<AppstoreOutlined />}
+              onClick={() => handleViewAtividades(record)}
             />
           </Tooltip>
           <Tooltip title='Ver Histórico de Localização'>
@@ -834,6 +854,24 @@ export default function HistoricoPage() {
                 id: selectedTurnoForLocation.id,
                 veiculo: { placa: selectedTurnoForLocation.veiculoPlaca },
                 equipe: { nome: selectedTurnoForLocation.equipeNome },
+              }
+            : undefined
+        }
+      />
+
+      <TurnoAtividadesModal
+        visible={atividadesModalVisible}
+        onClose={() => {
+          setAtividadesModalVisible(false);
+          setSelectedTurnoForAtividades(null);
+        }}
+        turnoId={selectedTurnoForAtividades?.id || 0}
+        turnoInfo={
+          selectedTurnoForAtividades
+            ? {
+                veiculoPlaca: selectedTurnoForAtividades.veiculoPlaca,
+                equipeNome: selectedTurnoForAtividades.equipeNome,
+                dataInicio: selectedTurnoForAtividades.dataInicio,
               }
             : undefined
         }

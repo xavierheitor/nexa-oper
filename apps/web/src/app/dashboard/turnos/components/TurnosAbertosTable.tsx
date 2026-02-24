@@ -1,6 +1,7 @@
 import React from 'react';
 import { Table, Space, Tooltip, Button, Tag, Empty } from 'antd';
 import {
+  AppstoreOutlined,
   CheckOutlined,
   EnvironmentOutlined,
   CloseOutlined,
@@ -13,6 +14,7 @@ interface TurnosAbertosTableProps {
   turnosFiltrados: TurnoData[];
   pagination: TablePaginationConfig | false | undefined;
   handleViewChecklists: (turno: TurnoData) => void;
+  handleViewAtividades: (turno: TurnoData) => void;
   handleViewLocation: (turno: TurnoData) => void;
   handleFecharTurno: (turno: TurnoData) => void;
 }
@@ -21,6 +23,7 @@ export const TurnosAbertosTable: React.FC<TurnosAbertosTableProps> = ({
   turnosFiltrados,
   pagination,
   handleViewChecklists,
+  handleViewAtividades,
   handleViewLocation,
   handleFecharTurno,
 }) => {
@@ -118,7 +121,7 @@ export const TurnosAbertosTable: React.FC<TurnosAbertosTableProps> = ({
     {
       title: 'Ações',
       key: 'actions',
-      width: 220,
+      width: 280,
       render: (_: unknown, record: TurnoData) => (
         <Space>
           <Tooltip title='Ver Checklists'>
@@ -127,6 +130,14 @@ export const TurnosAbertosTable: React.FC<TurnosAbertosTableProps> = ({
               size='small'
               icon={<CheckOutlined />}
               onClick={() => handleViewChecklists(record)}
+            />
+          </Tooltip>
+          <Tooltip title='Ver Atividades do Turno'>
+            <Button
+              type='default'
+              size='small'
+              icon={<AppstoreOutlined />}
+              onClick={() => handleViewAtividades(record)}
             />
           </Tooltip>
           <Tooltip title='Ver Histórico de Localização'>

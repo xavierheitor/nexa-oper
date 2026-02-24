@@ -26,6 +26,7 @@ import ChecklistSelectorModal from '@/ui/components/ChecklistSelectorModal';
 import ChecklistViewerModal from '@/ui/components/ChecklistViewerModal';
 import TurnoLocationMapModal from '@/ui/components/TurnoLocationMapModal';
 import FecharTurnoModal from '@/ui/components/FecharTurnoModal';
+import TurnoAtividadesModal from '@/ui/components/TurnoAtividadesModal';
 import type { ChecklistPreenchido } from '@/ui/components/ChecklistSelectorModal';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
@@ -129,6 +130,11 @@ export default function TurnosPageClient({
   // Estados para o modal de localização
   const [locationMapVisible, setLocationMapVisible] = useState(false);
   const [selectedTurnoForLocation, setSelectedTurnoForLocation] =
+    useState<TurnoData | null>(null);
+
+  // Estados para modal de atividades por turno
+  const [atividadesModalVisible, setAtividadesModalVisible] = useState(false);
+  const [selectedTurnoForAtividades, setSelectedTurnoForAtividades] =
     useState<TurnoData | null>(null);
 
   // Estados para o modal de fechar turno
@@ -357,6 +363,11 @@ export default function TurnosPageClient({
     setLocationMapVisible(true);
   };
 
+  const handleViewAtividades = (turno: TurnoData) => {
+    setSelectedTurnoForAtividades(turno);
+    setAtividadesModalVisible(true);
+  };
+
   const handleSelectChecklist = (checklist: ChecklistPreenchido) => {
     setSelectedChecklist(checklist);
     setChecklistViewerVisible(true);
@@ -520,6 +531,7 @@ export default function TurnosPageClient({
           turnosFiltrados={turnosFiltrados}
           pagination={pagination}
           handleViewChecklists={handleViewChecklists}
+          handleViewAtividades={handleViewAtividades}
           handleViewLocation={handleViewLocation}
           handleFecharTurno={handleFecharTurno}
         />
@@ -648,6 +660,24 @@ export default function TurnosPageClient({
                 id: selectedTurnoForLocation.id,
                 veiculo: { placa: selectedTurnoForLocation.veiculoPlaca },
                 equipe: { nome: selectedTurnoForLocation.equipeNome },
+              }
+            : undefined
+        }
+      />
+
+      <TurnoAtividadesModal
+        visible={atividadesModalVisible}
+        onClose={() => {
+          setAtividadesModalVisible(false);
+          setSelectedTurnoForAtividades(null);
+        }}
+        turnoId={selectedTurnoForAtividades?.id || 0}
+        turnoInfo={
+          selectedTurnoForAtividades
+            ? {
+                veiculoPlaca: selectedTurnoForAtividades.veiculoPlaca,
+                equipeNome: selectedTurnoForAtividades.equipeNome,
+                dataInicio: selectedTurnoForAtividades.dataInicio,
               }
             : undefined
         }
