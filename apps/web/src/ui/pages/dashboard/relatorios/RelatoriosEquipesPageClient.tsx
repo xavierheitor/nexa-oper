@@ -3,9 +3,9 @@
 import React, { useState, useMemo } from 'react';
 import { Button, Card, Col, DatePicker, Row, Select, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
-import EquipesEscaladas from '@/app/dashboard/relatorios/equipes/components/EquipesEscaladas';
-import EquipesPorHorario from '@/app/dashboard/relatorios/equipes/components/EquipesPorHorario';
-import EquipesSemHorario from '@/app/dashboard/relatorios/equipes/components/EquipesSemHorario';
+import EquipesEscaladas from '@/ui/pages/dashboard/relatorios/equipes/components/EquipesEscaladas';
+import EquipesPorHorario from '@/ui/pages/dashboard/relatorios/equipes/components/EquipesPorHorario';
+import EquipesSemHorario from '@/ui/pages/dashboard/relatorios/equipes/components/EquipesSemHorario';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';

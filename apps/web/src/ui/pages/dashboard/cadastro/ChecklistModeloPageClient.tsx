@@ -16,7 +16,7 @@ import type { Checklist, ChecklistTipoVeiculoRelacao, ChecklistTipoEquipeRelacao
 import type { CrudController } from '@/lib/hooks/useCrudController';
 import { Button, Card, Modal, Table, Form, Select, Spin, App } from 'antd';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
-import ChecklistForm, { ChecklistFormData } from '@/app/dashboard/cadastro/checklist-modelo/form';
+import ChecklistForm, { ChecklistFormData } from '@/ui/pages/dashboard/cadastro/checklist-modelo/form';
 import { listChecklistTipoVeiculoVinculos } from '@/lib/actions/checklistVinculo/tipoVeiculo/list';
 import { setChecklistTipoVeiculo } from '@/lib/actions/checklistVinculo/tipoVeiculo/set';
 import { deleteChecklistTipoVeiculoVinculo } from '@/lib/actions/checklistVinculo/tipoVeiculo/delete';

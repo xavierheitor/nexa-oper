@@ -9,7 +9,7 @@ import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listContratos } from '@/lib/actions/contrato/list';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
-import TurnosPorPeriodo from '@/app/dashboard/relatorios/turnos-por-periodo/components/TurnosPorPeriodo';
+import TurnosPorPeriodo from '@/ui/pages/dashboard/relatorios/turnos-por-periodo/components/TurnosPorPeriodo';
 import { useSelectOptions } from '@/lib/hooks/useSelectOptions';
 import type { Base, Contrato } from '@nexa-oper/db';
 

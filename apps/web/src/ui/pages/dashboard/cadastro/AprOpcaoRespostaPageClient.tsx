@@ -15,7 +15,7 @@ import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { AprOpcaoResposta } from '@nexa-oper/db';
 import { Spin } from 'antd';
-import AprOpcaoRespostaForm from '@/app/dashboard/cadastro/apr-opcao-resposta/form';
+import AprOpcaoRespostaForm from '@/ui/pages/dashboard/cadastro/apr-opcao-resposta/form';
 
 interface AprOpcaoRespostaPageClientProps {
   initialData?: PaginatedResult<AprOpcaoResposta>;

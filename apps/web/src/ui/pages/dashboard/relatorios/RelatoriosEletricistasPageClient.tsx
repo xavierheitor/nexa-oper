@@ -3,9 +3,9 @@
 import React, { useState, useMemo } from 'react';
 import { Button, Card, Col, DatePicker, Row, Select, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
-import EletricistasPorLotacao from '@/app/dashboard/relatorios/eletricistas/components/EletricistasPorLotacao';
-import EletricistasPorTipoEquipe from '@/app/dashboard/relatorios/eletricistas/components/EletricistasPorTipoEquipe';
-import EletricistasDetalhado from '@/app/dashboard/relatorios/eletricistas/components/EletricistasDetalhado';
+import EletricistasPorLotacao from '@/ui/pages/dashboard/relatorios/eletricistas/components/EletricistasPorLotacao';
+import EletricistasPorTipoEquipe from '@/ui/pages/dashboard/relatorios/eletricistas/components/EletricistasPorTipoEquipe';
+import EletricistasDetalhado from '@/ui/pages/dashboard/relatorios/eletricistas/components/EletricistasDetalhado';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';

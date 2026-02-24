@@ -2,9 +2,9 @@
 
 import React, { useMemo, useCallback } from 'react';
 import { Card, Col, Row, Spin, Typography } from 'antd';
-import ConsolidacaoPorBase from '@/app/dashboard/relatorios/bases/components/ConsolidacaoPorBase';
-import ComparacaoEntreBases from '@/app/dashboard/relatorios/bases/components/ComparacaoEntreBases';
-import EletricistasNaoEscalados from '@/app/dashboard/relatorios/bases/components/EletricistasNaoEscalados';
+import ConsolidacaoPorBase from '@/ui/pages/dashboard/relatorios/bases/components/ConsolidacaoPorBase';
+import ComparacaoEntreBases from '@/ui/pages/dashboard/relatorios/bases/components/ComparacaoEntreBases';
+import EletricistasNaoEscalados from '@/ui/pages/dashboard/relatorios/bases/components/EletricistasNaoEscalados';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useHydrated } from '@/lib/hooks/useHydrated';

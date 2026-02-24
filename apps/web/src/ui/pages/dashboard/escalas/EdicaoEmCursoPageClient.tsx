@@ -44,7 +44,7 @@ import {
   buscarHorarioVigente,
 } from '@/lib/actions/escala/equipeTurnoHistorico';
 import { useCrudController } from '@/lib/hooks/useCrudController';
-import EquipeTurnoHistoricoForm from '@/app/dashboard/escalas/equipe-horario/form';
+import EquipeTurnoHistoricoForm from '@/ui/pages/dashboard/escalas/equipe-horario/form';
 import SubstituirEletricistaModal from '@/app/dashboard/escalas/edicao-em-curso/components/SubstituirEletricistaModal';
 import type { ColumnsType } from 'antd/es/table';
 

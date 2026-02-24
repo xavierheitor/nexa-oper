@@ -14,7 +14,7 @@ import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { Cargo } from '@nexa-oper/db';
 import { Tag } from 'antd';
-import CargoForm from '@/app/dashboard/cadastro/cargo/form';
+import CargoForm from '@/ui/pages/dashboard/cadastro/cargo/form';
 
 interface CargoPageClientProps {
   initialData?: PaginatedResult<Cargo>;

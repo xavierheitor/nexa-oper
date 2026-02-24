@@ -28,8 +28,8 @@ import { App, Button, Card, Modal, Table, Tag, Space } from 'antd';
 import { SwapOutlined } from '@ant-design/icons';
 
 // Importação dos formulários locais
-import VeiculoForm, { VeiculoFormData } from '@/app/dashboard/cadastro/veiculo/form';
-import VeiculoLoteForm from '@/app/dashboard/cadastro/veiculo/lote-form';
+import VeiculoForm, { VeiculoFormData } from '@/ui/pages/dashboard/cadastro/veiculo/form';
+import VeiculoLoteForm from '@/ui/pages/dashboard/cadastro/veiculo/lote-form';
 import { listContratos } from '@/lib/actions/contrato/list';
 import { listBases } from '@/lib/actions/base/list';
 import { listTiposVeiculo } from '@/lib/actions/tipoVeiculo/list';

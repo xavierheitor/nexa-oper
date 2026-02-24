@@ -13,7 +13,7 @@ import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
 import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { TipoVeiculo } from '@nexa-oper/db';
-import TipoVeiculoForm from '@/app/dashboard/cadastro/tipo-veiculo/form';
+import TipoVeiculoForm from '@/ui/pages/dashboard/cadastro/tipo-veiculo/form';
 
 interface TipoVeiculoPageClientProps {
   initialData?: PaginatedResult<TipoVeiculo>;

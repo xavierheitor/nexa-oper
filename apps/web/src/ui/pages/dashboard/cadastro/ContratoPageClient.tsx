@@ -13,7 +13,7 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { Contrato } from '@nexa-oper/db';
-import ContratoForm from '@/app/dashboard/cadastro/contrato/form';
+import ContratoForm from '@/ui/pages/dashboard/cadastro/contrato/form';
 
 interface ContratoPageClientProps {
   initialData?: PaginatedResult<Contrato>;

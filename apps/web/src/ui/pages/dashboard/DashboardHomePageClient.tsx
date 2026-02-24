@@ -14,9 +14,9 @@ import React from 'react';
 import { Typography, Spin } from 'antd';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
-import { DashboardStats } from '@/app/dashboard/components/DashboardStats';
-import { DashboardCharts } from '@/app/dashboard/components/DashboardCharts';
-import { DashboardResources } from '@/app/dashboard/components/DashboardResources';
+import { DashboardStats } from '@/ui/pages/dashboard/components/DashboardStats';
+import { DashboardCharts } from '@/ui/pages/dashboard/components/DashboardCharts';
+import { DashboardResources } from '@/ui/pages/dashboard/components/DashboardResources';
 import { useDashboardData } from '@/lib/hooks/useDashboardData';
 
 const { Title } = Typography;

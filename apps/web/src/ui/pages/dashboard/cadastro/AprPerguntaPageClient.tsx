@@ -13,7 +13,7 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { AprPergunta } from '@nexa-oper/db';
-import AprPerguntaForm from '@/app/dashboard/cadastro/apr-pergunta/form';
+import AprPerguntaForm from '@/ui/pages/dashboard/cadastro/apr-pergunta/form';
 
 interface AprPerguntaPageClientProps {
   initialData?: PaginatedResult<AprPergunta>;

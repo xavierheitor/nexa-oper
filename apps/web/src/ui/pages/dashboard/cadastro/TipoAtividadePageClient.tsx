@@ -13,7 +13,7 @@ import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
 import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { TipoAtividade } from '@nexa-oper/db';
-import TipoAtividadeForm from '@/app/dashboard/cadastro/tipo-atividade/form';
+import TipoAtividadeForm from '@/ui/pages/dashboard/cadastro/tipo-atividade/form';
 
 interface TipoAtividadePageClientProps {
   initialData?: PaginatedResult<TipoAtividade>;

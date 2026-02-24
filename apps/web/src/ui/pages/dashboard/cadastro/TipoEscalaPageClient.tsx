@@ -18,7 +18,7 @@ import {
   deleteTipoEscala,
 } from '@/lib/actions/escala/tipoEscala';
 import CrudPage from '@/lib/components/CrudPage';
-import TipoEscalaForm from '@/app/dashboard/cadastro/tipo-escala/form';
+import TipoEscalaForm from '@/ui/pages/dashboard/cadastro/tipo-escala/form';
 
 export interface TipoEscala {
   id: number;

@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { Card, Space, Typography, Spin } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
-import { FiltrosRelatorio } from '@/app/dashboard/seguranca/relatorio/components/FiltrosRelatorio';
-import { ReprovasPerguntaChart } from '@/app/dashboard/seguranca/relatorio/components/ReprovasPerguntaChart';
-import { ReprovasEquipeChart } from '@/app/dashboard/seguranca/relatorio/components/ReprovasEquipeChart';
-import { ReprovasTipoChart } from '@/app/dashboard/seguranca/relatorio/components/ReprovasTipoChart';
-import { ResumoEstatisticas } from '@/app/dashboard/seguranca/relatorio/components/ResumoEstatisticas';
+import { FiltrosRelatorio } from '@/ui/pages/dashboard/seguranca/relatorio/components/FiltrosRelatorio';
+import { ReprovasPerguntaChart } from '@/ui/pages/dashboard/seguranca/relatorio/components/ReprovasPerguntaChart';
+import { ReprovasEquipeChart } from '@/ui/pages/dashboard/seguranca/relatorio/components/ReprovasEquipeChart';
+import { ReprovasTipoChart } from '@/ui/pages/dashboard/seguranca/relatorio/components/ReprovasTipoChart';
+import { ResumoEstatisticas } from '@/ui/pages/dashboard/seguranca/relatorio/components/ResumoEstatisticas';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
-import { useRelatorioData } from '@/app/dashboard/seguranca/relatorio/hooks/useRelatorioData';
+import { useRelatorioData } from '@/ui/pages/dashboard/seguranca/relatorio/hooks/useRelatorioData';
 
 const { Text } = Typography;
 

@@ -9,8 +9,8 @@ import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
-import EquipesMenosLocalizacoes from '@/app/dashboard/relatorios/localizacao/components/EquipesMenosLocalizacoes';
-import EquipesMaiorTempoSemCaptura from '@/app/dashboard/relatorios/localizacao/components/EquipesMaiorTempoSemCaptura';
+import EquipesMenosLocalizacoes from '@/ui/pages/dashboard/relatorios/localizacao/components/EquipesMenosLocalizacoes';
+import EquipesMaiorTempoSemCaptura from '@/ui/pages/dashboard/relatorios/localizacao/components/EquipesMaiorTempoSemCaptura';
 import { useSelectOptions } from '@/lib/hooks/useSelectOptions';
 
 const { RangePicker } = DatePicker;

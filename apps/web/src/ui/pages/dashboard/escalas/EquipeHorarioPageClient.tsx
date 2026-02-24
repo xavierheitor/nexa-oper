@@ -32,7 +32,7 @@ import {
 import { listBases } from '@/lib/actions/base/list';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { listHorarioAberturaCatalogo } from '@/lib/actions/escala/horarioAberturaCatalogo';
-import EquipeTurnoHistoricoForm from '@/app/dashboard/escalas/equipe-horario/form';
+import EquipeTurnoHistoricoForm from '@/ui/pages/dashboard/escalas/equipe-horario/form';
 
 interface EquipeTurnoHistorico {
   id: number;

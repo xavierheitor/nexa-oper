@@ -17,7 +17,7 @@ import { getTextFilter } from '@/ui/components/tableFilters';
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import { User } from '@nexa-oper/db';
 import { Space, Spin, Tag } from 'antd';
-import UserForm, { UserFormData } from '@/app/dashboard/cadastro/usuario/form';
+import UserForm, { UserFormData } from '@/ui/pages/dashboard/cadastro/usuario/form';
 
 interface UsuarioPageClientProps {
   initialData?: PaginatedResult<User>;

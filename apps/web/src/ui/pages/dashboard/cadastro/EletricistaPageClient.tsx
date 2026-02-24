@@ -34,10 +34,10 @@ import TransferBaseModal from '@/ui/components/TransferBaseModal';
 import AlterarStatusModal from '@/ui/components/AlterarStatusModal';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import TableExternalFilters from '@/ui/components/TableExternalFilters';
-import EletricistaForm, { EletricistaFormData } from '@/app/dashboard/cadastro/eletricista/form';
+import EletricistaForm, { EletricistaFormData } from '@/ui/pages/dashboard/cadastro/eletricista/form';
 import EletricistaLoteForm, {
   type EletricistaLoteFormData,
-} from '@/app/dashboard/cadastro/eletricista/lote-form';
+} from '@/ui/pages/dashboard/cadastro/eletricista/lote-form';
 
 type EletricistaWithBase = Eletricista & {
   baseAtual?: Base | null;

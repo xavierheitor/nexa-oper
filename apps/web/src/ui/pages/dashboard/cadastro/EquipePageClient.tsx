@@ -26,8 +26,8 @@ import { Contrato, Equipe, TipoEquipe, Base } from '@nexa-oper/db';
 import { Button, Card, Modal, Table, Space, App, Spin, Tag } from 'antd';
 import { SwapOutlined } from '@ant-design/icons';
 
-import EquipeForm, { EquipeFormData } from '@/app/dashboard/cadastro/equipe/form';
-import EquipeLoteForm from '@/app/dashboard/cadastro/equipe/lote-form';
+import EquipeForm, { EquipeFormData } from '@/ui/pages/dashboard/cadastro/equipe/form';
+import EquipeLoteForm from '@/ui/pages/dashboard/cadastro/equipe/lote-form';
 
 type EquipeWithBase = Equipe & { baseAtual?: Base | null };
 

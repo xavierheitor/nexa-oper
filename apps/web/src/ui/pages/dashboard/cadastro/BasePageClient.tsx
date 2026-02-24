@@ -15,7 +15,7 @@ import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { Base } from '@nexa-oper/db';
 import { Spin } from 'antd';
-import BaseForm from '@/app/dashboard/cadastro/base/form';
+import BaseForm from '@/ui/pages/dashboard/cadastro/base/form';
 
 interface BasePageClientProps {
   initialData?: PaginatedResult<Base>;

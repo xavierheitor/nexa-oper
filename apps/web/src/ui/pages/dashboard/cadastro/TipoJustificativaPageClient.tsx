@@ -14,7 +14,7 @@ import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
 import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { TipoJustificativa } from '@nexa-oper/db';
-import TipoJustificativaForm from '@/app/dashboard/cadastro/tipo-justificativa/form';
+import TipoJustificativaForm from '@/ui/pages/dashboard/cadastro/tipo-justificativa/form';
 
 interface TipoJustificativaPageClientProps {
   initialData?: PaginatedResult<TipoJustificativa>;

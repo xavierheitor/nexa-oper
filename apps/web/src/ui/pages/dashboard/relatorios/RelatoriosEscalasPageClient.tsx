@@ -3,11 +3,11 @@
 import React, { useState, useMemo } from 'react';
 import { Button, Card, Col, DatePicker, Row, Select, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
-import DiasTrabalhadosPorEletricista from '@/app/dashboard/relatorios/escalas/components/DiasTrabalhadosPorEletricista';
-import FaltasPorPeriodo from '@/app/dashboard/relatorios/escalas/components/FaltasPorPeriodo';
-import ComparacaoFolgaTrabalho from '@/app/dashboard/relatorios/escalas/components/ComparacaoFolgaTrabalho';
-import EscaladosPorDia from '@/app/dashboard/relatorios/escalas/components/EscaladosPorDia';
-import TurnosPorPeriodo from '@/app/dashboard/relatorios/turnos-por-periodo/components/TurnosPorPeriodo';
+import DiasTrabalhadosPorEletricista from '@/ui/pages/dashboard/relatorios/escalas/components/DiasTrabalhadosPorEletricista';
+import FaltasPorPeriodo from '@/ui/pages/dashboard/relatorios/escalas/components/FaltasPorPeriodo';
+import ComparacaoFolgaTrabalho from '@/ui/pages/dashboard/relatorios/escalas/components/ComparacaoFolgaTrabalho';
+import EscaladosPorDia from '@/ui/pages/dashboard/relatorios/escalas/components/EscaladosPorDia';
+import TurnosPorPeriodo from '@/ui/pages/dashboard/relatorios/turnos-por-periodo/components/TurnosPorPeriodo';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';

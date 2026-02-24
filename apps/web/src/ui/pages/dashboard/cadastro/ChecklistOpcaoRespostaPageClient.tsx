@@ -13,7 +13,7 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { ChecklistOpcaoResposta } from '@nexa-oper/db';
-import ChecklistOpcaoRespostaForm from '@/app/dashboard/cadastro/checklist-opcao-resposta/form';
+import ChecklistOpcaoRespostaForm from '@/ui/pages/dashboard/cadastro/checklist-opcao-resposta/form';
 
 interface ChecklistOpcaoRespostaPageClientProps {
   initialData?: PaginatedResult<ChecklistOpcaoResposta>;

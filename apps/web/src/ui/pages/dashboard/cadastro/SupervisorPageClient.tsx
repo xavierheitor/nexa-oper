@@ -16,8 +16,8 @@ import { getTextFilter } from '@/ui/components/tableFilters';
 import { EquipeSupervisor, Supervisor } from '@nexa-oper/db';
 import { Button, Card, Modal, Table } from 'antd';
 
-import SupervisorForm, { SupervisorFormData } from '@/app/dashboard/cadastro/supervisor/form';
-import VinculoForm from '@/app/dashboard/cadastro/supervisor/vinculoForm';
+import SupervisorForm, { SupervisorFormData } from '@/ui/pages/dashboard/cadastro/supervisor/form';
+import VinculoForm from '@/ui/pages/dashboard/cadastro/supervisor/vinculoForm';
 import { listEquipesSupervisores } from '@/lib/actions/equipeSupervisor/list';
 import { createEquipeSupervisor } from '@/lib/actions/equipeSupervisor/create';
 import { updateEquipeSupervisor } from '@/lib/actions/equipeSupervisor/update';

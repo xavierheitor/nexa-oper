@@ -17,7 +17,7 @@ import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { ClockCircleOutlined } from '@ant-design/icons';
 import { Space, Spin, Tag } from 'antd';
-import HorarioAberturaCatalogoForm from '@/app/dashboard/cadastro/horario-equipe/form';
+import HorarioAberturaCatalogoForm from '@/ui/pages/dashboard/cadastro/horario-equipe/form';
 
 export interface HorarioAberturaCatalogo {
   id: number;

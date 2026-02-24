@@ -38,11 +38,11 @@ import type { Apr, AprTipoAtividadeRelacao } from '@nexa-oper/db';
 import { listAprs } from '@/lib/actions/apr/list';
 import { listAprTipoAtividadeVinculos } from '@/lib/actions/aprVinculo/tipoAtividade/list';
 import { Spin } from 'antd';
-import { AprTable } from '@/app/dashboard/cadastro/apr-modelo/components/AprTable';
-import { AprVinculoTable } from '@/app/dashboard/cadastro/apr-modelo/components/AprVinculoTable';
-import { AprModal } from '@/app/dashboard/cadastro/apr-modelo/components/AprModal';
-import { AprVinculoModalWrapper } from '@/app/dashboard/cadastro/apr-modelo/components/AprVinculoModalWrapper';
-import type { AprFormData } from '@/app/dashboard/cadastro/apr-modelo/form';
+import { AprTable } from '@/ui/pages/dashboard/cadastro/apr-modelo/components/AprTable';
+import { AprVinculoTable } from '@/ui/pages/dashboard/cadastro/apr-modelo/components/AprVinculoTable';
+import { AprModal } from '@/ui/pages/dashboard/cadastro/apr-modelo/components/AprModal';
+import { AprVinculoModalWrapper } from '@/ui/pages/dashboard/cadastro/apr-modelo/components/AprVinculoModalWrapper';
+import type { AprFormData } from '@/ui/pages/dashboard/cadastro/apr-modelo/form';
 
 /**
  * Componente principal da página de APRs

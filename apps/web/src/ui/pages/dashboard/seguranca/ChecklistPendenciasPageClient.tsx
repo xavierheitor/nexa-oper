@@ -13,7 +13,7 @@ import { buildPhotoUrl } from '@/lib/utils/photos';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { ChecklistPendencia, StatusPendencia } from '@nexa-oper/db';
 import { Button, Card, Modal, Spin, Table, Tag, Image, Space, Typography } from 'antd';
-import ChecklistPendenciaForm from '@/app/dashboard/seguranca/checklists-pendentes/form';
+import ChecklistPendenciaForm from '@/ui/pages/dashboard/seguranca/checklists-pendentes/form';
 
 const { Text } = Typography;
 

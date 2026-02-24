@@ -3,10 +3,10 @@
 import React, { useState, useMemo } from 'react';
 import { Button, Card, Col, DatePicker, Row, Select, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
-import VeiculosPorTipo from '@/app/dashboard/relatorios/veiculos/components/VeiculosPorTipo';
-import VeiculosPorLotacao from '@/app/dashboard/relatorios/veiculos/components/VeiculosPorLotacao';
-import VeiculosPorMarca from '@/app/dashboard/relatorios/veiculos/components/VeiculosPorMarca';
-import VeiculosListagem from '@/app/dashboard/relatorios/veiculos/components/VeiculosListagem';
+import VeiculosPorTipo from '@/ui/pages/dashboard/relatorios/veiculos/components/VeiculosPorTipo';
+import VeiculosPorLotacao from '@/ui/pages/dashboard/relatorios/veiculos/components/VeiculosPorLotacao';
+import VeiculosPorMarca from '@/ui/pages/dashboard/relatorios/veiculos/components/VeiculosPorMarca';
+import VeiculosListagem from '@/ui/pages/dashboard/relatorios/veiculos/components/VeiculosListagem';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';

@@ -13,7 +13,7 @@ import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
 import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { TipoChecklist } from '@nexa-oper/db';
-import TipoChecklistForm from '@/app/dashboard/cadastro/tipo-checklist/form';
+import TipoChecklistForm from '@/ui/pages/dashboard/cadastro/tipo-checklist/form';
 
 interface TipoChecklistPageClientProps {
   initialData?: PaginatedResult<TipoChecklist>;

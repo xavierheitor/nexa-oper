@@ -15,8 +15,8 @@ import { createMobileUser } from '@/lib/actions/mobileUser/create';
 import { updateMobileUser } from '@/lib/actions/mobileUser/update';
 import { deleteMobileUser } from '@/lib/actions/mobileUser/delete';
 import { listMobileUsers } from '@/lib/actions/mobileUser/list';
-import MobileUserForm from '@/app/dashboard/cadastro/usuario-mobile/form';
-import PermissoesModal from '@/app/dashboard/cadastro/usuario-mobile/permissoesModal';
+import MobileUserForm from '@/ui/pages/dashboard/cadastro/usuario-mobile/form';
+import PermissoesModal from '@/ui/pages/dashboard/cadastro/usuario-mobile/permissoesModal';
 import type { MobileUser } from '@nexa-oper/db';
 
 interface UsuarioMobilePageClientProps {

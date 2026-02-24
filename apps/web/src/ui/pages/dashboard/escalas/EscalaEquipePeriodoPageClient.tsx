@@ -38,11 +38,11 @@ import { publicarEscalasEmLote } from '@/lib/actions/escala/publicarEmLote';
 import { listBases } from '@/lib/actions/base/list';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { listTiposEscala } from '@/lib/actions/escala/tipoEscala';
-import EscalaEquipePeriodoForm from '@/app/dashboard/escalas/escala-equipe-periodo/form';
-import EscalaWizard from '@/app/dashboard/escalas/escala-equipe-periodo/wizard';
-import EscalaEditWizard from '@/app/dashboard/escalas/escala-equipe-periodo/edit-wizard';
-import VisualizarEscala from '@/app/dashboard/escalas/escala-equipe-periodo/visualizar';
-import VisualizacaoGeral from '@/app/dashboard/escalas/escala-equipe-periodo/visualizacao-geral';
+import EscalaEquipePeriodoForm from '@/ui/pages/dashboard/escalas/escala-equipe-periodo/form';
+import EscalaWizard from '@/ui/pages/dashboard/escalas/escala-equipe-periodo/wizard';
+import EscalaEditWizard from '@/ui/pages/dashboard/escalas/escala-equipe-periodo/edit-wizard';
+import VisualizarEscala from '@/ui/pages/dashboard/escalas/escala-equipe-periodo/visualizar';
+import VisualizacaoGeral from '@/ui/pages/dashboard/escalas/escala-equipe-periodo/visualizacao-geral';
 
 interface EscalaEquipePeriodo {
   id: number;
