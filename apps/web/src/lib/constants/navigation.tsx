@@ -138,6 +138,16 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             label: 'Materiais',
             path: '/dashboard/cadastro/material-catalogo',
           },
+          {
+            key: '/dashboard/cadastro/formulario-atividade',
+            label: 'Formulários',
+            path: '/dashboard/cadastro/formulario-atividade',
+          },
+          {
+            key: '/dashboard/cadastro/formulario-atividade-pergunta',
+            label: 'Perguntas (Catálogo)',
+            path: '/dashboard/cadastro/formulario-atividade-pergunta',
+          },
         ],
       },
       {

@@ -32,6 +32,8 @@ import { ChecklistTipoEquipeVinculoService } from '../checklist/ChecklistTipoEqu
 import { ChecklistTipoVeiculoVinculoService } from '../checklist/ChecklistTipoVeiculoVinculoService';
 import { ChecklistPendenciaService } from '../checklist/ChecklistPendenciaService';
 import { ContratoService } from '../catalogo/ContratoService';
+import { AtividadeFormPerguntaService } from '../catalogo/AtividadeFormPerguntaService';
+import { AtividadeFormTemplateService } from '../catalogo/AtividadeFormTemplateService';
 import { MaterialCatalogoService } from '../catalogo/MaterialCatalogoService';
 import { TipoAtividadeService } from '../catalogo/TipoAtividadeService';
 import { TipoAtividadeServicoService } from '../catalogo/TipoAtividadeServicoService';
@@ -102,6 +104,14 @@ export function registerServices(): void {
   );
   container.register('checklistService', () => new ChecklistService());
   container.register('tipoChecklistService', () => new TipoChecklistService());
+  container.register(
+    'atividadeFormTemplateService',
+    () => new AtividadeFormTemplateService()
+  );
+  container.register(
+    'atividadeFormPerguntaService',
+    () => new AtividadeFormPerguntaService()
+  );
   container.register(
     'materialCatalogoService',
     () => new MaterialCatalogoService()
