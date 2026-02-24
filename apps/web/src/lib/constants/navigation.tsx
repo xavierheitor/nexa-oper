@@ -247,7 +247,7 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     ],
   },
   {
-    key: 'atividades-menu',
+    key: 'atividades-dashboard-menu',
     icon: <AppstoreOutlined />,
     label: 'Atividades',
     children: [

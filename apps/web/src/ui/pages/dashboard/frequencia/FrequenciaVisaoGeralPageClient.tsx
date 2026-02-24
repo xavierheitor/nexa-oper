@@ -103,9 +103,16 @@ interface EletricistaOption extends NamedOption {
   matricula?: string;
 }
 
+interface VeiculoOption {
+  id: number;
+  placa: string;
+  modelo?: string;
+}
+
 interface FrequenciaVisaoGeralPageClientProps {
   initialEletricistas: EletricistaOption[];
   initialEquipes: NamedOption[];
+  initialVeiculos: VeiculoOption[];
 }
 
 /**
@@ -118,6 +125,7 @@ interface FrequenciaVisaoGeralPageClientProps {
 export default function FrequenciaVisaoGeralPageClient({
   initialEletricistas,
   initialEquipes,
+  initialVeiculos,
 }: FrequenciaVisaoGeralPageClientProps) {
   const { message: messageApi } = App.useApp();
 
@@ -140,6 +148,7 @@ export default function FrequenciaVisaoGeralPageClient({
 
   // Estados para visão geral de equipes
   const [equipeId, setEquipeId] = useState<number | undefined>(undefined);
+  const [veiculoId, setVeiculoId] = useState<number | undefined>(undefined);
   const [dataInicioEquipe, setDataInicioEquipe] = useState<Date | undefined>(
     () => {
       const hoje = new Date();
@@ -160,8 +169,10 @@ export default function FrequenciaVisaoGeralPageClient({
 
   const eletricistas = initialEletricistas;
   const equipes = initialEquipes;
+  const veiculos = initialVeiculos;
   const loadingEletricistas = false;
   const loadingEquipes = false;
+  const loadingVeiculos = false;
 
   // Fetcher para dados consolidados
   const consolidadoFetcher =
@@ -209,8 +220,8 @@ export default function FrequenciaVisaoGeralPageClient({
   );
 
   const turnosEquipeFetcher = async (): Promise<TurnoEquipeRow[]> => {
-    if (!equipeId) {
-      throw new Error('Selecione uma equipe');
+    if (!equipeId && !veiculoId) {
+      throw new Error('Selecione uma equipe ou veículo');
     }
 
     if (!dataInicioEquipe || !dataFimEquipe) {
@@ -223,6 +234,7 @@ export default function FrequenciaVisaoGeralPageClient({
       orderBy: 'dataInicio',
       orderDir: 'desc',
       equipeId,
+      veiculoId,
       dataInicio: dataInicioEquipe,
       dataFim: dataFimEquipe,
     });
@@ -262,10 +274,11 @@ export default function FrequenciaVisaoGeralPageClient({
     isLoading: loadingEquipe,
     mutate: mutateEquipe,
   } = useSWR<TurnoEquipeRow[]>(
-    equipeId && dataInicioEquipe && dataFimEquipe
+    (equipeId || veiculoId) && dataInicioEquipe && dataFimEquipe
       ? [
           'frequencia-visao-geral-equipe',
           equipeId,
+          veiculoId,
           dataInicioEquipe.toISOString(),
           dataFimEquipe.toISOString(),
         ]
@@ -358,8 +371,8 @@ export default function FrequenciaVisaoGeralPageClient({
   };
 
   const handleBuscarEquipe = () => {
-    if (!equipeId) {
-      messageApi.warning('Selecione uma equipe');
+    if (!equipeId && !veiculoId) {
+      messageApi.warning('Selecione uma equipe ou um veículo');
       return;
     }
     if (!dataInicioEquipe || !dataFimEquipe) {
@@ -367,7 +380,9 @@ export default function FrequenciaVisaoGeralPageClient({
       return;
     }
     mutateEquipe();
-    mutateEscalaEquipe();
+    if (equipeId) {
+      mutateEscalaEquipe();
+    }
   };
 
   const handleSelectChecklist = (checklist: ChecklistPreenchido) => {
@@ -560,6 +575,32 @@ export default function FrequenciaVisaoGeralPageClient({
     };
   }, [turnosEquipe, slotsPorDia, turnosPorDia]);
 
+  const resumoVeiculo = useMemo(() => {
+    const lista = turnosEquipe || [];
+    const equipesUnicas = new Set<string>();
+    const eletricistasUnicos = new Map<number, { nome: string; matricula: string }>();
+
+    lista.forEach((turno) => {
+      if (turno.equipeNome) {
+        equipesUnicas.add(turno.equipeNome);
+      }
+
+      (turno.eletricistas || []).forEach((eletricista) => {
+        eletricistasUnicos.set(eletricista.id, {
+          nome: eletricista.nome,
+          matricula: eletricista.matricula,
+        });
+      });
+    });
+
+    return {
+      equipes: Array.from(equipesUnicas).sort(),
+      eletricistas: Array.from(eletricistasUnicos.values()).sort((a, b) =>
+        a.nome.localeCompare(b.nome)
+      ),
+    };
+  }, [turnosEquipe]);
+
   const colunasEquipe: ColumnsType<TurnoEquipeHistoricoRow> = useMemo(
     () => [
       {
@@ -572,6 +613,15 @@ export default function FrequenciaVisaoGeralPageClient({
             : dayjs(record.dataInicio).format('DD/MM/YYYY HH:mm'),
         sorter: (a, b) => a.data.getTime() - b.data.getTime(),
         defaultSortOrder: 'ascend',
+      },
+      {
+        title: 'Prefixo',
+        key: 'prefixo',
+        render: (_: unknown, record) => {
+          if (!record.veiculoPlaca) return '-';
+          const prefixo = record.veiculoPlaca.split('-')[0];
+          return prefixo || '-';
+        },
       },
       {
         title: 'Escalados',
@@ -631,6 +681,12 @@ export default function FrequenciaVisaoGeralPageClient({
           record.veiculoPlaca
             ? `${record.veiculoPlaca}${record.veiculoModelo ? ` - ${record.veiculoModelo}` : ''}`
             : '-',
+      },
+      {
+        title: 'Equipe',
+        key: 'equipe',
+        dataIndex: 'equipeNome',
+        render: (value: string | undefined) => value || '-',
       },
       {
         title: 'Status',
@@ -708,7 +764,7 @@ export default function FrequenciaVisaoGeralPageClient({
         style={{ marginBottom: '16px' }}
       >
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} md={8}>
+          <Col xs={24} sm={12} md={6}>
             <div
               style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}
             >
@@ -738,7 +794,7 @@ export default function FrequenciaVisaoGeralPageClient({
               suffixIcon={<UserOutlined />}
             />
           </Col>
-          <Col xs={24} sm={12} md={8}>
+          <Col xs={24} sm={12} md={6}>
             <div
               style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}
             >
@@ -1018,14 +1074,14 @@ export default function FrequenciaVisaoGeralPageClient({
         style={{ marginTop: '24px', marginBottom: '16px' }}
       >
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} md={8}>
+          <Col xs={24} sm={12} md={6}>
             <div
               style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}
             >
               Equipe
             </div>
             <Select
-              placeholder='Selecione a equipe'
+              placeholder='Selecione a equipe (opcional)'
               showSearch
               allowClear
               style={{ width: '100%' }}
@@ -1051,6 +1107,37 @@ export default function FrequenciaVisaoGeralPageClient({
             <div
               style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}
             >
+              Veículo (Placa)
+            </div>
+            <Select
+              placeholder='Selecione a placa (opcional)'
+              showSearch
+              allowClear
+              style={{ width: '100%' }}
+              loading={loadingVeiculos}
+              value={veiculoId}
+              onChange={value => setVeiculoId(value)}
+              filterOption={(input, option) =>
+                (option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              options={
+                Array.isArray(veiculos)
+                  ? veiculos.map(v => ({
+                      value: v.id,
+                      label: v.modelo
+                        ? `${v.placa} - ${v.modelo}`
+                        : v.placa,
+                    }))
+                  : []
+              }
+            />
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <div
+              style={{ marginBottom: '4px', fontSize: '12px', color: '#666' }}
+            >
               Período
             </div>
             <RangePicker
@@ -1065,17 +1152,12 @@ export default function FrequenciaVisaoGeralPageClient({
               style={{ width: '100%' }}
             />
           </Col>
-          <Col
-            xs={24}
-            sm={12}
-            md={8}
-            style={{ display: 'flex', alignItems: 'flex-end' }}
-          >
+          <Col xs={24} sm={12} md={6} style={{ display: 'flex', alignItems: 'flex-end' }}>
             <Button
               type='primary'
               onClick={handleBuscarEquipe}
-              loading={loadingEquipe}
-              disabled={!equipeId || !dataInicioEquipe || !dataFimEquipe}
+              loading={loadingEquipeResumo}
+              disabled={(!equipeId && !veiculoId) || !dataInicioEquipe || !dataFimEquipe}
               style={{ width: '100%' }}
             >
               Buscar
@@ -1088,13 +1170,13 @@ export default function FrequenciaVisaoGeralPageClient({
         title={
           <Space>
             <TeamOutlined />
-            Visão Geral de Equipes
+            Visão Geral de Equipes e Veículos
           </Space>
         }
       >
-        {!equipeId || !dataInicioEquipe || !dataFimEquipe ? (
+        {(!equipeId && !veiculoId) || !dataInicioEquipe || !dataFimEquipe ? (
           <Empty
-            description='Selecione uma equipe e período para visualizar os dados'
+            description='Selecione equipe ou veículo e período para visualizar os dados'
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         ) : loadingEquipeResumo && linhasEquipe.length === 0 ? (
@@ -1159,6 +1241,52 @@ export default function FrequenciaVisaoGeralPageClient({
                 </Col>
               </Row>
             </Card>
+
+            {veiculoId && (
+              <Card
+                size='small'
+                title='Equipes e Eletricistas que Usaram o Veículo no Período'
+                style={{ marginBottom: 24 }}
+              >
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} md={12}>
+                    <div style={{ marginBottom: 8, fontWeight: 600 }}>
+                      Equipes ({resumoVeiculo.equipes.length})
+                    </div>
+                    <Space wrap>
+                      {resumoVeiculo.equipes.length > 0 ? (
+                        resumoVeiculo.equipes.map((nomeEquipe) => (
+                          <Tag key={nomeEquipe} color='blue'>
+                            {nomeEquipe}
+                          </Tag>
+                        ))
+                      ) : (
+                        <Tag color='default'>Nenhuma equipe no período</Tag>
+                      )}
+                    </Space>
+                  </Col>
+                  <Col xs={24} md={12}>
+                    <div style={{ marginBottom: 8, fontWeight: 600 }}>
+                      Eletricistas ({resumoVeiculo.eletricistas.length})
+                    </div>
+                    <Space wrap>
+                      {resumoVeiculo.eletricistas.length > 0 ? (
+                        resumoVeiculo.eletricistas.map((eletricista) => (
+                          <Tag
+                            key={`${eletricista.matricula}-${eletricista.nome}`}
+                            color='geekblue'
+                          >
+                            {eletricista.nome} ({eletricista.matricula})
+                          </Tag>
+                        ))
+                      ) : (
+                        <Tag color='default'>Nenhum eletricista no período</Tag>
+                      )}
+                    </Space>
+                  </Col>
+                </Row>
+              </Card>
+            )}
 
             <Card title='Histórico de Turnos da Equipe'>
               <Table

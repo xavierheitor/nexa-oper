@@ -1,5 +1,6 @@
 import { listEletricistas } from '@/lib/actions/eletricista/list';
 import { listEquipes } from '@/lib/actions/equipe/list';
+import { listVeiculos } from '@/lib/actions/veiculo/list';
 import FrequenciaVisaoGeralPageClient from '@/ui/pages/dashboard/frequencia/FrequenciaVisaoGeralPageClient';
 import { redirect } from 'next/navigation';
 
@@ -10,6 +11,12 @@ interface NamedOption {
 
 interface EletricistaOption extends NamedOption {
   matricula?: string;
+}
+
+interface VeiculoOption {
+  id: number;
+  placa: string;
+  modelo?: string;
 }
 
 function mapNamedOptions(input: unknown): NamedOption[] {
@@ -66,8 +73,38 @@ function mapEletricistaOptions(input: unknown): EletricistaOption[] {
   return mapped;
 }
 
+function mapVeiculoOptions(input: unknown): VeiculoOption[] {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+
+  const mapped: VeiculoOption[] = [];
+
+  for (const item of input) {
+    const value = item as {
+      id?: unknown;
+      placa?: unknown;
+      modelo?: unknown;
+    };
+    const id =
+      typeof value.id === 'number'
+        ? value.id
+        : Number(value.id);
+    const placa = typeof value.placa === 'string' ? value.placa : '';
+    const modelo = typeof value.modelo === 'string' ? value.modelo : undefined;
+
+    if (!Number.isFinite(id) || id <= 0 || !placa.trim()) {
+      continue;
+    }
+
+    mapped.push({ id, placa, modelo });
+  }
+
+  return mapped;
+}
+
 export default async function FrequenciaVisaoGeralPage() {
-  const [eletricistasResult, equipesResult] = await Promise.all([
+  const [eletricistasResult, equipesResult, veiculosResult] = await Promise.all([
     listEletricistas({
       page: 1,
       pageSize: 1000,
@@ -80,9 +117,19 @@ export default async function FrequenciaVisaoGeralPage() {
       orderBy: 'nome',
       orderDir: 'asc',
     }),
+    listVeiculos({
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'placa',
+      orderDir: 'asc',
+    }),
   ]);
 
-  if (eletricistasResult.redirectToLogin || equipesResult.redirectToLogin) {
+  if (
+    eletricistasResult.redirectToLogin ||
+    equipesResult.redirectToLogin ||
+    veiculosResult.redirectToLogin
+  ) {
     redirect('/login');
   }
 
@@ -93,11 +140,15 @@ export default async function FrequenciaVisaoGeralPage() {
   const initialEquipes = mapNamedOptions(
     equipesResult.success ? equipesResult.data?.data : []
   );
+  const initialVeiculos = mapVeiculoOptions(
+    veiculosResult.success ? veiculosResult.data?.data : []
+  );
 
   return (
     <FrequenciaVisaoGeralPageClient
       initialEletricistas={initialEletricistas}
       initialEquipes={initialEquipes}
+      initialVeiculos={initialVeiculos}
     />
   );
 }
