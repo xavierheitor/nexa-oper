@@ -106,6 +106,123 @@ export const SYNC_DEFINITIONS: SyncCollectionDefInput[] = [
     },
   }),
 
+  // APR de atividade
+  defTable({
+    name: 'apr-modelo',
+    model: 'apr',
+    mode: 'snapshot',
+    contractField: 'AprTipoAtividadeRelacao.some.tipoAtividade.contratoId',
+    select: {
+      id: true,
+      nome: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'apr-tipo-atividade-relacao',
+    model: 'aprTipoAtividadeRelacao',
+    mode: 'snapshot',
+    contractField: 'tipoAtividade.contratoId',
+    select: {
+      id: true,
+      aprId: true,
+      tipoAtividadeId: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'apr-grupo-pergunta',
+    model: 'aprGrupoPergunta',
+    mode: 'snapshot',
+    contractField:
+      'AprGrupoRelacao.some.apr.AprTipoAtividadeRelacao.some.tipoAtividade.contratoId',
+    select: {
+      id: true,
+      nome: true,
+      tipoResposta: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'apr-grupo-relacao',
+    model: 'aprGrupoRelacao',
+    mode: 'snapshot',
+    contractField: 'apr.AprTipoAtividadeRelacao.some.tipoAtividade.contratoId',
+    select: {
+      id: true,
+      aprId: true,
+      aprGrupoPerguntaId: true,
+      ordem: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'apr-pergunta',
+    model: 'aprPergunta',
+    mode: 'snapshot',
+    contractField:
+      'AprGrupoPerguntaRelacao.some.aprGrupoPergunta.AprGrupoRelacao.some.apr.AprTipoAtividadeRelacao.some.tipoAtividade.contratoId',
+    select: {
+      id: true,
+      nome: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'apr-grupo-pergunta-relacao',
+    model: 'aprGrupoPerguntaRelacao',
+    mode: 'snapshot',
+    contractField:
+      'aprGrupoPergunta.AprGrupoRelacao.some.apr.AprTipoAtividadeRelacao.some.tipoAtividade.contratoId',
+    select: {
+      id: true,
+      aprGrupoPerguntaId: true,
+      aprPerguntaId: true,
+      ordem: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'apr-opcao-resposta',
+    model: 'aprOpcaoResposta',
+    mode: 'snapshot',
+    contractField:
+      'AprGrupoOpcaoRespostaRelacao.some.aprGrupoPergunta.AprGrupoRelacao.some.apr.AprTipoAtividadeRelacao.some.tipoAtividade.contratoId',
+    select: {
+      id: true,
+      nome: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'apr-grupo-opcao-resposta-relacao',
+    model: 'aprGrupoOpcaoRespostaRelacao',
+    mode: 'snapshot',
+    contractField:
+      'aprGrupoPergunta.AprGrupoRelacao.some.apr.AprTipoAtividadeRelacao.some.tipoAtividade.contratoId',
+    select: {
+      id: true,
+      aprGrupoPerguntaId: true,
+      aprOpcaoRespostaId: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
   defTable({
     name: 'material-catalogo',
     model: 'materialCatalogo',

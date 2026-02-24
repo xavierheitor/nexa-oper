@@ -10,6 +10,14 @@ export interface SyncScope {
 
 /** Models Prisma usados em sync (camelCase, como no client) */
 export type SyncModelName =
+  | 'apr'
+  | 'aprPergunta'
+  | 'aprOpcaoResposta'
+  | 'aprGrupoPergunta'
+  | 'aprGrupoRelacao'
+  | 'aprGrupoPerguntaRelacao'
+  | 'aprGrupoOpcaoRespostaRelacao'
+  | 'aprTipoAtividadeRelacao'
   | 'atividadeFormPergunta'
   | 'atividadeFormTemplate'
   | 'atividadeFormTipoServicoRelacao'
@@ -31,6 +39,14 @@ export type SyncModelName =
 
 /** Mapeia model → Prisma Select. Adicione aqui ao incluir novo model em sync. */
 export interface SyncModelSelectMap {
+  apr: Prisma.AprSelect;
+  aprPergunta: Prisma.AprPerguntaSelect;
+  aprOpcaoResposta: Prisma.AprOpcaoRespostaSelect;
+  aprGrupoPergunta: Prisma.AprGrupoPerguntaSelect;
+  aprGrupoRelacao: Prisma.AprGrupoRelacaoSelect;
+  aprGrupoPerguntaRelacao: Prisma.AprGrupoPerguntaRelacaoSelect;
+  aprGrupoOpcaoRespostaRelacao: Prisma.AprGrupoOpcaoRespostaRelacaoSelect;
+  aprTipoAtividadeRelacao: Prisma.AprTipoAtividadeRelacaoSelect;
   atividadeFormPergunta: Prisma.AtividadeFormPerguntaSelect;
   atividadeFormTemplate: Prisma.AtividadeFormTemplateSelect;
   atividadeFormTipoServicoRelacao: Prisma.AtividadeFormTipoServicoRelacaoSelect;
@@ -53,6 +69,14 @@ export interface SyncModelSelectMap {
 
 /** Mapeia model → Prisma Include. Adicione aqui ao incluir novo model em sync. */
 export interface SyncModelIncludeMap {
+  apr: Prisma.AprInclude;
+  aprPergunta: Prisma.AprPerguntaInclude;
+  aprOpcaoResposta: Prisma.AprOpcaoRespostaInclude;
+  aprGrupoPergunta: Prisma.AprGrupoPerguntaInclude;
+  aprGrupoRelacao: Prisma.AprGrupoRelacaoInclude;
+  aprGrupoPerguntaRelacao: Prisma.AprGrupoPerguntaRelacaoInclude;
+  aprGrupoOpcaoRespostaRelacao: Prisma.AprGrupoOpcaoRespostaRelacaoInclude;
+  aprTipoAtividadeRelacao: Prisma.AprTipoAtividadeRelacaoInclude;
   atividadeFormPergunta: Prisma.AtividadeFormPerguntaInclude;
   atividadeFormTemplate: Prisma.AtividadeFormTemplateInclude;
   atividadeFormTipoServicoRelacao: Prisma.AtividadeFormTipoServicoRelacaoInclude;
