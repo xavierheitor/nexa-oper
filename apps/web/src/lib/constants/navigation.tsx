@@ -133,6 +133,11 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             label: 'Subtipos de Atividade',
             path: '/dashboard/cadastro/subtipo-atividade',
           },
+          {
+            key: '/dashboard/cadastro/material-catalogo',
+            label: 'Materiais',
+            path: '/dashboard/cadastro/material-catalogo',
+          },
         ],
       },
       {
