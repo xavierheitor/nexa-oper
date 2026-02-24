@@ -1,285 +1,125 @@
-'use client';
-
-import { useState } from 'react';
-import { Card, Space, DatePicker, Select, Button } from 'antd';
-import { App } from 'antd';
-import { listFaltas } from '@/lib/actions/turno-realizado/listFaltas';
-import {
-  FaltaListResponse,
-  FaltaStatus,
-  FaltaStatusLabels,
-} from '@/lib/schemas/turnoRealizadoSchema';
 import { listTiposJustificativa } from '@/lib/actions/justificativa/listTipos';
-import { useDataFetch } from '@/lib/hooks/useDataFetch';
-import { criarJustificativa } from '@/lib/actions/justificativa/criarJustificativa';
-import { uploadAnexoJustificativa } from '@/lib/actions/justificativa/uploadAnexo';
-import { ErrorAlert } from '@/ui/components/ErrorAlert';
-import FaltaTable from '@/ui/components/FaltaTable';
-import JustificarFaltaModal from '@/ui/components/JustificarFaltaModal';
-import useSWR from 'swr';
-import dayjs, { Dayjs } from 'dayjs';
-import type { TablePaginationConfig } from 'antd/es/table';
+import { listFaltas } from '@/lib/actions/turno-realizado/listFaltas';
+import type { FaltaListResponse } from '@/lib/schemas/turnoRealizadoSchema';
+import FaltasPageClient from '@/ui/pages/dashboard/frequencia/FaltasPageClient';
+import dayjs from 'dayjs';
+import { redirect } from 'next/navigation';
 
-const { RangePicker } = DatePicker;
+interface TipoJustificativaOption {
+  id: number;
+  nome: string;
+}
 
-/**
- * Página de lista de faltas
- */
-export default function FaltasPage() {
-  const { message: messageApi } = App.useApp();
+function normalizeFaltasResponse(
+  rawData: unknown,
+  page: number,
+  pageSize: number
+): FaltaListResponse {
+  if (!rawData || typeof rawData !== 'object') {
+    return {
+      data: [],
+      pagination: { page, pageSize, total: 0, totalPages: 0 },
+    };
+  }
 
-  const [filtros, setFiltros] = useState({
-    eletricistaId: undefined as number | undefined,
-    equipeId: undefined as number | undefined,
-    dataInicio: dayjs().startOf('month').toDate() as Date | undefined,
-    dataFim: dayjs().endOf('month').toDate() as Date | undefined,
-    status: undefined as FaltaStatus | undefined,
-    page: 1,
-    pageSize: 20,
-  });
+  const responseData = rawData as Record<string, unknown>;
 
-  const [faltaSelecionada, setFaltaSelecionada] = useState<
-    FaltaListResponse['data'][0] | null
-  >(null);
-  const [modalJustificarOpen, setModalJustificarOpen] = useState(false);
-  const [loadingJustificar, setLoadingJustificar] = useState(false);
+  if ('data' in responseData && 'pagination' in responseData) {
+    return responseData as unknown as FaltaListResponse;
+  }
 
-  // Carregar tipos de justificativa
-  const {
-    data: tiposJustificativa = [],
-    error: errorTiposJustificativa,
-    refetch: refetchTiposJustificativa,
-  } = useDataFetch<Array<{ id: number; nome: string }>>(async () => {
-    const result = await listTiposJustificativa();
-    if (result.success && result.data) {
-      return result.data;
-    }
-    throw new Error(result.error || 'Erro ao carregar tipos de justificativa');
-  }, []);
-
-  // Fetcher para SWR
-  const fetcher = async (): Promise<FaltaListResponse> => {
-    const result = await listFaltas({
-      ...filtros,
-      dataInicio: filtros.dataInicio,
-      dataFim: filtros.dataFim,
-    });
-
-    if (!result.success) {
-      throw new Error(result.error || 'Erro ao buscar faltas');
-    }
-
-    if (!result.data) {
-      throw new Error('Dados não retornados');
-    }
-
-    // Garantir que o retorno tenha a estrutura correta
-    const responseData = result.data as any;
-
-    // Se já tiver a estrutura correta, retornar
-    if (
-      responseData &&
-      typeof responseData === 'object' &&
-      'data' in responseData &&
-      'pagination' in responseData
-    ) {
-      return responseData as FaltaListResponse;
-    }
-
-    // Se retornar { items, total }, transformar para { data, pagination }
-    if (
-      responseData &&
-      typeof responseData === 'object' &&
-      'items' in responseData &&
-      'total' in responseData
-    ) {
-      const { items, total } = responseData as { items: any[]; total: number };
-      return {
-        data: items as FaltaListResponse['data'],
-        pagination: {
-          page: filtros.page || 1,
-          pageSize: filtros.pageSize || 20,
-          total,
-          totalPages: Math.ceil(total / (filtros.pageSize || 20)),
-        },
-      };
-    }
-
-    // Se não tiver a estrutura correta, criar uma estrutura compatível
-    const items = Array.isArray(responseData) ? responseData : [];
+  if ('items' in responseData && 'total' in responseData) {
+    const items = Array.isArray(responseData.items) ? responseData.items : [];
+    const total =
+      typeof responseData.total === 'number' ? responseData.total : items.length;
     return {
       data: items as FaltaListResponse['data'],
       pagination: {
-        page: filtros.page || 1,
-        pageSize: filtros.pageSize || 20,
-        total: items.length,
-        totalPages: Math.ceil(items.length / (filtros.pageSize || 20)),
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
       },
     };
-  };
+  }
 
-  const { data, error, isLoading, mutate } = useSWR<FaltaListResponse>(
-    ['faltas', filtros],
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
+  const items = Array.isArray(responseData.data)
+    ? responseData.data
+    : [];
+  const total =
+    typeof responseData.total === 'number' ? responseData.total : items.length;
+  const rawPage =
+    typeof responseData.page === 'number' ? responseData.page : page;
+  const rawPageSize =
+    typeof responseData.pageSize === 'number' ? responseData.pageSize : pageSize;
+  const rawTotalPages =
+    typeof responseData.totalPages === 'number'
+      ? responseData.totalPages
+      : Math.ceil(total / rawPageSize);
+
+  return {
+    data: items as FaltaListResponse['data'],
+    pagination: {
+      page: rawPage,
+      pageSize: rawPageSize,
+      total,
+      totalPages: rawTotalPages,
+    },
+  };
+}
+
+function mapTipoJustificativaOptions(input: unknown): TipoJustificativaOption[] {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+
+  return input
+    .map((item) => {
+      const value = item as { id?: unknown; nome?: unknown };
+      const id = typeof value.id === 'number' ? value.id : Number(value.id);
+      const nome = typeof value.nome === 'string' ? value.nome : '';
+
+      if (!Number.isFinite(id) || id <= 0 || !nome.trim()) {
+        return null;
+      }
+
+      return { id, nome };
+    })
+    .filter((item): item is TipoJustificativaOption => item !== null);
+}
+
+export default async function FaltasPage() {
+  const page = 1;
+  const pageSize = 20;
+  const dataInicio = dayjs().startOf('month').toDate();
+  const dataFim = dayjs().endOf('month').toDate();
+
+  const [faltasResult, tiposJustificativaResult] = await Promise.all([
+    listFaltas({
+      page,
+      pageSize,
+      dataInicio,
+      dataFim,
+    }),
+    listTiposJustificativa(),
+  ]);
+
+  if (faltasResult.redirectToLogin || tiposJustificativaResult.redirectToLogin) {
+    redirect('/login');
+  }
+
+  const initialData =
+    faltasResult.success && faltasResult.data
+      ? normalizeFaltasResponse(faltasResult.data, page, pageSize)
+      : undefined;
+  const initialTiposJustificativa = mapTipoJustificativaOptions(
+    tiposJustificativaResult.success ? tiposJustificativaResult.data : []
   );
 
-  const handleTableChange = (pagination: TablePaginationConfig) => {
-    setFiltros(prev => ({
-      ...prev,
-      page: pagination.current || 1,
-      pageSize: pagination.pageSize || 20,
-    }));
-  };
-
-  const handleRangeChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
-    if (dates && dates[0] && dates[1]) {
-      setFiltros(prev => ({
-        ...prev,
-        dataInicio: dates[0]!.toDate(),
-        dataFim: dates[1]!.toDate(),
-        page: 1,
-      }));
-    } else {
-      setFiltros(prev => ({
-        ...prev,
-        dataInicio: undefined,
-        dataFim: undefined,
-        page: 1,
-      }));
-    }
-  };
-
-  const handleJustificar = (falta: FaltaListResponse['data'][0]) => {
-    setFaltaSelecionada(falta);
-    setModalJustificarOpen(true);
-  };
-
-  const handleJustificarSubmit = async (data: {
-    faltaId: number;
-    tipoJustificativaId: number;
-    descricao?: string;
-    anexos?: File[];
-  }) => {
-    setLoadingJustificar(true);
-    try {
-      // 1. Criar justificativa primeiro
-      const resultJustificativa = await criarJustificativa({
-        faltaId: data.faltaId,
-        tipoJustificativaId: data.tipoJustificativaId,
-        descricao: data.descricao,
-      });
-
-      if (!resultJustificativa.success || !resultJustificativa.data) {
-        throw new Error(
-          resultJustificativa.error || 'Erro ao criar justificativa'
-        );
-      }
-
-      const justificativaId = resultJustificativa.data.id;
-
-      // 2. Fazer upload dos anexos se houver
-      if (data.anexos && data.anexos.length > 0) {
-        const uploadPromises = data.anexos.map(file =>
-          uploadAnexoJustificativa({
-            justificativaId,
-            file,
-          })
-        );
-
-        const uploadResults = await Promise.allSettled(uploadPromises);
-
-        // Verificar se algum upload falhou
-        const failedUploads = uploadResults.filter(
-          r => r.status === 'rejected'
-        );
-        if (failedUploads.length > 0) {
-          console.error('Alguns anexos falharam no upload:', failedUploads);
-          messageApi.warning(
-            `Justificativa criada, mas ${failedUploads.length} anexo(s) falharam no upload.`
-          );
-        }
-      }
-
-      messageApi.success('Justificativa criada com sucesso!');
-      setModalJustificarOpen(false);
-      setFaltaSelecionada(null);
-      await mutate();
-    } catch (error: unknown) {
-      console.error('Erro ao justificar falta:', error);
-      const errorMessage =
-        error instanceof Error ? error.message : 'Erro ao criar justificativa';
-      messageApi.error(errorMessage);
-    } finally {
-      setLoadingJustificar(false);
-    }
-  };
-
   return (
-    <div style={{ padding: '24px' }}>
-      {/* Tratamento de Erros */}
-      <ErrorAlert
-        error={errorTiposJustificativa}
-        onRetry={refetchTiposJustificativa}
-      />
-      <ErrorAlert error={error?.message} onRetry={mutate} />
-
-      <Card
-        title='Faltas'
-        extra={
-          <Space>
-            <RangePicker
-              value={
-                filtros.dataInicio && filtros.dataFim
-                  ? [dayjs(filtros.dataInicio), dayjs(filtros.dataFim)]
-                  : null
-              }
-              onChange={handleRangeChange}
-              format='DD/MM/YYYY'
-              placeholder={['Data início', 'Data fim']}
-            />
-            <Select
-              placeholder='Status'
-              allowClear
-              style={{ width: 150 }}
-              value={filtros.status}
-              onChange={value =>
-                setFiltros(prev => ({ ...prev, status: value, page: 1 }))
-              }
-              options={Object.entries(FaltaStatusLabels).map(
-                ([value, label]) => ({
-                  value,
-                  label,
-                })
-              )}
-            />
-            <Button onClick={() => mutate()}>Atualizar</Button>
-          </Space>
-        }
-      >
-        <FaltaTable
-          faltas={data?.data || []}
-          loading={isLoading}
-          pagination={data?.pagination}
-          onTableChange={handleTableChange}
-          onJustificar={handleJustificar}
-        />
-      </Card>
-
-      <JustificarFaltaModal
-        open={modalJustificarOpen}
-        onClose={() => {
-          setModalJustificarOpen(false);
-          setFaltaSelecionada(null);
-        }}
-        onJustificar={handleJustificarSubmit}
-        falta={faltaSelecionada}
-        loading={loadingJustificar}
-        tiposJustificativa={tiposJustificativa || undefined}
-      />
-    </div>
+    <FaltasPageClient
+      initialData={initialData}
+      initialTiposJustificativa={initialTiposJustificativa}
+    />
   );
 }
