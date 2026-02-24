@@ -125,6 +125,11 @@ export interface CrudPageProps<TEntity, TFormData = Record<string, unknown>> {
    * @default true
    */
   destroyOnHidden?: boolean;
+
+  /**
+   * Conteúdo opcional para renderizar antes da tabela (ex.: filtros externos)
+   */
+  tableHeaderContent?: React.ReactNode;
 }
 
 /**
@@ -141,6 +146,7 @@ export default function CrudPage<TEntity extends { id: number | string }, TFormD
   addButtonText = 'Adicionar',
   hideAddButton = false,
   destroyOnHidden = true,
+  tableHeaderContent,
 }: CrudPageProps<TEntity, TFormData>) {
   // Se há erro no carregamento, exibe mensagem de erro
   if (entityData.error) {
@@ -170,6 +176,8 @@ export default function CrudPage<TEntity extends { id: number | string }, TFormD
               ) : undefined
             }
           >
+        {tableHeaderContent}
+
         {/* Tabela principal com dados */}
         <Table<TEntity>
           columns={columns}
@@ -203,4 +211,3 @@ export default function CrudPage<TEntity extends { id: number | string }, TFormD
     </>
   );
 }
-

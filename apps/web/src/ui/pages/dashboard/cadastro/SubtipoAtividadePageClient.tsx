@@ -4,13 +4,16 @@ import { createTipoAtividadeServico } from '@/lib/actions/tipoAtividadeServico/c
 import { deleteTipoAtividadeServico } from '@/lib/actions/tipoAtividadeServico/delete';
 import { listTiposAtividadeServico } from '@/lib/actions/tipoAtividadeServico/list';
 import { updateTipoAtividadeServico } from '@/lib/actions/tipoAtividadeServico/update';
+import { listTiposAtividade } from '@/lib/actions/tipoAtividade/list';
 import CrudPage from '@/lib/components/CrudPage';
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
+import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
 import type { PaginatedResult } from '@/lib/types/common';
+import TableExternalFilters from '@/ui/components/TableExternalFilters';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import type { TipoAtividade, TipoAtividadeServico } from '@nexa-oper/db';
 import SubtipoAtividadeForm from '@/ui/pages/dashboard/cadastro/subtipo-atividade/form';
@@ -21,10 +24,12 @@ type TipoAtividadeServicoRow = TipoAtividadeServico & {
 
 interface SubtipoAtividadePageClientProps {
   initialData?: PaginatedResult<TipoAtividadeServicoRow>;
+  initialTiposAtividade?: Pick<TipoAtividade, 'id' | 'nome'>[];
 }
 
 export default function SubtipoAtividadePageClient({
   initialData,
+  initialTiposAtividade = [],
 }: SubtipoAtividadePageClientProps) {
   const controller = useCrudController<TipoAtividadeServicoRow>(
     'subtipos-atividade'
@@ -32,7 +37,7 @@ export default function SubtipoAtividadePageClient({
 
   const subtipos = useEntityData<TipoAtividadeServicoRow>({
     key: 'subtipos-atividade',
-    fetcherAction: unwrapFetcher(listTiposAtividadeServico),
+    fetcherAction: unwrapPaginatedFetcher(listTiposAtividadeServico),
     paginationEnabled: true,
     initialData,
     initialParams: {
@@ -41,6 +46,19 @@ export default function SubtipoAtividadePageClient({
       orderBy: 'id',
       orderDir: 'desc',
       include: { atividadeTipo: true },
+    },
+  });
+
+  const tiposAtividade = useEntityData<Pick<TipoAtividade, 'id' | 'nome'>>({
+    key: 'tipos-atividade-subtipo-filtro',
+    fetcherAction: unwrapFetcher(listTiposAtividade),
+    paginationEnabled: false,
+    initialData: initialTiposAtividade,
+    initialParams: {
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'nome',
+      orderDir: 'asc',
     },
   });
 
@@ -97,6 +115,30 @@ export default function SubtipoAtividadePageClient({
       columns={columns}
       formComponent={SubtipoAtividadeForm}
       onSubmit={handleSubmit}
+      tableHeaderContent={
+        <TableExternalFilters
+          filters={[
+            {
+              label: 'Tipo de Atividade',
+              placeholder: 'Filtrar por tipo de atividade',
+              options:
+                tiposAtividade.data?.map((tipo) => ({
+                  label: tipo.nome,
+                  value: tipo.id,
+                })) || [],
+              onChange: (atividadeTipoId) =>
+                subtipos.setParams((prev) => ({
+                  ...prev,
+                  atividadeTipoId: atividadeTipoId
+                    ? Number(atividadeTipoId)
+                    : undefined,
+                  page: 1,
+                })),
+              loading: tiposAtividade.isLoading,
+            },
+          ]}
+        />
+      }
     />
   );
 }
