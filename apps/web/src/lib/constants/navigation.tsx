@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  AppstoreOutlined,
   BarChartOutlined,
   CalendarOutlined,
   CarOutlined,
@@ -242,6 +243,28 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
         key: '/dashboard/turnos/historico',
         label: 'Histórico',
         path: '/dashboard/turnos/historico',
+      },
+    ],
+  },
+  {
+    key: 'atividades-menu',
+    icon: <AppstoreOutlined />,
+    label: 'Atividades',
+    children: [
+      {
+        key: '/dashboard/atividades/visao-geral',
+        label: 'Visão Geral',
+        path: '/dashboard/atividades/visao-geral',
+      },
+      {
+        key: '/dashboard/atividades/medidores',
+        label: 'Medidores',
+        path: '/dashboard/atividades/medidores',
+      },
+      {
+        key: '/dashboard/atividades/materiais',
+        label: 'Materiais',
+        path: '/dashboard/atividades/materiais',
       },
     ],
   },
