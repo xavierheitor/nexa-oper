@@ -33,6 +33,7 @@ import { ChecklistTipoVeiculoVinculoService } from '../checklist/ChecklistTipoVe
 import { ChecklistPendenciaService } from '../checklist/ChecklistPendenciaService';
 import { ContratoService } from '../catalogo/ContratoService';
 import { TipoAtividadeService } from '../catalogo/TipoAtividadeService';
+import { TipoAtividadeServicoService } from '../catalogo/TipoAtividadeServicoService';
 import { BaseService } from '../infraestrutura/BaseService';
 import { EquipeService } from '../infraestrutura/EquipeService';
 import { EquipeSupervisorService } from '../infraestrutura/EquipeSupervisorService';
@@ -101,6 +102,10 @@ export function registerServices(): void {
   container.register('checklistService', () => new ChecklistService());
   container.register('tipoChecklistService', () => new TipoChecklistService());
   container.register('tipoAtividadeService', () => new TipoAtividadeService());
+  container.register(
+    'tipoAtividadeServicoService',
+    () => new TipoAtividadeServicoService()
+  );
   container.register(
     'checklistTipoVeiculoVinculoService',
     () => new ChecklistTipoVeiculoVinculoService()

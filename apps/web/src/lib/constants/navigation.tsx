@@ -119,9 +119,21 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
         path: '/dashboard/cadastro/supervisor',
       },
       {
-        key: '/dashboard/cadastro/tipo-atividade',
-        label: 'Tipo de Atividade',
-        path: '/dashboard/cadastro/tipo-atividade',
+        key: 'atividades-menu',
+        label: 'Atividades',
+        icon: <FileTextOutlined />,
+        children: [
+          {
+            key: '/dashboard/cadastro/tipo-atividade',
+            label: 'Tipos de Atividade',
+            path: '/dashboard/cadastro/tipo-atividade',
+          },
+          {
+            key: '/dashboard/cadastro/subtipo-atividade',
+            label: 'Subtipos de Atividade',
+            path: '/dashboard/cadastro/subtipo-atividade',
+          },
+        ],
       },
       {
         key: '/dashboard/cadastro/base',
