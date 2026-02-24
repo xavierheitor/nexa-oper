@@ -204,6 +204,8 @@ export const authOptions: NextAuthOptions = {
   // Secret para assinar JWT tokens (NEXTAUTH_SECRET ou AUTH_SECRET no .env.local)
   secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
 
-  // Modo debug (apenas em desenvolvimento)
-  debug: process.env.NODE_ENV === 'development',
+  // Habilite explicitamente com NEXTAUTH_DEBUG=true quando precisar investigar auth.
+  debug:
+    process.env.NODE_ENV === 'development' &&
+    process.env.NEXTAUTH_DEBUG === 'true',
 };

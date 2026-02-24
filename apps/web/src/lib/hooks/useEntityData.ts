@@ -252,6 +252,10 @@ export function useEntityData<T>(options: {
     ...initialParams,
   });
 
+  // Alguns fetchers de listagem exigem paginação mesmo em modo simples.
+  const shouldPassParams =
+    paginationEnabled || Object.keys(initialParams).length > 0;
+
   // Log para debugging - mostra quando parâmetros mudam
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
@@ -262,16 +266,13 @@ export function useEntityData<T>(options: {
     }
   }, [params, key]);
 
-  // Chave do SWR - inclui params apenas se paginação estiver habilitada
-  const swrKey = buildEntityCacheKey(
-    key,
-    paginationEnabled ? params : undefined
-  );
+  // Chave do SWR - inclui params quando o fetcher depende de paginação/default params.
+  const swrKey = buildEntityCacheKey(key, shouldPassParams ? params : undefined);
 
   // Integração com SWR para cache e sincronização
   const { data, error, isLoading, mutate } = useSWR(
     swrKey,
-    () => fetcher(paginationEnabled ? params : undefined),
+    () => fetcher(shouldPassParams ? params : undefined),
     {
       // Revalidação otimizada
       revalidateOnFocus: false,
