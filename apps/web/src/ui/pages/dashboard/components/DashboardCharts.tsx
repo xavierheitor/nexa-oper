@@ -39,9 +39,15 @@ export function DashboardCharts({
   // Check de hidratação
   const hydrated = useHydrated();
 
-  // Normaliza dados para arrays (trata null/undefined)
-  const dadosTipoEquipe = dadosGraficoTipoEquipe ?? [];
-  const dadosBase = dadosGraficoBase ?? [];
+  // Normaliza dados para arrays (trata null/undefined) de forma estável
+  const dadosTipoEquipe = useMemo(
+    () => dadosGraficoTipoEquipe ?? [],
+    [dadosGraficoTipoEquipe]
+  );
+  const dadosBase = useMemo(
+    () => dadosGraficoBase ?? [],
+    [dadosGraficoBase]
+  );
 
   // Gerar array de cores na ordem dos tipos (para usar com colorField e scale)
   // IMPORTANTE: Todos os hooks devem ser chamados antes de qualquer return condicional
@@ -185,4 +191,3 @@ export function DashboardCharts({
     </Row>
   );
 }
-

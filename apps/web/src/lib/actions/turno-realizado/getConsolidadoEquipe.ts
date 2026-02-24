@@ -20,7 +20,7 @@ const getConsolidadoEquipeSchema = z.object({
 export const getConsolidadoEquipe = async (rawData: unknown) =>
   handleServerAction(
     getConsolidadoEquipeSchema,
-    async (data, session) => {
+    async (data, _session) => {
       const baseUrl =
         process.env.NEXT_PUBLIC_API_URL ||
         (process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : '');

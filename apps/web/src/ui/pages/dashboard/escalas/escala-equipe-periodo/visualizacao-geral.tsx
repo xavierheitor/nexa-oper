@@ -29,7 +29,6 @@ import {
   Empty,
   Spin,
   Alert,
-  Table,
   Typography,
   Tooltip,
 } from 'antd';
@@ -516,4 +515,3 @@ export default function VisualizacaoGeral({
     </Modal>
   );
 }
-

@@ -211,7 +211,7 @@ export default function EscalaEditWizard({ escalaId, onFinish, onCancel }: Escal
     return () => {
       isMounted = false;
     };
-  }, [escalaId, form]);
+  }, [escalaId, form, message]);
 
   // Carregar equipes
   const { data: equipes, isLoading: equipesLoading } = useEntityData({

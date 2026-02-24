@@ -23,7 +23,7 @@ const turnoStatsSchema = z.object({});
 export const getTurnoStats = async () =>
   handleServerAction(
     turnoStatsSchema,
-    async (data, session) => {
+    async (_data, _session) => {
       // Fazer requisição à API
       // Em produção, NEXT_PUBLIC_API_URL deve estar configurada
       // Em desenvolvimento, usa localhost apenas se a variável não estiver definida

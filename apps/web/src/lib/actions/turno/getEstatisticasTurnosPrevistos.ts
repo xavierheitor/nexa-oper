@@ -11,8 +11,6 @@ import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
 import { z } from 'zod';
 import type { EstatisticasTurnosPrevistos } from '@/lib/types/turnoPrevisto';
-import { getTurnosPrevistosHoje } from './getTurnosPrevistos';
-import { parseTimeToDate } from '@/lib/utils/turnoPrevistoHelpers';
 
 /**
  * Calcula estatísticas dos turnos previstos para hoje

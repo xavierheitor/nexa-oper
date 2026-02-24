@@ -117,7 +117,7 @@ export const listAprTipoAtividadeVinculos = async (rawData: unknown) =>
     // Schema de validação para parâmetros de listagem
     aprTipoAtividadeVinculoFilterSchema,
     // Lógica de listagem
-    async (validatedParams, session) => {
+    async (validatedParams, _session) => {
       // Obtém instância do service via container de DI
       const service = container.get<AprTipoAtividadeVinculoService>('aprTipoAtividadeVinculoService');
       // Executa listagem com parâmetros validados

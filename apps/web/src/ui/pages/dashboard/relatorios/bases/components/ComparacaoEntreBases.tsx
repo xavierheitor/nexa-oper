@@ -14,7 +14,7 @@ interface DadosComparacao {
   equipes: number;
 }
 
-import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
+import type { FiltrosRelatorioBase } from '@/ui/pages/dashboard/relatorios/types';
 
 interface ComparacaoEntreBasesProps {
   filtros?: FiltrosRelatorioBase;
@@ -46,13 +46,13 @@ export default function ComparacaoEntreBases({
   const { data: dadosRaw, loading, error, refetch } = useDataFetch<DadosComparacao[]>(fetcher, [fetcher]);
 
   // Garante que dados nunca seja null
-  const dados: DadosComparacao[] = dadosRaw ?? [];
+  const dados: DadosComparacao[] = useMemo(() => dadosRaw ?? [], [dadosRaw]);
 
   // Memoiza os dados do gráfico para evitar recálculos desnecessários
   // IMPORTANTE: Todos os hooks devem ser chamados antes de qualquer retorno condicional
   const dadosGrafico = useMemo(
     () =>
-      (dados || []).map((d) => ({
+      dados.map((d) => ({
         base: d.base,
         quantidade: d[metrica],
       })),
@@ -145,4 +145,3 @@ export default function ComparacaoEntreBases({
     </Card>
   );
 }
-

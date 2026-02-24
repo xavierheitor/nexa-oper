@@ -33,11 +33,6 @@ interface EletricistaFormProps {
   loading?: boolean;
 }
 
-const FORM_LAYOUT = {
-  labelCol: { span: 6 },
-  wrapperCol: { span: 18 },
-};
-
 export default function EletricistaForm({
   onSubmit, // Função que será chamada ao submeter o formulário
   initialValues, // Valores para pré-popular o formulário (usado na edição)
@@ -94,7 +89,7 @@ export default function EletricistaForm({
     };
 
     loadSelectData();
-  }, []);
+  }, [message]);
 
   // Effect para gerenciar os valores iniciais do formulário
   useEffect(() => {

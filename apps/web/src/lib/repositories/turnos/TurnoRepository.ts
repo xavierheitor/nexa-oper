@@ -6,10 +6,9 @@
  * e estendendo a classe abstrata AbstractCrudRepository.
  */
 
-import { Prisma, Turno, TurnoEletricista } from '@nexa-oper/db';
+import { Prisma, Turno } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
-import type { PaginationParams } from '../../types/common';
 import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
 import { TurnoFilter } from '../../schemas/turnoSchema';
 

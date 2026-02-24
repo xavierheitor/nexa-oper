@@ -36,7 +36,7 @@ export const getConsolidacaoPorBase = async (rawData?: unknown) =>
         },
       });
 
-      const dataReferencia = filtros.dataReferencia
+      const _dataReferencia = filtros.dataReferencia
         ? new Date(filtros.dataReferencia)
         : new Date();
 
@@ -435,7 +435,7 @@ export const getDetalhesBase = async (baseId: number, rawData?: unknown) => {
 
   return handleServerAction(
     schema,
-    async (filtros) => {
+    async (_filtros) => {
       const base = await prisma.base.findUnique({
         where: { id: baseId },
         include: {

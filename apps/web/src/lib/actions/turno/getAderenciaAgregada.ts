@@ -235,7 +235,7 @@ export const getAderenciaAgregada = async (rawData: unknown) =>
 
       // Processar slots (turnos previstos)
       slotsPorEquipeEData.forEach((slots, key) => {
-        const [equipeIdStr, dataStr] = key.split('-');
+        const [equipeIdStr] = key.split('-');
         const equipeId = parseInt(equipeIdStr, 10);
         const slot = slots[0]; // Pegar primeiro slot para obter info da equipe
         const equipe = slot.escalaEquipePeriodo.equipe;

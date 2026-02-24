@@ -10,7 +10,7 @@ interface DadosLotacao {
   quantidade: number;
 }
 
-import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
+import type { FiltrosRelatorioBase } from '@/ui/pages/dashboard/relatorios/types';
 
 interface EletricistasPorLotacaoProps {
   filtros?: FiltrosRelatorioBase;

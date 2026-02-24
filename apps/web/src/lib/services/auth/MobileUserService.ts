@@ -35,7 +35,7 @@
  * - Suporte a logging automático
  */
 
-import { PaginatedParams, PaginatedResult, PaginationParams } from '@/lib/types/common';
+import { PaginatedResult, PaginationParams } from '@/lib/types/common';
 import { MobileUser } from '@nexa-oper/db';
 import bcrypt from 'bcryptjs';
 import { AbstractCrudService } from '../../abstracts/AbstractCrudService';

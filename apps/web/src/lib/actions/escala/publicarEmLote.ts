@@ -7,7 +7,6 @@
 
 'use server';
 
-import { prisma } from '@/lib/db/db.service';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
 import { container } from '@/lib/services/common/registerServices';

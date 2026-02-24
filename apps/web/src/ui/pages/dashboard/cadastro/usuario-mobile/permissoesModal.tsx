@@ -1,14 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { Form, Select, Button, Spin, Card, Table, Space, App } from 'antd';
+import { Form, Select, Button, Spin, Card, Table, App } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 
 import { listContratos } from '@/lib/actions/contrato/list';
 import { setMobileContratoPermissao } from '@/lib/actions/mobileContratoPermissao/setPermissao';
 import { listMobileContratoPermissoes } from '@/lib/actions/mobileContratoPermissao/listPermissoes';
 import { deleteMobileContratoPermissao } from '@/lib/actions/mobileContratoPermissao/deletePermissao';
-import { MobileUser, MobileContratoPermissao, Contrato } from '@nexa-oper/db';
+import { MobileContratoPermissao } from '@nexa-oper/db';
 import type { CrudController } from '@/lib/hooks/useCrudController';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
@@ -46,7 +45,7 @@ export default function PermissoesModal({
     },
     [mobileUserId],
     {
-      onError: (error) => {
+      onError: () => {
         message.error('Erro ao carregar dados');
       }
     }

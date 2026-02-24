@@ -35,7 +35,6 @@
 
 import { AbstractCrudRepository } from '@/lib/abstracts/AbstractCrudRepository';
 import { PaginationParams } from '@/lib/types/common';
-import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '@/lib/types/prisma';
 import { MobileUser, Prisma } from '@nexa-oper/db';
 import { prisma } from '../../db/db.service';
 import {
@@ -79,7 +78,7 @@ export class MobileUserRepository extends AbstractCrudRepository<
     });
 
     // Remove a senha antes de retornar (igual ao UserRepository)
-    const { password, ...mobileUserSafe } = newMobileUser;
+    const { password: _password, ...mobileUserSafe } = newMobileUser;
     return mobileUserSafe as MobileUser;
   }
 
@@ -106,7 +105,7 @@ export class MobileUserRepository extends AbstractCrudRepository<
     });
 
     // Remove a senha antes de retornar (igual ao UserRepository)
-    const { password, ...mobileUserSafe } = updatedMobileUser;
+    const { password: _password, ...mobileUserSafe } = updatedMobileUser;
     return mobileUserSafe as MobileUser;
   }
 
@@ -127,7 +126,7 @@ export class MobileUserRepository extends AbstractCrudRepository<
     });
 
     // Remove a senha antes de retornar (igual ao UserRepository)
-    const { password, ...mobileUserSafe } = mobileUser;
+    const { password: _password, ...mobileUserSafe } = mobileUser;
     return mobileUserSafe as MobileUser;
   }
 
@@ -260,7 +259,7 @@ export class MobileUserRepository extends AbstractCrudRepository<
       });
 
       return mobileUsers.map((mobileUser: any) => {
-        const { password, ...mobileUserSafe } = mobileUser;
+        const { password: _password, ...mobileUserSafe } = mobileUser;
         return mobileUserSafe as MobileUser;
       });
     }

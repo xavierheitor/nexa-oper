@@ -56,7 +56,6 @@ import {
     aprPerguntaFilterSchema,
     aprPerguntaUpdateSchema,
 } from '../../schemas/aprPerguntaSchema';
-import { PaginatedResult } from '../../types/common';
 
 // Tipos derivados dos schemas Zod para type safety
 type AprPerguntaCreate = z.infer<typeof aprPerguntaCreateSchema>;

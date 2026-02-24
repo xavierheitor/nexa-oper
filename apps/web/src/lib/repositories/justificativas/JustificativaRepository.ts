@@ -137,7 +137,7 @@ export class JustificativaRepository extends AbstractCrudRepository<
    * @param userId - ID do usuário que está excluindo (não usado, mas requerido pela interface)
    * @returns Justificativa excluída
    */
-  async delete(id: number | string, userId: string): Promise<Justificativa> {
+  async delete(id: number | string, _userId: string): Promise<Justificativa> {
     return prisma.justificativa.delete({
       where: { id: Number(id) },
     });

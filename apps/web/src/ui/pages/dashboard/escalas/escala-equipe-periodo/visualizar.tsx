@@ -9,7 +9,6 @@
 
 'use client';
 
-import { useState } from 'react';
 import { Modal, Table, Spin, Tag, Card, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { visualizarEscala } from '@/lib/actions/escala/escalaEquipePeriodo';
@@ -277,4 +276,3 @@ export default function VisualizarEscala({ escalaId, open, onClose }: Visualizar
     </Modal>
   );
 }
-

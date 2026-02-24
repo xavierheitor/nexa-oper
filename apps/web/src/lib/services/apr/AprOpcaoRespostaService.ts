@@ -58,7 +58,6 @@ import {
   aprOpcaoRespostaFilterSchema,
   aprOpcaoRespostaUpdateSchema,
 } from '../../schemas/aprOpcaoRespostaSchema';
-import { PaginatedResult } from '../../types/common';
 
 // Tipos derivados dos schemas Zod para type safety
 type AprOpcaoRespostaCreate = z.infer<typeof aprOpcaoRespostaCreateSchema>;

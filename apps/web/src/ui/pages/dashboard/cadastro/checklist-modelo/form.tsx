@@ -10,8 +10,6 @@ import { listChecklistPerguntas } from '@/lib/actions/checklistPergunta/list';
 import { listTiposChecklist } from '@/lib/actions/tipoChecklist/list';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
-import type { ChecklistOpcaoResposta, ChecklistPergunta, TipoChecklist } from '@nexa-oper/db';
-
 const { Title } = Typography;
 
 export interface ChecklistFormData {
@@ -57,20 +55,18 @@ export default function ChecklistForm({ onSubmit, initialValues, loading = false
     }
   );
 
-  const tipos = dadosSources?.tipos || [];
-  const perguntas = dadosSources?.perguntas || [];
-  const opcoes = dadosSources?.opcoes || [];
+  const tipos = dadosSources?.tipos ?? [];
 
   const [targetPerguntas, setTargetPerguntas] = useState<string[]>([]);
   const [targetOpcoes, setTargetOpcoes] = useState<string[]>([]);
 
   const perguntaItems = useMemo<TransferItem[]>(
-    () => perguntas.map(p => ({ key: String(p.id), title: p.nome })),
-    [perguntas]
+    () => (dadosSources?.perguntas ?? []).map((p) => ({ key: String(p.id), title: p.nome })),
+    [dadosSources?.perguntas]
   );
   const opcaoItems = useMemo<TransferItem[]>(
-    () => opcoes.map(o => ({ key: String(o.id), title: o.nome })),
-    [opcoes]
+    () => (dadosSources?.opcoes ?? []).map((o) => ({ key: String(o.id), title: o.nome })),
+    [dadosSources?.opcoes]
   );
 
 
@@ -173,4 +169,3 @@ export default function ChecklistForm({ onSubmit, initialValues, loading = false
     </Spin>
   );
 }
-

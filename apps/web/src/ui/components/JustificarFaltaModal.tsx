@@ -179,8 +179,8 @@ export default function JustificarFaltaModal({
           </Upload>
           {fileList.length > 0 && (
             <div style={{ marginTop: 8, fontSize: '12px', color: '#666' }}>
-              {fileList.map((file, index) => (
-                <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+              {fileList.map((file) => (
+                <div key={file.uid} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
                   <PaperClipOutlined />
                   <span>{file.name}</span>
                   <span style={{ color: '#999' }}>
@@ -206,4 +206,3 @@ export default function JustificarFaltaModal({
     </Modal>
   );
 }
-

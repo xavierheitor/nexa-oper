@@ -38,7 +38,9 @@ export default function UserForm({
   useEffect(() => {
     if (initialValues) {
       // Para edição, não incluir campos de senha
-      const { password, confirmPassword, ...safeValues } = initialValues;
+      const safeValues = { ...initialValues };
+      delete safeValues.password;
+      delete safeValues.confirmPassword;
       form.setFieldsValue(safeValues);
     } else {
       form.resetFields();

@@ -3,7 +3,7 @@ import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { QueryBuilder } from '../../db/helpers/queryBuilder';
 import { PaginationParams } from '../../types/common';
-import type { GenericPrismaWhereInput, GenericPrismaOrderByInput, GenericPrismaIncludeInput } from '../../types/prisma';
+import type { GenericPrismaWhereInput, GenericPrismaIncludeInput } from '../../types/prisma';
 
 interface ChecklistPendenciaFilter extends PaginationParams {
   status?: 'AGUARDANDO_TRATAMENTO' | 'EM_TRATAMENTO' | 'TRATADA' | 'REGISTRO_INCORRETO';
@@ -15,7 +15,7 @@ export class ChecklistPendenciaRepository extends AbstractCrudRepository<
   ChecklistPendencia,
   ChecklistPendenciaFilter
 > {
-  async create(data: unknown): Promise<ChecklistPendencia> {
+  async create(_data: unknown): Promise<ChecklistPendencia> {
     throw new Error('ChecklistPendencia não pode ser criada diretamente. Use o serviço de checklist preenchido.');
   }
 

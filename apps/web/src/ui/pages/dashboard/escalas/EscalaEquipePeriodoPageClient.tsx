@@ -29,7 +29,6 @@ import {
   createEscalaEquipePeriodo,
   updateEscalaEquipePeriodo,
   deleteEscalaEquipePeriodo,
-  gerarSlotsEscala,
   publicarEscala,
   arquivarEscala,
   prolongarEscala,
@@ -213,47 +212,6 @@ export default function EscalaEquipePeriodoPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mesFiltro, filtroTipoEquipe, filtroBase, filtroTipoEscala, filtroStatus]);
-
-  const handleGerarSlots = async (record: EscalaEquipePeriodo) => {
-    const isPublicada = record.status === 'PUBLICADA';
-
-    modal.confirm({
-      title: 'Gerar Slots de Escala',
-      content: (
-        <div>
-          <p>Deseja gerar os slots para a escala da equipe {record.equipe.nome}?</p>
-          {isPublicada && (
-            <Alert
-              message="Escala Publicada"
-              description="Esta escala já está publicada. Apenas slots de dias futuros (a partir de hoje) serão gerados/atualizados. Dias passados são preservados como histórico."
-              type="info"
-              showIcon
-              style={{ marginTop: 12 }}
-            />
-          )}
-        </div>
-      ),
-      okText: 'Sim, Gerar',
-      cancelText: 'Cancelar',
-      onOk: async () => {
-        try {
-          const result = await gerarSlotsEscala({
-            escalaEquipePeriodoId: record.id,
-            mode: 'full',
-          });
-
-          if (result.success && result.data) {
-            message.success(`${result.data.slotsGerados} slots gerados com sucesso!`);
-            await escalas.mutate();
-          } else {
-            message.error(result.error || 'Erro ao gerar slots');
-          }
-        } catch (error) {
-          message.error('Erro ao gerar slots');
-        }
-      },
-    });
-  };
 
   const handlePublicar = async (record: EscalaEquipePeriodo) => {
     modal.confirm({
@@ -554,11 +512,6 @@ export default function EscalaEquipePeriodoPage() {
 
   const handleCreate = () => {
     setIsWizardOpen(true);
-  };
-
-  const handleCreateOldForm = () => {
-    setEditingItem(null);
-    setIsModalOpen(true);
   };
 
   const handleEdit = (item: EscalaEquipePeriodo) => {

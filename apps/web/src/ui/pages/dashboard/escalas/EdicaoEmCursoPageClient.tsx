@@ -91,7 +91,7 @@ function exportarEscalaCSV(
   // Aplicar filtros por dia: só manter linhas que passam em todos os filtros ativos
   let linhas = tableData;
   const filtrosDiasEntries = Object.entries(filtrosDias).filter(
-    ([_, v]) => v != null && v !== ''
+    ([, v]) => v != null && v !== ''
   );
   if (filtrosDiasEntries.length > 0) {
     linhas = tableData.filter(row => {

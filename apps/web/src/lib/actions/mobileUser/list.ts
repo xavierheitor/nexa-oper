@@ -71,7 +71,7 @@ import { handleServerAction } from '../common/actionHandler';
 export const listMobileUsers = async (rawData: unknown = {}) =>
   handleServerAction(
     mobileUserFilterSchema,
-    async (data, session) => {
+    async (data, _session) => {
       // Obtém o service do container
       const service = container.get<MobileUserService>('mobileUserService');
 

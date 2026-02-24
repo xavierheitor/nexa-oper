@@ -78,7 +78,7 @@ export class FaltaRepository extends AbstractCrudRepository<
    * @param userId - ID do usuário que está excluindo (não usado, mas requerido pela interface)
    * @returns Falta excluída
    */
-  async delete(id: number | string, userId: string): Promise<Falta> {
+  async delete(id: number | string, _userId: string): Promise<Falta> {
     return prisma.falta.delete({
       where: { id: Number(id) },
     });

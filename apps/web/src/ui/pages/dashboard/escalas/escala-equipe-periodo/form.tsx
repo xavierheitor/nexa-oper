@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Form, Select, DatePicker, Input, Button, Space, Alert } from 'antd';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
@@ -217,4 +217,3 @@ export default function EscalaEquipePeriodoForm({
     </Form>
   );
 }
-

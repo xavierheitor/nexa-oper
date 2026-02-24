@@ -50,7 +50,7 @@ export default function EquipeForm({
       }
     };
     loadSelectData();
-  }, []);
+  }, [message]);
 
   useEffect(() => {
     if (initialValues) {
@@ -115,4 +115,3 @@ export default function EquipeForm({
     </Spin>
   );
 }
-

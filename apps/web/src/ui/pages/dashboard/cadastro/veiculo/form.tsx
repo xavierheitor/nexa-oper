@@ -86,7 +86,7 @@ export default function VeiculoForm({
     };
 
     loadSelectData();
-  }, []);
+  }, [message]);
 
   // Effect para gerenciar os valores iniciais do formulário
   useEffect(() => {

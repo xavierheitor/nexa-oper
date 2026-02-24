@@ -80,7 +80,7 @@ export const createEletricistasLote = async (rawData: unknown) =>
           });
 
           // Criar um mapa de matrícula -> id
-          const matriculaToId = new Map(
+          const _matriculaToId = new Map(
             eletricistasCreated.map(e => [e.matricula, e.id])
           );
 

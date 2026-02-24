@@ -178,7 +178,7 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
     [filtros?.periodoInicio, filtros?.periodoFim, filtros?.baseId, filtros?.contratoId, tipoEquipeFiltro]
   );
 
-  const turnos: TurnoData[] = turnosRaw || [];
+  const turnos: TurnoData[] = useMemo(() => turnosRaw ?? [], [turnosRaw]);
 
   // Filtrar turnos por tipo de equipe se necessário (para matriz e gráfico)
   const turnosFiltrados = useMemo(() => {
@@ -868,4 +868,3 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
     </Space>
   );
 }
-

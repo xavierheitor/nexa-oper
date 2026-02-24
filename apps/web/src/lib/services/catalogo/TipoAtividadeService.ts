@@ -7,7 +7,6 @@ import {
   tipoAtividadeFilterSchema,
   tipoAtividadeUpdateSchema,
 } from '../../schemas/tipoAtividadeSchema';
-import { PaginatedResult } from '../../types/common';
 
 type Create = z.infer<typeof tipoAtividadeCreateSchema>;
 type Update = z.infer<typeof tipoAtividadeUpdateSchema>;

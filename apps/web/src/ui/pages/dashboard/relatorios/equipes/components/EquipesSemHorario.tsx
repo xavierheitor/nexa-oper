@@ -4,7 +4,6 @@ import { Card, Empty, Spin, Table, Tag } from 'antd';
 import { useMemo } from 'react';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
-import { useHydrated } from '@/lib/hooks/useHydrated';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
 
 interface EquipeSemHorario {
@@ -15,7 +14,7 @@ interface EquipeSemHorario {
   base: string;
 }
 
-import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
+import type { FiltrosRelatorioBase } from '@/ui/pages/dashboard/relatorios/types';
 
 interface EquipesSemHorarioProps {
   filtros?: FiltrosRelatorioBase;
@@ -119,4 +118,3 @@ export default function EquipesSemHorario({ filtros }: EquipesSemHorarioProps) {
     </Card>
   );
 }
-

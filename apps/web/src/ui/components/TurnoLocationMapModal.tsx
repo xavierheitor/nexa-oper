@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Modal, Spin, Empty, Typography, Space, Tag } from 'antd';
 import { EnvironmentOutlined } from '@ant-design/icons';
 import { getLocalizacoesTurno } from '@/lib/actions/turno/getLocalizacoes';
@@ -61,14 +61,7 @@ export default function TurnoLocationMapModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Buscar localizações quando o modal abrir
-  useEffect(() => {
-    if (visible && turnoId) {
-      loadLocalizacoes();
-    }
-  }, [visible, turnoId]);
-
-  const loadLocalizacoes = async () => {
+  const loadLocalizacoes = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -110,7 +103,14 @@ export default function TurnoLocationMapModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [turnoId]);
+
+  // Buscar localizações quando o modal abrir
+  useEffect(() => {
+    if (visible && turnoId) {
+      loadLocalizacoes();
+    }
+  }, [visible, turnoId, loadLocalizacoes]);
 
 
   // Gerar link para abrir no Google Maps em nova aba
@@ -298,12 +298,12 @@ export default function TurnoLocationMapModal({
           <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
             <Title level={5}>Ordem das Localizações:</Title>
             <Space direction="vertical" style={{ width: '100%' }} size="small">
-              {processLocalizacoesWithGaps().map((item, itemIndex) => {
+              {processLocalizacoesWithGaps().map((item) => {
                 if (item.type === 'gap') {
                   const { startTime, endTime, intervalMinutes } = item.data;
                   return (
                     <div
-                      key={`gap-${itemIndex}`}
+                      key={`gap-${startTime.getTime()}-${endTime.getTime()}`}
                       style={{
                         padding: '8px 12px',
                         border: '2px solid #ff4d4f',
@@ -377,4 +377,3 @@ export default function TurnoLocationMapModal({
     </Modal>
   );
 }
-

@@ -1,4 +1,4 @@
-import { Prisma, Checklist } from '@nexa-oper/db';
+import { Checklist } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import { PaginationParams } from '../../types/common';

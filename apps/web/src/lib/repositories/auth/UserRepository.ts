@@ -28,7 +28,7 @@
  * ```
  */
 
-import { Prisma, User } from '@nexa-oper/db';
+import { User } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import {
@@ -62,7 +62,7 @@ export class UserRepository extends AbstractCrudRepository<User, UserFilter> {
     });
 
     // Remove a senha do retorno
-    const { password, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword } = user;
     return userWithoutPassword as User;
   }
 
@@ -89,7 +89,7 @@ export class UserRepository extends AbstractCrudRepository<User, UserFilter> {
     });
 
     // Remove a senha do retorno
-    const { password, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword } = user;
     return userWithoutPassword as User;
   }
 
@@ -110,7 +110,7 @@ export class UserRepository extends AbstractCrudRepository<User, UserFilter> {
     });
 
     // Remove a senha do retorno
-    const { password, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword } = user;
     return userWithoutPassword as User;
   }
 
@@ -254,7 +254,7 @@ export class UserRepository extends AbstractCrudRepository<User, UserFilter> {
       // Remove senhas dos resultados
       return users.map(user => {
         const userRecord = user as Record<string, unknown>;
-        const { password, ...userWithoutPassword } = userRecord;
+        const { password: _password, ...userWithoutPassword } = userRecord;
         return userWithoutPassword as User;
       });
     }

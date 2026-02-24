@@ -6,7 +6,6 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
-import { relatorioEscalasFiltroSchema } from '@/lib/schemas/relatoriosSchema';
 import { z } from 'zod';
 
 /**

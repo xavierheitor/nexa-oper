@@ -6,7 +6,7 @@ import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import { useTablePagination } from '@/lib/hooks/useTablePagination';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
-import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
+import type { FiltrosRelatorioBase } from '@/ui/pages/dashboard/relatorios/types';
 
 interface DadosBase {
   id: number;
@@ -26,7 +26,7 @@ interface DadosBase {
 }
 
 interface ConsolidacaoPorBaseProps {
-  filtros?: any;
+  filtros?: FiltrosRelatorioBase;
 }
 
 export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProps) {
@@ -54,7 +54,7 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
   const { data: dadosRaw, loading, error, refetch } = useDataFetch<DadosBase[]>(fetcher, [fetcher]);
 
   // Garante que dados nunca seja null
-  const dados: DadosBase[] = dadosRaw ?? [];
+  const dados: DadosBase[] = useMemo(() => dadosRaw ?? [], [dadosRaw]);
 
   // Memoiza as colunas para evitar recriações desnecessárias
   // IMPORTANTE: Todos os hooks devem ser chamados antes de qualquer return condicional
@@ -238,4 +238,3 @@ export default function ConsolidacaoPorBase({ filtros }: ConsolidacaoPorBaseProp
     </Card>
   );
 }
-

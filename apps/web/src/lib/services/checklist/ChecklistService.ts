@@ -7,7 +7,6 @@ import {
   checklistFilterSchema,
   checklistUpdateSchema,
 } from '../../schemas/checklistSchema';
-import { PaginatedResult } from '../../types/common';
 
 type Create = z.infer<typeof checklistCreateSchema>;
 type Update = z.infer<typeof checklistUpdateSchema>;

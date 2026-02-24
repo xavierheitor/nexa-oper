@@ -74,7 +74,7 @@ export class AprRepository extends AbstractCrudRepository<Apr, AprFilter> {
    * @param userId - ID do usuário que está criando (opcional)
    * @returns Promise com a APR criada
    */
-  create(data: Prisma.AprCreateInput, userId?: string): Promise<Apr> {
+  create(data: Prisma.AprCreateInput, _userId?: string): Promise<Apr> {
     return prisma.apr.create({
       data,
     });

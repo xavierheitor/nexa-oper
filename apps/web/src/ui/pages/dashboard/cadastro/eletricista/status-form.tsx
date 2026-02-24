@@ -1,7 +1,7 @@
 'use client';
 
 import { StatusEletricista, StatusEletricistaEnum, StatusEletricistaLabels, StatusEletricistaColors } from '@/lib/schemas/eletricistaStatusSchema';
-import { Button, DatePicker, Form, Input, Select, Spin, App, Tag } from 'antd';
+import { Button, DatePicker, Form, Input, Select, Spin, Tag } from 'antd';
 import { useEffect } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 
@@ -34,7 +34,6 @@ export default function EletricistaStatusForm({
   statusAtual,
   loading = false,
 }: EletricistaStatusFormProps) {
-  const { message } = App.useApp();
   const [form] = Form.useForm();
 
   // Opções de status para o select
@@ -184,4 +183,3 @@ export default function EletricistaStatusForm({
     </Spin>
   );
 }
-

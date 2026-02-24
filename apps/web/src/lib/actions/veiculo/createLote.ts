@@ -6,15 +6,12 @@
 
 import { handleServerAction } from '../common/actionHandler';
 import { veiculoLoteSchema } from '@/lib/schemas/veiculoSchema';
-import { container } from '@/lib/services/common/registerServices';
-import type { VeiculoService } from '@/lib/services/infraestrutura/VeiculoService';
 import { prisma } from '@/lib/db/db.service';
 
 export const createVeiculosLote = async (rawData: unknown) =>
   handleServerAction(
     veiculoLoteSchema,
     async (data, session) => {
-      const service = container.get<VeiculoService>('veiculoService');
 
       // Criar todos os veículos em uma transação
       const veiculosCriados = await prisma.$transaction(async (tx) => {

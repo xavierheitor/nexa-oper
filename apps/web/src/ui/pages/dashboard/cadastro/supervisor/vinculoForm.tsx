@@ -2,11 +2,10 @@
 
 import { Button, DatePicker, Form, Select } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { listEquipes } from '@/lib/actions/equipe/list';
 import { listSupervisores } from '@/lib/actions/supervisor/list';
-import { Equipe, Supervisor } from '@nexa-oper/db';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
 
 export interface VinculoFormData {
@@ -113,4 +112,3 @@ export default function VinculoForm({ onSubmit, initialValues, loading = false }
     </Form>
   );
 }
-

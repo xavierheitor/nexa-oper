@@ -88,7 +88,7 @@ export class AprPerguntaRepository extends AbstractCrudRepository<
    */
   create(
     data: Prisma.AprPerguntaCreateInput,
-    userId?: string
+    _userId?: string
   ): Promise<AprPergunta> {
     return prisma.aprPergunta.create({
       data,

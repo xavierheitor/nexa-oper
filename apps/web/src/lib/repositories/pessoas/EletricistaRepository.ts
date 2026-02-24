@@ -100,7 +100,7 @@ export class EletricistaRepository extends AbstractCrudRepository<
       });
 
       // Cria o status inicial do eletricista
-      const statusCriado = await tx.eletricistaStatus.create({
+      const _statusCriado = await tx.eletricistaStatus.create({
         data: {
           eletricistaId: eletricista.id,
           status: statusInicial as StatusEletricista,

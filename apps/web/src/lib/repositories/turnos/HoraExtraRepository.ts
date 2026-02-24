@@ -90,7 +90,7 @@ export class HoraExtraRepository extends AbstractCrudRepository<
    * @param userId - ID do usuário que está excluindo (não usado, mas requerido pela interface)
    * @returns Hora extra excluída
    */
-  async delete(id: number | string, userId: string): Promise<HoraExtra> {
+  async delete(id: number | string, _userId: string): Promise<HoraExtra> {
     return prisma.horaExtra.delete({
       where: { id: Number(id) },
     });

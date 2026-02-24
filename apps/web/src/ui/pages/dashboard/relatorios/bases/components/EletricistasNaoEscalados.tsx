@@ -11,7 +11,7 @@ import {
   StatusEletricistaLabels,
   type StatusEletricista,
 } from '@/lib/schemas/eletricistaStatusSchema';
-import type { FiltrosRelatorioBase } from '@/app/dashboard/relatorios/types';
+import type { FiltrosRelatorioBase } from '@/ui/pages/dashboard/relatorios/types';
 
 interface EletricistaNaoEscalado {
   eletricistaId: number;

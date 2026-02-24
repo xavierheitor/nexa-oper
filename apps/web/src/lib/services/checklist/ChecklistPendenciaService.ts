@@ -24,7 +24,7 @@ export class ChecklistPendenciaService extends AbstractCrudService<
     this.repoConcrete = repo;
   }
 
-  async create(data: never, userId: string): Promise<ChecklistPendencia> {
+  async create(_data: never, _userId: string): Promise<ChecklistPendencia> {
     throw new Error('ChecklistPendencia não pode ser criada diretamente. Use o serviço de checklist preenchido.');
   }
 

@@ -29,7 +29,6 @@ import {
 import { Contrato } from '@nexa-oper/db';
 import { z } from 'zod';
 import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
-import { PaginatedResult } from '../../types/common';
 
 // Tipos derivados dos schemas
 type ContratoCreate = z.infer<typeof contratoCreateSchema>;
@@ -58,7 +57,7 @@ export class ContratoService extends AbstractCrudService<
    * @param userId - ID do usuário que está criando
    * @returns Contrato criado
    */
-  async create(raw: any, userId: string): Promise<Contrato> {
+  async create(raw: any, _userId: string): Promise<Contrato> {
     // Extrai campos de auditoria adicionados pelo handleServerAction
     const { createdBy, createdAt, ...businessData } = raw;
 
@@ -80,7 +79,7 @@ export class ContratoService extends AbstractCrudService<
    * @param userId - ID do usuário que está atualizando
    * @returns Contrato atualizado
    */
-  async update(raw: any, userId: string): Promise<Contrato> {
+  async update(raw: any, _userId: string): Promise<Contrato> {
     // Extrai campos de auditoria adicionados pelo handleServerAction
     const { updatedBy, updatedAt, ...businessData } = raw;
 

@@ -155,7 +155,6 @@ export default function ChecklistDetalhesPageClient({
   const getRespostaStatus = (resposta: ChecklistResposta) => {
     // Sempre mostrar a resposta
     const respostaText = resposta.opcaoResposta.nome;
-    const temFoto = resposta.fotosSincronizadas > 0 || (resposta.ChecklistRespostaFoto && resposta.ChecklistRespostaFoto.length > 0);
     const reprovado = resposta.opcaoResposta.geraPendencia;
 
     if (reprovado) {

@@ -90,7 +90,7 @@ export class AprOpcaoRespostaRepository extends AbstractCrudRepository<
    */
   create(
     data: Prisma.AprOpcaoRespostaCreateInput,
-    userId?: string
+    _userId?: string
   ): Promise<AprOpcaoResposta> {
     return prisma.aprOpcaoResposta.create({
       data,

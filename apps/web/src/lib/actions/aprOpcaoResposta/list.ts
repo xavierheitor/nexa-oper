@@ -88,7 +88,7 @@ export const listAprOpcoesResposta = async (rawData: unknown) =>
     aprOpcaoRespostaFilterSchema,
 
     // Lógica de listagem
-    async (validatedParams, session) => {
+    async (validatedParams, _session) => {
       // Obtém instância do service via container de DI
       const service = container.get<AprOpcaoRespostaService>(
         'aprOpcaoRespostaService'

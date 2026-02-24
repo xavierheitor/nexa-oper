@@ -9,8 +9,6 @@ import {
   TipoEscala,
   TipoEscalaCicloPosicao,
   TipoEscalaSemanaMascara,
-  EquipeHorarioVigencia,
-  Eletricista,
 } from '@nexa-oper/db';
 import { prisma } from '../../db/db.service';
 
@@ -155,8 +153,8 @@ export async function horarioVigente(
  */
 export async function membrosVigentes(
   equipeId: number,
-  inicio: Date,
-  fim: Date
+  _inicio: Date,
+  _fim: Date
 ): Promise<
   Array<{
     id: number;

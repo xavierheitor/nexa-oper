@@ -47,6 +47,7 @@ export interface FilterOption {
 }
 
 export interface ExternalFilter {
+  key?: string;
   label: string;
   placeholder: string;
   options: FilterOption[];
@@ -85,9 +86,9 @@ export default function TableExternalFilters({ filters, style }: TableExternalFi
       <FilterOutlined style={{ color: '#8c8c8c' }} />
       <Text type="secondary">Filtros:</Text>
 
-      {filters.map((filter, index) => (
+      {filters.map((filter) => (
         <Select
-          key={index}
+          key={filter.key ?? `${filter.label}-${filter.placeholder}`}
           placeholder={filter.placeholder}
           style={{ minWidth: 200, ...filter.style }}
           onChange={filter.onChange}
@@ -103,4 +104,3 @@ export default function TableExternalFilters({ filters, style }: TableExternalFi
     </Space>
   );
 }
-

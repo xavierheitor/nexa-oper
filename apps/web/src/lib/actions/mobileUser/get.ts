@@ -70,7 +70,7 @@ const getMobileUserSchema = z.object({
 export const getMobileUser = async (rawData: unknown) =>
   handleServerAction(
     getMobileUserSchema,
-    async (data, session) => {
+    async (data, _session) => {
       // Obtém o service do container
       const service = container.get<MobileUserService>('mobileUserService');
 

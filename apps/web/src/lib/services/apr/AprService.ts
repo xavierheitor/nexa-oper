@@ -50,7 +50,6 @@ import {
   aprFilterSchema,
   aprUpdateSchema,
 } from '../../schemas/aprSchema';
-import { PaginatedResult } from '../../types/common';
 
 // Tipos derivados dos schemas Zod para type safety
 type AprCreate = z.infer<typeof aprCreateSchema>;

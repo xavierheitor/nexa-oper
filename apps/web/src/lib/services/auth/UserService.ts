@@ -88,7 +88,7 @@ export class UserService extends AbstractCrudService<
     const hashedPassword = await this.hashPassword(data.password);
 
     // Remove confirmPassword e adiciona senha hasheada
-    const { confirmPassword, ...createData } = data;
+    const { confirmPassword: _confirmPassword, ...createData } = data;
     const userCreateData: UserCreateData = {
       ...createData,
       password: hashedPassword,
@@ -107,7 +107,7 @@ export class UserService extends AbstractCrudService<
   async update(raw: unknown, userId: string): Promise<User> {
     // Valida os dados de entrada
     const data = userUpdateSchema.parse(raw);
-    const { id, confirmPassword, ...updateFields } = data;
+    const { id, confirmPassword: _confirmPassword, ...updateFields } = data;
 
     // Verifica se o usuário existe
     const existingUser = await this.userRepo.findById(id);

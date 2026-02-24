@@ -128,16 +128,19 @@ export default function ChecklistPendenciaForm({ initialValues, onSubmit, loadin
         <div style={{ marginBottom: 24 }}>
           <Title level={5}>Fotos</Title>
           <Space wrap>
-            {initialValues.ChecklistRespostaFoto.map((foto, idx) => (
-              <Image
-                key={idx}
-                width={150}
-                height={150}
-                src={buildPhotoUrl(foto.urlPublica, foto.caminhoArquivo)}
-                alt={`Foto ${idx + 1}`}
-                style={{ objectFit: 'cover' }}
-              />
-            ))}
+            {initialValues.ChecklistRespostaFoto.map((foto) => {
+              const fotoSrc = buildPhotoUrl(foto.urlPublica, foto.caminhoArquivo);
+              return (
+                <Image
+                  key={fotoSrc}
+                  width={150}
+                  height={150}
+                  src={fotoSrc}
+                  alt="Foto da pendência"
+                  style={{ objectFit: 'cover' }}
+                />
+              );
+            })}
           </Space>
         </div>
       )}

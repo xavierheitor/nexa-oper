@@ -154,7 +154,7 @@ export const getApr = async (rawData: unknown) =>
     getAprSchema,
 
     // Lógica de negócio
-    async (validatedData, session) => {
+    async (validatedData, _session) => {
       // Obtém instância do service via container de DI
       const service = container.get<AprService>('aprService');
 

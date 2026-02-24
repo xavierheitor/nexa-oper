@@ -46,6 +46,11 @@ import { Card, Row, Col, Statistic } from 'antd';
  */
 export interface StatConfig {
   /**
+   * Chave estável opcional para renderização da lista
+   */
+  key?: string;
+
+  /**
    * Título da estatística
    */
   title: string;
@@ -127,11 +132,11 @@ export default function StatsCards({
 
   return (
     <Row gutter={gutter} style={style}>
-      {stats.map((stat, index) => {
+      {stats.map((stat) => {
         const span = stat.span ?? calculatedSpan;
 
         return (
-          <Col key={index} xs={24} sm={12} md={span}>
+          <Col key={stat.key ?? stat.title} xs={24} sm={12} md={span}>
             <Card>
               <Statistic
                 title={stat.title}
@@ -148,4 +153,3 @@ export default function StatsCards({
     </Row>
   );
 }
-

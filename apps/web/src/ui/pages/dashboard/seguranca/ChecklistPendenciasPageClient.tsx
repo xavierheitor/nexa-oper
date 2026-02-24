@@ -142,16 +142,19 @@ export default function ChecklistPendenciasPage() {
 
           return (
             <Space>
-              {fotos.slice(0, 2).map((foto, idx) => (
-                <Image
-                  key={idx}
-                  width={40}
-                  height={40}
-                  src={buildPhotoUrl(foto.urlPublica, foto.caminhoArquivo)}
-                  alt={`Foto ${idx + 1}`}
-                  preview={fotos.length > 1}
-                />
-              ))}
+              {fotos.slice(0, 2).map((foto) => {
+                const fotoSrc = buildPhotoUrl(foto.urlPublica, foto.caminhoArquivo);
+                return (
+                  <Image
+                    key={fotoSrc}
+                    width={40}
+                    height={40}
+                    src={fotoSrc}
+                    alt="Foto da pendência"
+                    preview={fotos.length > 1}
+                  />
+                );
+              })}
               {fotos.length > 2 && (
                 <Text type="secondary">+{fotos.length - 2}</Text>
               )}

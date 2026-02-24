@@ -124,7 +124,7 @@ export default function AderenciaEquipePage() {
     }
 
     return filtrado;
-  }, [dados, filtroStatus, filtroBuscaEletricista]);
+  }, [dados, filtroStatus]);
 
   // Hook para paginação client-side
   const { pagination } = useTablePagination({
@@ -374,4 +374,3 @@ export default function AderenciaEquipePage() {
     </Card>
   );
 }
-
