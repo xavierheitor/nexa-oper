@@ -435,7 +435,7 @@ model AtividadeAprResposta {
   updatedAt DateTime? @updatedAt
   updatedBy String?   @db.VarChar(255)
 
-  @@index([atividadeAprPreenchidaId, ordemGrupo, ordemPergunta])
+  @@index([atividadeAprPreenchidaId, ordemGrupo, ordemPergunta], map: "idx_apr_resp_apr_ord")
   @@index([aprGrupoPerguntaId])
   @@index([aprPerguntaId])
   @@index([aprOpcaoRespostaId])

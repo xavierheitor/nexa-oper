@@ -51,7 +51,7 @@ CREATE TABLE `AtividadeAprResposta` (
     `updatedAt` DATETIME(3) NULL,
     `updatedBy` VARCHAR(255) NULL,
 
-    INDEX `AtividadeAprResposta_atividadeAprPreenchidaId_ordemGrupo_ordemPergunta_idx`(`atividadeAprPreenchidaId`, `ordemGrupo`, `ordemPergunta`),
+    INDEX `idx_apr_resp_apr_ord`(`atividadeAprPreenchidaId`, `ordemGrupo`, `ordemPergunta`),
     INDEX `AtividadeAprResposta_aprGrupoPerguntaId_idx`(`aprGrupoPerguntaId`),
     INDEX `AtividadeAprResposta_aprPerguntaId_idx`(`aprPerguntaId`),
     INDEX `AtividadeAprResposta_aprOpcaoRespostaId_idx`(`aprOpcaoRespostaId`),
