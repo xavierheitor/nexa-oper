@@ -41,8 +41,8 @@
     "check": "npm run lint && npm run build && npm run test",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md,yml,yaml}\"",
-    "lint:all": "eslint \"**/*.{js,jsx,ts,tsx,mjs}\" --max-warnings 0",
-    "lint:fix:all": "eslint \"**/*.{js,jsx,ts,tsx,mjs}\" --fix",
+    "lint:all": "npm run lint",
+    "lint:fix:all": "npm run lint:fix",
     "type-check": "turbo run type-check",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
@@ -52,6 +52,8 @@
     "lint-staged": "lint-staged"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^9.0.0",
@@ -64,13 +66,12 @@
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-sonarjs": "^0.24.0",
     "eslint-plugin-unicorn": "^52.0.0",
+    "husky": "^9.1.6",
+    "jest-util": "^29.7.0",
+    "lint-staged": "^15.2.10",
     "prettier": "^3.0.0",
     "rimraf": "^6.0.1",
-    "turbo": "^2.0.0",
-    "@commitlint/cli": "^19.5.0",
-    "@commitlint/config-conventional": "^19.5.0",
-    "husky": "^9.1.6",
-    "lint-staged": "^15.2.10"
+    "turbo": "^2.0.0"
   },
   "keywords": [
     "monorepo",

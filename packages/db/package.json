@@ -20,11 +20,8 @@
     "seed": "node ./scripts/with-env.mjs tsx prisma/seed.ts",
     "db:seed": "node ./scripts/with-env.mjs tsx prisma/seed.ts",
     "postinstall": "node ./scripts/with-env.mjs prisma generate",
-    "clean": "rm -rf generated",
+    "clean": "rm -rf prisma/generated",
     "prebuild": "npm run clean"
-  },
-  "prisma": {
-    "schema": "./prisma/models/"
   },
   "keywords": [
     "prisma",

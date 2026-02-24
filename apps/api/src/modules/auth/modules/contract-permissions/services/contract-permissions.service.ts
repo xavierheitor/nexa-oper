@@ -16,7 +16,9 @@ interface CacheEntry {
  * Utiliza um cache em memória (TTL 1 min) para reduzir a carga no banco de dados,
  * visto que essas verificações são frequentes (middleware/guards).
  */
-export class ContractPermissionsService implements ContractPermissionsReaderPort {
+export class ContractPermissionsService
+  implements ContractPermissionsReaderPort
+{
   private readonly cache = new Map<string, CacheEntry>();
 
   constructor(private readonly prisma: PrismaService) {}

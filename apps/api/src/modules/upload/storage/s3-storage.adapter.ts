@@ -62,8 +62,9 @@ export class S3StorageAdapter implements StorageAdapter {
   }
 
   async delete(filePath: string): Promise<void> {
-    const { S3Client, DeleteObjectCommand } =
-      await import('@aws-sdk/client-s3');
+    const { S3Client, DeleteObjectCommand } = await import(
+      '@aws-sdk/client-s3'
+    );
     const bucket = process.env.AWS_S3_BUCKET ?? '';
     const region = process.env.AWS_REGION ?? 'us-east-1';
     const endpoint = process.env.AWS_S3_ENDPOINT;

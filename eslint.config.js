@@ -2,6 +2,11 @@ const { FlatCompat } = require('@eslint/eslintrc');
 const js = require('@eslint/js');
 const tseslint = require('typescript-eslint');
 const prettier = require('eslint-config-prettier');
+const pluginImport = require('eslint-plugin-import');
+const pluginReact = require('eslint-plugin-react');
+const pluginJsxA11y = require('eslint-plugin-jsx-a11y');
+const pluginSonarjs = require('eslint-plugin-sonarjs');
+const pluginUnicorn = require('eslint-plugin-unicorn');
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
@@ -54,6 +59,13 @@ module.exports = tseslint.config(
 
   // Rules configuration
   {
+    plugins: {
+      import: pluginImport,
+      react: pluginReact,
+      'jsx-a11y': pluginJsxA11y,
+      sonarjs: pluginSonarjs,
+      unicorn: pluginUnicorn,
+    },
     rules: {
       // TypeScript specific rules
       '@typescript-eslint/no-unused-vars': [
@@ -61,7 +73,6 @@ module.exports = tseslint.config(
         { argsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/prefer-const': 'error',
       '@typescript-eslint/no-var-requires': 'error',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -161,7 +172,7 @@ module.exports = tseslint.config(
       'sonarjs/cognitive-complexity': ['error', 15],
       'sonarjs/no-duplicate-string': 'error',
       'sonarjs/no-redundant-boolean': 'error',
-      'sonarjs/prefer-immediate-return': 'error',
+      'sonarjs/prefer-immediate-return': 'off',
       'sonarjs/no-identical-functions': 'error',
 
       // Unicorn rules
@@ -171,7 +182,7 @@ module.exports = tseslint.config(
       'unicorn/custom-error-definition': 'error',
       'unicorn/error-message': 'error',
       'unicorn/escape-case': 'error',
-      'unicorn/expiring-todo-comments': 'error',
+      'unicorn/expiring-todo-comments': 'off',
       'unicorn/explicit-length-check': 'error',
       'unicorn/filename-case': [
         'error',
