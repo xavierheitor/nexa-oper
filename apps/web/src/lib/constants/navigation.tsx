@@ -177,6 +177,11 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             path: '/dashboard/cadastro/apr-opcao-resposta',
           },
           {
+            key: '/dashboard/cadastro/apr-grupo-pergunta',
+            label: 'Grupos de Perguntas',
+            path: '/dashboard/cadastro/apr-grupo-pergunta',
+          },
+          {
             key: '/dashboard/cadastro/apr-modelo',
             label: 'Modelo',
             path: '/dashboard/cadastro/apr-modelo',

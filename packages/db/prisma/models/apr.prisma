@@ -11,6 +11,7 @@ model Apr {
 
   AprPerguntaRelacao      AprPerguntaRelacao[]
   AprOpcaoRespostaRelacao AprOpcaoRespostaRelacao[]
+  AprGrupoRelacao         AprGrupoRelacao[]
   AprTipoAtividadeRelacao AprTipoAtividadeRelacao[]
 }
 
@@ -25,7 +26,8 @@ model AprPergunta {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  AprPerguntaRelacao AprPerguntaRelacao[]
+  AprPerguntaRelacao      AprPerguntaRelacao[]
+  AprGrupoPerguntaRelacao AprGrupoPerguntaRelacao[]
 }
 
 model AprPerguntaRelacao {
@@ -58,7 +60,92 @@ model AprOpcaoResposta {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  AprOpcaoRespostaRelacao AprOpcaoRespostaRelacao[]
+  AprOpcaoRespostaRelacao      AprOpcaoRespostaRelacao[]
+  AprGrupoOpcaoRespostaRelacao AprGrupoOpcaoRespostaRelacao[]
+}
+
+model AprGrupoPergunta {
+  id Int @id @default(autoincrement())
+
+  nome         String @db.VarChar(255)
+  tipoResposta String @default("checkbox") @db.VarChar(30)
+
+  AprGrupoRelacao              AprGrupoRelacao[]
+  AprGrupoPerguntaRelacao      AprGrupoPerguntaRelacao[]
+  AprGrupoOpcaoRespostaRelacao AprGrupoOpcaoRespostaRelacao[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@index([tipoResposta])
+}
+
+model AprGrupoRelacao {
+  id Int @id @default(autoincrement())
+
+  aprId Int
+  apr   Apr @relation(fields: [aprId], references: [id])
+
+  aprGrupoPerguntaId Int
+  aprGrupoPergunta   AprGrupoPergunta @relation(fields: [aprGrupoPerguntaId], references: [id])
+
+  ordem Int @default(0)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([aprId, aprGrupoPerguntaId, deletedAt], map: "uq_apr_grupo_rel_ativo")
+  @@index([aprId, ordem])
+}
+
+model AprGrupoPerguntaRelacao {
+  id Int @id @default(autoincrement())
+
+  aprGrupoPerguntaId Int
+  aprGrupoPergunta   AprGrupoPergunta @relation(fields: [aprGrupoPerguntaId], references: [id])
+
+  aprPerguntaId Int
+  aprPergunta   AprPergunta @relation(fields: [aprPerguntaId], references: [id])
+
+  ordem Int @default(0)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([aprGrupoPerguntaId, aprPerguntaId, deletedAt], map: "uq_apr_grupo_pergunta_rel_ativo")
+  @@index([aprGrupoPerguntaId, ordem])
+}
+
+model AprGrupoOpcaoRespostaRelacao {
+  id Int @id @default(autoincrement())
+
+  aprGrupoPerguntaId Int
+  aprGrupoPergunta   AprGrupoPergunta @relation(fields: [aprGrupoPerguntaId], references: [id])
+
+  aprOpcaoRespostaId Int
+  aprOpcaoResposta   AprOpcaoResposta @relation(fields: [aprOpcaoRespostaId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([aprGrupoPerguntaId, aprOpcaoRespostaId, deletedAt], map: "uq_apr_grupo_opcao_rel_ativo")
+  @@index([aprGrupoPerguntaId])
 }
 
 model AprOpcaoRespostaRelacao {

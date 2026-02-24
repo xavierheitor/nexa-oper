@@ -23,6 +23,7 @@
 
 import { AprOpcaoRespostaService } from '../apr/AprOpcaoRespostaService';
 import { AprPerguntaService } from '../apr/AprPerguntaService';
+import { AprGrupoPerguntaService } from '../apr/AprGrupoPerguntaService';
 import { AprService } from '../apr/AprService';
 import { AprTipoAtividadeVinculoService } from '../apr/AprTipoAtividadeVinculoService';
 import { ChecklistOpcaoRespostaService } from '../checklist/ChecklistOpcaoRespostaService';
@@ -89,6 +90,10 @@ export function registerServices(): void {
     () => new AprOpcaoRespostaService()
   );
   container.register('aprPerguntaService', () => new AprPerguntaService());
+  container.register(
+    'aprGrupoPerguntaService',
+    () => new AprGrupoPerguntaService()
+  );
   container.register('aprService', () => new AprService());
   container.register(
     'aprTipoAtividadeVinculoService',

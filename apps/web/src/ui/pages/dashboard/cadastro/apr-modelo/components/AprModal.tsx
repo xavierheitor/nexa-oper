@@ -32,9 +32,7 @@ export function AprModal({ controller, onSubmit }: AprModalProps) {
             ? {
                 id: controller.editingItem.id,
                 nome: controller.editingItem.nome,
-                // Os relacionamentos são carregados automaticamente pelo form
-                perguntaIds: [],
-                opcaoRespostaIds: []
+                grupoPerguntaIds: [],
               }
             : undefined
         }
@@ -44,4 +42,3 @@ export function AprModal({ controller, onSubmit }: AprModalProps) {
     </Modal>
   );
 }
-

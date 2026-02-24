@@ -80,8 +80,7 @@ export default function AprModeloPageClient({
       orderBy: 'id',
       orderDir: 'desc',
       include: {
-        AprPerguntaRelacao: true,
-        AprOpcaoRespostaRelacao: true,
+        AprGrupoRelacao: true,
       },
     },
   });

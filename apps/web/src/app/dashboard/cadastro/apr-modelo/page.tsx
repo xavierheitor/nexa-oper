@@ -13,8 +13,7 @@ export default async function AprModeloPage() {
       orderBy: 'id',
       orderDir: 'desc',
       include: {
-        AprPerguntaRelacao: true,
-        AprOpcaoRespostaRelacao: true,
+        AprGrupoRelacao: true,
       },
     }),
     listAprTipoAtividadeVinculos({
