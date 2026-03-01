@@ -9,6 +9,7 @@ export default async function AtividadesVisaoGeralPage() {
     pageSize: 10,
     orderBy: 'createdAt',
     orderDir: 'desc',
+    statusFluxo: 'finalizada',
   });
 
   if (result.redirectToLogin) {

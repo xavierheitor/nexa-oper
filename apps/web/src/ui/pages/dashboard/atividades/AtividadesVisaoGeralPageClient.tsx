@@ -4,6 +4,7 @@ import { EyeOutlined } from '@ant-design/icons';
 import { listAtividadeExecucoes } from '@/lib/actions/atividade/listExecucoes';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
+import type { PaginatedParams } from '@/lib/types/common';
 import type {
   AtividadesFilterFieldMap,
   AtividadeExecucaoListItem,
@@ -27,9 +28,15 @@ export default function AtividadesVisaoGeralPageClient({
     null
   );
 
+  const fetchAtividadesFinalizadas = async (params?: PaginatedParams) =>
+    unwrapPaginatedFetcher(listAtividadeExecucoes)({
+      ...params,
+      statusFluxo: 'finalizada',
+    });
+
   const atividades = useEntityData<AtividadeExecucaoListItem>({
     key: 'atividades-visao-geral',
-    fetcherAction: unwrapPaginatedFetcher(listAtividadeExecucoes),
+    fetcherAction: fetchAtividadesFinalizadas,
     paginationEnabled: true,
     initialData,
     initialParams: {
@@ -41,44 +48,44 @@ export default function AtividadesVisaoGeralPageClient({
   });
 
   const columns: ColumnsType<AtividadeExecucaoListItem> = [
-    { title: 'ID', dataIndex: 'id', key: 'id', sorter: true, width: 80 },
+    { title: 'ID', dataIndex: 'id', key: 'id', sorter: true, width: 64 },
     {
       title: 'Tipo',
       key: 'tipo',
       render: (_value, record) =>
         record.tipoAtividade?.nome || record.tipoAtividadeNomeSnapshot || '-',
-      width: 180,
+      width: 150,
     },
     {
       title: 'Subtipo',
       key: 'subtipo',
       render: (_value, record) =>
         record.tipoAtividadeServico?.nome || record.tipoServicoNomeSnapshot || '-',
-      width: 200,
+      width: 170,
     },
     {
       title: 'Nº OS',
       dataIndex: 'numeroDocumento',
       key: 'numeroDocumento',
-      width: 120,
+      width: 100,
       render: (value: string | null | undefined) => value || '-',
     },
     {
       title: 'Equipe',
       key: 'turnoEquipe',
-      width: 180,
+      width: 150,
       render: (_value, record) => record.turno?.equipe?.nome || '-',
     },
     {
       title: 'Placa',
       key: 'turnoPlaca',
-      width: 140,
+      width: 110,
       render: (_value, record) => record.turno?.veiculo?.placa || '-',
     },
     {
       title: 'Dia do Turno',
       key: 'turnoDia',
-      width: 130,
+      width: 115,
       render: (_value, record) =>
         record.turno?.dataInicio
           ? new Date(record.turno.dataInicio).toLocaleDateString('pt-BR')
@@ -89,35 +96,19 @@ export default function AtividadesVisaoGeralPageClient({
       key: 'medidor',
       render: (_value, record) =>
         record.aplicaMedidor ? <Tag color='blue'>Sim</Tag> : <Tag>Não</Tag>,
-      width: 100,
+      width: 90,
     },
     {
       title: 'Materiais',
       key: 'materiais',
       render: (_value, record) =>
         record.aplicaMaterial ? <Tag color='cyan'>Sim</Tag> : <Tag>Não</Tag>,
-      width: 110,
-    },
-    {
-      title: 'Status',
-      dataIndex: 'statusFluxo',
-      key: 'statusFluxo',
-      sorter: true,
-      width: 160,
-    },
-    {
-      title: 'Criado em',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      sorter: true,
-      width: 130,
-      render: (value: Date | string) =>
-        new Date(value).toLocaleDateString('pt-BR'),
+      width: 90,
     },
     {
       title: 'Ações',
       key: 'acoes',
-      width: 120,
+      width: 95,
       render: (_value, record) => (
         <Button
           type='link'
@@ -157,13 +148,14 @@ export default function AtividadesVisaoGeralPageClient({
       />
 
       <Table<AtividadeExecucaoListItem>
+        size='small'
         columns={columns}
         dataSource={atividades.data}
         loading={atividades.isLoading}
         rowKey='id'
         pagination={atividades.pagination}
         onChange={atividades.handleTableChange}
-        scroll={{ x: 1880 }}
+        scroll={{ x: 'max-content' }}
       />
 
       <AtividadeExecucaoDetalhesModal

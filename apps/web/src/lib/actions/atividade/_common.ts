@@ -8,6 +8,7 @@ export const atividadeDashboardBaseFilterSchema = z.object({
   eletricistaId: z.number().int().positive().optional(),
   tipoAtividadeId: z.number().int().positive().optional(),
   tipoAtividadeServicoId: z.number().int().positive().optional(),
+  statusFluxo: z.string().trim().optional(),
   dataInicio: z.coerce.date().optional(),
   dataFim: z.coerce.date().optional(),
   turnoDia: z.coerce.date().optional(),
@@ -30,6 +31,10 @@ export function buildAtividadeExecucaoWhere(
 
   if (filters.tipoAtividadeServicoId) {
     where.tipoAtividadeServicoId = filters.tipoAtividadeServicoId;
+  }
+
+  if (filters.statusFluxo) {
+    where.statusFluxo = filters.statusFluxo;
   }
 
   if (filters.turnoId) {
