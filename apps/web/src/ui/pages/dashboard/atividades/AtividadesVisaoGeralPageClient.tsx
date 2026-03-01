@@ -1,5 +1,6 @@
 'use client';
 
+import { EyeOutlined } from '@ant-design/icons';
 import { listAtividadeExecucoes } from '@/lib/actions/atividade/listExecucoes';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
@@ -10,6 +11,8 @@ import type {
 } from '@/lib/types/atividadeDashboard';
 import { Button, Card, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { useState } from 'react';
+import AtividadeExecucaoDetalhesModal from './AtividadeExecucaoDetalhesModal';
 import AtividadesTableFilters from './AtividadesTableFilters';
 
 interface AtividadesVisaoGeralPageClientProps {
@@ -19,6 +22,11 @@ interface AtividadesVisaoGeralPageClientProps {
 export default function AtividadesVisaoGeralPageClient({
   initialData,
 }: AtividadesVisaoGeralPageClientProps) {
+  const [detalhesOpen, setDetalhesOpen] = useState(false);
+  const [selectedAtividadeId, setSelectedAtividadeId] = useState<number | null>(
+    null
+  );
+
   const atividades = useEntityData<AtividadeExecucaoListItem>({
     key: 'atividades-visao-geral',
     fetcherAction: unwrapPaginatedFetcher(listAtividadeExecucoes),
@@ -106,6 +114,24 @@ export default function AtividadesVisaoGeralPageClient({
       render: (value: Date | string) =>
         new Date(value).toLocaleDateString('pt-BR'),
     },
+    {
+      title: 'Ações',
+      key: 'acoes',
+      width: 120,
+      render: (_value, record) => (
+        <Button
+          type='link'
+          size='small'
+          icon={<EyeOutlined />}
+          onClick={() => {
+            setSelectedAtividadeId(record.id);
+            setDetalhesOpen(true);
+          }}
+        >
+          Visualizar
+        </Button>
+      ),
+    },
   ];
 
   if (atividades.error) {
@@ -137,7 +163,16 @@ export default function AtividadesVisaoGeralPageClient({
         rowKey='id'
         pagination={atividades.pagination}
         onChange={atividades.handleTableChange}
-        scroll={{ x: 1750 }}
+        scroll={{ x: 1880 }}
+      />
+
+      <AtividadeExecucaoDetalhesModal
+        open={detalhesOpen}
+        atividadeId={selectedAtividadeId}
+        onClose={() => {
+          setDetalhesOpen(false);
+          setSelectedAtividadeId(null);
+        }}
       />
     </Card>
   );

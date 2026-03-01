@@ -4,7 +4,6 @@ import { listEletricistas } from '@/lib/actions/eletricista/list';
 import { listEquipes } from '@/lib/actions/equipe/list';
 import { listTiposAtividade } from '@/lib/actions/tipoAtividade/list';
 import { listTiposAtividadeServico } from '@/lib/actions/tipoAtividadeServico/list';
-import { listTurnos } from '@/lib/actions/turno/list';
 import { listVeiculos } from '@/lib/actions/veiculo/list';
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
@@ -13,7 +12,6 @@ import type {
   EquipeFiltroOption,
   TipoAtividadeFiltroOption,
   TipoAtividadeServicoFiltroOption,
-  TurnoFiltroOption,
   VeiculoFiltroOption,
 } from '@/lib/types/atividadeDashboard';
 
@@ -41,22 +39,6 @@ export function useAtividadesFilterOptions() {
       orderDir: 'asc',
       include: {
         atividadeTipo: true,
-      },
-    },
-  });
-
-  const turnos = useEntityData<TurnoFiltroOption>({
-    key: 'atividade-filtro-turnos',
-    fetcherAction: unwrapFetcher(listTurnos),
-    paginationEnabled: false,
-    initialParams: {
-      page: 1,
-      pageSize: 500,
-      orderBy: 'id',
-      orderDir: 'desc',
-      include: {
-        equipe: true,
-        veiculo: true,
       },
     },
   });
@@ -100,7 +82,6 @@ export function useAtividadesFilterOptions() {
   return {
     tiposAtividade,
     tiposAtividadeServico,
-    turnos,
     equipes,
     veiculos,
     eletricistas,

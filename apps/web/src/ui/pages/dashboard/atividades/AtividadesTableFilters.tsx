@@ -15,28 +15,12 @@ interface AtividadesTableFiltersProps {
   ) => void;
 }
 
-function formatTurnoLabel(turno: {
-  id: number;
-  dataInicio?: Date | string;
-  equipe?: { nome: string } | null;
-  veiculo?: { placa: string } | null;
-}) {
-  const equipeNome = turno.equipe?.nome || 'Sem equipe';
-  const placa = turno.veiculo?.placa || 'Sem placa';
-  const dataInicio = turno.dataInicio
-    ? new Date(turno.dataInicio).toLocaleDateString('pt-BR')
-    : '--/--/----';
-
-  return `#${turno.id} - ${equipeNome} - ${placa} (${dataInicio})`;
-}
-
 export default function AtividadesTableFilters({
   onFilterChange,
 }: AtividadesTableFiltersProps) {
   const {
     tiposAtividade,
     tiposAtividadeServico,
-    turnos,
     equipes,
     veiculos,
     eletricistas,
@@ -77,18 +61,6 @@ export default function AtividadesTableFilters({
                 value ? Number(value) : undefined
               ),
             loading: tiposAtividadeServico.isLoading,
-          },
-          {
-            label: 'Turno',
-            placeholder: 'Filtrar por turno',
-            options:
-              turnos.data?.map((turno) => ({
-                label: formatTurnoLabel(turno),
-                value: turno.id,
-              })) || [],
-            onChange: (value) =>
-              onFilterChange('turnoId', value ? Number(value) : undefined),
-            loading: turnos.isLoading,
           },
           {
             label: 'Equipe',

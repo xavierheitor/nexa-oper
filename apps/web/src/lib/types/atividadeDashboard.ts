@@ -58,6 +58,126 @@ export interface AtividadeExecucaoListItem {
   }>;
 }
 
+export interface AtividadeFotoDetalhe {
+  id: number;
+  ref?: string | null;
+  contexto?: string | null;
+  mimeType?: string | null;
+  fileName?: string | null;
+  storagePath: string;
+  url: string;
+  capturedAt?: Date | string | null;
+  createdAt: Date | string;
+}
+
+export interface AtividadeUploadEvidenceDetalhe {
+  id: number;
+  tipo: string;
+  entityType: string;
+  entityId: string;
+  url: string;
+  path: string;
+  tamanho: number;
+  mimeType?: string | null;
+  nomeArquivo?: string | null;
+  createdAt: Date | string;
+}
+
+export interface AtividadeFormRespostaDetalhe {
+  id: number;
+  perguntaChaveSnapshot: string;
+  perguntaTituloSnapshot: string;
+  ordem: number;
+  respostaTexto?: string | null;
+  obrigaFotoSnapshot: boolean;
+  dataResposta: Date | string;
+  foto?: AtividadeFotoDetalhe | null;
+}
+
+export interface AtividadeEventoDetalhe {
+  id: number;
+  tipoEvento: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  accuracy?: number | null;
+  detalhe?: string | null;
+  capturadoEm: Date | string;
+}
+
+export interface AtividadeMedidorDetalhe {
+  id: number;
+  somenteRetirada: boolean;
+  instaladoNumero?: string | null;
+  retiradoStatus?: string | null;
+  retiradoNumero?: string | null;
+  retiradoLeitura?: string | null;
+  instaladoFoto?: AtividadeFotoDetalhe | null;
+  retiradoFoto?: AtividadeFotoDetalhe | null;
+}
+
+export interface AtividadeMaterialDetalhe {
+  id: number;
+  materialCodigoSnapshot: string;
+  materialDescricaoSnapshot: string;
+  unidadeMedidaSnapshot: string;
+  quantidade: number;
+  materialCatalogo?: {
+    id: number;
+    codigo: string;
+    descricao: string;
+  } | null;
+}
+
+export interface AtividadeAprRespostaDetalhe {
+  id: number;
+  grupoNomeSnapshot?: string | null;
+  perguntaNomeSnapshot: string;
+  tipoRespostaSnapshot: string;
+  opcaoNomeSnapshot?: string | null;
+  respostaTexto?: string | null;
+  marcado?: boolean | null;
+  ordemGrupo: number;
+  ordemPergunta: number;
+  dataResposta: Date | string;
+}
+
+export interface AtividadeAprAssinaturaDetalhe {
+  id: number;
+  nomeAssinante: string;
+  matriculaAssinante?: string | null;
+  assinaturaData: Date | string;
+  assinanteExtra: boolean;
+}
+
+export interface AtividadeAprPreenchidaDetalhe {
+  id: number;
+  aprUuid: string;
+  observacoes?: string | null;
+  preenchidaEm: Date | string;
+  latitude?: number | null;
+  longitude?: number | null;
+  vinculadaAoServico: boolean;
+  apr?: {
+    id: number;
+    nome: string;
+  } | null;
+  respostas: AtividadeAprRespostaDetalhe[];
+  assinaturas: AtividadeAprAssinaturaDetalhe[];
+  evidenciasUpload: AtividadeUploadEvidenceDetalhe[];
+}
+
+export interface AtividadeExecucaoDetalhe extends AtividadeExecucaoListItem {
+  observacoesFinalizacao?: string | null;
+  finalizadaEm?: Date | string | null;
+  atividadeFotos: AtividadeFotoDetalhe[];
+  atividadeMedidor?: AtividadeMedidorDetalhe | null;
+  atividadeMateriaisAplicados: AtividadeMaterialDetalhe[];
+  atividadeFormRespostas: AtividadeFormRespostaDetalhe[];
+  atividadeEventos: AtividadeEventoDetalhe[];
+  atividadeAprPreenchidas: AtividadeAprPreenchidaDetalhe[];
+  uploadEvidenciasAtividade: AtividadeUploadEvidenceDetalhe[];
+}
+
 export interface AtividadeMedidorListItem {
   id: number;
   atividadeExecucaoId: number;
