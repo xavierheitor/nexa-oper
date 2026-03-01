@@ -49,10 +49,11 @@ export default function AtividadesVisaoGeralPageClient({
       width: 200,
     },
     {
-      title: 'Turno',
-      key: 'turnoId',
-      width: 100,
-      render: (_value, record) => record.turno?.id || '-',
+      title: 'Nº OS',
+      dataIndex: 'numeroDocumento',
+      key: 'numeroDocumento',
+      width: 120,
+      render: (value: string | null | undefined) => value || '-',
     },
     {
       title: 'Equipe',
