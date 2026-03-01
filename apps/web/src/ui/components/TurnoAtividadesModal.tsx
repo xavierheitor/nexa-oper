@@ -9,6 +9,7 @@ import {
   Col,
   Descriptions,
   Empty,
+  Image,
   Modal,
   Row,
   Space,
@@ -22,12 +23,15 @@ import {
 import { listAtividadeExecucoes } from '@/lib/actions/atividade/listExecucoes';
 import { listAtividadeMateriais } from '@/lib/actions/atividade/listMateriais';
 import { listAtividadeMedidores } from '@/lib/actions/atividade/listMedidores';
+import { listAtividadeAprs } from '@/lib/actions/atividade/listAprs';
+import { listAtividadeFotos } from '@/lib/actions/atividade/listFotos';
 import type {
   AtividadeExecucaoListItem,
   AtividadeMaterialListItem,
   AtividadeMedidorListItem,
 } from '@/lib/types/atividadeDashboard';
 import { handleRedirectToLogin } from '@/lib/utils/redirectHandler';
+import { buildPhotoUrl } from '@/lib/utils/photos';
 
 const { Text } = Typography;
 
@@ -42,6 +46,41 @@ interface TurnoAtividadesModalProps {
   };
 }
 
+interface AtividadeAprTurnoRow {
+  id: number;
+  aprUuid: string;
+  preenchidaEm: string | Date;
+  vinculadaAoServico: boolean;
+  apr?: {
+    id: number;
+    nome: string;
+  } | null;
+  atividadeExecucao?: {
+    id: number;
+    atividadeUuid: string;
+    numeroDocumento?: string | null;
+    tipoAtividadeNomeSnapshot?: string | null;
+    tipoServicoNomeSnapshot?: string | null;
+  } | null;
+  _count: {
+    respostas: number;
+    assinaturas: number;
+  };
+}
+
+interface AtividadeFotoTurnoRow {
+  id: string;
+  origem: string;
+  numeroDocumento: string | null;
+  contexto: string | null;
+  categoria: string | null;
+  nomeArquivo: string | null;
+  mimeType: string | null;
+  url: string | null;
+  path: string | null;
+  createdAt: string | Date;
+}
+
 export default function TurnoAtividadesModal({
   visible,
   onClose,
@@ -53,6 +92,8 @@ export default function TurnoAtividadesModal({
   const [atividades, setAtividades] = useState<AtividadeExecucaoListItem[]>([]);
   const [medidores, setMedidores] = useState<AtividadeMedidorListItem[]>([]);
   const [materiais, setMateriais] = useState<AtividadeMaterialListItem[]>([]);
+  const [aprs, setAprs] = useState<AtividadeAprTurnoRow[]>([]);
+  const [fotos, setFotos] = useState<AtividadeFotoTurnoRow[]>([]);
 
   const fetchData = useCallback(async () => {
     if (!turnoId) return;
@@ -61,35 +102,50 @@ export default function TurnoAtividadesModal({
     setError(null);
 
     try {
-      const [atividadesResult, medidoresResult, materiaisResult] =
-        await Promise.all([
-          listAtividadeExecucoes({
-            page: 1,
-            pageSize: 200,
-            orderBy: 'createdAt',
-            orderDir: 'desc',
-            turnoId,
-          }),
-          listAtividadeMedidores({
-            page: 1,
-            pageSize: 200,
-            orderBy: 'createdAt',
-            orderDir: 'desc',
-            turnoId,
-          }),
-          listAtividadeMateriais({
-            page: 1,
-            pageSize: 200,
-            orderBy: 'createdAt',
-            orderDir: 'desc',
-            turnoId,
-          }),
-        ]);
+      const [
+        atividadesResult,
+        medidoresResult,
+        materiaisResult,
+        aprsResult,
+        fotosResult,
+      ] = await Promise.all([
+        listAtividadeExecucoes({
+          page: 1,
+          pageSize: 200,
+          orderBy: 'createdAt',
+          orderDir: 'desc',
+          turnoId,
+        }),
+        listAtividadeMedidores({
+          page: 1,
+          pageSize: 200,
+          orderBy: 'createdAt',
+          orderDir: 'desc',
+          turnoId,
+        }),
+        listAtividadeMateriais({
+          page: 1,
+          pageSize: 200,
+          orderBy: 'createdAt',
+          orderDir: 'desc',
+          turnoId,
+        }),
+        listAtividadeAprs({
+          page: 1,
+          pageSize: 200,
+          turnoId,
+        }),
+        listAtividadeFotos({
+          turnoId,
+        }),
+      ]);
 
       if (
         handleRedirectToLogin(atividadesResult) ||
         handleRedirectToLogin(medidoresResult) ||
-        handleRedirectToLogin(materiaisResult)
+        handleRedirectToLogin(materiaisResult) ||
+        handleRedirectToLogin(aprsResult) ||
+        handleRedirectToLogin(fotosResult)
       ) {
         return;
       }
@@ -106,9 +162,25 @@ export default function TurnoAtividadesModal({
         throw new Error(materiaisResult.error || 'Erro ao buscar materiais.');
       }
 
-      setAtividades((atividadesResult.data?.data || []) as AtividadeExecucaoListItem[]);
-      setMedidores((medidoresResult.data?.data || []) as AtividadeMedidorListItem[]);
-      setMateriais((materiaisResult.data?.data || []) as AtividadeMaterialListItem[]);
+      if (!aprsResult.success) {
+        throw new Error(aprsResult.error || 'Erro ao buscar APRs.');
+      }
+
+      if (!fotosResult.success) {
+        throw new Error(fotosResult.error || 'Erro ao buscar fotos.');
+      }
+
+      setAtividades(
+        (atividadesResult.data?.data || []) as AtividadeExecucaoListItem[]
+      );
+      setMedidores(
+        (medidoresResult.data?.data || []) as AtividadeMedidorListItem[]
+      );
+      setMateriais(
+        (materiaisResult.data?.data || []) as AtividadeMaterialListItem[]
+      );
+      setAprs((aprsResult.data?.data || []) as AtividadeAprTurnoRow[]);
+      setFotos((fotosResult.data?.data || []) as AtividadeFotoTurnoRow[]);
     } catch (fetchError) {
       const message =
         fetchError instanceof Error
@@ -118,6 +190,8 @@ export default function TurnoAtividadesModal({
       setAtividades([]);
       setMedidores([]);
       setMateriais([]);
+      setAprs([]);
+      setFotos([]);
     } finally {
       setLoading(false);
     }
@@ -130,10 +204,12 @@ export default function TurnoAtividadesModal({
   }, [visible, turnoId, fetchData]);
 
   const totalAtividades = atividades.length;
-  const atividadesComMedidor = atividades.filter((a) => a.aplicaMedidor).length;
-  const atividadesComMaterial = atividades.filter((a) => a.aplicaMaterial).length;
+  const atividadesComMedidor = atividades.filter(a => a.aplicaMedidor).length;
+  const atividadesComMaterial = atividades.filter(a => a.aplicaMaterial).length;
   const totalMedidores = medidores.length;
   const totalMateriais = materiais.length;
+  const totalAprs = aprs.length;
+  const totalFotos = fotos.length;
 
   return (
     <Modal
@@ -204,17 +280,36 @@ export default function TurnoAtividadesModal({
                 </Col>
                 <Col xs={24} sm={12} md={4}>
                   <Card size='small'>
-                    <Statistic title='Com Medidor' value={atividadesComMedidor} />
+                    <Statistic
+                      title='Com Medidor'
+                      value={atividadesComMedidor}
+                    />
                   </Card>
                 </Col>
                 <Col xs={24} sm={12} md={4}>
                   <Card size='small'>
-                    <Statistic title='Com Material' value={atividadesComMaterial} />
+                    <Statistic
+                      title='Com Material'
+                      value={atividadesComMaterial}
+                    />
                   </Card>
                 </Col>
                 <Col xs={24} sm={12} md={4}>
                   <Card size='small'>
-                    <Statistic title='Registros Medidor' value={totalMedidores} />
+                    <Statistic
+                      title='Registros Medidor'
+                      value={totalMedidores}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={4}>
+                  <Card size='small'>
+                    <Statistic title='APRs' value={totalAprs} />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={4}>
+                  <Card size='small'>
+                    <Statistic title='Fotos' value={totalFotos} />
                   </Card>
                 </Col>
               </Row>
@@ -236,7 +331,8 @@ export default function TurnoAtividadesModal({
                             title: 'Nº OS',
                             key: 'numeroDocumento',
                             width: 140,
-                            render: (_, record) => record.numeroDocumento || '-',
+                            render: (_, record) =>
+                              record.numeroDocumento || '-',
                           },
                           {
                             title: 'Tipo',
@@ -286,7 +382,9 @@ export default function TurnoAtividadesModal({
                             key: 'createdAt',
                             width: 160,
                             render: (_, record) =>
-                              new Date(record.createdAt).toLocaleString('pt-BR'),
+                              new Date(record.createdAt).toLocaleString(
+                                'pt-BR'
+                              ),
                           },
                         ]}
                       />
@@ -314,26 +412,30 @@ export default function TurnoAtividadesModal({
                             title: 'Nº Instalado',
                             dataIndex: 'instaladoNumero',
                             width: 140,
-                            render: (value) => value || '-',
+                            render: value => value || '-',
                           },
                           {
                             title: 'Nº Retirado',
                             dataIndex: 'retiradoNumero',
                             width: 140,
-                            render: (value) => value || '-',
+                            render: value => value || '-',
                           },
                           {
                             title: 'Leitura Retirada',
                             dataIndex: 'retiradoLeitura',
                             width: 150,
-                            render: (value) => value || '-',
+                            render: value => value || '-',
                           },
                           {
                             title: 'Somente Retirada',
                             dataIndex: 'somenteRetirada',
                             width: 140,
                             render: (value: boolean) =>
-                              value ? <Tag color='orange'>Sim</Tag> : <Tag>Não</Tag>,
+                              value ? (
+                                <Tag color='orange'>Sim</Tag>
+                              ) : (
+                                <Tag>Não</Tag>
+                              ),
                           },
                         ]}
                       />
@@ -382,6 +484,160 @@ export default function TurnoAtividadesModal({
                       />
                     ),
                   },
+                  {
+                    key: 'apr',
+                    label: `APR (${totalAprs})`,
+                    children: (
+                      <Table<AtividadeAprTurnoRow>
+                        size='small'
+                        rowKey='id'
+                        pagination={{ pageSize: 10, showSizeChanger: true }}
+                        dataSource={aprs}
+                        columns={[
+                          { title: 'ID', dataIndex: 'id', width: 80 },
+                          {
+                            title: 'Nº OS',
+                            key: 'numeroDocumento',
+                            width: 140,
+                            render: (_, record) =>
+                              record.atividadeExecucao?.numeroDocumento || '-',
+                          },
+                          {
+                            title: 'APR',
+                            key: 'aprNome',
+                            render: (_, record) => record.apr?.nome || '-',
+                          },
+                          {
+                            title: 'Respostas',
+                            key: 'respostas',
+                            width: 110,
+                            render: (_, record) =>
+                              record._count?.respostas ?? 0,
+                          },
+                          {
+                            title: 'Assinaturas',
+                            key: 'assinaturas',
+                            width: 120,
+                            render: (_, record) =>
+                              record._count?.assinaturas ?? 0,
+                          },
+                          {
+                            title: 'Vinculada Serviço',
+                            dataIndex: 'vinculadaAoServico',
+                            width: 150,
+                            render: (value: boolean) =>
+                              value ? (
+                                <Tag color='green'>Sim</Tag>
+                              ) : (
+                                <Tag>Não</Tag>
+                              ),
+                          },
+                          {
+                            title: 'Preenchida em',
+                            key: 'preenchidaEm',
+                            width: 170,
+                            render: (_, record) =>
+                              new Date(record.preenchidaEm).toLocaleString(
+                                'pt-BR'
+                              ),
+                          },
+                        ]}
+                      />
+                    ),
+                  },
+                  {
+                    key: 'fotos',
+                    label: `Fotos (${totalFotos})`,
+                    children: (
+                      <Table<AtividadeFotoTurnoRow>
+                        size='small'
+                        rowKey='id'
+                        pagination={{ pageSize: 12, showSizeChanger: true }}
+                        dataSource={fotos}
+                        columns={[
+                          {
+                            title: 'Origem',
+                            dataIndex: 'origem',
+                            width: 110,
+                            render: (value: string) =>
+                              value === 'Atividade' ? (
+                                <Tag color='blue'>Atividade</Tag>
+                              ) : (
+                                <Tag color='orange'>Upload</Tag>
+                              ),
+                          },
+                          {
+                            title: 'Nº OS',
+                            dataIndex: 'numeroDocumento',
+                            width: 140,
+                            render: (value: string | null) => value || '-',
+                          },
+                          {
+                            title: 'Categoria',
+                            dataIndex: 'categoria',
+                            width: 170,
+                            render: (value: string | null) => value || '-',
+                          },
+                          {
+                            title: 'Contexto',
+                            dataIndex: 'contexto',
+                            width: 200,
+                            render: (value: string | null) => value || '-',
+                          },
+                          {
+                            title: 'Arquivo',
+                            dataIndex: 'nomeArquivo',
+                            render: (value: string | null) => value || '-',
+                          },
+                          {
+                            title: 'Visualização',
+                            key: 'preview',
+                            width: 130,
+                            render: (_, record) => {
+                              const src = buildPhotoUrl(
+                                record.url || undefined,
+                                record.path || undefined
+                              );
+                              if (!src) return '-';
+                              if (
+                                !record.mimeType
+                                  ?.toLowerCase()
+                                  .startsWith('image/')
+                              ) {
+                                return (
+                                  <a
+                                    href={src}
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                  >
+                                    Abrir
+                                  </a>
+                                );
+                              }
+                              return (
+                                <Image
+                                  width={72}
+                                  height={72}
+                                  src={src}
+                                  alt={record.nomeArquivo || 'Foto'}
+                                  style={{ objectFit: 'cover' }}
+                                />
+                              );
+                            },
+                          },
+                          {
+                            title: 'Criado em',
+                            key: 'createdAt',
+                            width: 170,
+                            render: (_, record) =>
+                              new Date(record.createdAt).toLocaleString(
+                                'pt-BR'
+                              ),
+                          },
+                        ]}
+                      />
+                    ),
+                  },
                 ]}
               />
             </>
@@ -391,8 +647,8 @@ export default function TurnoAtividadesModal({
 
       <div style={{ marginTop: 12 }}>
         <Text type='secondary'>
-          Visualização inicial para análise rápida por turno. Podemos evoluir com
-          drill-down por atividade, fotos e exportação.
+          Visualização inicial para análise rápida por turno. Podemos evoluir
+          com drill-down por atividade, fotos e exportação.
         </Text>
       </div>
     </Modal>

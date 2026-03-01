@@ -20,6 +20,53 @@ const getChecklistByUuidSchema = z.object({
   uuid: z.string().uuid(),
 });
 
+type ChecklistRespostaFotoFormatted = {
+  id: number;
+  caminhoArquivo: string | null;
+  urlPublica: string | null;
+  tamanhoBytes: number;
+  mimeType: string | null;
+  sincronizadoEm: string;
+  createdAt: string;
+};
+
+function normalizeChecklistRespostaFoto(foto: {
+  id: number;
+  caminhoArquivo: string;
+  urlPublica: string | null;
+  tamanhoBytes: bigint;
+  mimeType: string;
+  sincronizadoEm: Date;
+  createdAt: Date;
+}): ChecklistRespostaFotoFormatted {
+  return {
+    id: foto.id,
+    caminhoArquivo: foto.caminhoArquivo,
+    urlPublica: foto.urlPublica,
+    tamanhoBytes: Number(foto.tamanhoBytes),
+    mimeType: foto.mimeType,
+    sincronizadoEm: foto.sincronizadoEm.toISOString(),
+    createdAt: foto.createdAt.toISOString(),
+  };
+}
+
+function mergeChecklistRespostaFotos(
+  fotosRelacionadas: ChecklistRespostaFotoFormatted[],
+  fotosMobile: ChecklistRespostaFotoFormatted[]
+): ChecklistRespostaFotoFormatted[] {
+  const seen = new Set<string>();
+  const merged: ChecklistRespostaFotoFormatted[] = [];
+
+  for (const foto of [...fotosRelacionadas, ...fotosMobile]) {
+    const key = `${foto.urlPublica || ''}|${foto.caminhoArquivo || ''}|${foto.id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(foto);
+  }
+
+  return merged;
+}
+
 /**
  * Busca checklists preenchidos de um turno específico
  *
@@ -137,12 +184,18 @@ export const getChecklistsByTurno = async (rawData: unknown) =>
         }
       });
 
-      // Mapeia checklists e respostas usando as fotos já carregadas
+      // Mapeia checklists e respostas mesclando fotos relacionais e fallback mobile
       const checklistsComFotos = checklistsPreenchidos.map(checklist => {
         const respostasComFotos = checklist.ChecklistResposta.map(resposta => {
           const key = `${checklist.uuid}-${resposta.perguntaId}`;
           const fotosDaResposta = fotosPorResposta.get(key) || [];
-          const fotosFormatadas = formatChecklistPhotos(fotosDaResposta);
+          const fotosMobileFormatadas = formatChecklistPhotos(fotosDaResposta);
+          const fotosRelacionadasFormatadas =
+            resposta.ChecklistRespostaFoto.map(normalizeChecklistRespostaFoto);
+          const fotosFormatadas = mergeChecklistRespostaFotos(
+            fotosRelacionadasFormatadas,
+            fotosMobileFormatadas
+          );
 
           return {
             ...resposta,
@@ -279,16 +332,25 @@ export const getChecklistByUuid = async (rawData: unknown) =>
         }
       });
 
-      // Mapeia respostas usando as fotos já carregadas
-      const respostasComFotos = checklistPreenchido.ChecklistResposta.map(resposta => {
-        const fotosDaResposta = fotosPorPergunta.get(resposta.perguntaId) || [];
-        const fotosFormatadas = formatChecklistPhotos(fotosDaResposta);
+      // Mapeia respostas mesclando fotos relacionais e fallback mobile
+      const respostasComFotos = checklistPreenchido.ChecklistResposta.map(
+        resposta => {
+          const fotosDaResposta =
+            fotosPorPergunta.get(resposta.perguntaId) || [];
+          const fotosMobileFormatadas = formatChecklistPhotos(fotosDaResposta);
+          const fotosRelacionadasFormatadas =
+            resposta.ChecklistRespostaFoto.map(normalizeChecklistRespostaFoto);
+          const fotosFormatadas = mergeChecklistRespostaFotos(
+            fotosRelacionadasFormatadas,
+            fotosMobileFormatadas
+          );
 
-        return {
-          ...resposta,
-          ChecklistRespostaFoto: fotosFormatadas,
-        };
-      });
+          return {
+            ...resposta,
+            ChecklistRespostaFoto: fotosFormatadas,
+          };
+        }
+      );
 
       const checklistComFotos = {
         ...checklistPreenchido,

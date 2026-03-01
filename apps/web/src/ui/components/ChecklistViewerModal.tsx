@@ -7,9 +7,27 @@
  * Mostra o checklist específico selecionado com todas as suas respostas e fotos.
  */
 
-import React, { useState } from 'react';
-import { Modal, Card, Typography, Tag, Space, Image, Empty, Collapse, Divider } from 'antd';
-import { EyeOutlined, UserOutlined, ClockCircleOutlined, CameraOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { useState } from 'react';
+import {
+  Modal,
+  Card,
+  Typography,
+  Tag,
+  Space,
+  Image,
+  Empty,
+  Collapse,
+  Divider,
+} from 'antd';
+import {
+  EyeOutlined,
+  UserOutlined,
+  ClockCircleOutlined,
+  CameraOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
 import { buildPhotoUrl, isValidPhotoPath } from '@/lib/utils/photos';
 import type { ChecklistPreenchido as ChecklistPreenchidoBase } from './ChecklistSelectorModal';
 
@@ -17,10 +35,10 @@ const { Title, Text } = Typography;
 
 interface ChecklistRespostaFoto {
   id: number;
-  caminhoArquivo: string;
-  urlPublica?: string;
-  tamanhoBytes: bigint;
-  mimeType: string;
+  caminhoArquivo: string | null;
+  urlPublica: string | null;
+  tamanhoBytes: number;
+  mimeType: string | null;
   sincronizadoEm: string;
   createdAt: string;
 }
@@ -42,16 +60,46 @@ interface ChecklistResposta {
   ChecklistRespostaFoto: ChecklistRespostaFoto[];
 }
 
-type ChecklistPreenchido = Omit<ChecklistPreenchidoBase, 'ChecklistResposta'> & {
-  ChecklistResposta: Array<ChecklistPreenchidoBase['ChecklistResposta'][0] & {
-    ChecklistRespostaFoto?: ChecklistRespostaFoto[];
-  }>;
+type ChecklistPreenchido = Omit<
+  ChecklistPreenchidoBase,
+  'ChecklistResposta'
+> & {
+  ChecklistResposta: Array<
+    ChecklistPreenchidoBase['ChecklistResposta'][0] & {
+      ChecklistRespostaFoto?: ChecklistRespostaFoto[];
+    }
+  >;
 };
 
 interface ChecklistViewerModalProps {
   visible: boolean;
   onClose: () => void;
   checklist: ChecklistPreenchido | ChecklistPreenchidoBase | null;
+}
+
+function formatDateTime(dateString: string) {
+  const date = new Date(dateString);
+  return {
+    date: date.toLocaleDateString('pt-BR'),
+    time: date.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+  };
+}
+
+function formatFileSize(bytes: number) {
+  if (!bytes || bytes <= 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+}
+
+function isRespostaReprovada(resposta: ChecklistResposta): boolean {
+  if (resposta.opcaoResposta.geraPendencia) return true;
+  const nome = (resposta.opcaoResposta.nome || '').trim().toLowerCase();
+  return nome.includes('reprov');
 }
 
 export default function ChecklistViewerModal({
@@ -64,41 +112,15 @@ export default function ChecklistViewerModal({
 
   if (!checklist) return null;
 
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return {
-      date: date.toLocaleDateString('pt-BR'),
-      time: date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-    };
-  };
-
-  const formatFileSize = (bytes: bigint) => {
-    const bytesNumber = Number(bytes);
-    if (bytesNumber === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytesNumber) / Math.log(k));
-    return parseFloat((bytesNumber / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const getRespostaStatus = (resposta: ChecklistResposta) => {
-    if (resposta.aguardandoFoto) {
-      return { color: 'orange', icon: <ExclamationCircleOutlined />, text: 'Aguardando foto' };
-    }
-    if (resposta.fotosSincronizadas > 0) {
-      return { color: 'green', icon: <CheckCircleOutlined />, text: 'Com foto' };
-    }
-    return { color: 'blue', icon: <CheckCircleOutlined />, text: 'Respondido' };
-  };
-
   const handleImagePreview = (imagePath: string) => {
     setPreviewImage(imagePath);
     setImagePreviewVisible(true);
   };
 
-  const dataPreenchimentoStr = checklist.dataPreenchimento instanceof Date
-    ? checklist.dataPreenchimento.toISOString()
-    : checklist.dataPreenchimento;
+  const dataPreenchimentoStr =
+    checklist.dataPreenchimento instanceof Date
+      ? checklist.dataPreenchimento.toISOString()
+      : checklist.dataPreenchimento;
   const { date, time } = formatDateTime(dataPreenchimentoStr);
 
   return (
@@ -116,148 +138,202 @@ export default function ChecklistViewerModal({
         width={1000}
         destroyOnHidden
       >
-        {/* Informações do Checklist */}
-        <Card size="small" style={{ marginBottom: 16 }}>
-          <Space direction="vertical" size={8}>
+        <Card size='small' style={{ marginBottom: 16 }}>
+          <Space direction='vertical' size={8}>
             <Space>
               <Text strong>Tipo: </Text>
-              <Tag color="blue">{checklist.checklist.tipoChecklist.nome}</Tag>
+              <Tag color='blue'>{checklist.checklist.tipoChecklist.nome}</Tag>
             </Space>
             <Space>
               <UserOutlined />
-              <Text>{checklist.eletricista.nome} ({checklist.eletricista.matricula})</Text>
+              <Text>
+                {checklist.eletricista.nome} ({checklist.eletricista.matricula})
+              </Text>
             </Space>
             <Space>
               <ClockCircleOutlined />
-              <Text>{date} às {time}</Text>
+              <Text>
+                {date} às {time}
+              </Text>
             </Space>
-            {checklist.latitude && checklist.longitude && (
+            {checklist.latitude && checklist.longitude ? (
               <Space>
-                <Text type="secondary">
-                  📍 {checklist.latitude.toFixed(6)}, {checklist.longitude.toFixed(6)}
+                <Text type='secondary'>
+                  📍 {checklist.latitude.toFixed(6)},{' '}
+                  {checklist.longitude.toFixed(6)}
                 </Text>
               </Space>
-            )}
+            ) : null}
           </Space>
         </Card>
 
-        {/* Respostas do Checklist */}
-        <Title level={4}>Respostas ({checklist.ChecklistResposta.length})</Title>
+        <Title level={4}>
+          Respostas ({checklist.ChecklistResposta.length})
+        </Title>
 
         {checklist.ChecklistResposta.length === 0 ? (
-          <Empty description="Nenhuma resposta encontrada" />
+          <Empty description='Nenhuma resposta encontrada' />
         ) : (
           <Collapse
-            items={checklist.ChecklistResposta.map((resposta, index) => {
-              const respostaWithFoto = resposta as ChecklistResposta;
-              const status = getRespostaStatus(respostaWithFoto);
-              const dataRespostaStr = resposta.dataResposta instanceof Date
-                ? resposta.dataResposta.toISOString()
-                : resposta.dataResposta;
-              const { date: respostaDate, time: respostaTime } = formatDateTime(dataRespostaStr);
+            items={checklist.ChecklistResposta.map((respostaBase, index) => {
+              const resposta = respostaBase as ChecklistResposta;
+              const reprovada = isRespostaReprovada(resposta);
+              const resultadoTag = reprovada
+                ? {
+                    color: 'red',
+                    icon: <CloseCircleOutlined />,
+                    text: 'Reprovado',
+                  }
+                : {
+                    color: 'green',
+                    icon: <CheckCircleOutlined />,
+                    text: 'Aprovado',
+                  };
+
+              const fotos = resposta.ChecklistRespostaFoto || [];
+              const fotosSincronizadas =
+                fotos.length > 0 || resposta.fotosSincronizadas > 0;
+
+              const dataRespostaStr =
+                resposta.dataResposta instanceof Date
+                  ? resposta.dataResposta.toISOString()
+                  : resposta.dataResposta;
+              const { date: respostaDate, time: respostaTime } =
+                formatDateTime(dataRespostaStr);
 
               return {
                 key: resposta.id,
                 label: (
                   <Space>
-                    <Text strong>{index + 1}. {resposta.pergunta.nome}</Text>
-                    <Tag color={status.color} icon={status.icon}>
-                      {status.text}
+                    <Text strong>
+                      {index + 1}. {resposta.pergunta.nome}
+                    </Text>
+                    <Tag color={resultadoTag.color} icon={resultadoTag.icon}>
+                      {resultadoTag.text}
                     </Tag>
-                    {resposta.opcaoResposta.geraPendencia && (
-                      <Tag color="red">Gera Pendência</Tag>
-                    )}
                   </Space>
                 ),
                 extra: (
                   <Space>
-                    <Text type="secondary">{respostaDate} {respostaTime}</Text>
-                    {respostaWithFoto.ChecklistRespostaFoto && respostaWithFoto.ChecklistRespostaFoto.length > 0 && (
+                    <Text type='secondary'>
+                      {respostaDate} {respostaTime}
+                    </Text>
+                    {fotos.length > 0 ? (
                       <Space>
                         <CameraOutlined />
-                        <Text>{respostaWithFoto.ChecklistRespostaFoto.length}</Text>
+                        <Text>{fotos.length}</Text>
                       </Space>
-                    )}
+                    ) : null}
+                    {reprovada && !fotosSincronizadas ? (
+                      <Tag color='orange'>Aguardando sincronização do app</Tag>
+                    ) : null}
                   </Space>
                 ),
                 children: (
-                  <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                    {/* Resposta */}
-                    <Card size="small">
-                      <Space direction="vertical" size={4}>
+                  <Space
+                    direction='vertical'
+                    size={16}
+                    style={{ width: '100%' }}
+                  >
+                    <Card size='small'>
+                      <Space direction='vertical' size={4}>
                         <Text strong>Resposta:</Text>
-                        <Tag color={resposta.opcaoResposta.geraPendencia ? 'red' : 'green'}>
-                          {resposta.opcaoResposta.nome}
-                        </Tag>
-                        {resposta.opcaoResposta.geraPendencia && (
-                          <Text type="warning">
-                            ⚠️ Esta resposta gera uma pendência automática
+                        <Space>
+                          <Tag color={resultadoTag.color}>
+                            {resultadoTag.text}
+                          </Tag>
+                          <Text type='secondary'>
+                            ({resposta.opcaoResposta.nome})
                           </Text>
-                        )}
+                        </Space>
+                        {reprovada ? (
+                          <Text type='warning'>
+                            ⚠️ Esta resposta gera uma pendência automática.
+                          </Text>
+                        ) : null}
                       </Space>
                     </Card>
 
-                    {/* Fotos */}
-                    {respostaWithFoto.ChecklistRespostaFoto && respostaWithFoto.ChecklistRespostaFoto.length > 0 && (
+                    {reprovada && fotos.length > 0 ? (
                       <>
-                        <Divider orientation="left">
+                        <Divider orientation='left'>
                           <Space>
                             <CameraOutlined />
-                            <Text strong>Fotos ({respostaWithFoto.ChecklistRespostaFoto.length})</Text>
+                            <Text strong>Fotos ({fotos.length})</Text>
                           </Space>
                         </Divider>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
-                          {respostaWithFoto.ChecklistRespostaFoto.map((foto: ChecklistRespostaFoto) => {
-                            // Montar URL completa usando utilitário helper
-                            const imageSrc = buildPhotoUrl(foto.urlPublica, foto.caminhoArquivo);
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns:
+                              'repeat(auto-fill, minmax(200px, 1fr))',
+                            gap: 16,
+                          }}
+                        >
+                          {fotos.map(foto => {
+                            const imageSrc = buildPhotoUrl(
+                              foto.urlPublica,
+                              foto.caminhoArquivo || undefined
+                            );
                             const hasValidSrc = isValidPhotoPath(imageSrc);
 
                             return (
                               <Card
                                 key={foto.id}
-                                size="small"
+                                size='small'
                                 hoverable={hasValidSrc}
-                                onClick={() => hasValidSrc && handleImagePreview(imageSrc)}
-                                style={{ cursor: hasValidSrc ? 'pointer' : 'default' }}
+                                onClick={() =>
+                                  hasValidSrc && handleImagePreview(imageSrc)
+                                }
+                                style={{
+                                  cursor: hasValidSrc ? 'pointer' : 'default',
+                                }}
                               >
                                 <div style={{ textAlign: 'center' }}>
                                   {hasValidSrc ? (
                                     <Image
                                       src={imageSrc}
                                       alt={`Foto ${foto.id}`}
-                                      style={{ width: '100%', height: 120, objectFit: 'cover' }}
+                                      style={{
+                                        width: '100%',
+                                        height: 120,
+                                        objectFit: 'cover',
+                                      }}
                                       preview={false}
                                     />
                                   ) : (
-                                    <div style={{
-                                      width: '100%',
-                                      height: 120,
-                                      backgroundColor: '#f5f5f5',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      border: '1px dashed #d9d9d9'
-                                    }}>
-                                      <Text type="secondary">URL não disponível</Text>
+                                    <div
+                                      style={{
+                                        width: '100%',
+                                        height: 120,
+                                        backgroundColor: '#f5f5f5',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        border: '1px dashed #d9d9d9',
+                                      }}
+                                    >
+                                      <Text type='secondary'>
+                                        Aguardando sincronização
+                                      </Text>
                                     </div>
                                   )}
                                   <div style={{ marginTop: 8 }}>
-                                    <Text type="secondary" style={{ fontSize: 12 }}>
+                                    <Text
+                                      type='secondary'
+                                      style={{ fontSize: 12 }}
+                                    >
                                       Foto {foto.id}
                                     </Text>
                                     <br />
-                                    <Text type="secondary" style={{ fontSize: 10 }}>
-                                      {formatFileSize(foto.tamanhoBytes)} • {foto.mimeType}
+                                    <Text
+                                      type='secondary'
+                                      style={{ fontSize: 10 }}
+                                    >
+                                      {formatFileSize(foto.tamanhoBytes)} •{' '}
+                                      {foto.mimeType || 'arquivo'}
                                     </Text>
-                                    {!hasValidSrc && (
-                                      <>
-                                        <br />
-                                        <Text type="danger" style={{ fontSize: 10 }}>
-                                          URL: {imageSrc || 'vazio'}
-                                        </Text>
-                                      </>
-                                    )}
                                   </div>
                                 </div>
                               </Card>
@@ -265,18 +341,21 @@ export default function ChecklistViewerModal({
                           })}
                         </div>
                       </>
-                    )}
+                    ) : null}
 
-                    {(!respostaWithFoto.ChecklistRespostaFoto || respostaWithFoto.ChecklistRespostaFoto.length === 0) && resposta.aguardandoFoto && (
-                      <Card size="small" style={{ backgroundColor: '#fff7e6' }}>
+                    {reprovada && fotos.length === 0 ? (
+                      <Card size='small' style={{ backgroundColor: '#fff7e6' }}>
                         <Space>
-                          <ExclamationCircleOutlined style={{ color: '#fa8c16' }} />
-                          <Text type="warning">
-                            Esta resposta está aguardando o envio de fotos pelo aplicativo móvel.
+                          <ExclamationCircleOutlined
+                            style={{ color: '#fa8c16' }}
+                          />
+                          <Text type='warning'>
+                            Foto da reprova ainda não sincronizada. Aguardando
+                            sincronização do app.
                           </Text>
                         </Space>
                       </Card>
-                    )}
+                    ) : null}
                   </Space>
                 ),
               };
@@ -285,18 +364,17 @@ export default function ChecklistViewerModal({
         )}
       </Modal>
 
-      {/* Preview de Imagem */}
-      {previewImage && previewImage.trim() !== '' && (
+      {previewImage && previewImage.trim() !== '' ? (
         <Image
           style={{ display: 'none' }}
           src={previewImage}
-          alt=""
+          alt=''
           preview={{
             visible: imagePreviewVisible,
             onVisibleChange: setImagePreviewVisible,
           }}
         />
-      )}
+      ) : null}
     </>
   );
 }
