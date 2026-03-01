@@ -43,3 +43,28 @@ export function resolveUploadRoot(configuredRoot?: string): string {
 
   return path.resolve(workspaceRoot, raw);
 }
+
+export function resolveAdditionalUploadRoots(
+  configuredRoot?: string,
+  legacyRoots?: string[],
+): string[] {
+  const workspaceRoot = findWorkspaceRoot(process.cwd());
+  const legacyAppRoot = path.join(process.cwd(), 'uploads');
+  const primaryRoot = resolveUploadRoot(configuredRoot);
+  const configuredLegacyRoots = (legacyRoots || [])
+    .map((root) => root.trim())
+    .filter(Boolean)
+    .map((root) =>
+      path.isAbsolute(root)
+        ? path.resolve(root)
+        : path.resolve(workspaceRoot, root),
+    );
+
+  return Array.from(
+    new Set(
+      [legacyAppRoot, ...configuredLegacyRoots].filter(
+        (root) => root !== primaryRoot,
+      ),
+    ),
+  );
+}

@@ -128,6 +128,7 @@ Todas as variáveis são definidas e validadas em **env.ts**. Booleans aceitam: 
 |------|------|---------|-----------|
 | **UPLOAD_STORAGE** | `local` \| `s3` | local | Estratégia de armazenamento usada pelo módulo de upload. |
 | **UPLOAD_ROOT** | string | `<workspaceRoot>/uploads` | Diretório base local dos uploads quando `UPLOAD_STORAGE=local`. Caminho relativo é resolvido a partir da raiz do monorepo. |
+| **UPLOAD_LEGACY_ROOTS** | CSV/JSON array (opcional) | (vazio) | Diretórios legados adicionais usados como fallback de leitura para `/uploads/*` e `/mobile/photos/*`. |
 | **UPLOAD_BASE_URL** | string (opcional) | (vazio) | Quando definido, a API retorna URLs absolutas com essa base para uploads locais. |
 | **UPLOAD_MAX_FILE_SIZE_BYTES** | number | 10_485_760 | Tamanho máximo por arquivo em bytes para endpoints de upload. |
 

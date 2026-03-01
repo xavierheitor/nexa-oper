@@ -13,6 +13,7 @@ import type {
   AtividadeMaterialDetalhe,
   AtividadeUploadEvidenceDetalhe,
 } from '@/lib/types/atividadeDashboard';
+import { buildPhotoUrl } from '@/lib/utils/photos';
 import {
   Alert,
   Button,
@@ -57,15 +58,20 @@ function isImageMimeType(mimeType?: string | null) {
 function renderMediaPreview(
   media: Pick<
     AtividadeUploadEvidenceDetalhe,
-    'url' | 'mimeType' | 'nomeArquivo'
-  >
+    'url' | 'mimeType' | 'nomeArquivo' | 'path'
+  > & {
+    fallbackPath?: string;
+  }
 ) {
+  const mediaUrl = buildPhotoUrl(media.url, media.fallbackPath || media.path);
+  if (!mediaUrl) return '-';
+
   if (isImageMimeType(media.mimeType)) {
-    return <Image width={96} src={media.url} alt={media.nomeArquivo || 'Imagem'} />;
+    return <Image width={96} src={mediaUrl} alt={media.nomeArquivo || 'Imagem'} />;
   }
 
   return (
-    <a href={media.url} target='_blank' rel='noopener noreferrer'>
+    <a href={mediaUrl} target='_blank' rel='noopener noreferrer'>
       Abrir arquivo
     </a>
   );
@@ -153,6 +159,8 @@ export default function AtividadeExecucaoDetalhesModal({
               url: record.foto.url,
               mimeType: record.foto.mimeType,
               nomeArquivo: record.foto.fileName || undefined,
+              path: record.foto.storagePath,
+              fallbackPath: record.foto.storagePath,
             })
           : '-',
     },
@@ -200,6 +208,8 @@ export default function AtividadeExecucaoDetalhesModal({
       criadoEm: foto.createdAt,
       url: foto.url,
       mimeTypeRaw: foto.mimeType,
+      path: foto.storagePath,
+      fallbackPath: foto.storagePath,
     }));
 
     const evidenciasUpload = detalhe.uploadEvidenciasAtividade.map((evidencia) => ({
@@ -211,6 +221,8 @@ export default function AtividadeExecucaoDetalhesModal({
       criadoEm: evidencia.createdAt,
       url: evidencia.url,
       mimeTypeRaw: evidencia.mimeType,
+      path: evidencia.path,
+      fallbackPath: evidencia.path,
     }));
 
     return [...fotosAtividade, ...evidenciasUpload];
@@ -329,6 +341,7 @@ export default function AtividadeExecucaoDetalhesModal({
                       url: record.url,
                       mimeType: record.mimeType,
                       nomeArquivo: record.nomeArquivo || undefined,
+                      path: record.path,
                     }),
                 },
                 {
@@ -475,6 +488,8 @@ export default function AtividadeExecucaoDetalhesModal({
                                   mimeType: detalhe.atividadeMedidor.instaladoFoto.mimeType,
                                   nomeArquivo:
                                     detalhe.atividadeMedidor.instaladoFoto.fileName || undefined,
+                                  path: detalhe.atividadeMedidor.instaladoFoto.storagePath,
+                                  fallbackPath: detalhe.atividadeMedidor.instaladoFoto.storagePath,
                                 })
                               : '-'}
                           </div>
@@ -488,6 +503,8 @@ export default function AtividadeExecucaoDetalhesModal({
                                   mimeType: detalhe.atividadeMedidor.retiradoFoto.mimeType,
                                   nomeArquivo:
                                     detalhe.atividadeMedidor.retiradoFoto.fileName || undefined,
+                                  path: detalhe.atividadeMedidor.retiradoFoto.storagePath,
+                                  fallbackPath: detalhe.atividadeMedidor.retiradoFoto.storagePath,
                                 })
                               : '-'}
                           </div>
@@ -536,6 +553,8 @@ export default function AtividadeExecucaoDetalhesModal({
                             url: record.url,
                             mimeType: record.mimeTypeRaw,
                             nomeArquivo: record.nomeArquivo,
+                            path: record.path,
+                            fallbackPath: record.fallbackPath,
                           }),
                       },
                       {

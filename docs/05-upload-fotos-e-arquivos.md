@@ -57,9 +57,31 @@ Com local:
 
 - arquivo físico salvo em `UPLOAD_ROOT/<path>`
 - API expõe estáticos em `/uploads/*`
+- API também expõe compatibilidade em `/mobile/photos/*` para links legados
 - URL retornada:
   - relativa: `/uploads/...` (quando `UPLOAD_BASE_URL` vazio)
   - absoluta: `<UPLOAD_BASE_URL>/...` (quando definido)
+
+### Compatibilidade com legado
+
+Se existirem fotos antigas em pastas antigas:
+
+- configure `UPLOAD_LEGACY_ROOTS` (CSV/JSON array) com os diretórios legados
+- a API tenta servir `/uploads/*` e `/mobile/photos/*` também desses diretórios
+- no web, `/mobile/photos/*` é reescrito para `/uploads/mobile/photos/*`
+
+Para consolidar definitivamente em uma pasta única:
+
+```bash
+npm run uploads:consolidate-legacy:dry
+npm run uploads:consolidate-legacy
+```
+
+O script:
+
+- copia arquivos legados para `UPLOAD_ROOT`
+- normaliza referências no banco para `url=/uploads/...` e `path` relativo
+- mantém compatibilidade com registros antigos
 
 ## Storage S3
 

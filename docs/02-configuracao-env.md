@@ -58,6 +58,7 @@ cp .env.example .env
 
 - `UPLOAD_STORAGE=local|s3`
 - `UPLOAD_ROOT` (se local)
+- `UPLOAD_LEGACY_ROOTS` (opcional; CSV/JSON array para pastas legadas)
 - `UPLOAD_BASE_URL` (opcional)
 - `UPLOAD_PROXY_TARGET` (web rewrite `/uploads/*`)
 - `NEXT_PUBLIC_PHOTOS_BASE_URL` (quando frontend precisa base explícita)

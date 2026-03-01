@@ -71,6 +71,10 @@ const nextConfig: NextConfig = {
 
     return [
       {
+        source: '/mobile/photos/:path*',
+        destination: `${uploadProxyTarget}/uploads/mobile/photos/:path*`,
+      },
+      {
         source: '/uploads/:path*',
         destination: `${uploadProxyTarget}/uploads/:path*`,
       },

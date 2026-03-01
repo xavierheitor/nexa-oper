@@ -77,6 +77,7 @@ export const envSchema = z.object({
     .string()
     .optional()
     .transform((v) => v?.trim() || undefined),
+  UPLOAD_LEGACY_ROOTS: csvOrJsonArray,
   UPLOAD_BASE_URL: z
     .string()
     .optional()

@@ -73,12 +73,25 @@ function normalizePhotoPath(value: string): string {
   if (!trimmed) return '';
 
   if (isAbsoluteUrl(trimmed)) return trimmed;
-  if (trimmed.startsWith('/uploads/')) return trimmed;
-  if (trimmed.startsWith('uploads/')) return `/${trimmed}`;
-  if (trimmed.startsWith('/')) return trimmed;
+  const normalized = trimmed.replace(/[\\]+/g, '/');
+
+  // Compatibilidade legado: URLs sem prefixo /uploads
+  if (normalized.startsWith('/mobile/photos/')) return `/uploads${normalized}`;
+  if (normalized.startsWith('mobile/photos/')) return `/uploads/${normalized}`;
+
+  // Compatibilidade legado: caminho absoluto do SO (ex: /var/www/.../uploads/mobile/photos/...)
+  const uploadsToken = '/uploads/';
+  const uploadsIndex = normalized.toLowerCase().lastIndexOf(uploadsToken);
+  if (uploadsIndex >= 0) {
+    return normalized.slice(uploadsIndex);
+  }
+
+  if (normalized.startsWith('/uploads/')) return normalized;
+  if (normalized.startsWith('uploads/')) return `/${normalized}`;
+  if (normalized.startsWith('/')) return normalized;
 
   // storagePath legado salvo sem prefixo público (ex.: "checklists/...")
-  return `/uploads/${trimmed}`;
+  return `/uploads/${normalized}`;
 }
 
 function resolvePhotoBaseUrl(): string {

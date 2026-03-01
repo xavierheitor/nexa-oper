@@ -6,6 +6,7 @@ import type { ValidationError } from 'class-validator';
 import type { Express, RequestHandler } from 'express';
 import * as express from 'express';
 import helmet from 'helmet';
+import * as path from 'node:path';
 
 import {
   DocumentBuilder,
@@ -14,7 +15,10 @@ import {
 } from '@nestjs/swagger';
 
 import { env, isProd } from './env';
-import { resolveUploadRoot } from './workspace-paths';
+import {
+  resolveAdditionalUploadRoots,
+  resolveUploadRoot,
+} from './workspace-paths';
 import { NestPinoLogger } from '../logger';
 
 import { AppError } from '../errors/app-error';
@@ -105,16 +109,25 @@ export function configureApp(app: INestApplication) {
 
   // Arquivos de upload (fora do prefixo /api)
   const uploadsDir = resolveUploadRoot(env.UPLOAD_ROOT);
-  expressApp.use(
-    '/uploads',
-    express.static(uploadsDir, {
-      dotfiles: 'deny',
-      index: false,
-      fallthrough: false,
-      redirect: false,
-    }),
+  const additionalUploadRoots = resolveAdditionalUploadRoots(
+    env.UPLOAD_ROOT,
+    env.UPLOAD_LEGACY_ROOTS,
   );
-  logger.log(`Uploads locais expostos em /uploads -> ${uploadsDir}`);
+  const uploadRoots = [uploadsDir, ...additionalUploadRoots];
+
+  mountStaticRoots(expressApp, '/uploads', uploadRoots);
+  logger.log(
+    `Uploads locais expostos em /uploads -> ${uploadRoots.join(', ')}`,
+  );
+
+  // Compatibilidade com URLs legadas "/mobile/photos/*"
+  const mobilePhotoRoots = uploadRoots.map((root) =>
+    path.join(root, 'mobile', 'photos'),
+  );
+  mountStaticRoots(expressApp, '/mobile/photos', mobilePhotoRoots);
+  logger.log(
+    `Uploads legados expostos em /mobile/photos -> ${mobilePhotoRoots.join(', ')}`,
+  );
 
   // Swagger (dev/staging)
   if (env.SWAGGER_ENABLED && !isProd) {
@@ -124,6 +137,25 @@ export function configureApp(app: INestApplication) {
   logger.log(
     `App configurada. Prefixo=/${env.GLOBAL_PREFIX} env=${env.NODE_ENV}`,
   );
+}
+
+function mountStaticRoots(
+  expressApp: Express,
+  mountPath: string,
+  roots: string[],
+) {
+  roots.forEach((root, index) => {
+    const isLast = index === roots.length - 1;
+    expressApp.use(
+      mountPath,
+      express.static(root, {
+        dotfiles: 'deny',
+        index: false,
+        fallthrough: !isLast,
+        redirect: false,
+      }),
+    );
+  });
 }
 
 type CorsCallback = (err: Error | null, allow?: boolean) => void;
