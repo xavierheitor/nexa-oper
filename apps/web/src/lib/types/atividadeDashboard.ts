@@ -75,6 +75,11 @@ export interface AtividadeUploadEvidenceDetalhe {
   tipo: string;
   entityType: string;
   entityId: string;
+  photoCategory?: string | null;
+  ownerType?: string | null;
+  ownerRef?: string | null;
+  atividadeContexto?: string | null;
+  aprUuid?: string | null;
   url: string;
   path: string;
   tamanho: number;

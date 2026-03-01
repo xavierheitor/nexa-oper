@@ -59,8 +59,80 @@ function getOrigemColor(origem: string) {
   if (origem === 'Medidor') return 'geekblue';
   if (origem === 'Resposta') return 'green';
   if (origem === 'APR') return 'purple';
-  if (origem === 'Upload') return 'orange';
+  if (origem === 'Checklist') return 'magenta';
   return 'default';
+}
+
+function mapEvidenceToOrigemContexto(evidencia: AtividadeUploadEvidenceDetalhe): {
+  origem: string;
+  contexto: string;
+} {
+  const category = (evidencia.photoCategory || '').toUpperCase();
+  const atividadeContexto = (evidencia.atividadeContexto || '').toLowerCase();
+  const tipo = (evidencia.tipo || '').toLowerCase();
+  const ownerType = (evidencia.ownerType || '').toLowerCase();
+
+  if (category === 'MEDIDOR_INSTALADO') {
+    return { origem: 'Medidor', contexto: 'Foto do medidor instalado' };
+  }
+  if (category === 'MEDIDOR_RETIRADO') {
+    return { origem: 'Medidor', contexto: 'Foto do medidor retirado' };
+  }
+  if (category === 'MEDIDOR') {
+    return { origem: 'Medidor', contexto: 'Foto de medidor' };
+  }
+
+  if (atividadeContexto === 'medidor:instalado') {
+    return { origem: 'Medidor', contexto: 'Foto do medidor instalado' };
+  }
+  if (atividadeContexto === 'medidor:retirado') {
+    return { origem: 'Medidor', contexto: 'Foto do medidor retirado' };
+  }
+
+  if (category === 'ATIVIDADE_SERVICO' || atividadeContexto.startsWith('form:')) {
+    return { origem: 'Resposta', contexto: 'Foto da resposta do formulário' };
+  }
+  if (category === 'ATIVIDADE_FINALIZACAO' || atividadeContexto === 'finalizacao') {
+    return { origem: 'Atividade', contexto: 'Foto de finalização da atividade' };
+  }
+
+  if (category === 'APR_EVIDENCIA' || category === 'APR_ASSINATURA') {
+    return { origem: 'APR', contexto: 'Evidência da APR' };
+  }
+
+  if (category === 'CHECKLIST_REPROVA') {
+    return { origem: 'Checklist', contexto: 'Evidência de pendência do checklist' };
+  }
+  if (category === 'CHECKLIST_ASSINATURA') {
+    return { origem: 'Checklist', contexto: 'Assinatura do checklist' };
+  }
+
+  if (tipo === 'medidor' || ownerType === 'atividademedidor' || ownerType === 'medidor') {
+    return { origem: 'Medidor', contexto: 'Foto de medidor' };
+  }
+  if (tipo === 'apr-evidence' || ownerType === 'apr') {
+    return { origem: 'APR', contexto: 'Evidência da APR' };
+  }
+
+  return { origem: 'Atividade', contexto: 'Foto da atividade' };
+}
+
+function isMedidorInstaladoEvidence(evidencia: AtividadeUploadEvidenceDetalhe) {
+  const category = (evidencia.photoCategory || '').toUpperCase();
+  const atividadeContexto = (evidencia.atividadeContexto || '').toLowerCase();
+  return (
+    category === 'MEDIDOR_INSTALADO' ||
+    atividadeContexto === 'medidor:instalado'
+  );
+}
+
+function isMedidorRetiradoEvidence(evidencia: AtividadeUploadEvidenceDetalhe) {
+  const category = (evidencia.photoCategory || '').toUpperCase();
+  const atividadeContexto = (evidencia.atividadeContexto || '').toLowerCase();
+  return (
+    category === 'MEDIDOR_RETIRADO' ||
+    atividadeContexto === 'medidor:retirado'
+  );
 }
 
 function renderMediaPreview(
@@ -304,10 +376,11 @@ export default function AtividadeExecucaoDetalhesModal({
     });
 
     detalhe.uploadEvidenciasAtividade.forEach((evidencia) => {
+      const mapped = mapEvidenceToOrigemContexto(evidencia);
       pushRow({
         key: `upload-evidencia-${evidencia.id}`,
-        origem: 'Upload',
-        contexto: evidencia.entityType || '-',
+        origem: mapped.origem,
+        contexto: mapped.contexto,
         nomeArquivo: evidencia.nomeArquivo || evidencia.path,
         mimeType: evidencia.mimeType || '-',
         criadoEm: evidencia.createdAt,
@@ -336,6 +409,20 @@ export default function AtividadeExecucaoDetalhesModal({
     });
 
     return rows;
+  }, [detalhe]);
+
+  const medidorInstaladoUpload = useMemo(() => {
+    if (!detalhe) return null;
+    return (
+      detalhe.uploadEvidenciasAtividade.find(isMedidorInstaladoEvidence) || null
+    );
+  }, [detalhe]);
+
+  const medidorRetiradoUpload = useMemo(() => {
+    if (!detalhe) return null;
+    return (
+      detalhe.uploadEvidenciasAtividade.find(isMedidorRetiradoEvidence) || null
+    );
   }, [detalhe]);
 
   const aprRespostaColumns: ColumnsType<AtividadeAprRespostaDetalhe> = [
@@ -479,7 +566,7 @@ export default function AtividadeExecucaoDetalhesModal({
     { origem: 'Medidor', descricao: 'Foto do medidor instalado ou retirado.' },
     { origem: 'Resposta', descricao: 'Foto anexada a uma resposta do formulário.' },
     { origem: 'APR', descricao: 'Evidência fotográfica enviada na APR.' },
-    { origem: 'Upload', descricao: 'Evidência enviada pelo endpoint de upload.' },
+    { origem: 'Checklist', descricao: 'Evidência ou assinatura vinculada ao checklist.' },
   ];
 
   return (
@@ -600,31 +687,51 @@ export default function AtividadeExecucaoDetalhesModal({
                         <div>
                           <Text strong>Instalado:</Text>
                           <div style={{ marginTop: 8 }}>
-                            {detalhe.atividadeMedidor.instaladoFoto
-                              ? renderMediaPreview({
-                                  url: detalhe.atividadeMedidor.instaladoFoto.url,
-                                  mimeType: detalhe.atividadeMedidor.instaladoFoto.mimeType,
-                                  nomeArquivo:
-                                    detalhe.atividadeMedidor.instaladoFoto.fileName || undefined,
-                                  path: detalhe.atividadeMedidor.instaladoFoto.storagePath,
-                                  fallbackPath: detalhe.atividadeMedidor.instaladoFoto.storagePath,
-                                })
-                              : '-'}
+                            {detalhe.atividadeMedidor.instaladoFoto ? (
+                              renderMediaPreview({
+                                url: detalhe.atividadeMedidor.instaladoFoto.url,
+                                mimeType: detalhe.atividadeMedidor.instaladoFoto.mimeType,
+                                nomeArquivo:
+                                  detalhe.atividadeMedidor.instaladoFoto.fileName || undefined,
+                                path: detalhe.atividadeMedidor.instaladoFoto.storagePath,
+                                fallbackPath: detalhe.atividadeMedidor.instaladoFoto.storagePath,
+                              })
+                            ) : medidorInstaladoUpload ? (
+                              renderMediaPreview({
+                                url: medidorInstaladoUpload.url,
+                                mimeType: medidorInstaladoUpload.mimeType,
+                                nomeArquivo: medidorInstaladoUpload.nomeArquivo || undefined,
+                                path: medidorInstaladoUpload.path,
+                                fallbackPath: medidorInstaladoUpload.path,
+                              })
+                            ) : (
+                              '-'
+                            )}
                           </div>
                         </div>
                         <div>
                           <Text strong>Retirado:</Text>
                           <div style={{ marginTop: 8 }}>
-                            {detalhe.atividadeMedidor.retiradoFoto
-                              ? renderMediaPreview({
-                                  url: detalhe.atividadeMedidor.retiradoFoto.url,
-                                  mimeType: detalhe.atividadeMedidor.retiradoFoto.mimeType,
-                                  nomeArquivo:
-                                    detalhe.atividadeMedidor.retiradoFoto.fileName || undefined,
-                                  path: detalhe.atividadeMedidor.retiradoFoto.storagePath,
-                                  fallbackPath: detalhe.atividadeMedidor.retiradoFoto.storagePath,
-                                })
-                              : '-'}
+                            {detalhe.atividadeMedidor.retiradoFoto ? (
+                              renderMediaPreview({
+                                url: detalhe.atividadeMedidor.retiradoFoto.url,
+                                mimeType: detalhe.atividadeMedidor.retiradoFoto.mimeType,
+                                nomeArquivo:
+                                  detalhe.atividadeMedidor.retiradoFoto.fileName || undefined,
+                                path: detalhe.atividadeMedidor.retiradoFoto.storagePath,
+                                fallbackPath: detalhe.atividadeMedidor.retiradoFoto.storagePath,
+                              })
+                            ) : medidorRetiradoUpload ? (
+                              renderMediaPreview({
+                                url: medidorRetiradoUpload.url,
+                                mimeType: medidorRetiradoUpload.mimeType,
+                                nomeArquivo: medidorRetiradoUpload.nomeArquivo || undefined,
+                                path: medidorRetiradoUpload.path,
+                                fallbackPath: medidorRetiradoUpload.path,
+                              })
+                            ) : (
+                              '-'
+                            )}
                           </div>
                         </div>
                       </Space>
