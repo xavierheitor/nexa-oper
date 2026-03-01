@@ -6,6 +6,8 @@ import type {
   EvidenceContext,
   UploadResult,
 } from './evidence.handler';
+import { CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS } from './common-metadata-spec';
+import { UploadEvidenceLinkService } from './upload-evidence-link.service';
 
 @Injectable()
 export class AtividadeTurnoEvidenceHandler implements EvidenceHandler {
@@ -13,12 +15,15 @@ export class AtividadeTurnoEvidenceHandler implements EvidenceHandler {
 
   metadataSpec = {
     required: ['turnoId'],
-    optional: [],
+    optional: [...CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS],
     description:
       'Foto associada à atividade e ao turno. entityId = atividadeId.',
   } as const;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly linkService: UploadEvidenceLinkService,
+  ) {}
 
   validate(ctx: EvidenceContext): Promise<void> {
     if (!ctx.entityId) {
@@ -37,7 +42,7 @@ export class AtividadeTurnoEvidenceHandler implements EvidenceHandler {
   }
 
   async persist(ctx: EvidenceContext, upload: UploadResult) {
-    await this.prisma.uploadEvidence.create({
+    const evidence = await this.prisma.uploadEvidence.create({
       data: {
         tipo: this.type,
         entityType: ctx.entityType ?? 'atividade',
@@ -49,6 +54,13 @@ export class AtividadeTurnoEvidenceHandler implements EvidenceHandler {
         nomeArquivo: upload.filename,
         createdBy: 'system',
       },
+      select: { id: true },
+    });
+
+    await this.linkService.upsertFromEvidence({
+      uploadEvidenceId: evidence.id,
+      ctx,
+      createdBy: 'system',
     });
   }
 }

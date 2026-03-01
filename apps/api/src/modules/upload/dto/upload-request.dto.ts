@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 /**
@@ -33,6 +33,52 @@ export class UploadRequestDto {
   @IsNotEmpty()
   entityId!: string;
 
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'Versão do contrato de metadados canônicos enviado pelo app.',
+  })
+  @IsOptional()
+  syncSchemaVersion?: number | string;
+
+  @ApiPropertyOptional({
+    example: 'mobile',
+    description: 'Origem do upload (ex: mobile).',
+  })
+  @IsString()
+  @IsOptional()
+  syncOrigin?: string;
+
+  @ApiPropertyOptional({
+    example: 91234,
+    description: 'Identificador local da foto no dispositivo.',
+  })
+  @IsOptional()
+  clientPhotoId?: number | string;
+
+  @ApiPropertyOptional({
+    example: 'MEDIDOR_INSTALADO',
+    description: 'Categoria de negócio da foto para rastreabilidade.',
+  })
+  @IsString()
+  @IsOptional()
+  photoCategory?: string;
+
+  @ApiPropertyOptional({
+    example: 'atividade',
+    description: 'Tipo canônico do dono da foto (checklist, atividade, apr).',
+  })
+  @IsString()
+  @IsOptional()
+  ownerType?: string;
+
+  @ApiPropertyOptional({
+    example: '8d2f2b2b-d7a8-40ea-96be-6cbd6e0726c2',
+    description: 'Referência da entidade dona da foto (UUID/ID lógico).',
+  })
+  @IsString()
+  @IsOptional()
+  ownerRef?: string;
+
   /** Campos extras são repassados como metadata ao handler. Ex: turnoId, checklistPerguntaId, sequenciaAssinatura, etc. */
-  [key: string]: string | number | undefined;
+  [key: string]: string | number | boolean | undefined;
 }

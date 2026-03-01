@@ -9,6 +9,8 @@ import {
   UploadFingerprint,
   UploadResult,
 } from './evidence.handler';
+import { CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS } from './common-metadata-spec';
+import { UploadEvidenceLinkService } from './upload-evidence-link.service';
 
 @Injectable()
 export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
@@ -16,7 +18,7 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
 
   metadataSpec = {
     required: ['turnoId', 'checklistPerguntaId'],
-    optional: [],
+    optional: [...CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS],
     description:
       'Vincula foto à reprova específica de um checklist. entityId = checklistPreenchidoId ou checklistUuid.',
   } as const;
@@ -24,6 +26,7 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
   constructor(
     private readonly prisma: PrismaService,
     private readonly logger: AppLogger,
+    private readonly linkService: UploadEvidenceLinkService,
   ) {}
 
   validate(ctx: EvidenceContext): Promise<void> {
@@ -178,8 +181,9 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
       : null;
 
     const persistEvidence = async (result: UploadResult): Promise<void> => {
+      let evidenceId: number;
       if (fingerprint && idempotencyKey) {
-        await this.prisma.uploadEvidence.upsert({
+        const evidence = await this.prisma.uploadEvidence.upsert({
           where: { idempotencyKey },
           create: {
             tipo: this.type,
@@ -202,23 +206,32 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
             nomeArquivo: result.filename,
             checksum: fingerprint.checksum,
           },
+          select: { id: true },
         });
-        return;
+        evidenceId = evidence.id;
+      } else {
+        const evidence = await this.prisma.uploadEvidence.create({
+          data: {
+            tipo: this.type,
+            entityType: ctx.entityType || 'checklistPreenchido',
+            entityId: String(ctx.entityId),
+            url: result.url,
+            path: result.path,
+            tamanho: result.size,
+            mimeType: result.mimeType,
+            nomeArquivo: result.filename,
+            checksum: fingerprint?.checksum,
+            createdBy: 'system',
+          },
+          select: { id: true },
+        });
+        evidenceId = evidence.id;
       }
 
-      await this.prisma.uploadEvidence.create({
-        data: {
-          tipo: this.type,
-          entityType: ctx.entityType || 'checklistPreenchido',
-          entityId: String(ctx.entityId),
-          url: result.url,
-          path: result.path,
-          tamanho: result.size,
-          mimeType: result.mimeType,
-          nomeArquivo: result.filename,
-          checksum: fingerprint?.checksum,
-          createdBy: 'system',
-        },
+      await this.linkService.upsertFromEvidence({
+        uploadEvidenceId: evidenceId,
+        ctx,
+        createdBy: 'system',
       });
     };
 

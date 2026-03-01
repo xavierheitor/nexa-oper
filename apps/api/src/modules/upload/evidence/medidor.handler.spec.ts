@@ -7,8 +7,14 @@ describe('MedidorEvidenceHandler', () => {
       create: jest.fn(),
     },
   };
+  const linkService = {
+    upsertFromEvidence: jest.fn(),
+  };
 
-  const handler = new MedidorEvidenceHandler(prisma as never);
+  const handler = new MedidorEvidenceHandler(
+    prisma as never,
+    linkService as never,
+  );
 
   it('throws validation error when entityId is missing', async () => {
     await expect(

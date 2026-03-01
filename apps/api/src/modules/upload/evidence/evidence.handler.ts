@@ -1,7 +1,7 @@
 export interface EvidenceContext {
   type: string;
   entityId: string;
-  entityType: string;
+  entityType?: string;
   metadata: Record<string, any>;
 }
 

@@ -17,6 +17,13 @@ export interface UploadEvidenceRequestContract {
   type: string;
   entityId: string;
   entityType?: string;
+  syncSchemaVersion?: number;
+  syncOrigin?: string;
+  clientPhotoId?: number | string;
+  photoType?: string;
+  photoCategory?: string;
+  ownerType?: string;
+  ownerRef?: string;
   [key: string]: unknown;
 }
 

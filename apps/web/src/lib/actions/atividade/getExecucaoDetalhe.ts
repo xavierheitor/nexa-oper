@@ -11,7 +11,7 @@ const getAtividadeExecucaoDetalheSchema = z.object({
 export const getAtividadeExecucaoDetalhe = async (rawData: unknown) =>
   handleServerAction(
     getAtividadeExecucaoDetalheSchema,
-    async (data) => {
+    async data => {
       const atividade = await prisma.atividadeExecucao.findFirst({
         where: {
           id: data.id,
@@ -157,7 +157,81 @@ export const getAtividadeExecucaoDetalhe = async (rawData: unknown) =>
         throw new Error('Atividade não encontrada');
       }
 
-      const [uploadEvidenciasAtividade, uploadEvidenciasApr] = await Promise.all([
+      const aprRefs = atividade.atividadeAprPreenchidas
+        .map(apr => apr.aprUuid)
+        .filter((value): value is string => Boolean(value));
+
+      const [
+        uploadLinksAtividade,
+        uploadLinksApr,
+        uploadEvidenciasAtividadeLegado,
+        uploadEvidenciasAprLegado,
+      ] = await Promise.all([
+        prisma.uploadEvidenceLink.findMany({
+          where: {
+            ownerType: { in: ['atividade', 'atividadeMedidor'] },
+            OR: [
+              {
+                ownerRef: {
+                  in: [atividade.atividadeUuid, String(atividade.id)],
+                },
+              },
+              { atividadeUuid: atividade.atividadeUuid },
+            ],
+          },
+          select: {
+            photoCategory: true,
+            ownerType: true,
+            ownerRef: true,
+            atividadeContexto: true,
+            aprUuid: true,
+            uploadEvidence: {
+              select: {
+                id: true,
+                tipo: true,
+                entityType: true,
+                entityId: true,
+                url: true,
+                path: true,
+                tamanho: true,
+                mimeType: true,
+                nomeArquivo: true,
+                createdAt: true,
+              },
+            },
+          },
+          orderBy: { createdAt: 'asc' },
+        }),
+        aprRefs.length
+          ? prisma.uploadEvidenceLink.findMany({
+              where: {
+                ownerType: 'apr',
+                ownerRef: { in: aprRefs },
+              },
+              select: {
+                photoCategory: true,
+                ownerType: true,
+                ownerRef: true,
+                atividadeContexto: true,
+                aprUuid: true,
+                uploadEvidence: {
+                  select: {
+                    id: true,
+                    tipo: true,
+                    entityType: true,
+                    entityId: true,
+                    url: true,
+                    path: true,
+                    tamanho: true,
+                    mimeType: true,
+                    nomeArquivo: true,
+                    createdAt: true,
+                  },
+                },
+              },
+              orderBy: { createdAt: 'asc' },
+            })
+          : Promise.resolve([]),
         prisma.uploadEvidence.findMany({
           where: {
             tipo: 'atividade-turno',
@@ -184,7 +258,7 @@ export const getAtividadeExecucaoDetalhe = async (rawData: unknown) =>
               where: {
                 tipo: 'apr-evidence',
                 entityId: {
-                  in: atividade.atividadeAprPreenchidas.map((apr) =>
+                  in: atividade.atividadeAprPreenchidas.map(apr =>
                     String(apr.id)
                   ),
                 },
@@ -206,22 +280,74 @@ export const getAtividadeExecucaoDetalhe = async (rawData: unknown) =>
           : Promise.resolve([]),
       ]);
 
+      const uploadEvidenciasAtividade = [
+        ...uploadLinksAtividade.map(item => ({
+          ...item.uploadEvidence,
+          photoCategory: item.photoCategory,
+          ownerType: item.ownerType,
+          ownerRef: item.ownerRef,
+          atividadeContexto: item.atividadeContexto,
+          aprUuid: item.aprUuid,
+        })),
+        ...uploadEvidenciasAtividadeLegado.map(item => ({
+          ...item,
+          photoCategory: null as string | null,
+          ownerType: null as string | null,
+          ownerRef: null as string | null,
+          atividadeContexto: null as string | null,
+          aprUuid: null as string | null,
+        })),
+      ].filter(
+        (item, index, list) => list.findIndex(it => it.id === item.id) === index
+      );
+
+      const uploadEvidenciasApr = [
+        ...uploadLinksApr.map(item => ({
+          ...item.uploadEvidence,
+          photoCategory: item.photoCategory,
+          ownerType: item.ownerType,
+          ownerRef: item.ownerRef,
+          atividadeContexto: item.atividadeContexto,
+          aprUuid: item.aprUuid,
+        })),
+        ...uploadEvidenciasAprLegado.map(item => ({
+          ...item,
+          photoCategory: null as string | null,
+          ownerType: null as string | null,
+          ownerRef: null as string | null,
+          atividadeContexto: null as string | null,
+          aprUuid: null as string | null,
+        })),
+      ].filter(
+        (item, index, list) => list.findIndex(it => it.id === item.id) === index
+      );
+
       type AprUploadEvidenceItem = (typeof uploadEvidenciasApr)[number];
       const evidenciasAprPorId = uploadEvidenciasApr.reduce<
         Record<string, AprUploadEvidenceItem[]>
       >((acc, evidencia) => {
-        if (!acc[evidencia.entityId]) {
-          acc[evidencia.entityId] = [];
+        const keys = [
+          evidencia.aprUuid,
+          evidencia.ownerRef,
+          evidencia.entityId,
+        ].filter((value): value is string => Boolean(value));
+        for (const key of keys) {
+          if (!acc[key]) {
+            acc[key] = [];
+          }
+          acc[key].push(evidencia);
         }
-        acc[evidencia.entityId].push(evidencia);
         return acc;
       }, {});
 
       return {
         ...atividade,
-        atividadeAprPreenchidas: atividade.atividadeAprPreenchidas.map((apr) => ({
+        atividadeAprPreenchidas: atividade.atividadeAprPreenchidas.map(apr => ({
           ...apr,
-          evidenciasUpload: evidenciasAprPorId[String(apr.id)] || [],
+          evidenciasUpload:
+            evidenciasAprPorId[apr.aprUuid] ||
+            evidenciasAprPorId[String(apr.id)] ||
+            [],
         })),
         uploadEvidenciasAtividade,
       };

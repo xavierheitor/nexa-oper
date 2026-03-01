@@ -10,6 +10,7 @@ import { AtividadeTurnoEvidenceHandler } from './evidence/atividade-turno.handle
 import { ChecklistAssinaturaEvidenceHandler } from './evidence/checklist-assinatura.handler';
 import { ChecklistReprovaEvidenceHandler } from './evidence/checklist-reprova.handler';
 import { MedidorEvidenceHandler } from './evidence/medidor.handler';
+import { UploadEvidenceLinkService } from './evidence/upload-evidence-link.service';
 import { StorageFactory } from './storage/storage.factory';
 import { UploadController } from './upload.controller';
 import { UploadRegistry } from './upload.registry';
@@ -31,6 +32,7 @@ const EVIDENCE_HANDLERS = [
     UploadEvidenceUseCase,
     ListUploadTypesUseCase,
     UploadRegistry,
+    UploadEvidenceLinkService,
     StorageFactory,
     ...EVIDENCE_HANDLERS,
     { provide: UPLOAD_PROCESSOR, useExisting: UploadService },

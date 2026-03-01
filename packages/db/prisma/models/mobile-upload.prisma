@@ -17,10 +17,54 @@ model UploadEvidence {
   createdAt DateTime  @default(now())
   createdBy String?   @db.VarChar(255)
 
+  links UploadEvidenceLink[]
+
   @@index([tipo])
   @@index([entityType, entityId])
   @@index([checksum], map: "idx_upload_evidence_checksum")
   @@map("UploadEvidences")
+}
+
+model UploadEvidenceLink {
+  id Int @id @default(autoincrement())
+
+  uploadEvidenceId Int
+  uploadEvidence   UploadEvidence @relation(fields: [uploadEvidenceId], references: [id], onDelete: Cascade)
+
+  ownerType     String @db.VarChar(60)
+  ownerRef      String @db.VarChar(120)
+  photoCategory String @db.VarChar(80)
+
+  tipo       String @db.VarChar(100)
+  entityType String @db.VarChar(100)
+  entityId   String @db.VarChar(50)
+
+  turnoId              Int?
+  servicoId            Int?
+  checklistPreenchidoId Int?
+  checklistRespostaId  Int?
+  sequenciaAssinatura  Int?
+
+  atividadeUuid     String? @db.VarChar(36)
+  atividadeContexto String? @db.VarChar(120)
+  aprUuid           String? @db.VarChar(36)
+
+  syncSchemaVersion Int?
+  syncOrigin        String? @db.VarChar(30)
+  clientPhotoId     Int?
+
+  metadataJson Json?
+
+  createdAt DateTime  @default(now())
+  createdBy String?   @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+
+  @@unique([uploadEvidenceId, ownerType, ownerRef, photoCategory], map: "uk_upload_evidence_link_scope")
+  @@index([ownerType, ownerRef], map: "idx_upload_evidence_link_owner")
+  @@index([photoCategory], map: "idx_upload_evidence_link_category")
+  @@index([turnoId], map: "idx_upload_evidence_link_turno")
+  @@index([atividadeUuid], map: "idx_upload_evidence_link_atividade_uuid")
+  @@map("UploadEvidenceLinks")
 }
 
 model MobilePhoto {

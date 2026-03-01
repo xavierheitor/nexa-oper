@@ -6,6 +6,8 @@ import type {
   EvidenceContext,
   UploadResult,
 } from './evidence.handler';
+import { CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS } from './common-metadata-spec';
+import { UploadEvidenceLinkService } from './upload-evidence-link.service';
 
 @Injectable()
 export class AprEvidenceHandler implements EvidenceHandler {
@@ -13,12 +15,15 @@ export class AprEvidenceHandler implements EvidenceHandler {
 
   metadataSpec = {
     required: ['turnoId', 'aprPerguntaId'],
-    optional: [],
+    optional: [...CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS],
     description:
       'Evidência fotográfica para pergunta de APR. entityId = aprPreenchidoId.',
   } as const;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly linkService: UploadEvidenceLinkService,
+  ) {}
 
   validate(ctx: EvidenceContext): Promise<void> {
     if (!ctx.entityId) {
@@ -37,7 +42,7 @@ export class AprEvidenceHandler implements EvidenceHandler {
   }
 
   async persist(ctx: EvidenceContext, upload: UploadResult) {
-    await this.prisma.uploadEvidence.create({
+    const evidence = await this.prisma.uploadEvidence.create({
       data: {
         tipo: this.type,
         entityType: ctx.entityType ?? 'aprPreenchido',
@@ -49,6 +54,13 @@ export class AprEvidenceHandler implements EvidenceHandler {
         nomeArquivo: upload.filename,
         createdBy: 'system',
       },
+      select: { id: true },
+    });
+
+    await this.linkService.upsertFromEvidence({
+      uploadEvidenceId: evidence.id,
+      ctx,
+      createdBy: 'system',
     });
   }
 }

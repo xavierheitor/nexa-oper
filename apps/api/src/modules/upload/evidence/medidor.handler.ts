@@ -6,6 +6,8 @@ import type {
   EvidenceContext,
   UploadResult,
 } from './evidence.handler';
+import { CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS } from './common-metadata-spec';
+import { UploadEvidenceLinkService } from './upload-evidence-link.service';
 
 @Injectable()
 export class MedidorEvidenceHandler implements EvidenceHandler {
@@ -13,12 +15,19 @@ export class MedidorEvidenceHandler implements EvidenceHandler {
 
   metadataSpec = {
     required: ['turnoId'],
-    optional: ['medidorId', 'medicaoId'],
+    optional: [
+      'medidorId',
+      'medicaoId',
+      ...CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS,
+    ],
     description:
       'Foto do medidor/medição. Compatível com fluxos antigos e novo upload de atividade.',
   } as const;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly linkService: UploadEvidenceLinkService,
+  ) {}
 
   validate(ctx: EvidenceContext): Promise<void> {
     if (!ctx.entityId) {
@@ -37,7 +46,7 @@ export class MedidorEvidenceHandler implements EvidenceHandler {
   }
 
   async persist(ctx: EvidenceContext, upload: UploadResult) {
-    await this.prisma.uploadEvidence.create({
+    const evidence = await this.prisma.uploadEvidence.create({
       data: {
         tipo: this.type,
         entityType: ctx.entityType ?? 'medicao',
@@ -49,6 +58,13 @@ export class MedidorEvidenceHandler implements EvidenceHandler {
         nomeArquivo: upload.filename,
         createdBy: 'system',
       },
+      select: { id: true },
+    });
+
+    await this.linkService.upsertFromEvidence({
+      uploadEvidenceId: evidence.id,
+      ctx,
+      createdBy: 'system',
     });
   }
 }

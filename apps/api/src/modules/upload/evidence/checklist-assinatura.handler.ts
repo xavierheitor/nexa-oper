@@ -7,6 +7,8 @@ import type {
   UploadFingerprint,
   UploadResult,
 } from './evidence.handler';
+import { CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS } from './common-metadata-spec';
+import { UploadEvidenceLinkService } from './upload-evidence-link.service';
 
 @Injectable()
 export class ChecklistAssinaturaEvidenceHandler implements EvidenceHandler {
@@ -14,12 +16,15 @@ export class ChecklistAssinaturaEvidenceHandler implements EvidenceHandler {
 
   metadataSpec = {
     required: ['turnoId', 'sequenciaAssinatura'],
-    optional: [],
+    optional: [...CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS],
     description:
       'Assinatura capturada ao final do checklist. entityId = checklistPreenchidoId ou checklistUuid.',
   } as const;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly linkService: UploadEvidenceLinkService,
+  ) {}
 
   validate(ctx: EvidenceContext): Promise<void> {
     if (!ctx.entityId) {
@@ -94,7 +99,7 @@ export class ChecklistAssinaturaEvidenceHandler implements EvidenceHandler {
     fingerprint?: UploadFingerprint,
   ): Promise<UploadResult> {
     if (!fingerprint) {
-      await this.prisma.uploadEvidence.create({
+      const created = await this.prisma.uploadEvidence.create({
         data: {
           tipo: this.type,
           entityType: ctx.entityType ?? 'checklistPreenchido',
@@ -106,7 +111,15 @@ export class ChecklistAssinaturaEvidenceHandler implements EvidenceHandler {
           nomeArquivo: upload.filename,
           createdBy: 'system',
         },
+        select: { id: true },
       });
+
+      await this.linkService.upsertFromEvidence({
+        uploadEvidenceId: created.id,
+        ctx,
+        createdBy: 'system',
+      });
+
       return upload;
     }
 
@@ -130,12 +143,19 @@ export class ChecklistAssinaturaEvidenceHandler implements EvidenceHandler {
       },
       update: {},
       select: {
+        id: true,
         url: true,
         path: true,
         tamanho: true,
         mimeType: true,
         nomeArquivo: true,
       },
+    });
+
+    await this.linkService.upsertFromEvidence({
+      uploadEvidenceId: evidence.id,
+      ctx,
+      createdBy: 'system',
     });
 
     return {

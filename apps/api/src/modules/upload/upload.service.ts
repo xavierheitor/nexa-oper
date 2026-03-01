@@ -21,6 +21,12 @@ const NUMERIC_METADATA_KEYS = [
   'medidorId',
   'medicaoId',
   'atividadeId',
+  'syncSchemaVersion',
+  'clientPhotoId',
+  'turnoLocalId',
+  'checklistPreenchidoLocalId',
+  'checklistRespostaLocalId',
+  'servicoLocalId',
 ] as const;
 
 function normalizeMetadata(
@@ -34,6 +40,33 @@ function normalizeMetadata(
     }
   }
   return out;
+}
+
+function readNonEmptyString(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function inferEntityTypeFromOwnerType(ownerType: unknown): string | undefined {
+  const value = readNonEmptyString(ownerType);
+  if (!value) return undefined;
+
+  switch (value) {
+    case 'checklist':
+      return 'checklistPreenchido';
+    case 'atividade':
+      return 'atividade';
+    case 'atividadeMedidor':
+    case 'medidor':
+      return 'medicao';
+    case 'apr':
+      return 'aprPreenchido';
+    case 'servico':
+      return 'servico';
+    default:
+      return undefined;
+  }
 }
 
 function sanitizeFilename(filename: string): string {
@@ -84,10 +117,15 @@ export class UploadService implements UploadProcessorPort {
     body: UploadEvidenceRequestContract,
   ): Promise<UploadEvidenceResponseContract> {
     const metadata = normalizeMetadata(body);
+    const explicitEntityType = readNonEmptyString(body.entityType);
+    const inferredEntityType = inferEntityTypeFromOwnerType(
+      metadata['ownerType'],
+    );
+
     const ctx = {
       type: body.type,
       entityId: String(body.entityId),
-      entityType: (body.entityType as string) ?? 'checklistPreenchido',
+      entityType: explicitEntityType ?? inferredEntityType,
       metadata,
     };
 

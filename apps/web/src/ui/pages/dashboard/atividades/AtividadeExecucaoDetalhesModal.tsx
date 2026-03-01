@@ -55,6 +55,14 @@ function isImageMimeType(mimeType?: string | null) {
   return Boolean(mimeType?.toLowerCase().startsWith('image/'));
 }
 
+function getOrigemColor(origem: string) {
+  if (origem === 'Medidor') return 'geekblue';
+  if (origem === 'Resposta') return 'green';
+  if (origem === 'APR') return 'purple';
+  if (origem === 'Upload') return 'orange';
+  return 'default';
+}
+
 function renderMediaPreview(
   media: Pick<
     AtividadeUploadEvidenceDetalhe,
@@ -199,33 +207,135 @@ export default function AtividadeExecucaoDetalhesModal({
   const fotosConsolidadas = useMemo(() => {
     if (!detalhe) return [];
 
-    const fotosAtividade = detalhe.atividadeFotos.map((foto) => ({
-      key: `atividade-foto-${foto.id}`,
-      origem: 'Atividade',
-      contexto: foto.contexto || '-',
-      nomeArquivo: foto.fileName || '-',
-      mimeType: foto.mimeType || '-',
-      criadoEm: foto.createdAt,
-      url: foto.url,
-      mimeTypeRaw: foto.mimeType,
-      path: foto.storagePath,
-      fallbackPath: foto.storagePath,
-    }));
+    const rows: Array<{
+      key: string;
+      origem: string;
+      contexto: string;
+      nomeArquivo: string;
+      mimeType: string;
+      criadoEm: Date | string;
+      url: string;
+      mimeTypeRaw?: string | null;
+      path: string;
+      fallbackPath: string;
+    }> = [];
+    const seen = new Set<string>();
 
-    const evidenciasUpload = detalhe.uploadEvidenciasAtividade.map((evidencia) => ({
-      key: `upload-evidencia-${evidencia.id}`,
-      origem: 'Upload',
-      contexto: evidencia.entityType || '-',
-      nomeArquivo: evidencia.nomeArquivo || evidencia.path,
-      mimeType: evidencia.mimeType || '-',
-      criadoEm: evidencia.createdAt,
-      url: evidencia.url,
-      mimeTypeRaw: evidencia.mimeType,
-      path: evidencia.path,
-      fallbackPath: evidencia.path,
-    }));
+    const pushRow = (row: {
+      key: string;
+      origem: string;
+      contexto: string;
+      nomeArquivo: string;
+      mimeType: string;
+      criadoEm: Date | string;
+      url: string;
+      mimeTypeRaw?: string | null;
+      path: string;
+      fallbackPath: string;
+    }) => {
+      const dedupeKey = `${row.url}|${row.path}`;
+      if (seen.has(dedupeKey)) return;
+      seen.add(dedupeKey);
+      rows.push(row);
+    };
 
-    return [...fotosAtividade, ...evidenciasUpload];
+    detalhe.atividadeFotos.forEach((foto) => {
+      pushRow({
+        key: `atividade-foto-${foto.id}`,
+        origem: 'Atividade',
+        contexto: foto.contexto || '-',
+        nomeArquivo: foto.fileName || '-',
+        mimeType: foto.mimeType || '-',
+        criadoEm: foto.createdAt,
+        url: foto.url,
+        mimeTypeRaw: foto.mimeType,
+        path: foto.storagePath,
+        fallbackPath: foto.storagePath,
+      });
+    });
+
+    if (detalhe.atividadeMedidor?.instaladoFoto) {
+      const foto = detalhe.atividadeMedidor.instaladoFoto;
+      pushRow({
+        key: `medidor-instalado-${foto.id}`,
+        origem: 'Medidor',
+        contexto: 'Foto do medidor instalado',
+        nomeArquivo: foto.fileName || '-',
+        mimeType: foto.mimeType || '-',
+        criadoEm: foto.createdAt,
+        url: foto.url,
+        mimeTypeRaw: foto.mimeType,
+        path: foto.storagePath,
+        fallbackPath: foto.storagePath,
+      });
+    }
+
+    if (detalhe.atividadeMedidor?.retiradoFoto) {
+      const foto = detalhe.atividadeMedidor.retiradoFoto;
+      pushRow({
+        key: `medidor-retirado-${foto.id}`,
+        origem: 'Medidor',
+        contexto: 'Foto do medidor retirado',
+        nomeArquivo: foto.fileName || '-',
+        mimeType: foto.mimeType || '-',
+        criadoEm: foto.createdAt,
+        url: foto.url,
+        mimeTypeRaw: foto.mimeType,
+        path: foto.storagePath,
+        fallbackPath: foto.storagePath,
+      });
+    }
+
+    detalhe.atividadeFormRespostas.forEach((resposta) => {
+      if (!resposta.foto) return;
+      const foto = resposta.foto;
+      pushRow({
+        key: `resposta-foto-${resposta.id}-${foto.id}`,
+        origem: 'Resposta',
+        contexto: resposta.perguntaTituloSnapshot || 'Foto da resposta',
+        nomeArquivo: foto.fileName || '-',
+        mimeType: foto.mimeType || '-',
+        criadoEm: foto.createdAt,
+        url: foto.url,
+        mimeTypeRaw: foto.mimeType,
+        path: foto.storagePath,
+        fallbackPath: foto.storagePath,
+      });
+    });
+
+    detalhe.uploadEvidenciasAtividade.forEach((evidencia) => {
+      pushRow({
+        key: `upload-evidencia-${evidencia.id}`,
+        origem: 'Upload',
+        contexto: evidencia.entityType || '-',
+        nomeArquivo: evidencia.nomeArquivo || evidencia.path,
+        mimeType: evidencia.mimeType || '-',
+        criadoEm: evidencia.createdAt,
+        url: evidencia.url,
+        mimeTypeRaw: evidencia.mimeType,
+        path: evidencia.path,
+        fallbackPath: evidencia.path,
+      });
+    });
+
+    detalhe.atividadeAprPreenchidas.forEach((apr) => {
+      apr.evidenciasUpload.forEach((evidencia) => {
+        pushRow({
+          key: `apr-evidencia-${apr.id}-${evidencia.id}`,
+          origem: 'APR',
+          contexto: apr.apr?.nome || 'Evidência APR',
+          nomeArquivo: evidencia.nomeArquivo || evidencia.path,
+          mimeType: evidencia.mimeType || '-',
+          criadoEm: evidencia.createdAt,
+          url: evidencia.url,
+          mimeTypeRaw: evidencia.mimeType,
+          path: evidencia.path,
+          fallbackPath: evidencia.path,
+        });
+      });
+    });
+
+    return rows;
   }, [detalhe]);
 
   const aprRespostaColumns: ColumnsType<AtividadeAprRespostaDetalhe> = [
@@ -363,6 +473,14 @@ export default function AtividadeExecucaoDetalhesModal({
       ),
     })
   );
+
+  const legendaFotos = [
+    { origem: 'Atividade', descricao: 'Foto geral vinculada à execução da atividade.' },
+    { origem: 'Medidor', descricao: 'Foto do medidor instalado ou retirado.' },
+    { origem: 'Resposta', descricao: 'Foto anexada a uma resposta do formulário.' },
+    { origem: 'APR', descricao: 'Evidência fotográfica enviada na APR.' },
+    { origem: 'Upload', descricao: 'Evidência enviada pelo endpoint de upload.' },
+  ];
 
   return (
     <Modal
@@ -534,37 +652,62 @@ export default function AtividadeExecucaoDetalhesModal({
                 key: 'fotos',
                 label: `Fotos (${fotosConsolidadas.length})`,
                 children: (
-                  <Table
-                    size='small'
-                    rowKey='key'
-                    pagination={false}
-                    dataSource={fotosConsolidadas}
-                    locale={{ emptyText: 'Nenhuma foto/evidência encontrada.' }}
-                    columns={[
-                      { title: 'Origem', dataIndex: 'origem', width: 120 },
-                      { title: 'Contexto', dataIndex: 'contexto', width: 200 },
-                      { title: 'Arquivo', dataIndex: 'nomeArquivo' },
-                      {
-                        title: 'Visualização',
-                        key: 'preview',
-                        width: 160,
-                        render: (_, record) =>
-                          renderMediaPreview({
-                            url: record.url,
-                            mimeType: record.mimeTypeRaw,
-                            nomeArquivo: record.nomeArquivo,
-                            path: record.path,
-                            fallbackPath: record.fallbackPath,
-                          }),
-                      },
-                      {
-                        title: 'Criado em',
-                        dataIndex: 'criadoEm',
-                        width: 170,
-                        render: (value: Date | string) => formatDateTime(value),
-                      },
-                    ]}
-                  />
+                  <Space direction='vertical' style={{ width: '100%' }} size={12}>
+                    <Alert
+                      type='info'
+                      showIcon
+                      message='Legenda das fotos'
+                      description={
+                        <Space direction='vertical' size={4}>
+                          {legendaFotos.map((item) => (
+                            <Space key={item.origem} size={8}>
+                              <Tag color={getOrigemColor(item.origem)}>{item.origem}</Tag>
+                              <Text>{item.descricao}</Text>
+                            </Space>
+                          ))}
+                        </Space>
+                      }
+                    />
+
+                    <Table
+                      size='small'
+                      rowKey='key'
+                      pagination={false}
+                      dataSource={fotosConsolidadas}
+                      locale={{ emptyText: 'Nenhuma foto/evidência encontrada.' }}
+                      columns={[
+                        {
+                          title: 'Origem',
+                          dataIndex: 'origem',
+                          width: 120,
+                          render: (origem: string) => (
+                            <Tag color={getOrigemColor(origem)}>{origem}</Tag>
+                          ),
+                        },
+                        { title: 'Contexto', dataIndex: 'contexto', width: 260 },
+                        { title: 'Arquivo', dataIndex: 'nomeArquivo' },
+                        {
+                          title: 'Visualização',
+                          key: 'preview',
+                          width: 160,
+                          render: (_, record) =>
+                            renderMediaPreview({
+                              url: record.url,
+                              mimeType: record.mimeTypeRaw,
+                              nomeArquivo: record.nomeArquivo,
+                              path: record.path,
+                              fallbackPath: record.fallbackPath,
+                            }),
+                        },
+                        {
+                          title: 'Criado em',
+                          dataIndex: 'criadoEm',
+                          width: 170,
+                          render: (value: Date | string) => formatDateTime(value),
+                        },
+                      ]}
+                    />
+                  </Space>
                 ),
               },
               {
