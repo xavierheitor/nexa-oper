@@ -140,6 +140,11 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             path: '/dashboard/cadastro/material-catalogo',
           },
           {
+            key: '/dashboard/cadastro/motivos-improdutivos',
+            label: 'Motivos Improdutivos',
+            path: '/dashboard/cadastro/motivos-improdutivos',
+          },
+          {
             key: '/dashboard/cadastro/formulario-atividade',
             label: 'Formulários',
             path: '/dashboard/cadastro/formulario-atividade',
@@ -270,6 +275,11 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
         key: '/dashboard/atividades/materiais',
         label: 'Materiais',
         path: '/dashboard/atividades/materiais',
+      },
+      {
+        key: '/dashboard/atividades/causas-improdutivas',
+        label: 'Causas Improdutivas',
+        path: '/dashboard/atividades/causas-improdutivas',
       },
     ],
   },

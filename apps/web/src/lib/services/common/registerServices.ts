@@ -33,6 +33,7 @@ import { ChecklistTipoEquipeVinculoService } from '../checklist/ChecklistTipoEqu
 import { ChecklistTipoVeiculoVinculoService } from '../checklist/ChecklistTipoVeiculoVinculoService';
 import { ChecklistPendenciaService } from '../checklist/ChecklistPendenciaService';
 import { ContratoService } from '../catalogo/ContratoService';
+import { CausaImprodutivaService } from '../catalogo/CausaImprodutivaService';
 import { AtividadeFormPerguntaService } from '../catalogo/AtividadeFormPerguntaService';
 import { AtividadeFormTemplateService } from '../catalogo/AtividadeFormTemplateService';
 import { MaterialCatalogoService } from '../catalogo/MaterialCatalogoService';
@@ -120,6 +121,10 @@ export function registerServices(): void {
   container.register(
     'materialCatalogoService',
     () => new MaterialCatalogoService()
+  );
+  container.register(
+    'causaImprodutivaService',
+    () => new CausaImprodutivaService()
   );
   container.register('tipoAtividadeService', () => new TipoAtividadeService());
   container.register(
