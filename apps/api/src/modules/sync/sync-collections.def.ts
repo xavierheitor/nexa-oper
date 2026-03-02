@@ -239,6 +239,20 @@ export const SYNC_DEFINITIONS: SyncCollectionDefInput[] = [
     },
   }),
 
+  defTable({
+    name: 'causa-improdutiva',
+    model: 'causaImprodutiva',
+    mode: 'snapshot',
+    contractField: false,
+    select: {
+      id: true,
+      causa: true,
+      ativo: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
   // Tabelas auxiliares (sem filtro por contrato)
   defTable({
     name: 'tipo-equipe',

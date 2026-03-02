@@ -112,6 +112,7 @@ Resposta `delta` (envelope):
 - `apr-opcao-resposta` (snapshot)
 - `apr-grupo-opcao-resposta-relacao` (snapshot)
 - `material-catalogo` (snapshot)
+- `causa-improdutiva` (snapshot)
 
 ## Regra de cliente (resumo)
 

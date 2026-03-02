@@ -142,6 +142,7 @@ export class SyncController {
       'apr-opcao-resposta',
       'apr-grupo-opcao-resposta-relacao',
       'material-catalogo',
+      'causa-improdutiva',
     ],
   })
   @ApiQuery({

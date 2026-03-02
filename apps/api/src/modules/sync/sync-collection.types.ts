@@ -31,6 +31,7 @@ export type SyncModelName =
   | 'eletricista'
   | 'equipe'
   | 'materialCatalogo'
+  | 'causaImprodutiva'
   | 'veiculo'
   | 'tipoAtividade'
   | 'tipoAtividadeServico'
@@ -60,6 +61,7 @@ export interface SyncModelSelectMap {
   eletricista: Prisma.EletricistaSelect;
   equipe: Prisma.EquipeSelect;
   materialCatalogo: Prisma.MaterialCatalogoSelect;
+  causaImprodutiva: Prisma.CausaImprodutivaSelect;
   veiculo: Prisma.VeiculoSelect;
   tipoAtividade: Prisma.TipoAtividadeSelect;
   tipoAtividadeServico: Prisma.TipoAtividadeServicoSelect;
@@ -90,6 +92,7 @@ export interface SyncModelIncludeMap {
   eletricista: Prisma.EletricistaInclude;
   equipe: Prisma.EquipeInclude;
   materialCatalogo: Prisma.MaterialCatalogoInclude;
+  causaImprodutiva: never;
   veiculo: Prisma.VeiculoInclude;
   tipoAtividade: Prisma.TipoAtividadeInclude;
   tipoAtividadeServico: Prisma.TipoAtividadeServicoInclude;
