@@ -326,11 +326,13 @@ export const getAtividadeExecucaoDetalhe = async (rawData: unknown) =>
       const evidenciasAprPorId = uploadEvidenciasApr.reduce<
         Record<string, AprUploadEvidenceItem[]>
       >((acc, evidencia) => {
-        const keys = [
-          evidencia.aprUuid,
-          evidencia.ownerRef,
-          evidencia.entityId,
-        ].filter((value): value is string => Boolean(value));
+        const keys = Array.from(
+          new Set(
+            [evidencia.aprUuid, evidencia.ownerRef, evidencia.entityId].filter(
+              (value): value is string => Boolean(value)
+            )
+          )
+        );
         for (const key of keys) {
           if (!acc[key]) {
             acc[key] = [];
@@ -342,13 +344,20 @@ export const getAtividadeExecucaoDetalhe = async (rawData: unknown) =>
 
       return {
         ...atividade,
-        atividadeAprPreenchidas: atividade.atividadeAprPreenchidas.map(apr => ({
-          ...apr,
-          evidenciasUpload:
+        atividadeAprPreenchidas: atividade.atividadeAprPreenchidas.map(apr => {
+          const evidenciasRaw =
             evidenciasAprPorId[apr.aprUuid] ||
             evidenciasAprPorId[String(apr.id)] ||
-            [],
-        })),
+            [];
+          const evidenciasUpload = evidenciasRaw.filter(
+            (item, index, list) =>
+              list.findIndex(it => it.id === item.id) === index
+          );
+          return {
+            ...apr,
+            evidenciasUpload,
+          };
+        }),
         uploadEvidenciasAtividade,
       };
     },

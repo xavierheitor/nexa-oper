@@ -63,7 +63,9 @@ function getOrigemColor(origem: string) {
   return 'default';
 }
 
-function mapEvidenceToOrigemContexto(evidencia: AtividadeUploadEvidenceDetalhe): {
+function mapEvidenceToOrigemContexto(
+  evidencia: AtividadeUploadEvidenceDetalhe
+): {
   origem: string;
   contexto: string;
 } {
@@ -89,11 +91,20 @@ function mapEvidenceToOrigemContexto(evidencia: AtividadeUploadEvidenceDetalhe):
     return { origem: 'Medidor', contexto: 'Foto do medidor retirado' };
   }
 
-  if (category === 'ATIVIDADE_SERVICO' || atividadeContexto.startsWith('form:')) {
+  if (
+    category === 'ATIVIDADE_SERVICO' ||
+    atividadeContexto.startsWith('form:')
+  ) {
     return { origem: 'Resposta', contexto: 'Foto da resposta do formulário' };
   }
-  if (category === 'ATIVIDADE_FINALIZACAO' || atividadeContexto === 'finalizacao') {
-    return { origem: 'Atividade', contexto: 'Foto de finalização da atividade' };
+  if (
+    category === 'ATIVIDADE_FINALIZACAO' ||
+    atividadeContexto === 'finalizacao'
+  ) {
+    return {
+      origem: 'Atividade',
+      contexto: 'Foto de finalização da atividade',
+    };
   }
 
   if (category === 'APR_EVIDENCIA' || category === 'APR_ASSINATURA') {
@@ -101,13 +112,20 @@ function mapEvidenceToOrigemContexto(evidencia: AtividadeUploadEvidenceDetalhe):
   }
 
   if (category === 'CHECKLIST_REPROVA') {
-    return { origem: 'Checklist', contexto: 'Evidência de pendência do checklist' };
+    return {
+      origem: 'Checklist',
+      contexto: 'Evidência de pendência do checklist',
+    };
   }
   if (category === 'CHECKLIST_ASSINATURA') {
     return { origem: 'Checklist', contexto: 'Assinatura do checklist' };
   }
 
-  if (tipo === 'medidor' || ownerType === 'atividademedidor' || ownerType === 'medidor') {
+  if (
+    tipo === 'medidor' ||
+    ownerType === 'atividademedidor' ||
+    ownerType === 'medidor'
+  ) {
     return { origem: 'Medidor', contexto: 'Foto de medidor' };
   }
   if (tipo === 'apr-evidence' || ownerType === 'apr') {
@@ -130,8 +148,7 @@ function isMedidorRetiradoEvidence(evidencia: AtividadeUploadEvidenceDetalhe) {
   const category = (evidencia.photoCategory || '').toUpperCase();
   const atividadeContexto = (evidencia.atividadeContexto || '').toLowerCase();
   return (
-    category === 'MEDIDOR_RETIRADO' ||
-    atividadeContexto === 'medidor:retirado'
+    category === 'MEDIDOR_RETIRADO' || atividadeContexto === 'medidor:retirado'
   );
 }
 
@@ -147,7 +164,9 @@ function renderMediaPreview(
   if (!mediaUrl) return '-';
 
   if (isImageMimeType(media.mimeType)) {
-    return <Image width={96} src={mediaUrl} alt={media.nomeArquivo || 'Imagem'} />;
+    return (
+      <Image width={96} src={mediaUrl} alt={media.nomeArquivo || 'Imagem'} />
+    );
   }
 
   return (
@@ -183,7 +202,9 @@ export default function AtividadeExecucaoDetalhesModal({
       const result = await getAtividadeExecucaoDetalhe({ id: atividadeId });
 
       if (!result.success) {
-        throw new Error(result.error || 'Erro ao carregar detalhes da atividade');
+        throw new Error(
+          result.error || 'Erro ao carregar detalhes da atividade'
+        );
       }
 
       return result.data || null;
@@ -227,7 +248,8 @@ export default function AtividadeExecucaoDetalhesModal({
       title: 'Obrigava Foto',
       dataIndex: 'obrigaFotoSnapshot',
       width: 130,
-      render: (value: boolean) => (value ? <Tag color='orange'>Sim</Tag> : <Tag>Não</Tag>),
+      render: (value: boolean) =>
+        value ? <Tag color='orange'>Sim</Tag> : <Tag>Não</Tag>,
     },
     {
       title: 'Foto',
@@ -311,7 +333,7 @@ export default function AtividadeExecucaoDetalhesModal({
       rows.push(row);
     };
 
-    detalhe.atividadeFotos.forEach((foto) => {
+    detalhe.atividadeFotos.forEach(foto => {
       pushRow({
         key: `atividade-foto-${foto.id}`,
         origem: 'Atividade',
@@ -358,7 +380,7 @@ export default function AtividadeExecucaoDetalhesModal({
       });
     }
 
-    detalhe.atividadeFormRespostas.forEach((resposta) => {
+    detalhe.atividadeFormRespostas.forEach(resposta => {
       if (!resposta.foto) return;
       const foto = resposta.foto;
       pushRow({
@@ -375,7 +397,7 @@ export default function AtividadeExecucaoDetalhesModal({
       });
     });
 
-    detalhe.uploadEvidenciasAtividade.forEach((evidencia) => {
+    detalhe.uploadEvidenciasAtividade.forEach(evidencia => {
       const mapped = mapEvidenceToOrigemContexto(evidencia);
       pushRow({
         key: `upload-evidencia-${evidencia.id}`,
@@ -391,8 +413,8 @@ export default function AtividadeExecucaoDetalhesModal({
       });
     });
 
-    detalhe.atividadeAprPreenchidas.forEach((apr) => {
-      apr.evidenciasUpload.forEach((evidencia) => {
+    detalhe.atividadeAprPreenchidas.forEach(apr => {
+      apr.evidenciasUpload.forEach(evidencia => {
         pushRow({
           key: `apr-evidencia-${apr.id}-${evidencia.id}`,
           origem: 'APR',
@@ -461,7 +483,8 @@ export default function AtividadeExecucaoDetalhesModal({
       title: 'Extra',
       dataIndex: 'assinanteExtra',
       width: 100,
-      render: (value: boolean) => (value ? <Tag color='purple'>Sim</Tag> : <Tag>Não</Tag>),
+      render: (value: boolean) =>
+        value ? <Tag color='purple'>Sim</Tag> : <Tag>Não</Tag>,
     },
     {
       title: 'Data',
@@ -525,7 +548,9 @@ export default function AtividadeExecucaoDetalhesModal({
           >
             <Table<AtividadeUploadEvidenceDetalhe>
               size='small'
-              rowKey='id'
+              rowKey={record =>
+                `${record.id}-${record.ownerRef || record.entityId}-${record.createdAt}`
+              }
               pagination={false}
               dataSource={apr.evidenciasUpload}
               locale={{ emptyText: 'Sem evidências de APR.' }}
@@ -562,11 +587,20 @@ export default function AtividadeExecucaoDetalhesModal({
   );
 
   const legendaFotos = [
-    { origem: 'Atividade', descricao: 'Foto geral vinculada à execução da atividade.' },
+    {
+      origem: 'Atividade',
+      descricao: 'Foto geral vinculada à execução da atividade.',
+    },
     { origem: 'Medidor', descricao: 'Foto do medidor instalado ou retirado.' },
-    { origem: 'Resposta', descricao: 'Foto anexada a uma resposta do formulário.' },
+    {
+      origem: 'Resposta',
+      descricao: 'Foto anexada a uma resposta do formulário.',
+    },
     { origem: 'APR', descricao: 'Evidência fotográfica enviada na APR.' },
-    { origem: 'Checklist', descricao: 'Evidência ou assinatura vinculada ao checklist.' },
+    {
+      origem: 'Checklist',
+      descricao: 'Evidência ou assinatura vinculada ao checklist.',
+    },
   ];
 
   return (
@@ -589,7 +623,9 @@ export default function AtividadeExecucaoDetalhesModal({
       <Card size='small' style={{ marginBottom: 12 }}>
         <Descriptions size='small' column={4}>
           <Descriptions.Item label='Tipo'>
-            {detalhe?.tipoAtividade?.nome || detalhe?.tipoAtividadeNomeSnapshot || '-'}
+            {detalhe?.tipoAtividade?.nome ||
+              detalhe?.tipoAtividadeNomeSnapshot ||
+              '-'}
           </Descriptions.Item>
           <Descriptions.Item label='Subtipo'>
             {detalhe?.tipoAtividadeServico?.nome ||
@@ -606,7 +642,11 @@ export default function AtividadeExecucaoDetalhesModal({
             {formatDate(detalhe?.turno?.dataInicio)}
           </Descriptions.Item>
           <Descriptions.Item label='Status'>
-            {detalhe?.statusFluxo ? <Tag color='processing'>{detalhe.statusFluxo}</Tag> : '-'}
+            {detalhe?.statusFluxo ? (
+              <Tag color='processing'>{detalhe.statusFluxo}</Tag>
+            ) : (
+              '-'
+            )}
           </Descriptions.Item>
           <Descriptions.Item label='Criado em'>
             {formatDateTime(detalhe?.createdAt)}
@@ -641,12 +681,18 @@ export default function AtividadeExecucaoDetalhesModal({
         />
       ) : null}
 
-      {!loading && !error && !detalhe ? <Empty description='Atividade não encontrada' /> : null}
+      {!loading && !error && !detalhe ? (
+        <Empty description='Atividade não encontrada' />
+      ) : null}
 
       {!loading && !error && detalhe ? (
         <>
           {detalhe.observacoesFinalizacao ? (
-            <Card size='small' title='Observações da Atividade' style={{ marginBottom: 12 }}>
+            <Card
+              size='small'
+              title='Observações da Atividade'
+              style={{ marginBottom: 12 }}
+            >
               <Paragraph style={{ marginBottom: 0 }}>
                 {detalhe.observacoesFinalizacao}
               </Paragraph>
@@ -659,7 +705,11 @@ export default function AtividadeExecucaoDetalhesModal({
                 key: 'medidor',
                 label: 'Medidor',
                 children: detalhe.atividadeMedidor ? (
-                  <Space direction='vertical' style={{ width: '100%' }} size={12}>
+                  <Space
+                    direction='vertical'
+                    style={{ width: '100%' }}
+                    size={12}
+                  >
                     <Descriptions bordered size='small' column={2}>
                       <Descriptions.Item label='Somente Retirada'>
                         {detalhe.atividadeMedidor.somenteRetirada ? (
@@ -687,51 +737,65 @@ export default function AtividadeExecucaoDetalhesModal({
                         <div>
                           <Text strong>Instalado:</Text>
                           <div style={{ marginTop: 8 }}>
-                            {detalhe.atividadeMedidor.instaladoFoto ? (
-                              renderMediaPreview({
-                                url: detalhe.atividadeMedidor.instaladoFoto.url,
-                                mimeType: detalhe.atividadeMedidor.instaladoFoto.mimeType,
-                                nomeArquivo:
-                                  detalhe.atividadeMedidor.instaladoFoto.fileName || undefined,
-                                path: detalhe.atividadeMedidor.instaladoFoto.storagePath,
-                                fallbackPath: detalhe.atividadeMedidor.instaladoFoto.storagePath,
-                              })
-                            ) : medidorInstaladoUpload ? (
-                              renderMediaPreview({
-                                url: medidorInstaladoUpload.url,
-                                mimeType: medidorInstaladoUpload.mimeType,
-                                nomeArquivo: medidorInstaladoUpload.nomeArquivo || undefined,
-                                path: medidorInstaladoUpload.path,
-                                fallbackPath: medidorInstaladoUpload.path,
-                              })
-                            ) : (
-                              '-'
-                            )}
+                            {detalhe.atividadeMedidor.instaladoFoto
+                              ? renderMediaPreview({
+                                  url: detalhe.atividadeMedidor.instaladoFoto
+                                    .url,
+                                  mimeType:
+                                    detalhe.atividadeMedidor.instaladoFoto
+                                      .mimeType,
+                                  nomeArquivo:
+                                    detalhe.atividadeMedidor.instaladoFoto
+                                      .fileName || undefined,
+                                  path: detalhe.atividadeMedidor.instaladoFoto
+                                    .storagePath,
+                                  fallbackPath:
+                                    detalhe.atividadeMedidor.instaladoFoto
+                                      .storagePath,
+                                })
+                              : medidorInstaladoUpload
+                                ? renderMediaPreview({
+                                    url: medidorInstaladoUpload.url,
+                                    mimeType: medidorInstaladoUpload.mimeType,
+                                    nomeArquivo:
+                                      medidorInstaladoUpload.nomeArquivo ||
+                                      undefined,
+                                    path: medidorInstaladoUpload.path,
+                                    fallbackPath: medidorInstaladoUpload.path,
+                                  })
+                                : '-'}
                           </div>
                         </div>
                         <div>
                           <Text strong>Retirado:</Text>
                           <div style={{ marginTop: 8 }}>
-                            {detalhe.atividadeMedidor.retiradoFoto ? (
-                              renderMediaPreview({
-                                url: detalhe.atividadeMedidor.retiradoFoto.url,
-                                mimeType: detalhe.atividadeMedidor.retiradoFoto.mimeType,
-                                nomeArquivo:
-                                  detalhe.atividadeMedidor.retiradoFoto.fileName || undefined,
-                                path: detalhe.atividadeMedidor.retiradoFoto.storagePath,
-                                fallbackPath: detalhe.atividadeMedidor.retiradoFoto.storagePath,
-                              })
-                            ) : medidorRetiradoUpload ? (
-                              renderMediaPreview({
-                                url: medidorRetiradoUpload.url,
-                                mimeType: medidorRetiradoUpload.mimeType,
-                                nomeArquivo: medidorRetiradoUpload.nomeArquivo || undefined,
-                                path: medidorRetiradoUpload.path,
-                                fallbackPath: medidorRetiradoUpload.path,
-                              })
-                            ) : (
-                              '-'
-                            )}
+                            {detalhe.atividadeMedidor.retiradoFoto
+                              ? renderMediaPreview({
+                                  url: detalhe.atividadeMedidor.retiradoFoto
+                                    .url,
+                                  mimeType:
+                                    detalhe.atividadeMedidor.retiradoFoto
+                                      .mimeType,
+                                  nomeArquivo:
+                                    detalhe.atividadeMedidor.retiradoFoto
+                                      .fileName || undefined,
+                                  path: detalhe.atividadeMedidor.retiradoFoto
+                                    .storagePath,
+                                  fallbackPath:
+                                    detalhe.atividadeMedidor.retiradoFoto
+                                      .storagePath,
+                                })
+                              : medidorRetiradoUpload
+                                ? renderMediaPreview({
+                                    url: medidorRetiradoUpload.url,
+                                    mimeType: medidorRetiradoUpload.mimeType,
+                                    nomeArquivo:
+                                      medidorRetiradoUpload.nomeArquivo ||
+                                      undefined,
+                                    path: medidorRetiradoUpload.path,
+                                    fallbackPath: medidorRetiradoUpload.path,
+                                  })
+                                : '-'}
                           </div>
                         </div>
                       </Space>
@@ -759,16 +823,22 @@ export default function AtividadeExecucaoDetalhesModal({
                 key: 'fotos',
                 label: `Fotos (${fotosConsolidadas.length})`,
                 children: (
-                  <Space direction='vertical' style={{ width: '100%' }} size={12}>
+                  <Space
+                    direction='vertical'
+                    style={{ width: '100%' }}
+                    size={12}
+                  >
                     <Alert
                       type='info'
                       showIcon
                       message='Legenda das fotos'
                       description={
                         <Space direction='vertical' size={4}>
-                          {legendaFotos.map((item) => (
+                          {legendaFotos.map(item => (
                             <Space key={item.origem} size={8}>
-                              <Tag color={getOrigemColor(item.origem)}>{item.origem}</Tag>
+                              <Tag color={getOrigemColor(item.origem)}>
+                                {item.origem}
+                              </Tag>
                               <Text>{item.descricao}</Text>
                             </Space>
                           ))}
@@ -781,7 +851,9 @@ export default function AtividadeExecucaoDetalhesModal({
                       rowKey='key'
                       pagination={false}
                       dataSource={fotosConsolidadas}
-                      locale={{ emptyText: 'Nenhuma foto/evidência encontrada.' }}
+                      locale={{
+                        emptyText: 'Nenhuma foto/evidência encontrada.',
+                      }}
                       columns={[
                         {
                           title: 'Origem',
@@ -791,7 +863,11 @@ export default function AtividadeExecucaoDetalhesModal({
                             <Tag color={getOrigemColor(origem)}>{origem}</Tag>
                           ),
                         },
-                        { title: 'Contexto', dataIndex: 'contexto', width: 260 },
+                        {
+                          title: 'Contexto',
+                          dataIndex: 'contexto',
+                          width: 260,
+                        },
                         { title: 'Arquivo', dataIndex: 'nomeArquivo' },
                         {
                           title: 'Visualização',
@@ -810,7 +886,8 @@ export default function AtividadeExecucaoDetalhesModal({
                           title: 'Criado em',
                           dataIndex: 'criadoEm',
                           width: 170,
-                          render: (value: Date | string) => formatDateTime(value),
+                          render: (value: Date | string) =>
+                            formatDateTime(value),
                         },
                       ]}
                     />
