@@ -204,6 +204,8 @@ model AtividadeExecucao {
   aplicaMedidor  Boolean @default(false)
   aplicaRamal    Boolean @default(false)
   aplicaMaterial Boolean @default(false)
+  atividadeProdutiva Boolean @default(true)
+  causaImprodutiva  String? @db.VarChar(255)
 
   statusFluxo String @default("em_execucao") @db.VarChar(60)
   etapaAtual  String @default("identificacao") @db.VarChar(60)
@@ -232,6 +234,7 @@ model AtividadeExecucao {
   atividadeAprPreenchidas     AtividadeAprPreenchida[]
 
   @@index([turnoId, statusFluxo])
+  @@index([atividadeProdutiva])
   @@index([syncStatus, attemptCount])
   @@index([updatedAt])
   @@index([deletedAt])

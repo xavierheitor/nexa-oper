@@ -20,6 +20,8 @@ export class UploadAtividadeUseCase {
     payload: AtividadeUploadRequestContract,
     userId?: number,
   ): Promise<AtividadeUploadResponseContract> {
+    this.validateBusinessRules(payload);
+
     const turno = await this.repository.findTurnoById(payload.turnoId);
     if (!turno) {
       throw AppError.validation(
@@ -28,5 +30,19 @@ export class UploadAtividadeUseCase {
     }
 
     return this.repository.persistUpload(payload, userId);
+  }
+
+  private validateBusinessRules(payload: AtividadeUploadRequestContract): void {
+    const atividadeProdutiva = payload.atividadeProdutiva ?? true;
+    const causaImprodutiva =
+      typeof payload.causaImprodutiva === 'string'
+        ? payload.causaImprodutiva.trim()
+        : '';
+
+    if (!atividadeProdutiva && !causaImprodutiva) {
+      throw AppError.validation(
+        'causaImprodutiva é obrigatória quando atividadeProdutiva=false',
+      );
+    }
   }
 }

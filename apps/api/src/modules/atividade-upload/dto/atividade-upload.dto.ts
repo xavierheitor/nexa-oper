@@ -485,6 +485,24 @@ export class AtividadeUploadDto {
   @IsBoolean()
   aplicaMaterial?: boolean;
 
+  @ApiPropertyOptional({
+    default: true,
+    description:
+      'Indica se a atividade gerou produção. Quando false, causaImprodutiva é obrigatória.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  atividadeProdutiva?: boolean;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
+      'Causa da improdutividade. Deve ser preenchida quando atividadeProdutiva=false.',
+  })
+  @IsOptional()
+  @IsString()
+  causaImprodutiva?: string | null;
+
   @ApiPropertyOptional({ example: 'em_execucao' })
   @IsOptional()
   @IsString()

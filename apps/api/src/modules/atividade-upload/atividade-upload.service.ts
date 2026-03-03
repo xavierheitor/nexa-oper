@@ -127,6 +127,10 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
   ): Promise<AtividadeUploadResponseContract> {
     const createdBy = userId != null ? String(userId) : 'system';
     const now = new Date();
+    const atividadeProdutiva = payload.atividadeProdutiva ?? true;
+    const causaImprodutiva = atividadeProdutiva
+      ? null
+      : normalizeString(payload.causaImprodutiva);
 
     const existing = await this.prisma.atividadeExecucao.findUnique({
       where: { atividadeUuid: payload.atividadeUuid },
@@ -149,6 +153,8 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
         aplicaMedidor: payload.aplicaMedidor ?? false,
         aplicaRamal: payload.aplicaRamal ?? false,
         aplicaMaterial: payload.aplicaMaterial ?? false,
+        atividadeProdutiva,
+        causaImprodutiva,
         statusFluxo: normalizeString(payload.statusFluxo) ?? 'em_execucao',
         etapaAtual: normalizeString(payload.etapaAtual) ?? 'identificacao',
         aprPreenchidaEm: parseDateOrNull(payload.aprPreenchidaEm),
@@ -175,6 +181,8 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
         aplicaMedidor: payload.aplicaMedidor ?? false,
         aplicaRamal: payload.aplicaRamal ?? false,
         aplicaMaterial: payload.aplicaMaterial ?? false,
+        atividadeProdutiva,
+        causaImprodutiva,
         statusFluxo: normalizeString(payload.statusFluxo) ?? 'em_execucao',
         etapaAtual: normalizeString(payload.etapaAtual) ?? 'identificacao',
         aprPreenchidaEm: parseDateOrNull(payload.aprPreenchidaEm),

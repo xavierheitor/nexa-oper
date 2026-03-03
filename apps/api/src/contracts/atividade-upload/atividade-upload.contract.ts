@@ -107,6 +107,8 @@ export interface AtividadeUploadRequestContract {
   aplicaMedidor?: boolean;
   aplicaRamal?: boolean;
   aplicaMaterial?: boolean;
+  atividadeProdutiva?: boolean;
+  causaImprodutiva?: string | null;
   statusFluxo?: string;
   etapaAtual?: string;
   aprPreenchidaEm?: string;

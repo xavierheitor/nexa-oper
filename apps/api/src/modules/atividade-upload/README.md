@@ -10,6 +10,7 @@ Recebe upload de atividades executadas pelo app mobile.
 
 Um único JSON com:
 - dados da execução (`atividadeUuid`, `turnoId`, status, etapa)
+- classificação de produtividade (`atividadeProdutiva`, `causaImprodutiva`)
 - `medidor` (opcional)
 - `materiais` (opcional)
 - `respostas` (opcional)
@@ -23,6 +24,7 @@ Um único JSON com:
 - Idempotência por `aprUuid` dentro de `aprs`
 - Persistência de fotos em storage configurado (`local`/`s3`)
 - Persistência transacional de medidor, materiais, respostas, eventos e APR
+- Regra de negócio: quando `atividadeProdutiva=false`, `causaImprodutiva` é obrigatória
 - APR vinculada obrigatoriamente a um `turno` e opcionalmente ao serviço (`vinculadaAoServico`)
 - Validação de assinaturas: todos os componentes do turno precisam assinar cada APR (aceita assinantes extras)
 - Retorno `201` quando cria e `200` quando atualiza
