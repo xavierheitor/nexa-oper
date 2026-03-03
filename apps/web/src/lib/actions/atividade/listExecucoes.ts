@@ -39,6 +39,7 @@ export const listAtividadeExecucoes = async (rawData: unknown) =>
             { tipoAtividadeNomeSnapshot: { contains: search } },
             { tipoServicoNomeSnapshot: { contains: search } },
             { statusFluxo: { contains: search } },
+            { causaImprodutiva: { contains: search } },
           ],
         });
 
@@ -58,6 +59,7 @@ export const listAtividadeExecucoes = async (rawData: unknown) =>
         updatedAt: { updatedAt: data.orderDir },
         finalizadaEm: { finalizadaEm: data.orderDir },
         statusFluxo: { statusFluxo: data.orderDir },
+        atividadeProdutiva: { atividadeProdutiva: data.orderDir },
       };
 
       const orderBy = orderByMap[data.orderBy] || orderByMap.createdAt;

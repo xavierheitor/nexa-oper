@@ -2,6 +2,7 @@
 
 import { listEletricistas } from '@/lib/actions/eletricista/list';
 import { listEquipes } from '@/lib/actions/equipe/list';
+import { listCausasImprodutivas } from '@/lib/actions/causaImprodutiva/list';
 import { listTiposAtividade } from '@/lib/actions/tipoAtividade/list';
 import { listTiposAtividadeServico } from '@/lib/actions/tipoAtividadeServico/list';
 import { listVeiculos } from '@/lib/actions/veiculo/list';
@@ -10,6 +11,7 @@ import { useEntityData } from '@/lib/hooks/useEntityData';
 import type {
   EletricistaFiltroOption,
   EquipeFiltroOption,
+  CausaImprodutivaFiltroOption,
   TipoAtividadeFiltroOption,
   TipoAtividadeServicoFiltroOption,
   VeiculoFiltroOption,
@@ -79,11 +81,24 @@ export function useAtividadesFilterOptions() {
     },
   });
 
+  const causasImprodutivas = useEntityData<CausaImprodutivaFiltroOption>({
+    key: 'atividade-filtro-causas-improdutivas',
+    fetcherAction: unwrapFetcher(listCausasImprodutivas),
+    paginationEnabled: false,
+    initialParams: {
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'causa',
+      orderDir: 'asc',
+    },
+  });
+
   return {
     tiposAtividade,
     tiposAtividadeServico,
     equipes,
     veiculos,
     eletricistas,
+    causasImprodutivas,
   };
 }

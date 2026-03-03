@@ -133,7 +133,7 @@ export default function AtividadesMateriaisPageClient({
       <AtividadesTableFilters
         onFilterChange={(
           field: keyof AtividadesFilterFieldMap,
-          value?: number | Date
+          value?: number | Date | boolean | string
         ) =>
           materiais.setParams((prev) => ({
             ...prev,

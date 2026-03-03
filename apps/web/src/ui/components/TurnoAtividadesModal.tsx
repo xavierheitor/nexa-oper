@@ -32,6 +32,7 @@ import type {
 } from '@/lib/types/atividadeDashboard';
 import { handleRedirectToLogin } from '@/lib/utils/redirectHandler';
 import { buildPhotoUrl } from '@/lib/utils/photos';
+import { getTextFilter } from '@/ui/components/tableFilters';
 
 const { Text } = Typography;
 
@@ -204,6 +205,9 @@ export default function TurnoAtividadesModal({
   }, [visible, turnoId, fetchData]);
 
   const totalAtividades = atividades.length;
+  const totalAtividadesImprodutivas = atividades.filter(
+    a => a.atividadeProdutiva === false
+  ).length;
   const atividadesComMedidor = atividades.filter(a => a.aplicaMedidor).length;
   const atividadesComMaterial = atividades.filter(a => a.aplicaMaterial).length;
   const totalMedidores = medidores.length;
@@ -276,6 +280,14 @@ export default function TurnoAtividadesModal({
                 <Col xs={24} sm={12} md={4}>
                   <Card size='small'>
                     <Statistic title='Atividades' value={totalAtividades} />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={4}>
+                  <Card size='small'>
+                    <Statistic
+                      title='Improdutivas'
+                      value={totalAtividadesImprodutivas}
+                    />
                   </Card>
                 </Col>
                 <Col xs={24} sm={12} md={4}>
@@ -371,6 +383,29 @@ export default function TurnoAtividadesModal({
                               ) : (
                                 <Tag>Não</Tag>
                               ),
+                          },
+                          {
+                            title: 'Produtiva',
+                            key: 'atividadeProdutiva',
+                            width: 110,
+                            render: (_, record) =>
+                              record.atividadeProdutiva === false ? (
+                                <Tag color='volcano'>Não</Tag>
+                              ) : (
+                                <Tag color='green'>Sim</Tag>
+                              ),
+                          },
+                          {
+                            title: 'Causa Improdutiva',
+                            dataIndex: 'causaImprodutiva',
+                            key: 'causaImprodutiva',
+                            width: 220,
+                            render: (value: string | null | undefined) =>
+                              value || '-',
+                            ...getTextFilter<AtividadeExecucaoListItem>(
+                              'causaImprodutiva',
+                              'causa improdutiva'
+                            ),
                           },
                           {
                             title: 'Status',

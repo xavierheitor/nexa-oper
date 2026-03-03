@@ -130,7 +130,7 @@ export default function AtividadesMedidoresPageClient({
       <AtividadesTableFilters
         onFilterChange={(
           field: keyof AtividadesFilterFieldMap,
-          value?: number | Date
+          value?: number | Date | boolean | string
         ) =>
           medidores.setParams((prev) => ({
             ...prev,

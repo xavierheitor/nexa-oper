@@ -46,6 +46,9 @@ interface TurnoData {
   tipoEquipeNome: string;
   tipoEquipeId: number | null;
   kmInicio: number | null;
+  totalAtividades: number;
+  totalAtividadesImprodutivas: number;
+  causasImprodutivas: string[];
   eletricistas: Array<{
     id: number;
     nome: string;
@@ -65,6 +68,9 @@ interface TurnoDataLinha {
   tipoEquipeNome: string;
   tipoEquipeId: number | null;
   kmInicio: number | null;
+  totalAtividades: number;
+  totalAtividadesImprodutivas: number;
+  causasImprodutivasTexto: string;
   eletricista: {
     id: number;
     nome: string;
@@ -203,6 +209,10 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
           tipoEquipeNome: turno.tipoEquipeNome,
           tipoEquipeId: turno.tipoEquipeId,
           kmInicio: turno.kmInicio,
+          totalAtividades: turno.totalAtividades,
+          totalAtividadesImprodutivas: turno.totalAtividadesImprodutivas,
+          causasImprodutivasTexto:
+            turno.causasImprodutivas?.join(' | ') || '',
           eletricista: {
             id: 0,
             nome: 'Sem eletricista',
@@ -227,6 +237,10 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
             tipoEquipeNome: turno.tipoEquipeNome,
             tipoEquipeId: turno.tipoEquipeId,
             kmInicio: turno.kmInicio,
+            totalAtividades: turno.totalAtividades,
+            totalAtividadesImprodutivas: turno.totalAtividadesImprodutivas,
+            causasImprodutivasTexto:
+              turno.causasImprodutivas?.join(' | ') || '',
             eletricista: {
               id: eletricista.id,
               nome: eletricista.nome,
@@ -424,6 +438,9 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
       'Tipo de Equipe',
       'Eletricista',
       'Matrícula',
+      'Atividades (Total)',
+      'Atividades Improdutivas',
+      'Causas Improdutivas',
       'KM de Abertura',
       'Motorista',
       'Hora Abertura (Data e Hora)',
@@ -447,6 +464,9 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
           linha.tipoEquipeNome || '',
           linha.eletricista.nome || '',
           linha.eletricista.matricula || '',
+          linha.totalAtividades.toString(),
+          linha.totalAtividadesImprodutivas.toString(),
+          linha.causasImprodutivasTexto || '',
           linha.kmInicio !== null && linha.kmInicio !== undefined ? linha.kmInicio.toString() : '',
           linha.isMotorista ? 'Sim' : 'Não',
           dataHoraAbertura,
@@ -572,6 +592,39 @@ export default function TurnosPorPeriodo({ filtros }: TurnosPorPeriodoProps) {
           (record.eletricista.matricula ? record.eletricista.matricula.toLowerCase().includes(searchText) : false)
         );
       },
+    },
+    {
+      title: 'Atividades',
+      dataIndex: 'totalAtividades',
+      key: 'totalAtividades',
+      width: 110,
+      sorter: (a, b) => a.totalAtividades - b.totalAtividades,
+      render: (value: number) => value.toLocaleString('pt-BR'),
+    },
+    {
+      title: 'Improdutivas',
+      dataIndex: 'totalAtividadesImprodutivas',
+      key: 'totalAtividadesImprodutivas',
+      width: 120,
+      sorter: (a, b) =>
+        a.totalAtividadesImprodutivas - b.totalAtividadesImprodutivas,
+      render: (value: number) =>
+        value > 0 ? (
+          <Tag color="volcano">{value.toLocaleString('pt-BR')}</Tag>
+        ) : (
+          <Tag color="green">0</Tag>
+        ),
+    },
+    {
+      title: 'Causas Improdutivas',
+      dataIndex: 'causasImprodutivasTexto',
+      key: 'causasImprodutivasTexto',
+      width: 280,
+      render: (value: string) => value || '-',
+      ...getTextFilter<TurnoDataLinha>(
+        'causasImprodutivasTexto',
+        'causa improdutiva'
+      ),
     },
     {
       title: 'Hora Abertura',

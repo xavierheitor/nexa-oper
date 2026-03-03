@@ -648,6 +648,16 @@ export default function AtividadeExecucaoDetalhesModal({
               '-'
             )}
           </Descriptions.Item>
+          <Descriptions.Item label='Produtiva'>
+            {detalhe?.atividadeProdutiva === false ? (
+              <Tag color='volcano'>Não</Tag>
+            ) : (
+              <Tag color='green'>Sim</Tag>
+            )}
+          </Descriptions.Item>
+          <Descriptions.Item label='Causa Improdutiva'>
+            {detalhe?.causaImprodutiva || '-'}
+          </Descriptions.Item>
           <Descriptions.Item label='Criado em'>
             {formatDateTime(detalhe?.createdAt)}
           </Descriptions.Item>

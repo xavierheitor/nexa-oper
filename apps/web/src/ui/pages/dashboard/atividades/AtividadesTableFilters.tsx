@@ -11,7 +11,7 @@ const { Text } = Typography;
 interface AtividadesTableFiltersProps {
   onFilterChange: (
     field: keyof AtividadesFilterFieldMap,
-    value?: number | Date
+    value?: number | Date | boolean | string
   ) => void;
 }
 
@@ -24,6 +24,7 @@ export default function AtividadesTableFilters({
     equipes,
     veiculos,
     eletricistas,
+    causasImprodutivas,
   } = useAtividadesFilterOptions();
 
   return (
@@ -61,6 +62,44 @@ export default function AtividadesTableFilters({
                 value ? Number(value) : undefined
               ),
             loading: tiposAtividadeServico.isLoading,
+          },
+          {
+            label: 'Produtividade',
+            placeholder: 'Filtrar por produtividade',
+            options: [
+              { label: 'Produtiva', value: 'produtiva' },
+              { label: 'Improdutiva', value: 'improdutiva' },
+            ],
+            onChange: (value) => {
+              if (value === 'produtiva') {
+                onFilterChange('atividadeProdutiva', true);
+                return;
+              }
+
+              if (value === 'improdutiva') {
+                onFilterChange('atividadeProdutiva', false);
+                return;
+              }
+
+              onFilterChange('atividadeProdutiva', undefined);
+            },
+          },
+          {
+            label: 'Causa Improdutiva',
+            placeholder: 'Filtrar por causa',
+            options:
+              causasImprodutivas.data
+                ?.filter(causa => causa.ativo)
+                .map(causa => ({
+                  label: causa.causa,
+                  value: causa.causa,
+                })) || [],
+            onChange: value =>
+              onFilterChange(
+                'causaImprodutiva',
+                value ? String(value) : undefined
+              ),
+            loading: causasImprodutivas.isLoading,
           },
           {
             label: 'Equipe',

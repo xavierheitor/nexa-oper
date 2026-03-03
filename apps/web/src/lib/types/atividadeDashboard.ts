@@ -36,6 +36,8 @@ export interface AtividadeExecucaoListItem {
   numeroDocumento?: string | null;
   aplicaMedidor: boolean;
   aplicaMaterial: boolean;
+  atividadeProdutiva: boolean;
+  causaImprodutiva?: string | null;
   statusFluxo: string;
   etapaAtual: string;
   finalizadaEm?: Date | string | null;
@@ -227,6 +229,12 @@ export interface TipoAtividadeServicoFiltroOption {
   } | null;
 }
 
+export interface CausaImprodutivaFiltroOption {
+  id: number;
+  causa: string;
+  ativo: boolean;
+}
+
 export interface EquipeFiltroOption {
   id: number;
   nome: string;
@@ -249,6 +257,8 @@ export interface TurnoFiltroOption extends TurnoResumo {}
 export interface AtividadesFilterFieldMap {
   tipoAtividadeId?: number;
   tipoAtividadeServicoId?: number;
+  atividadeProdutiva?: boolean;
+  causaImprodutiva?: string;
   turnoId?: number;
   equipeId?: number;
   veiculoId?: number;

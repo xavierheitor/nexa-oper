@@ -8,6 +8,8 @@ export const atividadeDashboardBaseFilterSchema = z.object({
   eletricistaId: z.number().int().positive().optional(),
   tipoAtividadeId: z.number().int().positive().optional(),
   tipoAtividadeServicoId: z.number().int().positive().optional(),
+  atividadeProdutiva: z.boolean().optional(),
+  causaImprodutiva: z.string().trim().optional(),
   statusFluxo: z.string().trim().optional(),
   dataInicio: z.coerce.date().optional(),
   dataFim: z.coerce.date().optional(),
@@ -35,6 +37,14 @@ export function buildAtividadeExecucaoWhere(
 
   if (filters.statusFluxo) {
     where.statusFluxo = filters.statusFluxo;
+  }
+
+  if (typeof filters.atividadeProdutiva === 'boolean') {
+    where.atividadeProdutiva = filters.atividadeProdutiva;
+  }
+
+  if (filters.causaImprodutiva) {
+    where.causaImprodutiva = { contains: filters.causaImprodutiva };
   }
 
   if (filters.turnoId) {

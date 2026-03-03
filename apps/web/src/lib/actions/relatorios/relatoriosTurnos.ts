@@ -102,6 +102,16 @@ export const getTurnosPorPeriodo = async (rawData?: unknown) =>
               },
             },
           },
+          AtividadeExecucoes: {
+            where: {
+              deletedAt: null,
+            },
+            select: {
+              id: true,
+              atividadeProdutiva: true,
+              causaImprodutiva: true,
+            },
+          },
         },
         orderBy: {
           dataInicio: 'asc',
@@ -109,7 +119,23 @@ export const getTurnosPorPeriodo = async (rawData?: unknown) =>
       });
 
       // Formatar dados para facilitar o uso no frontend
-      return turnos.map((turno: any) => ({
+      return turnos.map((turno: any) => {
+        const atividades = (turno.AtividadeExecucoes || []) as Array<{
+          atividadeProdutiva: boolean;
+          causaImprodutiva?: string | null;
+        }>;
+        const atividadesImprodutivas = atividades.filter(
+          atividade => atividade.atividadeProdutiva === false
+        );
+        const causasImprodutivas = Array.from(
+          new Set(
+            atividadesImprodutivas
+              .map(atividade => atividade.causaImprodutiva?.trim() || '')
+              .filter(causa => causa.length > 0)
+          )
+        );
+
+        return {
         id: turno.id,
         dataInicio: turno.dataInicio,
         dataFim: turno.dataFim,
@@ -118,6 +144,9 @@ export const getTurnosPorPeriodo = async (rawData?: unknown) =>
         tipoEquipeNome: turno.equipe?.tipoEquipe?.nome || 'Sem classificação',
         tipoEquipeId: turno.equipe?.tipoEquipe?.id || null,
         kmInicio: turno.kmInicio || null,
+        totalAtividades: atividades.length,
+        totalAtividadesImprodutivas: atividadesImprodutivas.length,
+        causasImprodutivas,
         eletricistas: turno.TurnoEletricistas?.map((te: any) => ({
           id: te.eletricista.id,
           nome: te.eletricista.nome,
@@ -125,9 +154,9 @@ export const getTurnosPorPeriodo = async (rawData?: unknown) =>
           cargoNome: te.eletricista.cargo?.nome || null,
           motorista: te.motorista || false,
         })) || [],
-      }));
+      };
+      });
     },
     rawData,
     { entityName: 'Relatorio', actionType: 'read' }
   );
-

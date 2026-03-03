@@ -106,6 +106,25 @@ export default function AtividadesVisaoGeralPageClient({
       width: 90,
     },
     {
+      title: 'Produtiva',
+      dataIndex: 'atividadeProdutiva',
+      key: 'atividadeProdutiva',
+      width: 100,
+      render: (value: boolean) =>
+        value ? (
+          <Tag color='green'>Sim</Tag>
+        ) : (
+          <Tag color='volcano'>Não</Tag>
+        ),
+    },
+    {
+      title: 'Causa Improdutiva',
+      dataIndex: 'causaImprodutiva',
+      key: 'causaImprodutiva',
+      width: 220,
+      render: (value: string | null | undefined) => value || '-',
+    },
+    {
       title: 'Ações',
       key: 'acoes',
       width: 95,
@@ -137,7 +156,7 @@ export default function AtividadesVisaoGeralPageClient({
       <AtividadesTableFilters
         onFilterChange={(
           field: keyof AtividadesFilterFieldMap,
-          value?: number | Date
+          value?: number | Date | boolean | string
         ) =>
           atividades.setParams((prev) => ({
             ...prev,
