@@ -566,7 +566,8 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
               typeof resposta.marcado === 'boolean' ? resposta.marcado : null,
             ordemGrupo: resposta.ordemGrupo ?? 0,
             ordemPergunta: resposta.ordemPergunta ?? 0,
-            dataResposta: parseDateOrNull(resposta.dataResposta) ?? preenchidaEm,
+            dataResposta:
+              parseDateOrNull(resposta.dataResposta) ?? preenchidaEm,
             createdBy,
           };
         });

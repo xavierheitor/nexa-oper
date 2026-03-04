@@ -64,7 +64,10 @@ describe('UploadAtividadeUseCase', () => {
 
     expect(result.status).toBe('ok');
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(repository.persistUpload).toHaveBeenCalledWith(improdutivaPayload, 55);
+    expect(repository.persistUpload).toHaveBeenCalledWith(
+      improdutivaPayload,
+      55,
+    );
   });
 
   it('delegates persistence when turno exists', async () => {

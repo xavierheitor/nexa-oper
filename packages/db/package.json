@@ -41,7 +41,8 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@prisma/client": "^6.15.0"
+    "@prisma/client": "^6.15.0",
+    "mysql2": "^3.18.2"
   },
   "peerDependencies": {
     "typescript": ">=5.0.0"
