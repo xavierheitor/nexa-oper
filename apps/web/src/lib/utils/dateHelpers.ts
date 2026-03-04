@@ -19,6 +19,20 @@ export function getTodayDateRange(): { inicio: Date; fim: Date } {
 }
 
 /**
+ * Retorna um período padrão de 1 mês (início há 1 mês, fim hoje)
+ */
+export function getLastMonthDateRange(): { inicio: Date; fim: Date } {
+  const fim = new Date();
+  fim.setHours(23, 59, 59, 999);
+
+  const inicio = new Date(fim);
+  inicio.setMonth(inicio.getMonth() - 1);
+  inicio.setHours(0, 0, 0, 0);
+
+  return { inicio, fim };
+}
+
+/**
  * Retorna o intervalo de datas de um dia no timezone de São Paulo (início e fim)
  *
  * @param date - Data base

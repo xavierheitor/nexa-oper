@@ -15,4 +15,6 @@ export const causaImprodutivaFilterSchema = z.object({
   orderBy: z.string(),
   orderDir: z.enum(['asc', 'desc']),
   search: z.string().optional(),
+  dataInicio: z.coerce.date().optional(),
+  dataFim: z.coerce.date().optional(),
 });

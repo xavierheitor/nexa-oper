@@ -40,6 +40,8 @@ export interface PaginationParams {
   orderBy: string;
   orderDir: OrderDir;
   search?: string;
+  dataInicio?: Date | string;
+  dataFim?: Date | string;
   include?: IncludeConfig;
 }
 
@@ -50,6 +52,8 @@ export interface PaginatedParams {
   orderBy?: string;
   orderDir?: OrderDir;
   search?: string;
+  dataInicio?: Date | string;
+  dataFim?: Date | string;
   filters?: Record<string, unknown>;
   include?: IncludeConfig;
 }

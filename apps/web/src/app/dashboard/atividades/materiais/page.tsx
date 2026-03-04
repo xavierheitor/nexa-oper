@@ -1,14 +1,19 @@
 import { listAtividadeMateriais } from '@/lib/actions/atividade/listMateriais';
 import type { AtividadeMaterialPaginated } from '@/lib/types/atividadeDashboard';
+import { getLastMonthDateRange } from '@/lib/utils/dateHelpers';
 import AtividadesMateriaisPageClient from '@/ui/pages/dashboard/atividades/AtividadesMateriaisPageClient';
 import { redirect } from 'next/navigation';
 
 export default async function AtividadesMateriaisPage() {
+  const { inicio, fim } = getLastMonthDateRange();
+
   const result = await listAtividadeMateriais({
     page: 1,
     pageSize: 10,
     orderBy: 'createdAt',
     orderDir: 'desc',
+    dataInicio: inicio,
+    dataFim: fim,
   });
 
   if (result.redirectToLogin) {

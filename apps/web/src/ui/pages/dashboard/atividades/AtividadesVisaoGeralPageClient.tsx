@@ -1,29 +1,36 @@
 'use client';
 
-import { EyeOutlined } from '@ant-design/icons';
+import { EyeOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { listAtividadeExecucoes } from '@/lib/actions/atividade/listExecucoes';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import type { PaginatedParams } from '@/lib/types/common';
+import { getLastMonthDateRange } from '@/lib/utils/dateHelpers';
 import type {
   AtividadesFilterFieldMap,
   AtividadeExecucaoListItem,
   AtividadeExecucaoPaginated,
 } from '@/lib/types/atividadeDashboard';
-import { Button, Card, Table, Tag } from 'antd';
+import { App, Button, Card, Space, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import dayjs from 'dayjs';
 import { useState } from 'react';
 import AtividadeExecucaoDetalhesModal from './AtividadeExecucaoDetalhesModal';
 import AtividadesTableFilters from './AtividadesTableFilters';
+import { downloadCsvAsExcelFile, fetchAllPaginatedRows } from './exportUtils';
 
 interface AtividadesVisaoGeralPageClientProps {
   initialData?: AtividadeExecucaoPaginated;
 }
 
+const defaultRangeDates = getLastMonthDateRange();
+
 export default function AtividadesVisaoGeralPageClient({
   initialData,
 }: AtividadesVisaoGeralPageClientProps) {
+  const { message } = App.useApp();
   const [detalhesOpen, setDetalhesOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [selectedAtividadeId, setSelectedAtividadeId] = useState<number | null>(
     null
   );
@@ -44,8 +51,59 @@ export default function AtividadesVisaoGeralPageClient({
       pageSize: 10,
       orderBy: 'createdAt',
       orderDir: 'desc',
+      dataInicio: defaultRangeDates.inicio,
+      dataFim: defaultRangeDates.fim,
     },
   });
+
+  const handleExportarExcel = async () => {
+    try {
+      setIsExporting(true);
+      const registros = await fetchAllPaginatedRows(
+        fetchAtividadesFinalizadas,
+        atividades.params
+      );
+
+      const headers = [
+        'ID',
+        'Tipo',
+        'Subtipo',
+        'Nº OS',
+        'Equipe',
+        'Placa',
+        'Dia do Turno',
+        'Medidor',
+        'Materiais',
+        'Produtiva',
+        'Causa Improdutiva',
+        'Criado em',
+      ];
+
+      const rows = registros.map((item) => [
+        item.id,
+        item.tipoAtividade?.nome || item.tipoAtividadeNomeSnapshot || '',
+        item.tipoAtividadeServico?.nome || item.tipoServicoNomeSnapshot || '',
+        item.numeroDocumento || '',
+        item.turno?.equipe?.nome || '',
+        item.turno?.veiculo?.placa || '',
+        item.turno?.dataInicio
+          ? dayjs(item.turno.dataInicio).format('DD/MM/YYYY')
+          : '',
+        item.aplicaMedidor ? 'Sim' : 'Não',
+        item.aplicaMaterial ? 'Sim' : 'Não',
+        item.atividadeProdutiva ? 'Sim' : 'Não',
+        item.causaImprodutiva || '',
+        dayjs(item.createdAt).format('DD/MM/YYYY HH:mm'),
+      ]);
+
+      downloadCsvAsExcelFile('atividades_visao_geral', headers, rows);
+    } catch (error) {
+      console.error(error);
+      message.error('Falha ao exportar relatório.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const columns: ColumnsType<AtividadeExecucaoListItem> = [
     { title: 'ID', dataIndex: 'id', key: 'id', sorter: true, width: 64 },
@@ -151,9 +209,31 @@ export default function AtividadesVisaoGeralPageClient({
   return (
     <Card
       title='Atividades - Visão Geral'
-      extra={<Button onClick={() => atividades.mutate()}>Atualizar</Button>}
+      extra={
+        <Space>
+          <Button
+            icon={<FileExcelOutlined />}
+            loading={isExporting}
+            onClick={handleExportarExcel}
+          >
+            Exportar Excel
+          </Button>
+          <Button onClick={() => atividades.mutate()}>Atualizar</Button>
+        </Space>
+      }
     >
       <AtividadesTableFilters
+        defaultRange={[
+          dayjs(defaultRangeDates.inicio),
+          dayjs(defaultRangeDates.fim),
+        ]}
+        onFilterBatchChange={(values) =>
+          atividades.setParams((prev) => ({
+            ...prev,
+            ...values,
+            page: 1,
+          }))
+        }
         onFilterChange={(
           field: keyof AtividadesFilterFieldMap,
           value?: number | Date | boolean | string

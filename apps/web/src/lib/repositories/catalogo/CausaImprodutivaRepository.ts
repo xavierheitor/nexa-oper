@@ -8,7 +8,10 @@ import type {
   GenericPrismaWhereInput,
 } from '../../types/prisma';
 
-interface CausaImprodutivaFilter extends PaginationParams {}
+interface CausaImprodutivaFilter extends PaginationParams {
+  dataInicio?: Date | string;
+  dataFim?: Date | string;
+}
 
 export class CausaImprodutivaRepository extends AbstractCrudRepository<
   CausaImprodutiva,
@@ -49,6 +52,32 @@ export class CausaImprodutivaRepository extends AbstractCrudRepository<
 
   protected getSearchFields(): string[] {
     return ['causa'];
+  }
+
+  protected buildCustomFilters(
+    params: CausaImprodutivaFilter,
+    baseWhere: GenericPrismaWhereInput
+  ): GenericPrismaWhereInput {
+    const where = { ...baseWhere };
+    const createdAtFilter: Partial<Record<'gte' | 'lte', Date>> = {};
+
+    if (params.dataInicio) {
+      const inicio = new Date(params.dataInicio);
+      inicio.setHours(0, 0, 0, 0);
+      createdAtFilter.gte = inicio;
+    }
+
+    if (params.dataFim) {
+      const fim = new Date(params.dataFim);
+      fim.setHours(23, 59, 59, 999);
+      createdAtFilter.lte = fim;
+    }
+
+    if (Object.keys(createdAtFilter).length > 0) {
+      where.createdAt = createdAtFilter;
+    }
+
+    return where;
   }
 
   protected async findMany(

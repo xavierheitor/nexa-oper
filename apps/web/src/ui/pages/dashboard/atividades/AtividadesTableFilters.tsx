@@ -4,19 +4,25 @@ import type { AtividadesFilterFieldMap } from '@/lib/types/atividadeDashboard';
 import TableExternalFilters from '@/ui/components/TableExternalFilters';
 import { DatePicker, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import { useAtividadesFilterOptions } from './useAtividadesFilterOptions';
 
 const { Text } = Typography;
+const { RangePicker } = DatePicker;
 
 interface AtividadesTableFiltersProps {
   onFilterChange: (
     field: keyof AtividadesFilterFieldMap,
     value?: number | Date | boolean | string
   ) => void;
+  onFilterBatchChange?: (values: Partial<AtividadesFilterFieldMap>) => void;
+  defaultRange?: [Dayjs, Dayjs];
 }
 
 export default function AtividadesTableFilters({
   onFilterChange,
+  onFilterBatchChange,
+  defaultRange,
 }: AtividadesTableFiltersProps) {
   const {
     tiposAtividade,
@@ -148,6 +154,27 @@ export default function AtividadesTableFilters({
       />
 
       <Space size='middle'>
+        <Text type='secondary'>Período do turno:</Text>
+        <RangePicker
+          allowClear
+          format='DD/MM/YYYY'
+          defaultValue={defaultRange}
+          onChange={(range) => {
+            const dataInicio = range?.[0] ? dayjs(range[0]).toDate() : undefined;
+            const dataFim = range?.[1] ? dayjs(range[1]).toDate() : undefined;
+
+            if (onFilterBatchChange) {
+              onFilterBatchChange({ dataInicio, dataFim });
+              return;
+            }
+
+            onFilterChange('dataInicio', dataInicio);
+            onFilterChange('dataFim', dataFim);
+          }}
+        />
+      </Space>
+
+      <Space size='middle' style={{ marginTop: 8 }}>
         <Text type='secondary'>Dia do turno:</Text>
         <DatePicker
           allowClear

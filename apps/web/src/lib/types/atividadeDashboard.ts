@@ -263,6 +263,8 @@ export interface AtividadesFilterFieldMap {
   equipeId?: number;
   veiculoId?: number;
   eletricistaId?: number;
+  dataInicio?: Date;
+  dataFim?: Date;
   turnoDia?: Date;
 }
 
