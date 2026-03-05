@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### 📝 Em preparação
+
+- Sem alterações publicadas após a `v1.1.0`.
+
+## [1.1.0] - 2026-03-05
+
 ### 🎯 Novas Funcionalidades
 
 #### 📋 Consulta de Checklists
@@ -84,10 +90,22 @@ Adicionado filtro por **Tipo de Equipe** no relatório de checklist, permitindo 
 - Navegação fluida entre listagem e detalhes
 - Informações organizadas em cards e colapsos para melhor visualização
 
+### 🚀 Plataforma e Módulos Entregues
+
+- Novo módulo de **Atividades** com visão geral, materiais e medidores.
+- Implementação de **APR** ponta a ponta (modelos, respostas, assinaturas e evidências).
+- Evolução do pipeline de upload com **vínculo canônico de evidências**, deduplicação por checksum e metadados de sincronização.
+- CRUD completo de **Causa de Improdutividade** e classificação de produtividade em atividades.
+- Exportações em Excel e novos filtros de período nas telas operacionais.
+
+### 🐛 Correções
+
+- Ajustada a visualização de checklist para não exibir falso estado de “foto não sincronizada” quando `fotosSincronizadas > 0`.
+- Dashboard configurado como renderização dinâmica para evitar erros de build por uso de `headers()` em rotas server-side.
+
 ### 📝 Notas
 
 - Todos os filtros são opcionais e podem ser combinados
 - A paginação padrão é de 20 itens por página
 - As buscas por placa de veículo são case-insensitive e suportam busca parcial
 - Os dados são atualizados automaticamente quando os filtros são alterados
-

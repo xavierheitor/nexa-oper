@@ -1,6 +1,6 @@
 {
   "name": "nexa-oper",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Monorepo Nexa Oper com aplicações web, API e pacotes compartilhados",
   "private": true,
   "packageManager": "npm@10.0.0",
