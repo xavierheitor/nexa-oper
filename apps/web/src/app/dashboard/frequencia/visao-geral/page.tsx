@@ -4,6 +4,8 @@ import { listVeiculos } from '@/lib/actions/veiculo/list';
 import FrequenciaVisaoGeralPageClient from '@/ui/pages/dashboard/frequencia/FrequenciaVisaoGeralPageClient';
 import { redirect } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 interface NamedOption {
   id: number;
   nome: string;

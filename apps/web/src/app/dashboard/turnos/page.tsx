@@ -3,6 +3,8 @@ import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import TurnosPageClient from '@/ui/pages/dashboard/turnos/TurnosPageClient';
 import { redirect } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 interface OptionItem {
   id: number;
   nome: string;

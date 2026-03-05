@@ -193,6 +193,10 @@ export default function ChecklistViewerModal({
               const fotos = resposta.ChecklistRespostaFoto || [];
               const fotosSincronizadas =
                 fotos.length > 0 || resposta.fotosSincronizadas > 0;
+              const totalFotos = Math.max(
+                fotos.length,
+                resposta.fotosSincronizadas ?? 0
+              );
 
               const dataRespostaStr =
                 resposta.dataResposta instanceof Date
@@ -218,10 +222,10 @@ export default function ChecklistViewerModal({
                     <Text type='secondary'>
                       {respostaDate} {respostaTime}
                     </Text>
-                    {fotos.length > 0 ? (
+                    {totalFotos > 0 ? (
                       <Space>
                         <CameraOutlined />
-                        <Text>{fotos.length}</Text>
+                        <Text>{totalFotos}</Text>
                       </Space>
                     ) : null}
                     {reprovada && !fotosSincronizadas ? (
@@ -343,7 +347,7 @@ export default function ChecklistViewerModal({
                       </>
                     ) : null}
 
-                    {reprovada && fotos.length === 0 ? (
+                    {reprovada && !fotosSincronizadas ? (
                       <Card size='small' style={{ backgroundColor: '#fff7e6' }}>
                         <Space>
                           <ExclamationCircleOutlined
