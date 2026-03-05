@@ -17,10 +17,15 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
   readonly type = 'checklist-reprova';
 
   metadataSpec = {
-    required: ['turnoId', 'checklistPerguntaId'],
-    optional: [...CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS],
+    required: ['turnoId'],
+    optional: [
+      'checklistPerguntaId',
+      'checklistRespostaId',
+      'checklistPreenchidoId',
+      ...CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS,
+    ],
     description:
-      'Vincula foto à reprova específica de um checklist. entityId = checklistPreenchidoId ou checklistUuid.',
+      'Vincula foto à reprova específica de um checklist. entityId = checklistPreenchidoId ou checklistUuid. Requer turnoId e checklistPerguntaId ou checklistRespostaId.',
   } as const;
 
   constructor(
@@ -35,10 +40,14 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
         'entityId (checklistPreenchidoId ou checklistUuid) obrigatório',
       );
     }
-    const { turnoId, checklistPerguntaId } = ctx.metadata ?? {};
-    if (turnoId == null || checklistPerguntaId == null) {
+    const { turnoId, checklistPerguntaId, checklistRespostaId } =
+      ctx.metadata ?? {};
+    if (
+      turnoId == null ||
+      (checklistPerguntaId == null && checklistRespostaId == null)
+    ) {
       throw AppError.validation(
-        'turnoId e checklistPerguntaId obrigatórios para vincular a foto à reprova específica',
+        'turnoId e (checklistPerguntaId ou checklistRespostaId) são obrigatórios para vincular a foto à reprova específica',
       );
     }
     return Promise.resolve();
@@ -51,17 +60,46 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
 
   private parseMetadata(ctx: EvidenceContext): {
     turnoId: number;
-    checklistPerguntaId: number;
+    checklistPerguntaId: number | null;
+    checklistRespostaId: number | null;
+    checklistPreenchidoId: number | null;
   } | null {
-    const { turnoId, checklistPerguntaId } = (ctx.metadata ?? {}) as {
+    const {
+      turnoId,
+      checklistPerguntaId,
+      checklistRespostaId,
+      checklistPreenchidoId,
+    } = (ctx.metadata ?? {}) as {
       turnoId?: number;
       checklistPerguntaId?: number;
+      checklistRespostaId?: number;
+      checklistPreenchidoId?: number;
     };
-    if (turnoId == null || checklistPerguntaId == null) return null;
+    if (turnoId == null) return null;
+
+    const perguntaId = this.parseOptionalInt(checklistPerguntaId);
+    const respostaId = this.parseOptionalInt(checklistRespostaId);
+    const preenchidoId = this.parseOptionalInt(checklistPreenchidoId);
+
+    if (perguntaId == null && respostaId == null) return null;
+
     return {
       turnoId: Number(turnoId),
-      checklistPerguntaId: Number(checklistPerguntaId),
+      checklistPerguntaId: perguntaId,
+      checklistRespostaId: respostaId,
+      checklistPreenchidoId: preenchidoId,
     };
+  }
+
+  private parseOptionalInt(value: unknown): number | null {
+    if (value == null) return null;
+    if (typeof value !== 'number' && typeof value !== 'string') return null;
+    const parsed =
+      typeof value === 'number'
+        ? Math.trunc(value)
+        : Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed <= 0) return null;
+    return parsed;
   }
 
   private mapChecklistFotoToUploadResult(photo: {
@@ -104,10 +142,131 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
 
   private buildEvidenceIdempotencyKey(
     ctx: EvidenceContext,
-    checklistRespostaId: number,
     fingerprint: UploadFingerprint,
+    checklistRespostaId?: number,
   ): string {
-    return `${this.type}:${ctx.entityType || 'checklistPreenchido'}:${ctx.entityId}:${checklistRespostaId}:${fingerprint.checksum}`;
+    const respostaScope =
+      checklistRespostaId == null ? '' : `:${checklistRespostaId}`;
+    return `${this.type}:${ctx.entityType || 'checklistPreenchido'}:${ctx.entityId}${respostaScope}:${fingerprint.checksum}`;
+  }
+
+  private async persistEvidenceRecord(params: {
+    ctx: EvidenceContext;
+    result: UploadResult;
+    fingerprint?: UploadFingerprint;
+    checklistRespostaId?: number;
+  }): Promise<void> {
+    const { ctx, result, fingerprint, checklistRespostaId } = params;
+    const idempotencyKey = fingerprint
+      ? this.buildEvidenceIdempotencyKey(ctx, fingerprint, checklistRespostaId)
+      : null;
+
+    let evidenceId: number;
+    if (fingerprint && idempotencyKey) {
+      const evidence = await this.prisma.uploadEvidence.upsert({
+        where: { idempotencyKey },
+        create: {
+          tipo: this.type,
+          entityType: ctx.entityType || 'checklistPreenchido',
+          entityId: String(ctx.entityId),
+          url: result.url,
+          path: result.path,
+          tamanho: result.size,
+          mimeType: result.mimeType,
+          nomeArquivo: result.filename,
+          checksum: fingerprint.checksum,
+          idempotencyKey,
+          createdBy: 'system',
+        },
+        update: {
+          url: result.url,
+          path: result.path,
+          tamanho: result.size,
+          mimeType: result.mimeType,
+          nomeArquivo: result.filename,
+          checksum: fingerprint.checksum,
+        },
+        select: { id: true },
+      });
+      evidenceId = evidence.id;
+    } else {
+      const evidence = await this.prisma.uploadEvidence.create({
+        data: {
+          tipo: this.type,
+          entityType: ctx.entityType || 'checklistPreenchido',
+          entityId: String(ctx.entityId),
+          url: result.url,
+          path: result.path,
+          tamanho: result.size,
+          mimeType: result.mimeType,
+          nomeArquivo: result.filename,
+          checksum: fingerprint?.checksum,
+          createdBy: 'system',
+        },
+        select: { id: true },
+      });
+      evidenceId = evidence.id;
+    }
+
+    await this.linkService.upsertFromEvidence({
+      uploadEvidenceId: evidenceId,
+      ctx,
+      createdBy: 'system',
+    });
+  }
+
+  private async marcarRespostaComoSincronizada(
+    checklistRespostaId: number,
+  ): Promise<void> {
+    const totalFotos = await this.prisma.checklistRespostaFoto.count({
+      where: {
+        checklistRespostaId,
+        deletedAt: null,
+      },
+    });
+    await this.prisma.checklistResposta.update({
+      where: { id: checklistRespostaId },
+      data: {
+        fotosSincronizadas: totalFotos,
+        aguardandoFoto: false,
+        updatedBy: 'system',
+      },
+    });
+  }
+
+  private async buscarResposta(
+    checklistPreenchidoId: number,
+    meta: {
+      checklistPerguntaId: number | null;
+      checklistRespostaId: number | null;
+    },
+  ): Promise<{
+    id: number;
+    checklistPreenchidoId: number;
+    ChecklistPendencia: { id: number } | null;
+  } | null> {
+    if (meta.checklistRespostaId != null) {
+      const byRespostaId = await this.prisma.checklistResposta.findFirst({
+        where: {
+          id: meta.checklistRespostaId,
+          checklistPreenchidoId,
+          deletedAt: null,
+        },
+        include: { ChecklistPendencia: true },
+      });
+      if (byRespostaId) return byRespostaId;
+    }
+
+    if (meta.checklistPerguntaId == null) return null;
+
+    return this.prisma.checklistResposta.findFirst({
+      where: {
+        checklistPreenchidoId,
+        perguntaId: meta.checklistPerguntaId,
+        deletedAt: null,
+      },
+      include: { ChecklistPendencia: true },
+    });
   }
 
   async findExisting(
@@ -120,17 +279,11 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
     const checklistPreenchido = await this.buscarChecklistPreenchido(
       ctx.entityId,
       meta.turnoId,
+      meta.checklistPreenchidoId,
     );
     if (!checklistPreenchido) return null;
 
-    const resposta = await this.prisma.checklistResposta.findFirst({
-      where: {
-        checklistPreenchidoId: checklistPreenchido.id,
-        perguntaId: meta.checklistPerguntaId,
-        deletedAt: null,
-      },
-      select: { id: true },
-    });
+    const resposta = await this.buscarResposta(checklistPreenchido.id, meta);
     if (!resposta) return null;
 
     return this.findExistingChecklistFoto(resposta.id, fingerprint.checksum);
@@ -142,28 +295,38 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
     fingerprint?: UploadFingerprint,
   ): Promise<UploadResult> {
     const meta = this.parseMetadata(ctx);
-    if (!meta) return upload;
+    if (!meta) {
+      await this.persistEvidenceRecord({
+        ctx,
+        result: upload,
+        fingerprint,
+      });
+      return upload;
+    }
 
     const checklistPreenchido = await this.buscarChecklistPreenchido(
       ctx.entityId,
       meta.turnoId,
+      meta.checklistPreenchidoId,
     );
     if (!checklistPreenchido) {
       this.logger.warn(
         'Checklist preenchido não encontrado. Foto salva em UploadEvidence, mas sem vínculo.',
-        { entityId: ctx.entityId, turnoId: meta.turnoId },
+        {
+          entityId: ctx.entityId,
+          turnoId: meta.turnoId,
+          checklistPreenchidoId: meta.checklistPreenchidoId,
+        },
       );
+      await this.persistEvidenceRecord({
+        ctx,
+        result: upload,
+        fingerprint,
+      });
       return upload;
     }
 
-    const resposta = await this.prisma.checklistResposta.findFirst({
-      where: {
-        checklistPreenchidoId: checklistPreenchido.id,
-        perguntaId: meta.checklistPerguntaId,
-        deletedAt: null,
-      },
-      include: { ChecklistPendencia: true },
-    });
+    const resposta = await this.buscarResposta(checklistPreenchido.id, meta);
 
     if (!resposta) {
       this.logger.warn(
@@ -171,69 +334,16 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
         {
           checklistPreenchidoId: checklistPreenchido.id,
           perguntaId: meta.checklistPerguntaId,
+          checklistRespostaId: meta.checklistRespostaId,
         },
       );
+      await this.persistEvidenceRecord({
+        ctx,
+        result: upload,
+        fingerprint,
+      });
       return upload;
     }
-
-    const idempotencyKey = fingerprint
-      ? this.buildEvidenceIdempotencyKey(ctx, resposta.id, fingerprint)
-      : null;
-
-    const persistEvidence = async (result: UploadResult): Promise<void> => {
-      let evidenceId: number;
-      if (fingerprint && idempotencyKey) {
-        const evidence = await this.prisma.uploadEvidence.upsert({
-          where: { idempotencyKey },
-          create: {
-            tipo: this.type,
-            entityType: ctx.entityType || 'checklistPreenchido',
-            entityId: String(ctx.entityId),
-            url: result.url,
-            path: result.path,
-            tamanho: result.size,
-            mimeType: result.mimeType,
-            nomeArquivo: result.filename,
-            checksum: fingerprint.checksum,
-            idempotencyKey,
-            createdBy: 'system',
-          },
-          update: {
-            url: result.url,
-            path: result.path,
-            tamanho: result.size,
-            mimeType: result.mimeType,
-            nomeArquivo: result.filename,
-            checksum: fingerprint.checksum,
-          },
-          select: { id: true },
-        });
-        evidenceId = evidence.id;
-      } else {
-        const evidence = await this.prisma.uploadEvidence.create({
-          data: {
-            tipo: this.type,
-            entityType: ctx.entityType || 'checklistPreenchido',
-            entityId: String(ctx.entityId),
-            url: result.url,
-            path: result.path,
-            tamanho: result.size,
-            mimeType: result.mimeType,
-            nomeArquivo: result.filename,
-            checksum: fingerprint?.checksum,
-            createdBy: 'system',
-          },
-          select: { id: true },
-        });
-        evidenceId = evidence.id;
-      }
-
-      await this.linkService.upsertFromEvidence({
-        uploadEvidenceId: evidenceId,
-        ctx,
-        createdBy: 'system',
-      });
-    };
 
     if (fingerprint) {
       const existing = await this.findExistingChecklistFoto(
@@ -245,7 +355,13 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
           checklistRespostaId: resposta.id,
           checksum: fingerprint.checksum,
         });
-        await persistEvidence(existing);
+        await this.marcarRespostaComoSincronizada(resposta.id);
+        await this.persistEvidenceRecord({
+          ctx,
+          result: existing,
+          fingerprint,
+          checklistRespostaId: resposta.id,
+        });
         return existing;
       }
     }
@@ -255,8 +371,10 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
       checklistPreenchido.turnoId,
     );
     if (!pendencia) {
-      await persistEvidence(upload);
-      return upload;
+      this.logger.warn(
+        'Pendência de checklist não disponível; foto será vinculada sem checklistPendenciaId.',
+        { checklistRespostaId: resposta.id },
+      );
     }
 
     let finalResult = upload;
@@ -264,7 +382,7 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
       await this.prisma.checklistRespostaFoto.create({
         data: {
           checklistRespostaId: resposta.id,
-          checklistPendenciaId: pendencia.id,
+          checklistPendenciaId: pendencia?.id ?? null,
           caminhoArquivo: upload.path,
           urlPublica: upload.url,
           tamanhoBytes: BigInt(upload.size),
@@ -276,6 +394,7 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
             entityId: ctx.entityId,
             turnoId: meta.turnoId,
             perguntaId: meta.checklistPerguntaId,
+            checklistRespostaId: meta.checklistRespostaId,
             checksum: fingerprint?.checksum,
           },
           createdBy: 'system',
@@ -298,40 +417,54 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
       }
     }
 
-    if (finalResult.path === upload.path) {
-      await this.prisma.checklistResposta.update({
-        where: { id: resposta.id },
-        data: {
-          fotosSincronizadas: { increment: 1 },
-          aguardandoFoto: false,
-          updatedBy: 'system',
-        },
-      });
-    }
-
-    await persistEvidence(finalResult);
+    await this.marcarRespostaComoSincronizada(resposta.id);
+    await this.persistEvidenceRecord({
+      ctx,
+      result: finalResult,
+      fingerprint,
+      checklistRespostaId: resposta.id,
+    });
 
     this.logger.debug('Foto vinculada', {
       checklistRespostaId: resposta.id,
-      checklistPendenciaId: pendencia.id,
+      checklistPendenciaId: pendencia?.id ?? null,
       path: finalResult.path,
     });
 
     return finalResult;
   }
 
-  private async buscarChecklistPreenchido(entityId: string, turnoId: number) {
-    const isUuid = entityId.includes('-') && entityId.length >= 36;
-    if (isUuid) {
+  private async buscarChecklistPreenchido(
+    entityId: string,
+    turnoId: number,
+    metadataChecklistPreenchidoId: number | null,
+  ) {
+    const normalizedEntityId = entityId.trim();
+    const parsedId = Number.parseInt(normalizedEntityId, 10);
+
+    if (Number.isFinite(parsedId) && parsedId > 0) {
+      const byId = await this.prisma.checklistPreenchido.findFirst({
+        where: { id: parsedId, turnoId, deletedAt: null },
+      });
+      if (byId) return byId;
+    }
+
+    const byUuid = await this.prisma.checklistPreenchido.findFirst({
+      where: { uuid: normalizedEntityId, turnoId, deletedAt: null },
+    });
+    if (byUuid) return byUuid;
+
+    if (metadataChecklistPreenchidoId != null) {
       return this.prisma.checklistPreenchido.findFirst({
-        where: { uuid: entityId, turnoId, deletedAt: null },
+        where: {
+          id: metadataChecklistPreenchidoId,
+          turnoId,
+          deletedAt: null,
+        },
       });
     }
-    const id = parseInt(entityId, 10);
-    if (Number.isNaN(id)) return null;
-    return this.prisma.checklistPreenchido.findFirst({
-      where: { id, turnoId, deletedAt: null },
-    });
+
+    return null;
   }
 
   private async obterOuCriarPendencia(
