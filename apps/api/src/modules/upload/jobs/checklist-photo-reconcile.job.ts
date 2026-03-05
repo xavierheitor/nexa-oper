@@ -587,7 +587,6 @@ export class ChecklistPhotoReconcileJob
     return null;
   }
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
   private async reconcileFromMobilePhotos(
     touchedRespostaIds: Set<number>,
   ): Promise<{
@@ -762,7 +761,6 @@ export class ChecklistPhotoReconcileJob
     return respostas[0];
   }
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
   private async reconcileFromChecklistFolders(
     touchedRespostaIds: Set<number>,
   ): Promise<{ created: number; skipped: number }> {
