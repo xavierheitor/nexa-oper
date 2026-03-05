@@ -136,3 +136,18 @@ Nesse cenário, alinhe:
 - foto não encontrada: conferir `UPLOAD_ROOT` e arquivo físico
 - URL quebrada: conferir `UPLOAD_BASE_URL` e/ou `NEXT_PUBLIC_PHOTOS_BASE_URL`
 - duplicidade: validar migration de checksum/idempotency aplicada
+
+## Reconciliacao automatica de fotos de checklist
+
+Para regularizar cenarios em que a foto existe em disco mas o status do checklist ficou inconsistente, a API possui um job interno opcional:
+
+- habilitar: `CHECKLIST_PHOTO_RECONCILE_ENABLED=true`
+- intervalo: `CHECKLIST_PHOTO_RECONCILE_INTERVAL_MS` (padrao 5 min)
+- lock distribuido: `CHECKLIST_PHOTO_RECONCILE_LOCK_TTL_MS` (evita execucao dupla em multi-instancia)
+- roots de varredura: `CHECKLIST_PHOTO_RECONCILE_SCAN_ROOTS` (opcional)
+
+O job:
+
+- reconcilia fotos legadas de `MobilePhoto` (inclui caminhos como `uploads/mobile/photos/...`)
+- reconcilia fotos em `uploads/checklists/<id-ou-uuid>/reprovas`
+- recalcula `ChecklistResposta.fotosSincronizadas` e `ChecklistResposta.aguardandoFoto`

@@ -1,7 +1,8 @@
 import { Inject, Module } from '@nestjs/common';
+
 import { LoggerModule } from '../../core/logger/logger.module';
 import { DatabaseModule } from '../../database';
-import type { EvidenceHandler } from './evidence/evidence.handler';
+
 import { ListUploadTypesUseCase } from './application/use-cases/list-upload-types.use-case';
 import { UploadEvidenceUseCase } from './application/use-cases/upload-evidence.use-case';
 import { UPLOAD_PROCESSOR } from './domain/ports/upload-processor.port';
@@ -9,8 +10,10 @@ import { AprEvidenceHandler } from './evidence/apr-evidence.handler';
 import { AtividadeTurnoEvidenceHandler } from './evidence/atividade-turno.handler';
 import { ChecklistAssinaturaEvidenceHandler } from './evidence/checklist-assinatura.handler';
 import { ChecklistReprovaEvidenceHandler } from './evidence/checklist-reprova.handler';
+import type { EvidenceHandler } from './evidence/evidence.handler';
 import { MedidorEvidenceHandler } from './evidence/medidor.handler';
 import { UploadEvidenceLinkService } from './evidence/upload-evidence-link.service';
+import { ChecklistPhotoReconcileJob } from './jobs/checklist-photo-reconcile.job';
 import { StorageFactory } from './storage/storage.factory';
 import { UploadController } from './upload.controller';
 import { UploadRegistry } from './upload.registry';
@@ -33,6 +36,7 @@ const EVIDENCE_HANDLERS = [
     ListUploadTypesUseCase,
     UploadRegistry,
     UploadEvidenceLinkService,
+    ChecklistPhotoReconcileJob,
     StorageFactory,
     ...EVIDENCE_HANDLERS,
     { provide: UPLOAD_PROCESSOR, useExisting: UploadService },

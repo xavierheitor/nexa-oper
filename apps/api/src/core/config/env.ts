@@ -12,15 +12,19 @@ const csvOrJsonArray = z
   .string()
   .optional()
   .transform((v) => {
-    if (!v) return undefined;
+    if (!v) {
+      return [];
+    }
     const trimmed = v.trim();
-    if (!trimmed) return undefined;
+    if (!trimmed) {
+      return [];
+    }
 
     // JSON array: ["https://a.com","https://b.com"]
     if (trimmed.startsWith('[')) {
       try {
         const arr: unknown = JSON.parse(trimmed);
-        if (Array.isArray(arr)) return arr.map(String);
+        if (Array.isArray(arr)) {return arr.map(String);}
       } catch {
         // cai pro CSV
       }
@@ -76,17 +80,53 @@ export const envSchema = z.object({
   UPLOAD_ROOT: z
     .string()
     .optional()
-    .transform((v) => v?.trim() || undefined),
+    .transform((v) => {
+      const trimmed = v?.trim();
+      return trimmed && trimmed.length > 0 ? trimmed : undefined;
+    }),
   UPLOAD_LEGACY_ROOTS: csvOrJsonArray,
   UPLOAD_BASE_URL: z
     .string()
     .optional()
-    .transform((v) => v?.trim() || undefined),
+    .transform((v) => {
+      const trimmed = v?.trim();
+      return trimmed && trimmed.length > 0 ? trimmed : undefined;
+    }),
   UPLOAD_MAX_FILE_SIZE_BYTES: z.coerce
     .number()
     .int()
     .positive()
     .default(10_485_760),
+
+  // Reconciliacao de fotos de checklist (job agendado)
+  CHECKLIST_PHOTO_RECONCILE_ENABLED: bool.default(false),
+  CHECKLIST_PHOTO_RECONCILE_INTERVAL_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(300_000),
+  CHECKLIST_PHOTO_RECONCILE_STARTUP_DELAY_MS: z.coerce
+    .number()
+    .int()
+    .nonnegative()
+    .default(45_000),
+  CHECKLIST_PHOTO_RECONCILE_LOCK_TTL_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(240_000),
+  CHECKLIST_PHOTO_RECONCILE_MAX_FILES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(200),
+  CHECKLIST_PHOTO_RECONCILE_MAX_RESPONSES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(500),
+  // Opcional: roots customizados (CSV/JSON). Cada root deve apontar para a pasta base de uploads.
+  CHECKLIST_PHOTO_RECONCILE_SCAN_ROOTS: csvOrJsonArray,
 });
 
 export type Env = z.infer<typeof envSchema>;

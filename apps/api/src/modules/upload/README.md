@@ -71,3 +71,17 @@ Variáveis principais:
 ## Contratos públicos
 
 - `src/contracts/upload/upload.contract.ts`
+
+## Reconciliacao automatica (opcional)
+
+Existe um job interno (`ChecklistPhotoReconcileJob`) para regularizacao de fotos de checklist quando houver divergencia entre arquivo e status no banco.
+
+Variaveis:
+
+- `CHECKLIST_PHOTO_RECONCILE_ENABLED`
+- `CHECKLIST_PHOTO_RECONCILE_INTERVAL_MS`
+- `CHECKLIST_PHOTO_RECONCILE_STARTUP_DELAY_MS`
+- `CHECKLIST_PHOTO_RECONCILE_LOCK_TTL_MS`
+- `CHECKLIST_PHOTO_RECONCILE_MAX_FILES`
+- `CHECKLIST_PHOTO_RECONCILE_MAX_RESPONSES`
+- `CHECKLIST_PHOTO_RECONCILE_SCAN_ROOTS` (opcional)
