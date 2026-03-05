@@ -42,9 +42,12 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
     }
     const { turnoId, checklistPerguntaId, checklistRespostaId } =
       ctx.metadata ?? {};
+    const parsedTurnoId = this.parseOptionalInt(turnoId);
+    const parsedPerguntaId = this.parseOptionalInt(checklistPerguntaId);
+    const parsedRespostaId = this.parseOptionalInt(checklistRespostaId);
     if (
-      turnoId == null ||
-      (checklistPerguntaId == null && checklistRespostaId == null)
+      parsedTurnoId == null ||
+      (parsedPerguntaId == null && parsedRespostaId == null)
     ) {
       throw AppError.validation(
         'turnoId e (checklistPerguntaId ou checklistRespostaId) são obrigatórios para vincular a foto à reprova específica',
@@ -75,7 +78,8 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
       checklistRespostaId?: number;
       checklistPreenchidoId?: number;
     };
-    if (turnoId == null) return null;
+    const parsedTurnoId = this.parseOptionalInt(turnoId);
+    if (parsedTurnoId == null) return null;
 
     const perguntaId = this.parseOptionalInt(checklistPerguntaId);
     const respostaId = this.parseOptionalInt(checklistRespostaId);
@@ -84,7 +88,7 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
     if (perguntaId == null && respostaId == null) return null;
 
     return {
-      turnoId: Number(turnoId),
+      turnoId: parsedTurnoId,
       checklistPerguntaId: perguntaId,
       checklistRespostaId: respostaId,
       checklistPreenchidoId: preenchidoId,
@@ -93,13 +97,19 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
 
   private parseOptionalInt(value: unknown): number | null {
     if (value == null) return null;
-    if (typeof value !== 'number' && typeof value !== 'string') return null;
-    const parsed =
-      typeof value === 'number'
-        ? Math.trunc(value)
-        : Number.parseInt(value, 10);
-    if (!Number.isFinite(parsed) || parsed <= 0) return null;
-    return parsed;
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value)) return null;
+      const parsed = Math.trunc(value);
+      return parsed > 0 ? parsed : null;
+    }
+    if (typeof value === 'string') {
+      const normalized = value.trim();
+      if (!/^\d+$/.test(normalized)) return null;
+      const parsed = Number(normalized);
+      if (!Number.isSafeInteger(parsed) || parsed <= 0) return null;
+      return parsed;
+    }
+    return null;
   }
 
   private mapChecklistFotoToUploadResult(photo: {
@@ -311,38 +321,32 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
     );
     if (!checklistPreenchido) {
       this.logger.warn(
-        'Checklist preenchido não encontrado. Foto salva em UploadEvidence, mas sem vínculo.',
+        'Checklist preenchido não encontrado para checklist-reprova',
         {
           entityId: ctx.entityId,
           turnoId: meta.turnoId,
           checklistPreenchidoId: meta.checklistPreenchidoId,
         },
       );
-      await this.persistEvidenceRecord({
-        ctx,
-        result: upload,
-        fingerprint,
-      });
-      return upload;
+      throw AppError.notFound(
+        'Checklist preenchido não encontrado para vincular foto de reprova',
+      );
     }
 
     const resposta = await this.buscarResposta(checklistPreenchido.id, meta);
 
     if (!resposta) {
       this.logger.warn(
-        'Resposta não encontrada. Foto salva em UploadEvidence, mas sem vínculo.',
+        'Resposta de checklist não encontrada para checklist-reprova',
         {
           checklistPreenchidoId: checklistPreenchido.id,
           perguntaId: meta.checklistPerguntaId,
           checklistRespostaId: meta.checklistRespostaId,
         },
       );
-      await this.persistEvidenceRecord({
-        ctx,
-        result: upload,
-        fingerprint,
-      });
-      return upload;
+      throw AppError.notFound(
+        'Resposta de checklist não encontrada para vincular foto de reprova',
+      );
     }
 
     if (fingerprint) {
@@ -440,19 +444,24 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
     metadataChecklistPreenchidoId: number | null,
   ) {
     const normalizedEntityId = entityId.trim();
-    const parsedId = Number.parseInt(normalizedEntityId, 10);
-
-    if (Number.isFinite(parsedId) && parsedId > 0) {
-      const byId = await this.prisma.checklistPreenchido.findFirst({
-        where: { id: parsedId, turnoId, deletedAt: null },
-      });
-      if (byId) return byId;
+    if (normalizedEntityId.length === 0) {
+      return null;
     }
 
     const byUuid = await this.prisma.checklistPreenchido.findFirst({
       where: { uuid: normalizedEntityId, turnoId, deletedAt: null },
     });
     if (byUuid) return byUuid;
+
+    if (/^\d+$/.test(normalizedEntityId)) {
+      const parsedId = Number(normalizedEntityId);
+      if (Number.isSafeInteger(parsedId) && parsedId > 0) {
+        const byId = await this.prisma.checklistPreenchido.findFirst({
+          where: { id: parsedId, turnoId, deletedAt: null },
+        });
+        if (byId) return byId;
+      }
+    }
 
     if (metadataChecklistPreenchidoId != null) {
       return this.prisma.checklistPreenchido.findFirst({
