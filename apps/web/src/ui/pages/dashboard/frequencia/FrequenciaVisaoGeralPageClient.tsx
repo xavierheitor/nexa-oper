@@ -50,6 +50,8 @@ interface TurnoEquipeRow {
   equipeNome?: string;
   tipoEquipeNome?: string;
   baseNome?: string;
+  kmInicio?: number;
+  kmFim?: number | null;
   eletricistas?: Array<{
     id: number;
     nome: string;
@@ -79,6 +81,8 @@ interface TurnoEquipeHistoricoRow {
   veiculoPlaca?: string;
   veiculoModelo?: string;
   equipeNome?: string;
+  kmInicio?: number;
+  kmFim?: number | null;
   eletricistasAbertura: Array<{
     id: number;
     nome: string;
@@ -531,6 +535,8 @@ export default function FrequenciaVisaoGeralPageClient({
         veiculoPlaca: turno.veiculoPlaca,
         veiculoModelo: turno.veiculoModelo,
         equipeNome: turno.equipeNome,
+        kmInicio: turno.kmInicio,
+        kmFim: turno.kmFim,
         eletricistasAbertura: turno.eletricistas || [],
         eletricistasEscala: escalados
           ? Array.from(escalados.eletricistas.values())
@@ -681,6 +687,21 @@ export default function FrequenciaVisaoGeralPageClient({
           record.veiculoPlaca
             ? `${record.veiculoPlaca}${record.veiculoModelo ? ` - ${record.veiculoModelo}` : ''}`
             : '-',
+      },
+      {
+        title: 'Km do Turno',
+        key: 'kmTurno',
+        render: (_: unknown, record) => {
+          if (record.status === 'PREVISTO') return '-';
+          if (record.kmInicio != null && record.kmFim != null) {
+            const diferenca = record.kmFim - record.kmInicio;
+            return `${diferenca > 0 ? diferenca : 0} km`;
+          }
+          if (record.kmInicio != null) {
+            return `Pendente (${record.kmInicio} km)`;
+          }
+          return '-';
+        },
       },
       {
         title: 'Equipe',
