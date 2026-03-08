@@ -689,16 +689,23 @@ export default function FrequenciaVisaoGeralPageClient({
             : '-',
       },
       {
-        title: 'Km do Turno',
-        key: 'kmTurno',
+        title: 'KM Início',
+        key: 'kmInicio',
         render: (_: unknown, record) => {
           if (record.status === 'PREVISTO') return '-';
-          if (record.kmInicio != null && record.kmFim != null) {
-            const diferenca = record.kmFim - record.kmInicio;
-            return `${diferenca > 0 ? diferenca : 0} km`;
-          }
           if (record.kmInicio != null) {
-            return `Pendente (${record.kmInicio} km)`;
+            return `${record.kmInicio}`;
+          }
+          return '-';
+        },
+      },
+      {
+        title: 'KM Final',
+        key: 'kmFim',
+        render: (_: unknown, record) => {
+          if (record.status === 'PREVISTO') return '-';
+          if (record.kmFim != null) {
+            return `${record.kmFim}`;
           }
           return '-';
         },
