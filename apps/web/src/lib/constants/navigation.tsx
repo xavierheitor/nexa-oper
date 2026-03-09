@@ -276,11 +276,6 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
         label: 'Materiais',
         path: '/dashboard/atividades/materiais',
       },
-      {
-        key: '/dashboard/atividades/causas-improdutivas',
-        label: 'Causas Improdutivas',
-        path: '/dashboard/atividades/causas-improdutivas',
-      },
     ],
   },
   {
