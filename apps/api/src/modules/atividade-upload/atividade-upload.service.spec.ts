@@ -97,7 +97,7 @@ describe('AtividadeUploadService', () => {
       logger as never,
     );
 
-    return { service, prisma, tx, logger };
+    return { service, prisma, tx, storage, logger };
   };
 
   it('locks the execution row and deduplicates duplicated event signatures', async () => {
@@ -137,6 +137,52 @@ describe('AtividadeUploadService', () => {
         totalEventosPersistidos: 1,
         totalDuplicadosIgnorados: 1,
       }),
+    );
+  });
+
+  it('reuses the canonical photo and removes the redundant uploaded file on checksum race', async () => {
+    const { service, prisma, storage } = makeSut();
+
+    prisma.atividadeFoto.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 901 });
+    storage.upload.mockResolvedValue({
+      path: 'atividades/550e8400-e29b-41d4-a716-446655440000/fotos/1-foto.jpg',
+      url: '/uploads/atividades/550e8400-e29b-41d4-a716-446655440000/fotos/1-foto.jpg',
+      size: 3,
+      mimeType: 'image/jpeg',
+    });
+    prisma.atividadeFoto.create.mockRejectedValue({
+      code: 'P2002',
+      meta: { constraint: 'uq_atividade_foto_exec_checksum' },
+      message: 'Unique constraint failed on the constraint: `uq_atividade_foto_exec_checksum`',
+    });
+
+    await expect(
+      service.persistUpload(
+        {
+          ...payload,
+          eventos: [],
+          fotos: [
+            {
+              ref: 'foto-1',
+              fileName: 'foto.jpg',
+              mimeType: 'image/jpeg',
+              base64: 'YWJj',
+            },
+          ],
+        },
+        55,
+      ),
+    ).resolves.toMatchObject({
+      status: 'ok',
+      atividadeExecucaoId: 77,
+      savedPhotos: 1,
+    });
+
+    expect(prisma.atividadeFoto.create).toHaveBeenCalledTimes(1);
+    expect(storage.delete).toHaveBeenCalledWith(
+      'atividades/550e8400-e29b-41d4-a716-446655440000/fotos/1-foto.jpg',
     );
   });
 });

@@ -59,16 +59,10 @@ export async function validateAbrirTurno(
 
   await lockTurnoResourcesForOpen(dto, prisma);
 
-  const inicio = dto.dataInicio ?? new Date();
-  const inicioDia = new Date(inicio);
-  inicioDia.setHours(0, 0, 0, 0);
-  const fimDia = new Date(inicio);
-  fimDia.setHours(23, 59, 59, 999);
   const eletricistaIds = dto.eletricistas.map((e) => e.eletricistaId);
   const conflito = await prisma.turno.findFirst({
     where: {
       dataFim: null,
-      dataInicio: { gte: inicioDia, lte: fimDia },
       OR: [
         { veiculoId: dto.veiculoId },
         { equipeId: dto.equipeId },
@@ -86,7 +80,7 @@ export async function validateAbrirTurno(
   });
   if (conflito) {
     throw AppError.conflict(
-      'Já existe um turno aberto para o veículo, equipe ou eletricista neste dia',
+      'Já existe um turno aberto para o veículo, equipe ou eletricista',
     );
   }
 }

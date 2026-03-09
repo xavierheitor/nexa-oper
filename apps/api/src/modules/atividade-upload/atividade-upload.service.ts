@@ -924,30 +924,121 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
         size: buffer.length,
         path: storagePath,
       });
+      try {
+        const created = await this.prisma.atividadeFoto.create({
+          data: {
+            atividadeExecucaoId,
+            atividadeUuid,
+            ref: item.ref,
+            contexto: item.contexto,
+            checksum,
+            mimeType,
+            fileName: safeFilename,
+            fileSize: buffer.length,
+            storagePath: uploaded.path,
+            url: uploaded.url,
+            capturedAt: parseDateOrNull(item.photo.capturedAt),
+            createdBy,
+          },
+          select: { id: true, storagePath: true },
+        });
 
-      const created = await this.prisma.atividadeFoto.create({
-        data: {
+        createdPhotos.push({ id: created.id, path: created.storagePath });
+        out.set(item.ref, created.id);
+      } catch (error: unknown) {
+        if (!this.isAtividadeFotoChecksumDuplicateError(error)) {
+          throw error;
+        }
+
+        const canonicalPhoto = await this.prisma.atividadeFoto.findFirst({
+          where: {
+            atividadeExecucaoId,
+            checksum,
+            deletedAt: null,
+          },
+          select: { id: true },
+        });
+
+        if (!canonicalPhoto) {
+          throw error;
+        }
+
+        out.set(item.ref, canonicalPhoto.id);
+        await this.deleteRedundantUploadedPhoto(uploaded.path, {
           atividadeExecucaoId,
-          atividadeUuid,
-          ref: item.ref,
-          contexto: item.contexto,
           checksum,
-          mimeType,
-          fileName: safeFilename,
-          fileSize: buffer.length,
-          storagePath: uploaded.path,
-          url: uploaded.url,
-          capturedAt: parseDateOrNull(item.photo.capturedAt),
-          createdBy,
-        },
-        select: { id: true, storagePath: true },
-      });
-
-      createdPhotos.push({ id: created.id, path: created.storagePath });
-      out.set(item.ref, created.id);
+          atividadeUuid,
+        });
+      }
     }
 
     return out;
+  }
+
+  private isAtividadeFotoChecksumDuplicateError(error: unknown): boolean {
+    if (!error || typeof error !== 'object') return false;
+
+    const prismaError = error as {
+      code?: string;
+      meta?: Record<string, unknown>;
+      message?: string;
+    };
+
+    if (prismaError.code !== 'P2002') return false;
+
+    return (
+      this.containsConstraintHint(
+        prismaError.meta?.target,
+        'uq_atividade_foto_exec_checksum',
+      ) ||
+      this.containsConstraintHint(
+        prismaError.meta?.constraint,
+        'uq_atividade_foto_exec_checksum',
+      ) ||
+      this.containsConstraintHint(prismaError.message, 'checksum')
+    );
+  }
+
+  private containsConstraintHint(
+    value: unknown,
+    expectedHint: string,
+  ): boolean {
+    if (typeof value === 'string') {
+      return value.toLowerCase().includes(expectedHint.toLowerCase());
+    }
+
+    if (Array.isArray(value)) {
+      return value.some((item) =>
+        this.containsConstraintHint(item, expectedHint),
+      );
+    }
+
+    if (value && typeof value === 'object') {
+      return Object.values(value as Record<string, unknown>).some((item) =>
+        this.containsConstraintHint(item, expectedHint),
+      );
+    }
+
+    return false;
+  }
+
+  private async deleteRedundantUploadedPhoto(
+    storagePath: string,
+    context: {
+      atividadeExecucaoId: number;
+      checksum: string;
+      atividadeUuid: string;
+    },
+  ) {
+    try {
+      await this.storage.delete(storagePath);
+    } catch (error: unknown) {
+      this.logger.error(
+        'Falha ao remover arquivo duplicado de foto após corrida de upload de atividade',
+        error,
+        context,
+      );
+    }
   }
 
   private async cleanupCreatedPhotos(createdPhotos: StoredPhotoRecord[]) {

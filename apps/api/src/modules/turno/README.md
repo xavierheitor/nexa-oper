@@ -424,9 +424,9 @@ Retorna lista de turnos com detalhes (formato `TurnoDetalheDto[]`) no envelope p
 | Equipe existe                             | `Equipe não encontrada`                                                     |
 | Pelo menos um eletricista                 | `Pelo menos um eletricista é obrigatório`                                   |
 | Um eletricista como motorista             | `Informe um eletricista como motorista`                                     |
-| Sem conflito (veículo/equipe/eletricista) | `Já existe um turno aberto para o veículo, equipe ou eletricista neste dia` |
+| Sem conflito (veículo/equipe/eletricista) | `Já existe um turno aberto para o veículo, equipe ou eletricista` |
 
-Conflito: turno aberto (`dataFim` null) no mesmo dia (00:00–23:59) para o mesmo veículo, equipe ou qualquer eletricista informado.
+Conflito: qualquer turno aberto (`dataFim` null) para o mesmo veículo, equipe ou qualquer eletricista informado, independentemente da data de início.
 
 ### Fechamento
 

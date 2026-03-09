@@ -87,6 +87,10 @@ class TurnoTransactionPrismaFake {
     };
   }
 
+  seedOpenTurno(dto: AbrirTurnoRequestContract) {
+    this.createTurnoFromDto(dto);
+  }
+
   private createTx(txId: number) {
     return {
       $queryRaw: <T>(query: SqlQueryLike) => this.queryRaw<T>(txId, query),
@@ -278,10 +282,65 @@ describe('OpenTurnoUseCase (concurrency)', () => {
       code: 'CONFLICT',
       status: 409,
       message:
-        'Já existe um turno aberto para o veículo, equipe ou eletricista neste dia',
+        'Já existe um turno aberto para o veículo, equipe ou eletricista',
     });
 
     expect(repo.createTurno).toHaveBeenCalledTimes(1);
     expect(eventEmitter.emit).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects opening a new turno when the same resources already have an open turno from a previous day', async () => {
+    const prisma = new TurnoTransactionPrismaFake();
+    prisma.seedOpenTurno({
+      veiculoId: 1,
+      equipeId: 10,
+      kmInicio: 900,
+      dataInicio: new Date('2026-02-21T22:00:00.000Z'),
+      eletricistas: [{ eletricistaId: 100, motorista: true }],
+    });
+
+    const repo: Pick<TurnoRepositoryPort, 'createTurno'> = {
+      createTurno: jest.fn(),
+    };
+
+    const logger: Pick<AppLogger, 'operation'> = {
+      operation: jest.fn(),
+    };
+
+    const checklistPreenchidoService: Pick<
+      ChecklistPreenchidoService,
+      'salvarChecklistsDoTurno'
+    > = {
+      salvarChecklistsDoTurno: jest.fn(),
+    };
+
+    const eventEmitter: Pick<EventEmitter2, 'emit'> = {
+      emit: jest.fn(),
+    };
+
+    const useCase = new OpenTurnoUseCase(
+      repo as TurnoRepositoryPort,
+      prisma as unknown as PrismaService,
+      logger as AppLogger,
+      checklistPreenchidoService as ChecklistPreenchidoService,
+      eventEmitter as EventEmitter2,
+    );
+
+    await expect(
+      useCase.execute({
+        veiculoId: 1,
+        equipeId: 10,
+        kmInicio: 1000,
+        dataInicio: new Date('2026-02-22T10:00:00.000Z'),
+        eletricistas: [{ eletricistaId: 100, motorista: true }],
+      }),
+    ).rejects.toMatchObject({
+      code: 'CONFLICT',
+      status: 409,
+      message: 'Já existe um turno aberto para o veículo, equipe ou eletricista',
+    });
+
+    expect(repo.createTurno).not.toHaveBeenCalled();
+    expect(eventEmitter.emit).not.toHaveBeenCalled();
   });
 });
