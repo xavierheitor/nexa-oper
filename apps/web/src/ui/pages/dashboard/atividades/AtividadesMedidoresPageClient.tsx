@@ -1,6 +1,6 @@
 'use client';
 
-import { FileExcelOutlined } from '@ant-design/icons';
+import { EyeOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { listAtividadeMedidores } from '@/lib/actions/atividade/listMedidores';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useEntityData } from '@/lib/hooks/useEntityData';
@@ -14,6 +14,7 @@ import { App, Button, Card, Input, Space, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useState } from 'react';
+import AtividadeExecucaoDetalhesModal from './AtividadeExecucaoDetalhesModal';
 import AtividadesTableFilters from './AtividadesTableFilters';
 import { downloadCsvAsExcelFile, fetchAllPaginatedRows } from './exportUtils';
 
@@ -27,7 +28,11 @@ export default function AtividadesMedidoresPageClient({
   initialData,
 }: AtividadesMedidoresPageClientProps) {
   const { message } = App.useApp();
+  const [detalhesOpen, setDetalhesOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [selectedAtividadeId, setSelectedAtividadeId] = useState<number | null>(
+    null
+  );
   const fetchAtividadeMedidores = unwrapPaginatedFetcher(listAtividadeMedidores);
 
   const medidores = useEntityData<AtividadeMedidorListItem>({
@@ -180,6 +185,25 @@ export default function AtividadesMedidoresPageClient({
       render: (value: Date | string) =>
         new Date(value).toLocaleDateString('pt-BR'),
     },
+    {
+      title: 'Ações',
+      key: 'acoes',
+      width: 110,
+      fixed: 'right',
+      render: (_value, record) => (
+        <Button
+          type='link'
+          size='small'
+          icon={<EyeOutlined />}
+          onClick={() => {
+            setSelectedAtividadeId(record.atividadeExecucaoId);
+            setDetalhesOpen(true);
+          }}
+        >
+          Visualizar
+        </Button>
+      ),
+    },
   ];
 
   if (medidores.error) {
@@ -249,6 +273,15 @@ export default function AtividadesMedidoresPageClient({
         pagination={medidores.pagination}
         onChange={medidores.handleTableChange}
         scroll={{ x: 1850 }}
+      />
+
+      <AtividadeExecucaoDetalhesModal
+        open={detalhesOpen}
+        atividadeId={selectedAtividadeId}
+        onClose={() => {
+          setDetalhesOpen(false);
+          setSelectedAtividadeId(null);
+        }}
       />
     </Card>
   );

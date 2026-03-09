@@ -51,6 +51,12 @@ function formatDate(value?: Date | string | null) {
   return new Date(value).toLocaleDateString('pt-BR');
 }
 
+function getPrefixoFromPlaca(placa?: string | null) {
+  if (!placa) return '-';
+  const [prefixo] = placa.split('-');
+  return prefixo || placa;
+}
+
 function isImageMimeType(mimeType?: string | null) {
   return Boolean(mimeType?.toLowerCase().startsWith('image/'));
 }
@@ -634,6 +640,9 @@ export default function AtividadeExecucaoDetalhesModal({
           </Descriptions.Item>
           <Descriptions.Item label='Equipe'>
             {detalhe?.turno?.equipe?.nome || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label='Prefixo'>
+            {getPrefixoFromPlaca(detalhe?.turno?.veiculo?.placa)}
           </Descriptions.Item>
           <Descriptions.Item label='Placa'>
             {detalhe?.turno?.veiculo?.placa || '-'}

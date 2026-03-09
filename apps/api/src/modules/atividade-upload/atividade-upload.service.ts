@@ -1,9 +1,10 @@
 import { createHash } from 'crypto';
-import type { Prisma } from '@nexa-oper/db';
+import { Prisma } from '@nexa-oper/db';
 import { Inject, Injectable } from '@nestjs/common';
 import * as path from 'node:path';
 import type {
   AtividadeUploadAprContract,
+  AtividadeUploadEventoContract,
   AtividadeUploadPhotoContract,
   AtividadeUploadRequestContract,
   AtividadeUploadResponseContract,
@@ -69,6 +70,10 @@ function sha256Hex(buffer: Buffer): string {
 
 function sha256Text(value: string): string {
   return createHash('sha256').update(value).digest('hex');
+}
+
+function normalizeNumber(value?: number | null): string {
+  return value == null ? '' : String(value);
 }
 
 function inferMimeTypeFromDataUrl(base64: string): string | null {
@@ -210,6 +215,8 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
       );
 
       await this.prisma.$transaction(async (tx) => {
+        await this.lockAtividadeExecucaoForUpdate(tx, execucao.id);
+
         await this.persistMedidor(
           tx,
           execucao.id,
@@ -406,21 +413,17 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
     await tx.atividadeEvento.deleteMany({ where: { atividadeExecucaoId } });
     if (!payload.eventos?.length) return;
 
+    const eventosData = this.buildEventoCreateManyData(
+      atividadeExecucaoId,
+      payload.eventos,
+      createdBy,
+    );
+
+    if (!eventosData.length) return;
+
     await tx.atividadeEvento.createMany({
-      data: payload.eventos.map((e) => ({
-        atividadeExecucaoId,
-        tipoEvento: e.tipoEvento,
-        locationTrackId: e.locationTrackId ?? null,
-        latitude: e.latitude ?? null,
-        longitude: e.longitude ?? null,
-        accuracy: e.accuracy ?? null,
-        detalhe: normalizeString(e.detalhe),
-        capturadoEm: parseDateOrNull(e.capturadoEm) ?? new Date(),
-        signature: normalizeString(
-          `${e.tipoEvento}|${e.capturadoEm ?? ''}|${e.latitude ?? ''}|${e.longitude ?? ''}`,
-        ),
-        createdBy,
-      })),
+      data: eventosData,
+      skipDuplicates: true,
     });
   }
 
@@ -709,6 +712,98 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
     }
 
     return photoId;
+  }
+
+  private async lockAtividadeExecucaoForUpdate(
+    tx: Prisma.TransactionClient,
+    atividadeExecucaoId: number,
+  ) {
+    await tx.$queryRaw<{ id: number }[]>(Prisma.sql`
+      SELECT id
+      FROM AtividadeExecucao
+      WHERE id = ${atividadeExecucaoId}
+      FOR UPDATE
+    `);
+  }
+
+  private buildEventoCreateManyData(
+    atividadeExecucaoId: number,
+    eventos: AtividadeUploadEventoContract[],
+    createdBy: string,
+  ) {
+    const eventosBySignature = new Map<
+      string,
+      {
+        atividadeExecucaoId: number;
+        tipoEvento: string;
+        locationTrackId: number | null;
+        latitude: number | null;
+        longitude: number | null;
+        accuracy: number | null;
+        detalhe: string | null;
+        capturadoEm: Date;
+        signature: string;
+        createdBy: string;
+      }
+    >();
+    let duplicateCount = 0;
+
+    for (const evento of eventos) {
+      const capturadoEm = parseDateOrNull(evento.capturadoEm) ?? new Date();
+      const signature = this.buildEventoSignature(evento);
+      const current = {
+        atividadeExecucaoId,
+        tipoEvento: normalizeString(evento.tipoEvento) ?? evento.tipoEvento,
+        locationTrackId: evento.locationTrackId ?? null,
+        latitude: evento.latitude ?? null,
+        longitude: evento.longitude ?? null,
+        accuracy: evento.accuracy ?? null,
+        detalhe: normalizeString(evento.detalhe),
+        capturadoEm,
+        signature,
+        createdBy,
+      };
+
+      const existing = eventosBySignature.get(signature);
+      if (!existing) {
+        eventosBySignature.set(signature, current);
+        continue;
+      }
+
+      duplicateCount += 1;
+      eventosBySignature.set(signature, {
+        ...existing,
+        locationTrackId: existing.locationTrackId ?? current.locationTrackId,
+        latitude: existing.latitude ?? current.latitude,
+        longitude: existing.longitude ?? current.longitude,
+        accuracy: existing.accuracy ?? current.accuracy,
+        detalhe: existing.detalhe ?? current.detalhe,
+      });
+    }
+
+    if (duplicateCount > 0) {
+      this.logger.warn(
+        'Eventos duplicados detectados no payload de upload de atividade; mantendo uma linha por signature',
+        {
+          atividadeExecucaoId,
+          totalEventosRecebidos: eventos.length,
+          totalEventosPersistidos: eventosBySignature.size,
+          totalDuplicadosIgnorados: duplicateCount,
+        },
+      );
+    }
+
+    return [...eventosBySignature.values()];
+  }
+
+  private buildEventoSignature(evento: AtividadeUploadEventoContract): string {
+    const tipoEvento = normalizeString(evento.tipoEvento) ?? evento.tipoEvento;
+    const capturadoEm =
+      parseDateOrNull(evento.capturadoEm)?.toISOString() ??
+      normalizeString(evento.capturadoEm) ??
+      '';
+
+    return `${tipoEvento}|${capturadoEm}|${normalizeNumber(evento.latitude)}|${normalizeNumber(evento.longitude)}`;
   }
 
   private collectPhotos(
