@@ -48,6 +48,7 @@ import type { UserService } from '@/lib/services/auth/UserService';
 import { container } from '@/lib/services/common/registerServices';
 import { userCreateSchema } from '../../schemas/userSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireCreateUsersPermission } from '../common/permissionGuard';
 
 /**
  * Cria um novo usuário web
@@ -62,6 +63,8 @@ export const createUser = async (rawData: unknown) =>
   handleServerAction(
     userCreateSchema,
     async (data, session) => {
+      requireCreateUsersPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<UserService>('userService');
 

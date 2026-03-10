@@ -41,6 +41,7 @@ import type { UserService } from '@/lib/services/auth/UserService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireViewUsersPermission } from '../common/permissionGuard';
 
 // Schema para validação do ID
 const getUserSchema = z.object({
@@ -59,7 +60,9 @@ const getUserSchema = z.object({
 export const getUser = async (rawData: unknown) =>
   handleServerAction(
     getUserSchema,
-    async (data) => {
+    async (data, session) => {
+      requireViewUsersPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<UserService>('userService');
 

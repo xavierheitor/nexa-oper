@@ -41,6 +41,7 @@ import type { UserService } from '@/lib/services/auth/UserService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireDeleteUsersPermission } from '../common/permissionGuard';
 
 // Schema para validação do ID
 const deleteUserSchema = z.object({
@@ -60,6 +61,8 @@ export const deleteUser = async (rawData: unknown) =>
   handleServerAction(
     deleteUserSchema,
     async (data, session) => {
+      requireDeleteUsersPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<UserService>('userService');
 

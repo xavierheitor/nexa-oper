@@ -6,9 +6,17 @@ import { deleteUser } from '@/lib/actions/user/delete';
 import { listUsers } from '@/lib/actions/user/list';
 import { resetUserPassword } from '@/lib/actions/user/resetPassword';
 import { updateUser } from '@/lib/actions/user/update';
+import {
+  canCreateUsers,
+  canDeleteUsers,
+  canManageUserPermissions,
+  canResetUserPasswords,
+  canUpdateUsers,
+} from '@/lib/authz/user-access';
 import CrudPage from '@/lib/components/CrudPage';
-import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
+import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useHydrated } from '@/lib/hooks/useHydrated';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
 import { useEntityData } from '@/lib/hooks/useEntityData';
@@ -29,13 +37,25 @@ export default function UsuarioPageClient({
   initialData,
 }: UsuarioPageClientProps) {
   const controller = useCrudController<User>('usuarios');
+  const { user } = useAuth({ redirectToLogin: false });
   const [permissoesModalOpen, setPermissoesModalOpen] = useState(false);
   const [selectedUserForPermissoes, setSelectedUserForPermissoes] =
     useState<User | null>(null);
 
+  const userRoles = user?.roles || [];
+  const userPermissions = user?.permissions || [];
+  const canCreate = canCreateUsers(userRoles, userPermissions);
+  const canUpdate = canUpdateUsers(userRoles, userPermissions);
+  const canDelete = canDeleteUsers(userRoles, userPermissions);
+  const canResetPasswords = canResetUserPasswords(userRoles, userPermissions);
+  const canManagePermissions = canManageUserPermissions(
+    userRoles,
+    userPermissions
+  );
+
   const users = useEntityData<User>({
     key: 'usuarios',
-    fetcherAction: unwrapFetcher(listUsers),
+    fetcherAction: unwrapPaginatedFetcher(listUsers),
     paginationEnabled: true,
     initialData,
     initialParams: {
@@ -140,8 +160,9 @@ export default function UsuarioPageClient({
       },
     ],
     {
-      onEdit: controller.open,
-      onDelete: (item) =>
+      onEdit: canUpdate ? controller.open : undefined,
+      onDelete: canDelete
+        ? (item) =>
         controller
           .exec(
             () => deleteUser({ id: item.id }),
@@ -149,13 +170,15 @@ export default function UsuarioPageClient({
           )
           .finally(() => {
             users.mutate();
-          }),
+          })
+        : undefined,
       customActions: [
         {
           key: 'permissions',
           label: 'Permissões',
           icon: <KeyOutlined />,
           type: 'link',
+          visible: () => canManagePermissions,
           onClick: handleOpenPermissoes,
         },
         {
@@ -163,6 +186,7 @@ export default function UsuarioPageClient({
           label: 'Reset Senha',
           icon: <LockOutlined />,
           type: 'link',
+          visible: () => canResetPasswords,
           confirm: {
             title: 'Reset de Senha',
             description: 'Uma nova senha será gerada e enviada por email. Continuar?',
@@ -208,6 +232,7 @@ export default function UsuarioPageClient({
         formComponent={UserForm}
         onSubmit={handleSubmit}
         modalWidth={600}
+        hideAddButton={!canCreate}
       />
 
       <Modal

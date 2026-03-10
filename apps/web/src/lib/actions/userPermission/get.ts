@@ -2,7 +2,6 @@
 
 import {
   buildPermissionCatalogGroups,
-  canManageUserPermissions,
   type UserPermissionSummary,
 } from '@/lib/authz/user-permission-admin';
 import { prisma } from '@/lib/db/db.service';
@@ -14,6 +13,7 @@ import {
 } from '@/lib/types/permissions';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireManageUserPermissions } from '../common/permissionGuard';
 
 const getUserPermissionSummarySchema = z.object({
   userId: z.number().int().positive(),
@@ -23,14 +23,7 @@ export const getUserPermissionSummary = async (rawData: unknown) =>
   handleServerAction(
     getUserPermissionSummarySchema,
     async (data, session): Promise<UserPermissionSummary> => {
-      if (
-        !canManageUserPermissions(
-          session.user.roles || [],
-          session.user.permissions || [],
-        )
-      ) {
-        throw new Error('Você não tem permissão para gerenciar permissões.');
-      }
+      requireManageUserPermissions(session);
 
       const user = await prisma.user.findUnique({
         where: { id: data.userId },

@@ -1,6 +1,31 @@
 export type Permission =
   | 'dashboard:view'
   | 'registry:view'
+  | 'contratos:view'
+  | 'tipos-escala:view'
+  | 'horarios-equipe:view'
+  | 'tipos-equipe:view'
+  | 'tipos-veiculo:view'
+  | 'veiculos:view'
+  | 'cargos:view'
+  | 'supervisores:view'
+  | 'bases:view'
+  | 'tipos-justificativa:view'
+  | 'tipos-atividade:view'
+  | 'subtipos-atividade:view'
+  | 'materiais-catalogo:view'
+  | 'causas-improdutivas:view'
+  | 'formularios-atividade:view'
+  | 'formularios-atividade-pergunta:view'
+  | 'apr-perguntas:view'
+  | 'apr-opcoes:view'
+  | 'apr-grupos:view'
+  | 'apr-modelos:view'
+  | 'checklist-tipos:view'
+  | 'checklist-perguntas:view'
+  | 'checklist-opcoes:view'
+  | 'checklist-modelos:view'
+  | 'mobile-users:view'
   | 'shifts:view'
   | 'activities:view'
   | 'attendance:view'
@@ -47,6 +72,32 @@ export interface PermissionCatalogItem {
 export const PERMISSIONS = {
   DASHBOARD_VIEW: 'dashboard:view' as const,
   REGISTRY_VIEW: 'registry:view' as const,
+  CONTRATOS_VIEW: 'contratos:view' as const,
+  TIPOS_ESCALA_VIEW: 'tipos-escala:view' as const,
+  HORARIOS_EQUIPE_VIEW: 'horarios-equipe:view' as const,
+  TIPOS_EQUIPE_VIEW: 'tipos-equipe:view' as const,
+  TIPOS_VEICULO_VIEW: 'tipos-veiculo:view' as const,
+  VEICULOS_VIEW: 'veiculos:view' as const,
+  CARGOS_VIEW: 'cargos:view' as const,
+  SUPERVISORES_VIEW: 'supervisores:view' as const,
+  BASES_VIEW: 'bases:view' as const,
+  TIPOS_JUSTIFICATIVA_VIEW: 'tipos-justificativa:view' as const,
+  TIPOS_ATIVIDADE_VIEW: 'tipos-atividade:view' as const,
+  SUBTIPOS_ATIVIDADE_VIEW: 'subtipos-atividade:view' as const,
+  MATERIAIS_CATALOGO_VIEW: 'materiais-catalogo:view' as const,
+  CAUSAS_IMPRODUTIVAS_VIEW: 'causas-improdutivas:view' as const,
+  FORMULARIOS_ATIVIDADE_VIEW: 'formularios-atividade:view' as const,
+  FORMULARIOS_ATIVIDADE_PERGUNTA_VIEW:
+    'formularios-atividade-pergunta:view' as const,
+  APR_PERGUNTAS_VIEW: 'apr-perguntas:view' as const,
+  APR_OPCOES_VIEW: 'apr-opcoes:view' as const,
+  APR_GRUPOS_VIEW: 'apr-grupos:view' as const,
+  APR_MODELOS_VIEW: 'apr-modelos:view' as const,
+  CHECKLIST_TIPOS_VIEW: 'checklist-tipos:view' as const,
+  CHECKLIST_PERGUNTAS_VIEW: 'checklist-perguntas:view' as const,
+  CHECKLIST_OPCOES_VIEW: 'checklist-opcoes:view' as const,
+  CHECKLIST_MODELOS_VIEW: 'checklist-modelos:view' as const,
+  MOBILE_USERS_VIEW: 'mobile-users:view' as const,
   SHIFTS_VIEW: 'shifts:view' as const,
   ACTIVITIES_VIEW: 'activities:view' as const,
   ATTENDANCE_VIEW: 'attendance:view' as const,
@@ -113,6 +164,156 @@ export const PERMISSION_CATALOG: PermissionCatalogItem[] = [
     label: 'Ver cadastros',
     group: PERMISSION_GROUP_LABELS.registry,
     description: 'Acessa o módulo de cadastros.',
+  },
+  {
+    permission: PERMISSIONS.CONTRATOS_VIEW,
+    label: 'Ver contratos',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de contratos.',
+  },
+  {
+    permission: PERMISSIONS.TIPOS_ESCALA_VIEW,
+    label: 'Ver tipos de escala',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de tipos de escala.',
+  },
+  {
+    permission: PERMISSIONS.HORARIOS_EQUIPE_VIEW,
+    label: 'Ver catálogo de horários',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de catálogo de horários.',
+  },
+  {
+    permission: PERMISSIONS.TIPOS_EQUIPE_VIEW,
+    label: 'Ver tipos de equipe',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de tipos de equipe.',
+  },
+  {
+    permission: PERMISSIONS.TIPOS_VEICULO_VIEW,
+    label: 'Ver tipos de veículo',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de tipos de veículo.',
+  },
+  {
+    permission: PERMISSIONS.VEICULOS_VIEW,
+    label: 'Ver veículos',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de veículos.',
+  },
+  {
+    permission: PERMISSIONS.CARGOS_VIEW,
+    label: 'Ver cargos',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de cargos.',
+  },
+  {
+    permission: PERMISSIONS.SUPERVISORES_VIEW,
+    label: 'Ver supervisores',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de supervisores.',
+  },
+  {
+    permission: PERMISSIONS.BASES_VIEW,
+    label: 'Ver bases',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de bases.',
+  },
+  {
+    permission: PERMISSIONS.TIPOS_JUSTIFICATIVA_VIEW,
+    label: 'Ver tipos de justificativa',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de tipos de justificativa.',
+  },
+  {
+    permission: PERMISSIONS.TIPOS_ATIVIDADE_VIEW,
+    label: 'Ver tipos de atividade',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de tipos de atividade.',
+  },
+  {
+    permission: PERMISSIONS.SUBTIPOS_ATIVIDADE_VIEW,
+    label: 'Ver subtipos de atividade',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de subtipos de atividade.',
+  },
+  {
+    permission: PERMISSIONS.MATERIAIS_CATALOGO_VIEW,
+    label: 'Ver materiais',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de materiais.',
+  },
+  {
+    permission: PERMISSIONS.CAUSAS_IMPRODUTIVAS_VIEW,
+    label: 'Ver causas improdutivas',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de causas improdutivas.',
+  },
+  {
+    permission: PERMISSIONS.FORMULARIOS_ATIVIDADE_VIEW,
+    label: 'Ver formulários de atividade',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de formulários de atividade.',
+  },
+  {
+    permission: PERMISSIONS.FORMULARIOS_ATIVIDADE_PERGUNTA_VIEW,
+    label: 'Ver perguntas de formulário',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de perguntas de formulário de atividade.',
+  },
+  {
+    permission: PERMISSIONS.APR_PERGUNTAS_VIEW,
+    label: 'Ver perguntas APR',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de perguntas APR.',
+  },
+  {
+    permission: PERMISSIONS.APR_OPCOES_VIEW,
+    label: 'Ver opções APR',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de opções de resposta APR.',
+  },
+  {
+    permission: PERMISSIONS.APR_GRUPOS_VIEW,
+    label: 'Ver grupos APR',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de grupos de perguntas APR.',
+  },
+  {
+    permission: PERMISSIONS.APR_MODELOS_VIEW,
+    label: 'Ver modelos APR',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de modelos APR.',
+  },
+  {
+    permission: PERMISSIONS.CHECKLIST_TIPOS_VIEW,
+    label: 'Ver tipos de checklist',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de tipos de checklist.',
+  },
+  {
+    permission: PERMISSIONS.CHECKLIST_PERGUNTAS_VIEW,
+    label: 'Ver perguntas de checklist',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de perguntas de checklist.',
+  },
+  {
+    permission: PERMISSIONS.CHECKLIST_OPCOES_VIEW,
+    label: 'Ver opções de checklist',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de opções de checklist.',
+  },
+  {
+    permission: PERMISSIONS.CHECKLIST_MODELOS_VIEW,
+    label: 'Ver modelos de checklist',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de modelos de checklist.',
+  },
+  {
+    permission: PERMISSIONS.MOBILE_USERS_VIEW,
+    label: 'Ver usuários móveis',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de usuários móveis.',
   },
   {
     permission: PERMISSIONS.SHIFTS_VIEW,
@@ -283,6 +484,31 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   gerente: [
     PERMISSIONS.DASHBOARD_VIEW,
     PERMISSIONS.REGISTRY_VIEW,
+    PERMISSIONS.CONTRATOS_VIEW,
+    PERMISSIONS.TIPOS_ESCALA_VIEW,
+    PERMISSIONS.HORARIOS_EQUIPE_VIEW,
+    PERMISSIONS.TIPOS_EQUIPE_VIEW,
+    PERMISSIONS.TIPOS_VEICULO_VIEW,
+    PERMISSIONS.VEICULOS_VIEW,
+    PERMISSIONS.CARGOS_VIEW,
+    PERMISSIONS.SUPERVISORES_VIEW,
+    PERMISSIONS.BASES_VIEW,
+    PERMISSIONS.TIPOS_JUSTIFICATIVA_VIEW,
+    PERMISSIONS.TIPOS_ATIVIDADE_VIEW,
+    PERMISSIONS.SUBTIPOS_ATIVIDADE_VIEW,
+    PERMISSIONS.MATERIAIS_CATALOGO_VIEW,
+    PERMISSIONS.CAUSAS_IMPRODUTIVAS_VIEW,
+    PERMISSIONS.FORMULARIOS_ATIVIDADE_VIEW,
+    PERMISSIONS.FORMULARIOS_ATIVIDADE_PERGUNTA_VIEW,
+    PERMISSIONS.APR_PERGUNTAS_VIEW,
+    PERMISSIONS.APR_OPCOES_VIEW,
+    PERMISSIONS.APR_GRUPOS_VIEW,
+    PERMISSIONS.APR_MODELOS_VIEW,
+    PERMISSIONS.CHECKLIST_TIPOS_VIEW,
+    PERMISSIONS.CHECKLIST_PERGUNTAS_VIEW,
+    PERMISSIONS.CHECKLIST_OPCOES_VIEW,
+    PERMISSIONS.CHECKLIST_MODELOS_VIEW,
+    PERMISSIONS.MOBILE_USERS_VIEW,
     PERMISSIONS.SHIFTS_VIEW,
     PERMISSIONS.ACTIVITIES_VIEW,
     PERMISSIONS.ATTENDANCE_VIEW,

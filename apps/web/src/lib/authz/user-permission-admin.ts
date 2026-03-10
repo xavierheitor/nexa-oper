@@ -1,5 +1,5 @@
+import { canManageUserPermissions } from './user-access';
 import {
-  PERMISSIONS,
   PERMISSION_CATALOG,
   type Permission,
   type PermissionCatalogItem,
@@ -43,13 +43,4 @@ export function buildPermissionCatalogGroups(): PermissionCatalogGroup[] {
   }));
 }
 
-export function canManageUserPermissions(
-  roles: Role[],
-  permissions: Permission[],
-): boolean {
-  return (
-    roles.includes('admin') ||
-    permissions.includes(PERMISSIONS.USUARIO_MANAGE) ||
-    permissions.includes(PERMISSIONS.USERS_UPDATE)
-  );
-}
+export { canManageUserPermissions };

@@ -48,6 +48,7 @@ import type { UserService } from '@/lib/services/auth/UserService';
 import { container } from '@/lib/services/common/registerServices';
 import { userUpdateSchema } from '../../schemas/userSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireUpdateUsersPermission } from '../common/permissionGuard';
 
 /**
  * Atualiza um usuário web existente
@@ -62,6 +63,8 @@ export const updateUser = async (rawData: unknown) =>
   handleServerAction(
     userUpdateSchema,
     async (data, session) => {
+      requireUpdateUsersPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<UserService>('userService');
 
