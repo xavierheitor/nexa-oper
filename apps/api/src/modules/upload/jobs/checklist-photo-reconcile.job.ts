@@ -271,21 +271,16 @@ export class ChecklistPhotoReconcileJob
       now.getTime() + env.CHECKLIST_PHOTO_RECONCILE_LOCK_TTL_MS,
     );
 
-    try {
-      await this.prisma.jobLock.create({
-        data: {
-          jobName: JOB_NAME,
-          lockedAt: null,
-          lockedBy: null,
-          expiresAt: null,
-        },
-      });
-    } catch (error: unknown) {
-      const e = error as { code?: string };
-      if (e.code !== 'P2002') {
-        throw error;
-      }
-    }
+    await this.prisma.jobLock.upsert({
+      where: { jobName: JOB_NAME },
+      update: {},
+      create: {
+        jobName: JOB_NAME,
+        lockedAt: null,
+        lockedBy: null,
+        expiresAt: null,
+      },
+    });
 
     const claim = await this.prisma.jobLock.updateMany({
       where: {

@@ -1,11 +1,13 @@
 'use client';
 
 import AuthGuard from '@/lib/components/AuthGuard';
+import { getRequiredPermissionForPath } from '@/lib/constants/navigation';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import SessionRenewer from '@/ui/components/SessionRenewer';
 import SidebarMenu from '@/ui/components/SidebarMenu';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Button, Col, Layout, Row, Spin, theme } from 'antd';
+import { usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 
 const { Header, Content } = Layout;
@@ -19,8 +21,10 @@ export default function DashboardLayoutClient({
 }: DashboardLayoutClientProps) {
   const [collapsed, setCollapsed] = useState(false);
   const hydrated = useHydrated();
+  const pathname = usePathname();
 
   const { token } = theme.useToken();
+  const requiredPermission = getRequiredPermissionForPath(pathname);
 
   if (!hydrated) {
     return (
@@ -35,7 +39,7 @@ export default function DashboardLayoutClient({
   }
 
   return (
-    <AuthGuard>
+    <AuthGuard requiredPermission={requiredPermission}>
       <Layout
         style={{
           height: '100vh',

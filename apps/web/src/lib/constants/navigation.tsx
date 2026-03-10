@@ -15,6 +15,8 @@ import {
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
+import { PERMISSIONS } from '@/lib/types/permissions';
+import type { Permission } from '@/lib/types/permissions';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import type { MenuProps } from 'antd';
@@ -27,9 +29,52 @@ export interface MenuItemConfig {
   label: React.ReactNode | string;
   icon?: React.ReactNode;
   path?: string; // Se definido, envolve o label em um Link
+  pathPrefix?: string;
+  requiredPermission?: Permission;
   children?: MenuItemConfig[];
   onClick?: () => void;
 }
+
+interface RoutePermissionRule {
+  exact?: string;
+  prefix?: string;
+  permission: Permission;
+}
+
+const ROUTE_PERMISSION_RULES: RoutePermissionRule[] = [
+  {
+    prefix: '/dashboard/cadastro',
+    permission: PERMISSIONS.REGISTRY_VIEW,
+  },
+  {
+    prefix: '/dashboard/turnos',
+    permission: PERMISSIONS.SHIFTS_VIEW,
+  },
+  {
+    prefix: '/dashboard/atividades',
+    permission: PERMISSIONS.ACTIVITIES_VIEW,
+  },
+  {
+    prefix: '/dashboard/frequencia',
+    permission: PERMISSIONS.ATTENDANCE_VIEW,
+  },
+  {
+    prefix: '/dashboard/escalas',
+    permission: PERMISSIONS.SCHEDULES_VIEW,
+  },
+  {
+    prefix: '/dashboard/seguranca',
+    permission: PERMISSIONS.SAFETY_VIEW,
+  },
+  {
+    prefix: '/dashboard/relatorios',
+    permission: PERMISSIONS.REPORTS_VIEW,
+  },
+  {
+    exact: '/dashboard',
+    permission: PERMISSIONS.DASHBOARD_VIEW,
+  },
+];
 
 /**
  * Estrutura de dados do Menu Lateral
@@ -41,11 +86,15 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     icon: <DashboardOutlined />,
     label: 'Dashboard',
     path: '/dashboard',
+    pathPrefix: '/dashboard',
+    requiredPermission: PERMISSIONS.DASHBOARD_VIEW,
   },
   {
     key: 'cadastro',
     icon: <FormOutlined />,
     label: 'Cadastro',
+    pathPrefix: '/dashboard/cadastro',
+    requiredPermission: PERMISSIONS.REGISTRY_VIEW,
     children: [
       {
         icon: <FileProtectOutlined />,
@@ -243,6 +292,8 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     key: 'turnos-menu',
     icon: <ClockCircleOutlined />,
     label: 'Turnos',
+    pathPrefix: '/dashboard/turnos',
+    requiredPermission: PERMISSIONS.SHIFTS_VIEW,
     children: [
       {
         key: '/dashboard/turnos',
@@ -260,6 +311,8 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     key: 'atividades-dashboard-menu',
     icon: <AppstoreOutlined />,
     label: 'Atividades',
+    pathPrefix: '/dashboard/atividades',
+    requiredPermission: PERMISSIONS.ACTIVITIES_VIEW,
     children: [
       {
         key: '/dashboard/atividades/visao-geral',
@@ -282,6 +335,8 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     key: 'frequencia-menu',
     icon: <FileTextOutlined />,
     label: 'Frequência',
+    pathPrefix: '/dashboard/frequencia',
+    requiredPermission: PERMISSIONS.ATTENDANCE_VIEW,
     children: [
       {
         key: '/dashboard/frequencia/visao-geral',
@@ -310,6 +365,8 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     key: 'escalas-menu',
     icon: <CalendarOutlined />,
     label: 'Escalas',
+    pathPrefix: '/dashboard/escalas',
+    requiredPermission: PERMISSIONS.SCHEDULES_VIEW,
     children: [
       {
         key: '/dashboard/escalas/escala-equipe-periodo',
@@ -332,6 +389,8 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     key: 'seguranca-menu',
     icon: <SafetyOutlined />,
     label: 'Segurança',
+    pathPrefix: '/dashboard/seguranca',
+    requiredPermission: PERMISSIONS.SAFETY_VIEW,
     children: [
       {
         key: '/dashboard/seguranca/consulta-checklists',
@@ -354,6 +413,8 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     key: 'relatorios',
     icon: <BarChartOutlined />,
     label: 'Relatórios',
+    pathPrefix: '/dashboard/relatorios',
+    requiredPermission: PERMISSIONS.REPORTS_VIEW,
     children: [
       {
         key: '/dashboard/relatorios/bases',
@@ -437,6 +498,62 @@ export const getAntdMenuItems = (
       children,
     } as any;
   });
+};
+
+export const filterMenuByPermissions = (
+  config: MenuItemConfig[],
+  permissions: Permission[],
+  inheritedPermission?: Permission
+): MenuItemConfig[] => {
+  return config.flatMap(item => {
+    const requiredPermission = item.requiredPermission ?? inheritedPermission;
+    if (
+      requiredPermission &&
+      !permissions.includes(requiredPermission)
+    ) {
+      return [];
+    }
+
+    const children = item.children
+      ? filterMenuByPermissions(
+          item.children,
+          permissions,
+          requiredPermission
+        )
+      : undefined;
+
+    if (item.children && (!children || children.length === 0)) {
+      return [];
+    }
+
+    return [
+      {
+        ...item,
+        children,
+      },
+    ];
+  });
+};
+
+export const getRequiredPermissionForPath = (
+  pathname: string
+): Permission | undefined => {
+  const match = ROUTE_PERMISSION_RULES.find(rule => {
+    if (rule.exact) {
+      return pathname === rule.exact;
+    }
+
+    if (!rule.prefix) {
+      return false;
+    }
+
+    return (
+      pathname === rule.prefix ||
+      pathname.startsWith(`${rule.prefix}/`)
+    );
+  });
+
+  return match?.permission ?? PERMISSIONS.DASHBOARD_VIEW;
 };
 
 /**
