@@ -36,45 +36,82 @@ export interface MenuItemConfig {
 }
 
 interface RoutePermissionRule {
-  exact?: string;
-  prefix?: string;
-  permission: Permission;
+  permission?: Permission;
+  specificity: number;
+  type: 'exact' | 'prefix';
 }
 
-const ROUTE_PERMISSION_RULES: RoutePermissionRule[] = [
-  {
-    prefix: '/dashboard/cadastro',
-    permission: PERMISSIONS.REGISTRY_VIEW,
-  },
-  {
-    prefix: '/dashboard/turnos',
-    permission: PERMISSIONS.SHIFTS_VIEW,
-  },
-  {
-    prefix: '/dashboard/atividades',
-    permission: PERMISSIONS.ACTIVITIES_VIEW,
-  },
-  {
-    prefix: '/dashboard/frequencia',
-    permission: PERMISSIONS.ATTENDANCE_VIEW,
-  },
-  {
-    prefix: '/dashboard/escalas',
-    permission: PERMISSIONS.SCHEDULES_VIEW,
-  },
-  {
-    prefix: '/dashboard/seguranca',
-    permission: PERMISSIONS.SAFETY_VIEW,
-  },
-  {
-    prefix: '/dashboard/relatorios',
-    permission: PERMISSIONS.REPORTS_VIEW,
-  },
-  {
-    exact: '/dashboard',
-    permission: PERMISSIONS.DASHBOARD_VIEW,
-  },
-];
+const resolveRequiredPermission = (
+  item: MenuItemConfig,
+  inheritedPermission?: Permission
+): Permission | undefined => item.requiredPermission ?? inheritedPermission;
+
+const isPrefixMatch = (pathname: string, prefix: string): boolean =>
+  pathname === prefix || pathname.startsWith(`${prefix}/`);
+
+const getRoutePermissionRule = (
+  pathname: string,
+  items: MenuItemConfig[],
+  inheritedPermission?: Permission
+): RoutePermissionRule | undefined => {
+  let bestMatch: RoutePermissionRule | undefined;
+
+  for (const item of items) {
+    const permission = resolveRequiredPermission(item, inheritedPermission);
+
+    if (item.path === pathname) {
+      const match: RoutePermissionRule = {
+        permission,
+        specificity: item.path.length,
+        type: 'exact',
+      };
+
+      if (
+        !bestMatch ||
+        bestMatch.type !== 'exact' ||
+        match.specificity >= bestMatch.specificity
+      ) {
+        bestMatch = match;
+      }
+    }
+
+    if (item.pathPrefix && isPrefixMatch(pathname, item.pathPrefix)) {
+      const match: RoutePermissionRule = {
+        permission,
+        specificity: item.pathPrefix.length,
+        type: 'prefix',
+      };
+
+      if (
+        !bestMatch ||
+        (bestMatch.type === 'prefix' &&
+          match.specificity >= bestMatch.specificity)
+      ) {
+        bestMatch = match;
+      }
+    }
+
+    if (item.children) {
+      const childMatch = getRoutePermissionRule(
+        pathname,
+        item.children,
+        permission
+      );
+
+      if (
+        childMatch &&
+        (!bestMatch ||
+          childMatch.type === 'exact' ||
+          (bestMatch.type === 'prefix' &&
+            childMatch.specificity >= bestMatch.specificity))
+      ) {
+        bestMatch = childMatch;
+      }
+    }
+  }
+
+  return bestMatch;
+};
 
 /**
  * Estrutura de dados do Menu Lateral
@@ -86,7 +123,6 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     icon: <DashboardOutlined />,
     label: 'Dashboard',
     path: '/dashboard',
-    pathPrefix: '/dashboard',
     requiredPermission: PERMISSIONS.DASHBOARD_VIEW,
   },
   {
@@ -506,7 +542,10 @@ export const filterMenuByPermissions = (
   inheritedPermission?: Permission
 ): MenuItemConfig[] => {
   return config.flatMap(item => {
-    const requiredPermission = item.requiredPermission ?? inheritedPermission;
+    const requiredPermission = resolveRequiredPermission(
+      item,
+      inheritedPermission
+    );
     if (
       requiredPermission &&
       !permissions.includes(requiredPermission)
@@ -538,22 +577,7 @@ export const filterMenuByPermissions = (
 export const getRequiredPermissionForPath = (
   pathname: string
 ): Permission | undefined => {
-  const match = ROUTE_PERMISSION_RULES.find(rule => {
-    if (rule.exact) {
-      return pathname === rule.exact;
-    }
-
-    if (!rule.prefix) {
-      return false;
-    }
-
-    return (
-      pathname === rule.prefix ||
-      pathname.startsWith(`${rule.prefix}/`)
-    );
-  });
-
-  return match?.permission ?? PERMISSIONS.DASHBOARD_VIEW;
+  return getRoutePermissionRule(pathname, MENU_STRUCTURE)?.permission;
 };
 
 /**
