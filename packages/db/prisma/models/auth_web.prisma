@@ -15,6 +15,7 @@ model User {
   Session  Session[]
   Account  Account[]
   RoleUser RoleUser[]
+  UserPermissionGrant UserPermissionGrant[]
 
   @@index([username])
   @@index([email])
@@ -82,4 +83,22 @@ model RoleUser {
 
   roleId Int
   role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+}
+
+model UserPermissionGrant {
+  id Int @id @default(autoincrement())
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  permission String @db.VarChar(100)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+
+  @@unique([userId, permission], map: "uk_user_permission_grant")
+  @@index([userId], map: "idx_user_permission_grant_user")
+  @@index([permission], map: "idx_user_permission_grant_permission")
 }

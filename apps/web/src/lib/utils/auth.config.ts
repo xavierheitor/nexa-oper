@@ -39,7 +39,59 @@ import bcrypt from 'bcrypt'; // Biblioteca para criptografia de senhas
 import { type NextAuthOptions } from 'next-auth'; // Tipos do NextAuth
 import CredentialsProvider from 'next-auth/providers/credentials'; // Provedor de credenciais
 import { prisma } from '../db/db.service'; // Serviço de banco de dados
-import { getPermissionsByRoles, type Role } from '../types/permissions'; // Funções e tipos de permissões
+import {
+  isPermission,
+  normalizeRoles,
+  resolveEffectivePermissions,
+  type Permission,
+  type Role,
+} from '../types/permissions'; // Funções e tipos de permissões
+
+type AuthorizationSnapshot = {
+  roles: Role[];
+  permissions: Permission[];
+};
+
+function buildAuthorizationSnapshot(user: {
+  RoleUser: Array<{ role: { nome: string } }>;
+  UserPermissionGrant: Array<{ permission: string }>;
+}): AuthorizationSnapshot {
+  const roles = normalizeRoles(user.RoleUser.map((ru) => ru.role.nome));
+  const directPermissions = user.UserPermissionGrant
+    .map((grant) => grant.permission)
+    .filter(isPermission);
+
+  return {
+    roles,
+    permissions: resolveEffectivePermissions(roles, directPermissions),
+  };
+}
+
+async function loadAuthorizationSnapshot(
+  userId: number,
+): Promise<AuthorizationSnapshot | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      RoleUser: {
+        include: {
+          role: true,
+        },
+      },
+      UserPermissionGrant: {
+        select: {
+          permission: true,
+        },
+      },
+    },
+  });
+
+  if (!user || user.deletedAt) {
+    return null;
+  }
+
+  return buildAuthorizationSnapshot(user);
+}
 
 /**
  * Configuração principal do NextAuth
@@ -88,6 +140,11 @@ export const authOptions: NextAuthOptions = {
                 role: true, // Inclui dados do role
               },
             },
+            UserPermissionGrant: {
+              select: {
+                permission: true,
+              },
+            },
           },
         });
 
@@ -100,19 +157,15 @@ export const authOptions: NextAuthOptions = {
         // Se senha inválida, lança erro
         if (!isValid) throw new Error('Usuário ou senha inválidos!');
 
-        // Extrai os roles do usuário (nome do role em lowercase para compatibilidade)
-        const userRoles: Role[] = user.RoleUser.map(ru => ru.role.nome.toLowerCase() as Role);
-
-        // Mapeia os roles para permissões usando a função helper
-        const userPermissions = getPermissionsByRoles(userRoles);
+        const authorization = buildAuthorizationSnapshot(user);
 
         // Retorna dados do usuário para o NextAuth, incluindo roles e permissões
         return {
           id: user.id.toString(), // ID do usuário (convertido para string)
           username: user.username, // Nome de usuário
           email: user.email ?? '', // Email (com fallback para string vazia)
-          permissions: userPermissions, // Lista de permissões derivadas dos roles
-          roles: userRoles, // Lista de roles do usuário
+          permissions: authorization.permissions, // Lista de permissões efetivas
+          roles: authorization.roles, // Lista de roles do usuário
         };
       },
     }),
@@ -152,6 +205,8 @@ export const authOptions: NextAuthOptions = {
      * @returns Token JWT modificado com dados do usuário, roles e permissões
      */
     async jwt({ token, user, trigger }) {
+      const now = Date.now();
+
       // Se é o primeiro login (user existe), adiciona dados ao token
       if (user) {
         token.id = user.id; // ID do usuário
@@ -159,13 +214,28 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email; // Email do usuário
         token.permissions = user.permissions || []; // Permissões do usuário
         token.roles = user.roles || []; // Roles do usuário
-        token.lastActivity = Date.now(); // Timestamp da última atividade
+        token.lastActivity = now; // Timestamp da última atividade
+        token.permissionsRefreshedAt = now;
       }
 
       // Em toda requisição (trigger === 'update' ou undefined), atualiza lastActivity
       // Isso implementa a sliding session - renova a cada atividade
       if (trigger === 'update' || !trigger) {
-        token.lastActivity = Date.now();
+        token.lastActivity = now;
+      }
+
+      if (
+        token.id &&
+        (!token.permissionsRefreshedAt ||
+          now - token.permissionsRefreshedAt > 60_000)
+      ) {
+        const authorization = await loadAuthorizationSnapshot(Number(token.id));
+
+        if (authorization) {
+          token.permissions = authorization.permissions;
+          token.roles = authorization.roles;
+          token.permissionsRefreshedAt = now;
+        }
       }
 
       return token;

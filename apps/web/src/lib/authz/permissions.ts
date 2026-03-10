@@ -37,6 +37,13 @@ export interface UserPermissions {
   isAdmin: boolean;
 }
 
+export interface PermissionCatalogItem {
+  permission: Permission;
+  label: string;
+  group: string;
+  description: string;
+}
+
 export const PERMISSIONS = {
   DASHBOARD_VIEW: 'dashboard:view' as const,
   REGISTRY_VIEW: 'registry:view' as const,
@@ -75,6 +82,201 @@ export const ROLES = {
   USUARIO: 'usuario' as const,
   SUPERVISOR: 'supervisor' as const,
 } as const;
+
+export const ALL_PERMISSIONS = Object.values(PERMISSIONS) as Permission[];
+
+export const PERMISSION_GROUP_LABELS: Record<string, string> = {
+  dashboard: 'Dashboard',
+  registry: 'Cadastros',
+  shifts: 'Turnos',
+  activities: 'Atividades',
+  attendance: 'Frequência',
+  schedules: 'Escalas',
+  safety: 'Segurança',
+  reports: 'Relatórios',
+  apr: 'APR',
+  checklist: 'Checklist',
+  users: 'Usuários',
+  teams: 'Equipes',
+  electricians: 'Eletricistas',
+};
+
+export const PERMISSION_CATALOG: PermissionCatalogItem[] = [
+  {
+    permission: PERMISSIONS.DASHBOARD_VIEW,
+    label: 'Ver dashboard',
+    group: PERMISSION_GROUP_LABELS.dashboard,
+    description: 'Acessa a página inicial do dashboard.',
+  },
+  {
+    permission: PERMISSIONS.REGISTRY_VIEW,
+    label: 'Ver cadastros',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa o módulo de cadastros.',
+  },
+  {
+    permission: PERMISSIONS.SHIFTS_VIEW,
+    label: 'Ver turnos',
+    group: PERMISSION_GROUP_LABELS.shifts,
+    description: 'Acessa o módulo de turnos.',
+  },
+  {
+    permission: PERMISSIONS.ACTIVITIES_VIEW,
+    label: 'Ver atividades',
+    group: PERMISSION_GROUP_LABELS.activities,
+    description: 'Acessa o módulo de atividades.',
+  },
+  {
+    permission: PERMISSIONS.ATTENDANCE_VIEW,
+    label: 'Ver frequência',
+    group: PERMISSION_GROUP_LABELS.attendance,
+    description: 'Acessa o módulo de frequência.',
+  },
+  {
+    permission: PERMISSIONS.SCHEDULES_VIEW,
+    label: 'Ver escalas',
+    group: PERMISSION_GROUP_LABELS.schedules,
+    description: 'Acessa o módulo de escalas.',
+  },
+  {
+    permission: PERMISSIONS.SAFETY_VIEW,
+    label: 'Ver segurança',
+    group: PERMISSION_GROUP_LABELS.safety,
+    description: 'Acessa o módulo de segurança.',
+  },
+  {
+    permission: PERMISSIONS.REPORTS_VIEW,
+    label: 'Ver relatórios',
+    group: PERMISSION_GROUP_LABELS.reports,
+    description: 'Acessa o módulo de relatórios.',
+  },
+  {
+    permission: PERMISSIONS.APR_MANAGE,
+    label: 'Gerenciar APR',
+    group: PERMISSION_GROUP_LABELS.apr,
+    description: 'Administra recursos de APR.',
+  },
+  {
+    permission: PERMISSIONS.CHECKLIST_MANAGE,
+    label: 'Gerenciar checklist',
+    group: PERMISSION_GROUP_LABELS.checklist,
+    description: 'Administra recursos de checklist.',
+  },
+  {
+    permission: PERMISSIONS.RELATORIO_VIEW,
+    label: 'Ver relatório de segurança',
+    group: PERMISSION_GROUP_LABELS.safety,
+    description: 'Acessa relatórios do módulo de segurança.',
+  },
+  {
+    permission: PERMISSIONS.USUARIO_MANAGE,
+    label: 'Gerenciar usuários',
+    group: PERMISSION_GROUP_LABELS.users,
+    description: 'Concede acesso administrativo geral aos usuários web.',
+  },
+  {
+    permission: PERMISSIONS.USERS_VIEW,
+    label: 'Listar usuários',
+    group: PERMISSION_GROUP_LABELS.users,
+    description: 'Visualiza usuários web.',
+  },
+  {
+    permission: PERMISSIONS.USERS_CREATE,
+    label: 'Criar usuários',
+    group: PERMISSION_GROUP_LABELS.users,
+    description: 'Cria usuários web.',
+  },
+  {
+    permission: PERMISSIONS.USERS_UPDATE,
+    label: 'Editar usuários',
+    group: PERMISSION_GROUP_LABELS.users,
+    description: 'Edita usuários web e suas permissões.',
+  },
+  {
+    permission: PERMISSIONS.USERS_DELETE,
+    label: 'Excluir usuários',
+    group: PERMISSION_GROUP_LABELS.users,
+    description: 'Exclui usuários web.',
+  },
+  {
+    permission: PERMISSIONS.ESCALAS_VIEW,
+    label: 'Ver catálogo de escalas',
+    group: PERMISSION_GROUP_LABELS.schedules,
+    description: 'Visualiza recursos de escalas.',
+  },
+  {
+    permission: PERMISSIONS.ESCALAS_CREATE,
+    label: 'Criar escalas',
+    group: PERMISSION_GROUP_LABELS.schedules,
+    description: 'Cria escalas e itens relacionados.',
+  },
+  {
+    permission: PERMISSIONS.ESCALAS_UPDATE,
+    label: 'Editar escalas',
+    group: PERMISSION_GROUP_LABELS.schedules,
+    description: 'Edita escalas e itens relacionados.',
+  },
+  {
+    permission: PERMISSIONS.ESCALAS_DELETE,
+    label: 'Excluir escalas',
+    group: PERMISSION_GROUP_LABELS.schedules,
+    description: 'Exclui escalas e itens relacionados.',
+  },
+  {
+    permission: PERMISSIONS.ESCALAS_PUBLISH,
+    label: 'Publicar escalas',
+    group: PERMISSION_GROUP_LABELS.schedules,
+    description: 'Publica escalas para operação.',
+  },
+  {
+    permission: PERMISSIONS.ELETRICISTAS_VIEW,
+    label: 'Ver eletricistas',
+    group: PERMISSION_GROUP_LABELS.electricians,
+    description: 'Visualiza eletricistas.',
+  },
+  {
+    permission: PERMISSIONS.ELETRICISTAS_CREATE,
+    label: 'Criar eletricistas',
+    group: PERMISSION_GROUP_LABELS.electricians,
+    description: 'Cria eletricistas.',
+  },
+  {
+    permission: PERMISSIONS.ELETRICISTAS_UPDATE,
+    label: 'Editar eletricistas',
+    group: PERMISSION_GROUP_LABELS.electricians,
+    description: 'Edita eletricistas.',
+  },
+  {
+    permission: PERMISSIONS.ELETRICISTAS_DELETE,
+    label: 'Excluir eletricistas',
+    group: PERMISSION_GROUP_LABELS.electricians,
+    description: 'Exclui eletricistas.',
+  },
+  {
+    permission: PERMISSIONS.EQUIPES_VIEW,
+    label: 'Ver equipes',
+    group: PERMISSION_GROUP_LABELS.teams,
+    description: 'Visualiza equipes.',
+  },
+  {
+    permission: PERMISSIONS.EQUIPES_CREATE,
+    label: 'Criar equipes',
+    group: PERMISSION_GROUP_LABELS.teams,
+    description: 'Cria equipes.',
+  },
+  {
+    permission: PERMISSIONS.EQUIPES_UPDATE,
+    label: 'Editar equipes',
+    group: PERMISSION_GROUP_LABELS.teams,
+    description: 'Edita equipes.',
+  },
+  {
+    permission: PERMISSIONS.EQUIPES_DELETE,
+    label: 'Excluir equipes',
+    group: PERMISSION_GROUP_LABELS.teams,
+    description: 'Exclui equipes.',
+  },
+];
 
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   admin: Object.values(PERMISSIONS) as Permission[],
@@ -151,5 +353,44 @@ export function getPermissionsByRoles(roles: Role[]): Permission[] {
     rolePermissions.forEach((permission) => allPermissions.add(permission));
   });
 
-  return [...allPermissions];
+  return Array.from(allPermissions);
+}
+
+export function isPermission(value: string): value is Permission {
+  return ALL_PERMISSIONS.includes(value as Permission);
+}
+
+export function normalizeRoleName(value: string): Role | null {
+  const normalized = value.trim().toLowerCase();
+
+  if ((Object.values(ROLES) as string[]).includes(normalized)) {
+    return normalized as Role;
+  }
+
+  return null;
+}
+
+export function normalizeRoles(values: string[]): Role[] {
+  return Array.from(
+    new Set(
+      values
+        .map((value) => normalizeRoleName(value))
+        .filter((value): value is Role => value != null),
+    ),
+  );
+}
+
+export function resolveEffectivePermissions(
+  roles: Role[],
+  directPermissions: readonly string[] = [],
+): Permission[] {
+  const resolved = new Set<Permission>(getPermissionsByRoles(roles));
+
+  directPermissions.forEach((permission) => {
+    if (isPermission(permission)) {
+      resolved.add(permission);
+    }
+  });
+
+  return Array.from(resolved);
 }

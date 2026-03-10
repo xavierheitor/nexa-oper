@@ -122,6 +122,7 @@ declare module 'next-auth' {
     permissions: Permission[]; // Lista de permissões do usuário no token
     roles: Role[]; // Lista de roles do usuário no token
     lastActivity?: number; // Timestamp da última atividade (sliding session)
+    permissionsRefreshedAt?: number; // Timestamp da última atualização das permissões
   }
 }
 
@@ -156,5 +157,6 @@ declare module 'next-auth/jwt' {
     permissions: Permission[]; // Lista de permissões do usuário
     roles: Role[]; // Lista de roles do usuário
     lastActivity?: number; // Timestamp da última atividade (sliding session)
+    permissionsRefreshedAt?: number; // Timestamp da última atualização das permissões
   }
 }

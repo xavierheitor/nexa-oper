@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState } from 'react';
 import { createUser } from '@/lib/actions/user/create';
 import { deleteUser } from '@/lib/actions/user/delete';
 import { listUsers } from '@/lib/actions/user/list';
@@ -14,10 +15,11 @@ import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
-import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
+import { KeyOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import { User } from '@nexa-oper/db';
-import { Space, Spin, Tag } from 'antd';
+import { Modal, Space, Spin, Tag } from 'antd';
 import UserForm, { UserFormData } from '@/ui/pages/dashboard/cadastro/usuario/form';
+import PermissoesModal from '@/ui/pages/dashboard/cadastro/usuario/permissoesModal';
 
 interface UsuarioPageClientProps {
   initialData?: PaginatedResult<User>;
@@ -27,6 +29,9 @@ export default function UsuarioPageClient({
   initialData,
 }: UsuarioPageClientProps) {
   const controller = useCrudController<User>('usuarios');
+  const [permissoesModalOpen, setPermissoesModalOpen] = useState(false);
+  const [selectedUserForPermissoes, setSelectedUserForPermissoes] =
+    useState<User | null>(null);
 
   const users = useEntityData<User>({
     key: 'usuarios',
@@ -52,6 +57,11 @@ export default function UsuarioPageClient({
     onSuccess: () => users.mutate(),
     successMessage: 'Usuário salvo com sucesso!',
   });
+
+  const handleOpenPermissoes = (user: User) => {
+    setSelectedUserForPermissoes(user);
+    setPermissoesModalOpen(true);
+  };
 
   const columns = useTableColumnsWithActions<User>(
     [
@@ -142,6 +152,13 @@ export default function UsuarioPageClient({
           }),
       customActions: [
         {
+          key: 'permissions',
+          label: 'Permissões',
+          icon: <KeyOutlined />,
+          type: 'link',
+          onClick: handleOpenPermissoes,
+        },
+        {
           key: 'reset-password',
           label: 'Reset Senha',
           icon: <LockOutlined />,
@@ -181,15 +198,42 @@ export default function UsuarioPageClient({
   }
 
   return (
-    <CrudPage
-      title="Usuários"
-      entityKey="usuarios"
-      controller={controller}
-      entityData={users}
-      columns={columns}
-      formComponent={UserForm}
-      onSubmit={handleSubmit}
-      modalWidth={600}
-    />
+    <>
+      <CrudPage
+        title="Usuários"
+        entityKey="usuarios"
+        controller={controller}
+        entityData={users}
+        columns={columns}
+        formComponent={UserForm}
+        onSubmit={handleSubmit}
+        modalWidth={600}
+      />
+
+      <Modal
+        title="Gerenciar Permissões"
+        open={permissoesModalOpen}
+        onCancel={() => {
+          setPermissoesModalOpen(false);
+          setSelectedUserForPermissoes(null);
+        }}
+        footer={null}
+        destroyOnHidden
+        width={960}
+      >
+        {selectedUserForPermissoes && (
+          <PermissoesModal
+            userId={selectedUserForPermissoes.id}
+            userName={selectedUserForPermissoes.nome}
+            onSaved={() => {
+              users.mutate();
+              setPermissoesModalOpen(false);
+              setSelectedUserForPermissoes(null);
+            }}
+            controllerExec={controller.exec}
+          />
+        )}
+      </Modal>
+    </>
   );
 }
