@@ -4,7 +4,7 @@ import { createAtividadeFormPergunta } from '@/lib/actions/atividadeFormPergunta
 import { deleteAtividadeFormPergunta } from '@/lib/actions/atividadeFormPergunta/delete';
 import { listAtividadeFormPerguntas } from '@/lib/actions/atividadeFormPergunta/list';
 import { updateAtividadeFormPergunta } from '@/lib/actions/atividadeFormPergunta/update';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
@@ -59,7 +59,7 @@ export default function AtividadeFormularioPerguntaPageClient({
 
   const contratos = useEntityData<Contrato>({
     key: 'contratos-atividade-perguntas',
-    fetcherAction: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratosLookup),
     paginationEnabled: false,
     initialData: initialContratos,
     initialParams: {

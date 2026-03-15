@@ -4,7 +4,7 @@ import { Base, Cargo, Contrato } from '@nexa-oper/db';
 import { Button, DatePicker, Form, Input, Select, Spin, App } from 'antd';
 import { useEffect, useState } from 'react';
 import { listBases } from '@/lib/actions/base/list';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { listCargos } from '@/lib/actions/cargo/list';
 import { StatusEletricistaLabels } from '@/lib/schemas/eletricistaStatusSchema';
 import { errorHandler } from '@/lib/utils/errorHandler';
@@ -56,7 +56,7 @@ export default function EletricistaForm({
 
         // Carrega contratos, cargos e bases em paralelo
         const [contratosResponse, cargosResponse, basesResponse] = await Promise.all([
-          listContratos({
+          listContratosLookup({
             page: 1,
             pageSize: 100,
             orderBy: 'nome',

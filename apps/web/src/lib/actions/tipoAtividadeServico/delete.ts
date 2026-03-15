@@ -4,6 +4,7 @@ import type { TipoAtividadeServicoService } from '@/lib/services/catalogo/TipoAt
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireSubtiposAtividadePermission } from '../common/permissionGuard';
 
 const schema = z.object({ id: z.number().int().positive() });
 
@@ -11,6 +12,7 @@ export const deleteTipoAtividadeServico = async (rawData: unknown) =>
   handleServerAction(
     schema,
     async (data, session) => {
+      requireSubtiposAtividadePermission(session);
       const service = container.get<TipoAtividadeServicoService>(
         'tipoAtividadeServicoService'
       );

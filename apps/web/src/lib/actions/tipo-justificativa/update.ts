@@ -5,6 +5,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireTiposJustificativaPermission } from '../common/permissionGuard';
 import { container } from '../../services/common/registerServices';
 import type { TipoJustificativaService } from '../../services/justificativas/TipoJustificativaService';
 import { atualizarTipoJustificativaSchema } from '../../schemas/tipoJustificativaSchema';
@@ -16,6 +17,7 @@ export const updateTipoJustificativa = async (rawData: unknown) =>
   handleServerAction(
     atualizarTipoJustificativaSchema,
     async (data, session) => {
+      requireTiposJustificativaPermission(session);
       const service = container.get<TipoJustificativaService>('tipoJustificativaService');
       return service.update(data, session.user.id);
     },

@@ -47,6 +47,7 @@ import type { AprPerguntaService } from '@/lib/services/apr/AprPerguntaService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprPerguntaUpdateSchema } from '../../schemas/aprPerguntaSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprPerguntasPermission } from '../common/permissionGuard';
 
 /**
  * Server Action para atualizar pergunta APR existente
@@ -65,7 +66,7 @@ import { handleServerAction } from '../common/actionHandler';
  * @example
  * ```typescript
  * // Uso em componente de edição
- * const handleUpdate = async (formData) => {
+ * const handleUpdate = async (formData, session) => {
  *   const result = await updateAprPergunta({
  *     id: editingPergunta.id,
  *     nome: formData.nome
@@ -101,6 +102,7 @@ export const updateAprPergunta = async (rawData: unknown) =>
 
     // Lógica de negócio
     async (validatedData, session) => {
+      requireAprPerguntasPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprPerguntaService>('aprPerguntaService');
 

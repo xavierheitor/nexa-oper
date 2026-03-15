@@ -4,7 +4,7 @@ import { createMaterialCatalogo } from '@/lib/actions/materialCatalogo/create';
 import { deleteMaterialCatalogo } from '@/lib/actions/materialCatalogo/delete';
 import { listMateriaisCatalogo } from '@/lib/actions/materialCatalogo/list';
 import { updateMaterialCatalogo } from '@/lib/actions/materialCatalogo/update';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useCrudController } from '@/lib/hooks/useCrudController';
@@ -55,7 +55,7 @@ export default function MaterialCatalogoPageClient({
 
   const contratos = useEntityData<Contrato>({
     key: 'contratos-material-catalogo',
-    fetcherAction: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratosLookup),
     paginationEnabled: false,
     initialData: initialContratos,
     initialParams: {

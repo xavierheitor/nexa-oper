@@ -5,7 +5,7 @@ import { useState } from 'react';
 // Importações das Server Actions para buscar dados dos selects
 import { listEletricistas } from '@/lib/actions/eletricista/list';
 import { createEletricistasLote } from '@/lib/actions/eletricista/createLote';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { listCargos } from '@/lib/actions/cargo/list';
 import { listBases } from '@/lib/actions/base/list';
 import {
@@ -111,7 +111,7 @@ export default function EletricistaPageClient({
   // Hooks para dados necessários no formulário de lote
   const contratos = useEntityData<Contrato>({
     key: 'contratos-lote',
-    fetcherAction: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratosLookup),
     initialData: initialContratos,
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },

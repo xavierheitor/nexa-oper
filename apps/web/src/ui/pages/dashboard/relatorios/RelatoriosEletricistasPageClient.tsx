@@ -9,7 +9,7 @@ import EletricistasDetalhado from '@/ui/pages/dashboard/relatorios/eletricistas/
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { ErrorAlert } from '@/ui/components/ErrorAlert';
 import type { Contrato, Base } from '@nexa-oper/db';
 
@@ -46,7 +46,7 @@ export default function RelatoriosEletricistasPageClient({
     mutate: refetchContratos,
   } = useEntityData({
     key: 'relatorios-eletricistas-contratos',
-    fetcherAction: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratosLookup),
     paginationEnabled: false,
     initialData: initialContratos,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },

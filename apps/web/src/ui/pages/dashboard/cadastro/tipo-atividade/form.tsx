@@ -1,6 +1,6 @@
 'use client';
 
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { Contrato } from '@nexa-oper/db';
 import { Button, Form, Input, Select, Spin, App } from 'antd';
 import { useEffect, useState } from 'react';
@@ -26,7 +26,7 @@ export default function TipoAtividadeForm({ onSubmit, initialValues, loading = f
     const loadContratos = async () => {
       try {
         setLoadingSelects(true);
-        const contratosResponse = await listContratos({
+        const contratosResponse = await listContratosLookup({
           page: 1,
           pageSize: 100,
           orderBy: 'nome',

@@ -36,6 +36,7 @@ import type { TipoEquipeService } from '@/lib/services/infraestrutura/TipoEquipe
 import { container } from '@/lib/services/common/registerServices';
 import { tipoEquipeFilterSchema } from '../../schemas/tipoEquipeSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireTiposEquipePermission } from '../common/permissionGuard';
 
 /**
  * Lista tipos de equipe com paginação e filtros
@@ -46,7 +47,8 @@ import { handleServerAction } from '../common/actionHandler';
 export const listTiposEquipe = async (rawData: unknown) =>
   handleServerAction(
     tipoEquipeFilterSchema,
-    async (data) => {
+    async (data, session) => {
+      requireTiposEquipePermission(session);
       // Obtém o serviço do container
       const service = container.get<TipoEquipeService>('tipoEquipeService');
 

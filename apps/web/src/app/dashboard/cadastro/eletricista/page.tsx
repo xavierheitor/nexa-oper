@@ -1,6 +1,6 @@
 import { listBases } from '@/lib/actions/base/list';
 import { listCargos } from '@/lib/actions/cargo/list';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { listEletricistas } from '@/lib/actions/eletricista/list';
 import {
   type StatusEletricista,
@@ -30,7 +30,7 @@ export default async function EletricistaPage() {
           Status: true,
         },
       }),
-      listContratos({
+      listContratosLookup({
         page: 1,
         pageSize: 1000,
         orderBy: 'nome',

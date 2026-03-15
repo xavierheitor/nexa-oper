@@ -48,6 +48,7 @@ import type { AprService } from '@/lib/services/apr/AprService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprCreateSchema } from '../../schemas/aprSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprModelosPermission } from '../common/permissionGuard';
 
 /**
  * Server Action para criar nova APR
@@ -67,7 +68,7 @@ import { handleServerAction } from '../common/actionHandler';
  * @example
  * ```typescript
  * // Uso em componente React com Transfer
- * const handleSubmit = async (formData) => {
+ * const handleSubmit = async (formData, session) => {
  *   const result = await createApr({
  *     nome: formData.nome,
  *     perguntaIds: selectedPerguntas, // Do Transfer component
@@ -103,6 +104,7 @@ export const createApr = async (rawData: unknown) =>
 
     // Lógica de negócio
     async (validatedData, session) => {
+      requireAprModelosPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprService>('aprService');
 

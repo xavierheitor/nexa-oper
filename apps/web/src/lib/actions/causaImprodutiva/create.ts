@@ -4,11 +4,13 @@ import type { CausaImprodutivaService } from '@/lib/services/catalogo/CausaImpro
 import { container } from '@/lib/services/common/registerServices';
 import { causaImprodutivaCreateSchema } from '@/lib/schemas/causaImprodutivaSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireCausasImprodutivasPermission } from '../common/permissionGuard';
 
 export const createCausaImprodutiva = async (rawData: unknown) =>
   handleServerAction(
     causaImprodutivaCreateSchema,
     async (data, session) => {
+      requireCausasImprodutivasPermission(session);
       const service = container.get<CausaImprodutivaService>(
         'causaImprodutivaService'
       );

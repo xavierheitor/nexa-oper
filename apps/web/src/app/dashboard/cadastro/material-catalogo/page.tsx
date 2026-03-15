@@ -1,4 +1,4 @@
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { listMateriaisCatalogo } from '@/lib/actions/materialCatalogo/list';
 import type { PaginatedResult } from '@/lib/types/common';
 import MaterialCatalogoPageClient from '@/ui/pages/dashboard/cadastro/MaterialCatalogoPageClient';
@@ -18,7 +18,7 @@ export default async function MaterialCatalogoPage() {
       orderDir: 'desc',
       include: { contrato: true },
     }),
-    listContratos({
+    listContratosLookup({
       page: 1,
       pageSize: 1000,
       orderBy: 'nome',

@@ -4,11 +4,13 @@ import type { TipoChecklistService } from '@/lib/services/checklist/TipoChecklis
 import { container } from '@/lib/services/common/registerServices';
 import { tipoChecklistCreateSchema } from '../../schemas/tipoChecklistSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireTiposChecklistPermission } from '../common/permissionGuard';
 
 export const createTipoChecklist = async (rawData: unknown) =>
   handleServerAction(
     tipoChecklistCreateSchema,
     async (data, session) => {
+      requireTiposChecklistPermission(session);
       const service = container.get<TipoChecklistService>('tipoChecklistService');
       return service.create(data, session.user.id);
     },

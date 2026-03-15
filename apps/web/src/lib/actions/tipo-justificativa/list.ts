@@ -5,6 +5,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireTiposJustificativaPermission } from '../common/permissionGuard';
 import { container } from '../../services/common/registerServices';
 import type { TipoJustificativaService } from '../../services/justificativas/TipoJustificativaService';
 import { listarTiposJustificativaSchema } from '../../schemas/tipoJustificativaSchema';
@@ -16,7 +17,8 @@ import { z } from 'zod';
 export const listTiposJustificativa = async (rawData: unknown) =>
   handleServerAction(
     listarTiposJustificativaSchema,
-    async (data) => {
+    async (data, session) => {
+      requireTiposJustificativaPermission(session);
       const service = container.get<TipoJustificativaService>('tipoJustificativaService');
       return service.list(data);
     },
@@ -30,11 +32,11 @@ export const listTiposJustificativa = async (rawData: unknown) =>
 export const listAllTiposJustificativa = async (ativo?: boolean) =>
   handleServerAction(
     z.object({ ativo: z.boolean().optional() }),
-    async (data) => {
+    async (data, session) => {
+      requireTiposJustificativaPermission(session);
       const service = container.get<TipoJustificativaService>('tipoJustificativaService');
       return service.listAll(data.ativo);
     },
     { ativo },
     { entityName: 'TipoJustificativa', actionType: 'list' }
   );
-

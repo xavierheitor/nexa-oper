@@ -17,11 +17,13 @@ import {
   salvarMascarasSemanasSchema,
 } from '../../schemas/escalaSchemas';
 import { handleServerAction } from '../common/actionHandler';
+import { requireTiposEscalaPermission } from '../common/permissionGuard';
 
 export const createTipoEscala = async (rawData: unknown) =>
   handleServerAction(
     tipoEscalaCreateSchema,
     async (data, session) => {
+      requireTiposEscalaPermission(session);
       const service = container.get<TipoEscalaService>('tipoEscalaService');
       return service.create(data, session.user.id);
     },
@@ -33,6 +35,7 @@ export const updateTipoEscala = async (rawData: unknown) =>
   handleServerAction(
     tipoEscalaUpdateSchema,
     async (data, session) => {
+      requireTiposEscalaPermission(session);
       const service = container.get<TipoEscalaService>('tipoEscalaService');
       return service.update(data, session.user.id);
     },
@@ -43,7 +46,8 @@ export const updateTipoEscala = async (rawData: unknown) =>
 export const listTiposEscala = async (rawData: unknown) =>
   handleServerAction(
     tipoEscalaFilterSchema,
-    async data => {
+    async (data, session) => {
+      requireTiposEscalaPermission(session);
       const service = container.get<TipoEscalaService>('tipoEscalaService');
       return service.list(data);
     },
@@ -54,7 +58,8 @@ export const listTiposEscala = async (rawData: unknown) =>
 export const getTipoEscalaById = async (id: number) =>
   handleServerAction(
     z.object({}),
-    async () => {
+    async (_, session) => {
+      requireTiposEscalaPermission(session);
       const service = container.get<TipoEscalaService>('tipoEscalaService');
       return service.getById(id);
     },
@@ -66,6 +71,7 @@ export const deleteTipoEscala = async (id: number) =>
   handleServerAction(
     z.object({}),
     async (_, session) => {
+      requireTiposEscalaPermission(session);
       const service = container.get<TipoEscalaService>('tipoEscalaService');
       return service.delete(id, session.user.id);
     },
@@ -77,6 +83,7 @@ export const salvarPosicoesCiclo = async (rawData: unknown) =>
   handleServerAction(
     salvarPosicoesCicloSchema,
     async (data, session) => {
+      requireTiposEscalaPermission(session);
       const service = container.get<TipoEscalaService>('tipoEscalaService');
       return service.salvarPosicoesCiclo(data, session.user.id);
     },
@@ -88,10 +95,10 @@ export const salvarMascarasSemanas = async (rawData: unknown) =>
   handleServerAction(
     salvarMascarasSemanasSchema,
     async (data, session) => {
+      requireTiposEscalaPermission(session);
       const service = container.get<TipoEscalaService>('tipoEscalaService');
       return service.salvarMascarasSemanas(data, session.user.id);
     },
     rawData,
     { entityName: 'TipoEscalaSemanaMascara', actionType: 'create' }
   );
-

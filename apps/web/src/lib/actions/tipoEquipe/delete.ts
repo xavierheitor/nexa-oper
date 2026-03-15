@@ -32,6 +32,7 @@ import type { TipoEquipeService } from '@/lib/services/infraestrutura/TipoEquipe
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireTiposEquipePermission } from '../common/permissionGuard';
 
 // Schema para validação do ID do tipo a ser excluído
 const deleteTipoEquipeSchema = z.object({
@@ -48,6 +49,7 @@ export const deleteTipoEquipe = async (rawData: unknown) =>
   handleServerAction(
     deleteTipoEquipeSchema,
     async (data, session) => {
+      requireTiposEquipePermission(session);
       // Obtém o serviço do container
       const service = container.get<TipoEquipeService>('tipoEquipeService');
 

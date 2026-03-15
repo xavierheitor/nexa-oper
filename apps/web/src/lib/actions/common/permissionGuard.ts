@@ -23,6 +23,7 @@ import {
   canViewTeams,
   canViewVehicles,
 } from '@/lib/authz/registry-access';
+import { PERMISSIONS, type Permission } from '@/lib/authz/permissions';
 import {
   canCreateUsers,
   canDeleteUsers,
@@ -39,6 +40,19 @@ function getAuthorization(session: Session) {
   };
 }
 
+function hasAnyPermission(
+  session: Session,
+  requiredPermissions: readonly Permission[],
+): boolean {
+  const auth = getAuthorization(session);
+  return (
+    auth.roles.includes('admin') ||
+    requiredPermissions.some((permission) =>
+      auth.permissions.includes(permission),
+    )
+  );
+}
+
 function assertPermission(
   session: Session,
   predicate: (roles: Session['user']['roles'], permissions: Session['user']['permissions']) => boolean,
@@ -46,6 +60,16 @@ function assertPermission(
 ): void {
   const auth = getAuthorization(session);
   if (!predicate(auth.roles, auth.permissions)) {
+    throw new Error(message);
+  }
+}
+
+function assertAnyPermission(
+  session: Session,
+  requiredPermissions: readonly Permission[],
+  message: string,
+): void {
+  if (!hasAnyPermission(session, requiredPermissions)) {
     throw new Error(message);
   }
 }
@@ -127,6 +151,222 @@ export function requireDeleteContractsPermission(session: Session): void {
     session,
     canDeleteContracts,
     'Você não tem permissão para excluir contratos.',
+  );
+}
+
+export function requireContractLookupPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [
+      PERMISSIONS.CONTRATOS_VIEW,
+      PERMISSIONS.CONTRATOS_CREATE,
+      PERMISSIONS.CONTRATOS_UPDATE,
+      PERMISSIONS.CONTRATOS_DELETE,
+      PERMISSIONS.VEICULOS_VIEW,
+      PERMISSIONS.VEICULOS_CREATE,
+      PERMISSIONS.VEICULOS_UPDATE,
+      PERMISSIONS.VEICULOS_DELETE,
+      PERMISSIONS.EQUIPES_VIEW,
+      PERMISSIONS.EQUIPES_CREATE,
+      PERMISSIONS.EQUIPES_UPDATE,
+      PERMISSIONS.EQUIPES_DELETE,
+      PERMISSIONS.ELETRICISTAS_VIEW,
+      PERMISSIONS.ELETRICISTAS_CREATE,
+      PERMISSIONS.ELETRICISTAS_UPDATE,
+      PERMISSIONS.ELETRICISTAS_DELETE,
+      PERMISSIONS.BASES_VIEW,
+      PERMISSIONS.SUPERVISORES_VIEW,
+      PERMISSIONS.TIPOS_ATIVIDADE_VIEW,
+      PERMISSIONS.FORMULARIOS_ATIVIDADE_VIEW,
+      PERMISSIONS.FORMULARIOS_ATIVIDADE_PERGUNTA_VIEW,
+      PERMISSIONS.MATERIAIS_CATALOGO_VIEW,
+      PERMISSIONS.MOBILE_USERS_VIEW,
+      PERMISSIONS.MOBILE_USERS_CREATE,
+      PERMISSIONS.MOBILE_USERS_UPDATE,
+      PERMISSIONS.MOBILE_USERS_DELETE,
+      PERMISSIONS.REPORTS_VIEW,
+    ],
+    'Você não tem permissão para consultar contratos.',
+  );
+}
+
+export function requireBasesPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.BASES_VIEW],
+    'Você não tem permissão para acessar bases.',
+  );
+}
+
+export function requireCargosPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.CARGOS_VIEW],
+    'Você não tem permissão para acessar cargos.',
+  );
+}
+
+export function requireSupervisoresPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.SUPERVISORES_VIEW],
+    'Você não tem permissão para acessar supervisores.',
+  );
+}
+
+export function requireTiposJustificativaPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.TIPOS_JUSTIFICATIVA_VIEW],
+    'Você não tem permissão para acessar tipos de justificativa.',
+  );
+}
+
+export function requireTiposAtividadePermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.TIPOS_ATIVIDADE_VIEW],
+    'Você não tem permissão para acessar tipos de atividade.',
+  );
+}
+
+export function requireSubtiposAtividadePermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.SUBTIPOS_ATIVIDADE_VIEW],
+    'Você não tem permissão para acessar subtipos de atividade.',
+  );
+}
+
+export function requireTiposChecklistPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.CHECKLIST_TIPOS_VIEW],
+    'Você não tem permissão para acessar tipos de checklist.',
+  );
+}
+
+export function requireTiposEquipePermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.TIPOS_EQUIPE_VIEW],
+    'Você não tem permissão para acessar tipos de equipe.',
+  );
+}
+
+export function requireTiposVeiculoPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.TIPOS_VEICULO_VIEW],
+    'Você não tem permissão para acessar tipos de veículo.',
+  );
+}
+
+export function requireMateriaisCatalogoPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.MATERIAIS_CATALOGO_VIEW],
+    'Você não tem permissão para acessar materiais de catálogo.',
+  );
+}
+
+export function requireCausasImprodutivasPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.CAUSAS_IMPRODUTIVAS_VIEW],
+    'Você não tem permissão para acessar causas improdutivas.',
+  );
+}
+
+export function requireFormulariosAtividadePermission(
+  session: Session,
+): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.FORMULARIOS_ATIVIDADE_VIEW],
+    'Você não tem permissão para acessar formulários de atividade.',
+  );
+}
+
+export function requireFormulariosAtividadePerguntaPermission(
+  session: Session,
+): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.FORMULARIOS_ATIVIDADE_PERGUNTA_VIEW],
+    'Você não tem permissão para acessar perguntas de formulários.',
+  );
+}
+
+export function requireAprPerguntasPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.APR_PERGUNTAS_VIEW],
+    'Você não tem permissão para acessar perguntas APR.',
+  );
+}
+
+export function requireAprOpcoesPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.APR_OPCOES_VIEW],
+    'Você não tem permissão para acessar opções APR.',
+  );
+}
+
+export function requireAprGruposPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.APR_GRUPOS_VIEW],
+    'Você não tem permissão para acessar grupos APR.',
+  );
+}
+
+export function requireAprModelosPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.APR_MODELOS_VIEW],
+    'Você não tem permissão para acessar modelos APR.',
+  );
+}
+
+export function requireChecklistPerguntasPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.CHECKLIST_PERGUNTAS_VIEW],
+    'Você não tem permissão para acessar perguntas de checklist.',
+  );
+}
+
+export function requireChecklistOpcoesPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.CHECKLIST_OPCOES_VIEW],
+    'Você não tem permissão para acessar opções de checklist.',
+  );
+}
+
+export function requireChecklistModelosPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.CHECKLIST_MODELOS_VIEW],
+    'Você não tem permissão para acessar modelos de checklist.',
+  );
+}
+
+export function requireTiposEscalaPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.TIPOS_ESCALA_VIEW],
+    'Você não tem permissão para acessar tipos de escala.',
+  );
+}
+
+export function requireHorariosEquipePermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.HORARIOS_EQUIPE_VIEW],
+    'Você não tem permissão para acessar o catálogo de horários.',
   );
 }
 

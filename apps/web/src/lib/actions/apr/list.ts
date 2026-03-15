@@ -50,6 +50,7 @@ import type { AprService } from '@/lib/services/apr/AprService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprFilterSchema } from '../../schemas/aprSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprModelosPermission } from '../common/permissionGuard';
 
 /**
  * Server Action para listar APRs com paginação
@@ -72,7 +73,7 @@ import { handleServerAction } from '../common/actionHandler';
  * );
  *
  * // Uso direto em componente
- * const loadAprs = async () => {
+ * const loadAprs = async (_, session) => {
  *   const result = await listAprs({
  *     page: currentPage,
  *     pageSize: 20,
@@ -119,7 +120,8 @@ export const listAprs = async (rawData: unknown) =>
     aprFilterSchema,
 
     // Lógica de listagem
-    async (validatedParams, _session) => {
+    async (validatedParams, session) => {
+      requireAprModelosPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprService>('aprService');
 

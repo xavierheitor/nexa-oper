@@ -10,7 +10,7 @@ import VeiculosListagem from '@/ui/pages/dashboard/relatorios/veiculos/component
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import type { Contrato, Base } from '@nexa-oper/db';
 
 const { RangePicker } = DatePicker;
@@ -34,7 +34,7 @@ export default function RelatoriosVeiculosPageClient({
 
   const { data: contratos, isLoading: loadingContratos } = useEntityData({
     key: 'relatorios-veiculos-contratos',
-    fetcherAction: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratosLookup),
     paginationEnabled: false,
     initialData: initialContratos,
     initialParams: {

@@ -4,11 +4,13 @@ import type { ChecklistOpcaoRespostaService } from '@/lib/services/checklist/Che
 import { container } from '@/lib/services/common/registerServices';
 import { checklistOpcaoRespostaCreateSchema } from '../../schemas/checklistOpcaoRespostaSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireChecklistOpcoesPermission } from '../common/permissionGuard';
 
 export const createChecklistOpcaoResposta = async (rawData: unknown) =>
   handleServerAction(
     checklistOpcaoRespostaCreateSchema,
     async (data, session) => {
+      requireChecklistOpcoesPermission(session);
       const service = container.get<ChecklistOpcaoRespostaService>('checklistOpcaoRespostaService');
       return service.create(data, session.user.id);
     },

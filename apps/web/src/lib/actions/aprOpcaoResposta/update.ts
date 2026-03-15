@@ -49,6 +49,7 @@ import type { AprOpcaoRespostaService } from '@/lib/services/apr/AprOpcaoRespost
 import { container } from '@/lib/services/common/registerServices';
 import { aprOpcaoRespostaUpdateSchema } from '../../schemas/aprOpcaoRespostaSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprOpcoesPermission } from '../common/permissionGuard';
 
 /**
  * Server Action para atualizar opção de resposta APR existente
@@ -67,7 +68,7 @@ import { handleServerAction } from '../common/actionHandler';
  * @example
  * ```typescript
  * // Uso em componente de edição
- * const handleUpdate = async (formData) => {
+ * const handleUpdate = async (formData, session) => {
  *   const result = await updateAprOpcaoResposta({
  *     id: editingOpcao.id,
  *     nome: formData.nome,
@@ -104,6 +105,7 @@ export const updateAprOpcaoResposta = async (rawData: unknown) =>
 
     // Lógica de negócio
     async (validatedData, session) => {
+      requireAprOpcoesPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprOpcaoRespostaService>(
         'aprOpcaoRespostaService'

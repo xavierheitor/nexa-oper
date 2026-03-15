@@ -36,7 +36,7 @@ import { SwapOutlined } from '@ant-design/icons';
 // Importação dos formulários locais
 import VeiculoForm, { VeiculoFormData } from '@/ui/pages/dashboard/cadastro/veiculo/form';
 import VeiculoLoteForm from '@/ui/pages/dashboard/cadastro/veiculo/lote-form';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { listBases } from '@/lib/actions/base/list';
 import { listTiposVeiculo } from '@/lib/actions/tipoVeiculo/list';
 
@@ -98,7 +98,7 @@ export default function VeiculoPageClient({
   // Carregar dados para o formulário em lote
   const { data: contratos } = useEntityData({
     key: 'contratos-lote',
-    fetcherAction: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratosLookup),
     initialData: initialContratos,
     initialParams: { page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' },
     paginationEnabled: false,

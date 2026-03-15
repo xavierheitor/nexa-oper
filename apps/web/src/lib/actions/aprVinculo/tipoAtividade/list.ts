@@ -46,6 +46,7 @@
 'use server';
 
 import { handleServerAction } from '@/lib/actions/common/actionHandler';
+import { requireAprModelosPermission } from '../../common/permissionGuard';
 import { aprTipoAtividadeVinculoFilterSchema } from '@/lib/schemas/aprTipoAtividadeVinculoSchema';
 import type { AprTipoAtividadeVinculoService } from '@/lib/services/apr/AprTipoAtividadeVinculoService';
 import { container } from '@/lib/services/common/registerServices';
@@ -73,7 +74,7 @@ import { container } from '@/lib/services/common/registerServices';
  * );
  *
  * // Uso direto em componente
- * const loadVinculos = async () => {
+ * const loadVinculos = async (_, session) => {
  *   const result = await listAprTipoAtividadeVinculos({
  *     page: currentPage,
  *     pageSize: 20,
@@ -117,7 +118,8 @@ export const listAprTipoAtividadeVinculos = async (rawData: unknown) =>
     // Schema de validação para parâmetros de listagem
     aprTipoAtividadeVinculoFilterSchema,
     // Lógica de listagem
-    async (validatedParams, _session) => {
+    async (validatedParams, session) => {
+      requireAprModelosPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprTipoAtividadeVinculoService>('aprTipoAtividadeVinculoService');
       // Executa listagem com parâmetros validados
@@ -131,4 +133,3 @@ export const listAprTipoAtividadeVinculos = async (rawData: unknown) =>
       actionType: 'list'
     }
   );
-

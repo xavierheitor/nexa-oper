@@ -4,6 +4,7 @@ import type { CausaImprodutivaService } from '@/lib/services/catalogo/CausaImpro
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireCausasImprodutivasPermission } from '../common/permissionGuard';
 
 const schema = z.object({ id: z.number().int().positive() });
 
@@ -11,6 +12,7 @@ export const deleteCausaImprodutiva = async (rawData: unknown) =>
   handleServerAction(
     schema,
     async (data, session) => {
+      requireCausasImprodutivasPermission(session);
       const service = container.get<CausaImprodutivaService>(
         'causaImprodutivaService'
       );

@@ -3,6 +3,7 @@
 import type { ChecklistTipoEquipeVinculoService } from '@/lib/services/checklist/ChecklistTipoEquipeVinculoService';
 import { container } from '@/lib/services/common/registerServices';
 import { handleServerAction } from '../../common/actionHandler';
+import { requireChecklistModelosPermission } from '../../common/permissionGuard';
 import { z } from 'zod';
 
 const listSchema = z.object({
@@ -16,7 +17,8 @@ const listSchema = z.object({
 export const listChecklistTipoEquipeVinculos = async (rawData: unknown) =>
   handleServerAction(
     listSchema,
-    async (data) => {
+    async (data, session) => {
+      requireChecklistModelosPermission(session);
       const service = container.get<ChecklistTipoEquipeVinculoService>('checklistTipoEquipeVinculoService');
       return service.list(data as any);
     },

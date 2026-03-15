@@ -46,6 +46,7 @@ import type { AprOpcaoRespostaService } from '@/lib/services/apr/AprOpcaoRespost
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprOpcoesPermission } from '../common/permissionGuard';
 
 /**
  * Schema de validação para busca de opção de resposta APR por ID
@@ -73,7 +74,7 @@ const getAprOpcaoRespostaSchema = z.object({
  * @example
  * ```typescript
  * // Uso para carregamento de dados de edição
- * const loadOpcaoForEdit = async (opcaoId) => {
+ * const loadOpcaoForEdit = async (opcaoId, session) => {
  *   const result = await getAprOpcaoResposta({ id: opcaoId });
  *
  *   if (result.success && result.data) {
@@ -126,7 +127,8 @@ export const getAprOpcaoResposta = async (rawData: unknown) =>
     getAprOpcaoRespostaSchema,
 
     // Lógica de negócio
-    async (validatedData, _session) => {
+    async (validatedData, session) => {
+      requireAprOpcoesPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprOpcaoRespostaService>(
         'aprOpcaoRespostaService'

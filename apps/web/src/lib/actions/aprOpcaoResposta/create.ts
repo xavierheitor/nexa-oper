@@ -42,6 +42,7 @@ import type { AprOpcaoRespostaService } from '@/lib/services/apr/AprOpcaoRespost
 import { container } from '@/lib/services/common/registerServices';
 import { aprOpcaoRespostaCreateSchema } from '../../schemas/aprOpcaoRespostaSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprOpcoesPermission } from '../common/permissionGuard';
 
 /**
  * Server Action para criar nova opção de resposta APR
@@ -59,7 +60,7 @@ import { handleServerAction } from '../common/actionHandler';
  * @example
  * ```typescript
  * // Uso em componente React
- * const handleSubmit = async (formData) => {
+ * const handleSubmit = async (formData, session) => {
  *   const result = await createAprOpcaoResposta({
  *     nome: formData.nome,
  *     geraPendencia: formData.geraPendencia
@@ -81,6 +82,7 @@ export const createAprOpcaoResposta = async (rawData: unknown) =>
 
     // Lógica de negócio
     async (validatedData, session) => {
+      requireAprOpcoesPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprOpcaoRespostaService>(
         'aprOpcaoRespostaService'

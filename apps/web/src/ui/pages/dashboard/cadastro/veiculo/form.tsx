@@ -5,7 +5,7 @@ import { Button, Form, Input, InputNumber, Select, Spin, App } from 'antd';
 import { useEffect, useState } from 'react';
 
 // Importações das Server Actions para buscar dados dos selects
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { listBases } from '@/lib/actions/base/list';
 import { listTiposVeiculo } from '@/lib/actions/tipoVeiculo/list';
 
@@ -60,7 +60,7 @@ export default function VeiculoForm({
             orderBy: 'nome',
             orderDir: 'asc',
           }),
-          listContratos({
+          listContratosLookup({
             page: 1,
             pageSize: 100, // Carrega todos os contratos disponíveis
             orderBy: 'nome',

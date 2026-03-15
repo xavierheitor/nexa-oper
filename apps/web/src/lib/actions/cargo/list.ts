@@ -5,6 +5,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireCargosPermission } from '../common/permissionGuard';
 import { cargoFilterSchema } from '@/lib/schemas/cargoSchema';
 import { container } from '@/lib/services/common/registerServices';
 import type { CargoService } from '@/lib/services/pessoas/CargoService';
@@ -12,7 +13,8 @@ import type { CargoService } from '@/lib/services/pessoas/CargoService';
 export const listCargos = async (rawData: unknown) =>
   handleServerAction(
     cargoFilterSchema,
-    async (data) => {
+    async (data, session) => {
+      requireCargosPermission(session);
       const service = container.get<CargoService>('cargoService');
       return service.list(data);
     },

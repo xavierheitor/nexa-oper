@@ -6,7 +6,7 @@ import { deleteEquipe } from '@/lib/actions/equipe/delete';
 import { listEquipes } from '@/lib/actions/equipe/list';
 import { updateEquipe } from '@/lib/actions/equipe/update';
 import { transferEquipeBase } from '@/lib/actions/equipe/transferBase';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { listBases } from '@/lib/actions/base/list';
 import {
@@ -91,7 +91,7 @@ export default function EquipePageClient({
   // Carregar dados para o formulário em lote
   const { data: contratos } = useEntityData<Contrato>({
     key: 'contratos-lote-equipe',
-    fetcherAction: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratosLookup),
     initialData: initialContratos,
     initialParams: { page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' },
     paginationEnabled: false,

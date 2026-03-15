@@ -4,6 +4,7 @@ import type { MaterialCatalogoService } from '@/lib/services/catalogo/MaterialCa
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireMateriaisCatalogoPermission } from '../common/permissionGuard';
 
 const schema = z.object({ id: z.number().int().positive() });
 
@@ -11,6 +12,7 @@ export const deleteMaterialCatalogo = async (rawData: unknown) =>
   handleServerAction(
     schema,
     async (data, session) => {
+      requireMateriaisCatalogoPermission(session);
       const service = container.get<MaterialCatalogoService>(
         'materialCatalogoService'
       );

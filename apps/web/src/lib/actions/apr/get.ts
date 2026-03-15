@@ -47,6 +47,7 @@ import type { AprService } from '@/lib/services/apr/AprService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprModelosPermission } from '../common/permissionGuard';
 
 /**
  * Schema de validação para busca de APR por ID
@@ -74,7 +75,7 @@ const getAprSchema = z.object({
  * @example
  * ```typescript
  * // Uso para carregamento de dados de edição
- * const loadAprForEdit = async (aprId) => {
+ * const loadAprForEdit = async (aprId, session) => {
  *   const result = await getApr({ id: aprId });
  *
  *   if (result.success && result.data) {
@@ -154,7 +155,8 @@ export const getApr = async (rawData: unknown) =>
     getAprSchema,
 
     // Lógica de negócio
-    async (validatedData, _session) => {
+    async (validatedData, session) => {
+      requireAprModelosPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprService>('aprService');
 

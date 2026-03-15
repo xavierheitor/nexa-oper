@@ -3,7 +3,7 @@
 import { Form, Select, Button, Spin, Card, Table, App } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { setMobileContratoPermissao } from '@/lib/actions/mobileContratoPermissao/setPermissao';
 import { listMobileContratoPermissoes } from '@/lib/actions/mobileContratoPermissao/listPermissoes';
 import { deleteMobileContratoPermissao } from '@/lib/actions/mobileContratoPermissao/deletePermissao';
@@ -31,7 +31,7 @@ export default function PermissoesModal({
   const { data: contratosData, loading: loadingContratos, refetch: refetchContratos } = useDataFetch(
     async () => {
       const [contratosResult, permissoesResult] = await Promise.all([
-        listContratos({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
+        listContratosLookup({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
         listMobileContratoPermissoes({ mobileUserId, page: 1, pageSize: 200 })
       ]);
 

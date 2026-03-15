@@ -48,6 +48,7 @@ import type { AprTipoAtividadeVinculoService } from '@/lib/services/apr/AprTipoA
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../../common/actionHandler';
+import { requireAprModelosPermission } from '../../common/permissionGuard';
 
 /**
  * Schema de validação para exclusão de vínculo APR-TipoAtividade
@@ -76,7 +77,7 @@ const deleteAprTipoAtividadeVinculoSchema = z.object({
  * @example
  * ```typescript
  * // Uso em botão de exclusão
- * const handleDelete = async (vinculoId) => {
+ * const handleDelete = async (vinculoId, session) => {
  *   const confirmed = await confirm('Deseja remover este vínculo?');
  *   if (!confirmed) return;
  *
@@ -142,6 +143,7 @@ export const deleteAprTipoAtividadeVinculo = async (rawData: unknown) =>
 
     // Lógica de negócio
     async (validatedData, session) => {
+      requireAprModelosPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprTipoAtividadeVinculoService>(
         'aprTipoAtividadeVinculoService'
