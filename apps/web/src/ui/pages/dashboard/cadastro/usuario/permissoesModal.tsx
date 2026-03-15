@@ -1,6 +1,19 @@
 'use client';
 
-import { App, Button, Card, Checkbox, Col, Divider, Row, Space, Spin, Tag, Typography } from 'antd';
+import {
+  App,
+  Button,
+  Card,
+  Checkbox,
+  Col,
+  Divider,
+  Row,
+  Select,
+  Space,
+  Spin,
+  Tag,
+  Typography,
+} from 'antd';
 import { useEffect, useState } from 'react';
 import { getUserPermissionSummary } from '@/lib/actions/userPermission/get';
 import { updateUserPermissionGrants } from '@/lib/actions/userPermission/update';
@@ -25,6 +38,7 @@ export default function PermissoesModal({
   controllerExec,
 }: PermissoesModalProps) {
   const { message } = App.useApp();
+  const [selectedProfileId, setSelectedProfileId] = useState<number | null>(null);
   const [selectedDirectPermissions, setSelectedDirectPermissions] = useState<
     Permission[]
   >([]);
@@ -49,11 +63,19 @@ export default function PermissoesModal({
 
   useEffect(() => {
     if (data) {
+      setSelectedProfileId(data.assignedProfile?.id ?? null);
       setSelectedDirectPermissions(data.directPermissions);
     }
   }, [data]);
 
-  const inheritedPermissions = new Set(data?.inheritedPermissions ?? []);
+  const selectedProfile =
+    data?.availableProfiles.find((profile) => profile.id === selectedProfileId) ??
+    (data?.assignedProfile?.id === selectedProfileId ? data.assignedProfile : null) ??
+    null;
+  const baselinePermissions = new Set<Permission>([
+    ...(data?.rolePermissions ?? []),
+    ...(selectedProfile?.permissions ?? []),
+  ]);
 
   const handlePermissionToggle = (
     permission: Permission,
@@ -73,6 +95,7 @@ export default function PermissoesModal({
       () =>
         updateUserPermissionGrants({
           userId,
+          profileId: selectedProfileId,
           permissions: selectedDirectPermissions,
         }),
       'Permissões atualizadas com sucesso!',
@@ -116,23 +139,77 @@ export default function PermissoesModal({
           </Paragraph>
 
           <Paragraph style={{ marginBottom: 0 }}>
+            <Text strong>Grupo atual:</Text>{' '}
+            {selectedProfile ? (
+              <Tag color='purple'>{selectedProfile.nome}</Tag>
+            ) : (
+              <Text type='secondary'>Sem grupo vinculado</Text>
+            )}
+          </Paragraph>
+
+          <Paragraph style={{ marginBottom: 0 }}>
             <Text strong>Permissões efetivas:</Text>{' '}
             <Tag color='green'>{data.effectivePermissions.length}</Tag>
             <Text type='secondary'>
-              Herdadas do role + grants salvos no banco.
+              Herdadas de roles, grupo e grants salvos no banco.
             </Text>
           </Paragraph>
         </Card>
 
+        <Card title='Grupo de permissões'>
+          <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+            <Select
+              allowClear
+              placeholder='Selecione um grupo base de permissões'
+              value={selectedProfileId}
+              onChange={(value) => setSelectedProfileId(value ?? null)}
+              options={data.availableProfiles.map((profile) => ({
+                value: profile.id,
+                label: profile.nome,
+              }))}
+            />
+
+            {selectedProfile ? (
+              <Text type='secondary'>
+                Grupo atual: {selectedProfile.nome}
+                {selectedProfile.descricao
+                  ? ` · ${selectedProfile.descricao}`
+                  : ''}
+              </Text>
+            ) : (
+              <Text type='secondary'>
+                Sem grupo vinculado. O usuário continuará recebendo permissões
+                apenas por role e grants diretos.
+              </Text>
+            )}
+          </Space>
+        </Card>
+
         <Card title='Permissões herdadas dos roles'>
-          {data.inheritedPermissions.length === 0 ? (
+          {data.rolePermissions.length === 0 ? (
             <Text type='secondary'>
               Este usuário não herda permissões diretamente dos roles atuais.
             </Text>
           ) : (
             <Space size={[8, 8]} wrap>
-              {data.inheritedPermissions.map((permission) => (
+              {data.rolePermissions.map((permission) => (
                 <Tag color='geekblue' key={permission}>
+                  {permission}
+                </Tag>
+              ))}
+            </Space>
+          )}
+        </Card>
+
+        <Card title='Permissões do grupo'>
+          {(selectedProfile?.permissions.length ?? 0) === 0 ? (
+            <Text type='secondary'>
+              Nenhuma permissão adicional vem de grupo neste momento.
+            </Text>
+          ) : (
+            <Space size={[8, 8]} wrap>
+              {selectedProfile?.permissions.map((permission) => (
+                <Tag color='purple' key={permission}>
                   {permission}
                 </Tag>
               ))}
@@ -143,14 +220,19 @@ export default function PermissoesModal({
         <Card
           title='Permissões extras liberadas no banco'
           extra={
-            <Button type='primary' onClick={handleSave}>
-              Salvar permissões
-            </Button>
+            <Space>
+              <Button onClick={() => setSelectedDirectPermissions([])}>
+                Limpar extras
+              </Button>
+              <Button type='primary' onClick={handleSave}>
+                Salvar permissões
+              </Button>
+            </Space>
           }
         >
           <Paragraph type='secondary'>
-            Marque apenas as permissões extras. Permissões já herdadas do role
-            aparecem desabilitadas para evitar redundância no banco.
+            Marque apenas as permissões extras. Permissões já herdadas de role
+            ou grupo aparecem desabilitadas para evitar redundância no banco.
           </Paragraph>
 
           <Space direction='vertical' size='large' style={{ width: '100%' }}>
@@ -161,7 +243,7 @@ export default function PermissoesModal({
                 </Divider>
                 <Row gutter={[16, 12]}>
                   {group.permissions.map((item) => {
-                    const inherited = inheritedPermissions.has(item.permission);
+                    const inherited = baselinePermissions.has(item.permission);
                     const checked =
                       inherited || selectedDirectPermissions.includes(item.permission);
 

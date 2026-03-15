@@ -50,20 +50,45 @@ import {
 type AuthorizationSnapshot = {
   roles: Role[];
   permissions: Permission[];
+  permissionProfile: {
+    id: number;
+    key: string;
+    nome: string;
+  } | null;
 };
 
 function buildAuthorizationSnapshot(user: {
   RoleUser: Array<{ role: { nome: string } }>;
   UserPermissionGrant: Array<{ permission: string }>;
+  permissionProfile: {
+    id: number;
+    key: string;
+    nome: string;
+    PermissionProfileGrant: Array<{ permission: string }>;
+  } | null;
 }): AuthorizationSnapshot {
   const roles = normalizeRoles(user.RoleUser.map((ru) => ru.role.nome));
+  const profilePermissions =
+    user.permissionProfile?.PermissionProfileGrant.map((grant) => grant.permission)
+      .filter(isPermission) ?? [];
   const directPermissions = user.UserPermissionGrant
     .map((grant) => grant.permission)
     .filter(isPermission);
 
   return {
     roles,
-    permissions: resolveEffectivePermissions(roles, directPermissions),
+    permissions: resolveEffectivePermissions(
+      roles,
+      directPermissions,
+      profilePermissions,
+    ),
+    permissionProfile: user.permissionProfile
+      ? {
+          id: user.permissionProfile.id,
+          key: user.permissionProfile.key,
+          nome: user.permissionProfile.nome,
+        }
+      : null,
   };
 }
 
@@ -81,6 +106,18 @@ async function loadAuthorizationSnapshot(
       UserPermissionGrant: {
         select: {
           permission: true,
+        },
+      },
+      permissionProfile: {
+        select: {
+          id: true,
+          key: true,
+          nome: true,
+          PermissionProfileGrant: {
+            select: {
+              permission: true,
+            },
+          },
         },
       },
     },
@@ -145,6 +182,18 @@ export const authOptions: NextAuthOptions = {
                 permission: true,
               },
             },
+            permissionProfile: {
+              select: {
+                id: true,
+                key: true,
+                nome: true,
+                PermissionProfileGrant: {
+                  select: {
+                    permission: true,
+                  },
+                },
+              },
+            },
           },
         });
 
@@ -166,6 +215,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email ?? '', // Email (com fallback para string vazia)
           permissions: authorization.permissions, // Lista de permissões efetivas
           roles: authorization.roles, // Lista de roles do usuário
+          permissionProfile: authorization.permissionProfile,
         };
       },
     }),
@@ -214,6 +264,7 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email; // Email do usuário
         token.permissions = user.permissions || []; // Permissões do usuário
         token.roles = user.roles || []; // Roles do usuário
+        token.permissionProfile = user.permissionProfile || null;
         token.lastActivity = now; // Timestamp da última atividade
         token.permissionsRefreshedAt = now;
       }
@@ -234,6 +285,7 @@ export const authOptions: NextAuthOptions = {
         if (authorization) {
           token.permissions = authorization.permissions;
           token.roles = authorization.roles;
+          token.permissionProfile = authorization.permissionProfile;
           token.permissionsRefreshedAt = now;
         }
       }
@@ -260,6 +312,7 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email; // Email do usuário
         session.user.permissions = token.permissions || []; // Permissões do usuário
         session.user.roles = token.roles || []; // Roles do usuário
+        session.user.permissionProfile = token.permissionProfile || null;
       }
       return session;
     },

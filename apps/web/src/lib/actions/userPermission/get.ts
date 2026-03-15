@@ -41,6 +41,23 @@ export const getUserPermissionSummary = async (rawData: unknown) =>
               permission: 'asc',
             },
           },
+          permissionProfile: {
+            select: {
+              id: true,
+              key: true,
+              nome: true,
+              descricao: true,
+              ativo: true,
+              PermissionProfileGrant: {
+                select: {
+                  permission: true,
+                },
+                orderBy: {
+                  permission: 'asc',
+                },
+              },
+            },
+          },
         },
       });
 
@@ -50,14 +67,53 @@ export const getUserPermissionSummary = async (rawData: unknown) =>
 
       const roleNames = user.RoleUser.map((item) => item.role.nome);
       const roles = normalizeRoles(roleNames);
-      const inheritedPermissions = getPermissionsByRoles(roles);
+      const rolePermissions = getPermissionsByRoles(roles);
+      const profilePermissions =
+        user.permissionProfile?.PermissionProfileGrant.map((grant) => grant.permission).filter(
+          isPermission,
+        ) ?? [];
+      const inheritedPermissions = resolveEffectivePermissions(
+        roles,
+        [],
+        profilePermissions,
+      );
       const directPermissions = user.UserPermissionGrant.map(
         (grant) => grant.permission,
       ).filter(isPermission);
       const effectivePermissions = resolveEffectivePermissions(
         roles,
         directPermissions,
+        profilePermissions,
       );
+
+      const availableProfiles = await prisma.permissionProfile.findMany({
+        where: {
+          OR: [
+            { ativo: true },
+            ...(user.permissionProfile
+              ? [{ id: user.permissionProfile.id }]
+              : []),
+          ],
+        },
+        select: {
+          id: true,
+          key: true,
+          nome: true,
+          descricao: true,
+          ativo: true,
+          PermissionProfileGrant: {
+            select: {
+              permission: true,
+            },
+            orderBy: {
+              permission: 'asc',
+            },
+          },
+        },
+        orderBy: {
+          nome: 'asc',
+        },
+      });
 
       return {
         user: {
@@ -68,6 +124,28 @@ export const getUserPermissionSummary = async (rawData: unknown) =>
         },
         roleNames,
         roles,
+        assignedProfile: user.permissionProfile
+          ? {
+              id: user.permissionProfile.id,
+              key: user.permissionProfile.key,
+              nome: user.permissionProfile.nome,
+              descricao: user.permissionProfile.descricao,
+              ativo: user.permissionProfile.ativo,
+              permissions: profilePermissions,
+            }
+          : null,
+        availableProfiles: availableProfiles.map((profile) => ({
+          id: profile.id,
+          key: profile.key,
+          nome: profile.nome,
+          descricao: profile.descricao,
+          ativo: profile.ativo,
+          permissions: profile.PermissionProfileGrant.map((grant) => grant.permission).filter(
+            isPermission,
+          ),
+        })),
+        rolePermissions,
+        profilePermissions,
         inheritedPermissions,
         directPermissions,
         effectivePermissions,

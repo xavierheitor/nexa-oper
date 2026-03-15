@@ -688,8 +688,15 @@ export function normalizeRoles(values: string[]): Role[] {
 export function resolveEffectivePermissions(
   roles: Role[],
   directPermissions: readonly string[] = [],
+  profilePermissions: readonly string[] = [],
 ): Permission[] {
   const resolved = new Set<Permission>(getPermissionsByRoles(roles));
+
+  profilePermissions.forEach((permission) => {
+    if (isPermission(permission)) {
+      resolved.add(permission);
+    }
+  });
 
   directPermissions.forEach((permission) => {
     if (isPermission(permission)) {

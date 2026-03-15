@@ -12,6 +12,15 @@ export interface PermissionCatalogGroup {
   permissions: PermissionCatalogItem[];
 }
 
+export interface AvailablePermissionProfile {
+  id: number;
+  key: string;
+  nome: string;
+  descricao: string | null;
+  ativo: boolean;
+  permissions: Permission[];
+}
+
 export interface UserPermissionSummary {
   user: {
     id: number;
@@ -21,6 +30,10 @@ export interface UserPermissionSummary {
   };
   roleNames: string[];
   roles: Role[];
+  assignedProfile: AvailablePermissionProfile | null;
+  availableProfiles: AvailablePermissionProfile[];
+  rolePermissions: Permission[];
+  profilePermissions: Permission[];
   inheritedPermissions: Permission[];
   directPermissions: Permission[];
   effectivePermissions: Permission[];

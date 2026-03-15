@@ -2,9 +2,9 @@
 
 import { prisma } from '@/lib/db/db.service';
 import {
-  getPermissionsByRoles,
   isPermission,
   normalizeRoles,
+  resolveEffectivePermissions,
   type Permission,
 } from '@/lib/types/permissions';
 import { z } from 'zod';
@@ -13,6 +13,7 @@ import { requireManageUserPermissions } from '../common/permissionGuard';
 
 const updateUserPermissionGrantsSchema = z.object({
   userId: z.number().int().positive(),
+  profileId: z.number().int().positive().nullable().optional(),
   permissions: z.array(z.string()).default([]),
 });
 
@@ -30,6 +31,16 @@ export const updateUserPermissionGrants = async (rawData: unknown) =>
               role: true,
             },
           },
+          permissionProfile: {
+            select: {
+              id: true,
+              PermissionProfileGrant: {
+                select: {
+                  permission: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -38,14 +49,51 @@ export const updateUserPermissionGrants = async (rawData: unknown) =>
       }
 
       const roles = normalizeRoles(user.RoleUser.map((item) => item.role.nome));
+      let profilePermissions: Permission[] = [];
+
+      if (data.profileId != null) {
+        const profile = await prisma.permissionProfile.findUnique({
+          where: {
+            id: data.profileId,
+          },
+          select: {
+            id: true,
+            ativo: true,
+            PermissionProfileGrant: {
+              select: {
+                permission: true,
+              },
+            },
+          },
+        });
+
+        if (!profile || !profile.ativo) {
+          throw new Error('Grupo de permissões não encontrado.');
+        }
+
+        profilePermissions = profile.PermissionProfileGrant.map(
+          (grant) => grant.permission,
+        ).filter(isPermission);
+      }
+
       const inheritedPermissions = new Set<Permission>(
-        getPermissionsByRoles(roles),
+        resolveEffectivePermissions(roles, [], profilePermissions),
       );
       const directPermissions = [...new Set(data.permissions)]
         .filter(isPermission)
         .filter((permission) => !inheritedPermissions.has(permission));
 
       await prisma.$transaction(async (tx) => {
+        await tx.user.update({
+          where: {
+            id: data.userId,
+          },
+          data: {
+            permissionProfileId: data.profileId ?? null,
+            updatedBy: session.user.id,
+          },
+        });
+
         await tx.userPermissionGrant.deleteMany({
           where: {
             userId: data.userId,
@@ -66,6 +114,7 @@ export const updateUserPermissionGrants = async (rawData: unknown) =>
 
       return {
         userId: data.userId,
+        profileId: data.profileId ?? null,
         directPermissions,
       };
     },
