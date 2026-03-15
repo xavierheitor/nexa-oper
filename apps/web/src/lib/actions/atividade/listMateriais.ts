@@ -4,6 +4,7 @@ import { Prisma } from '@nexa-oper/db';
 import { z } from 'zod';
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '@/lib/actions/common/actionHandler';
+import { requireActivitiesPermission } from '@/lib/actions/common/permissionGuard';
 import {
   atividadeDashboardBaseFilterSchema,
   buildAtividadeExecucaoWhere,
@@ -20,7 +21,8 @@ const listAtividadeMateriaisSchema = atividadeDashboardBaseFilterSchema.extend({
 export const listAtividadeMateriais = async (rawData: unknown) =>
   handleServerAction(
     listAtividadeMateriaisSchema,
-    async (data) => {
+    async (data, session) => {
+      requireActivitiesPermission(session);
       const atividadeWhere = buildAtividadeExecucaoWhere(data);
       const where: Prisma.AtividadeMaterialAplicadoWhereInput = {
         atividadeExecucao: {

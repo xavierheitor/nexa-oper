@@ -8,6 +8,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsOrAttendancePermission } from '../common/permissionGuard';
 import { z } from 'zod';
 
 /**
@@ -23,7 +24,8 @@ const turnoStatsSchema = z.object({});
 export const getTurnoStats = async () =>
   handleServerAction(
     turnoStatsSchema,
-    async (_data, _session) => {
+    async (_data, session) => {
+      requireShiftsOrAttendancePermission(session);
       // Fazer requisição à API
       // Em produção, NEXT_PUBLIC_API_URL deve estar configurada
       // Em desenvolvimento, usa localhost apenas se a variável não estiver definida

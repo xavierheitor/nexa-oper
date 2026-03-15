@@ -5,6 +5,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireSafetyPermission } from '../common/permissionGuard';
 import { z } from 'zod';
 import { prisma } from '@/lib/db/db.service';
 import dayjs from 'dayjs';
@@ -19,7 +20,8 @@ const getReprovasPorEquipeSchema = z.object({
 export const getReprovasPorEquipe = async (rawData: unknown) =>
   handleServerAction(
     getReprovasPorEquipeSchema,
-    async (data) => {
+    async (data, session) => {
+      requireSafetyPermission(session);
       // Converter strings para Date se necessário
       const dataInicio = typeof data.dataInicio === 'string'
         ? new Date(data.dataInicio)

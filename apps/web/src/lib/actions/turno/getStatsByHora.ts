@@ -9,6 +9,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsOrAttendancePermission } from '../common/permissionGuard';
 import { getTodayDateRange, getHoursInSaoPaulo, getMinutesInSaoPaulo } from '@/lib/utils/dateHelpers';
 import { z } from 'zod';
 
@@ -22,7 +23,8 @@ const turnoStatsByHoraSchema = z.object({});
 export const getStatsByHora = async () =>
   handleServerAction(
     turnoStatsByHoraSchema,
-    async () => {
+    async (_, session) => {
+      requireShiftsOrAttendancePermission(session);
       // Buscar turnos do dia
       const { inicio, fim } = getTodayDateRange();
 

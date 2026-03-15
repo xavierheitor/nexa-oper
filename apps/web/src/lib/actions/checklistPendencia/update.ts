@@ -4,11 +4,13 @@ import type { ChecklistPendenciaService } from '@/lib/services/checklist/Checkli
 import { container } from '@/lib/services/common/registerServices';
 import { checklistPendenciaUpdateSchema } from '../../schemas/checklistPendenciaSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireSafetyPermission } from '../common/permissionGuard';
 
 export const updateChecklistPendencia = async (rawData: unknown) =>
   handleServerAction(
     checklistPendenciaUpdateSchema,
     async (data, session) => {
+      requireSafetyPermission(session);
       const service = container.get<ChecklistPendenciaService>('checklistPendenciaService');
       // Se o status for TRATADA, adiciona informações de tratamento
       const updateData: typeof data = {

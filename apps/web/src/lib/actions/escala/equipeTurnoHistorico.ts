@@ -15,11 +15,16 @@ import {
   equipeTurnoHistoricoFilterSchema,
 } from '../../schemas/escalaSchemas';
 import { handleServerAction } from '../common/actionHandler';
+import {
+  requireEscalasUpdatePermission,
+  requireSchedulesPermission,
+} from '../common/permissionGuard';
 
 export const createEquipeTurnoHistorico = async (rawData: unknown) =>
   handleServerAction(
     equipeTurnoHistoricoCreateSchema,
     async (data, session) => {
+      requireEscalasUpdatePermission(session);
       const service = container.get<EquipeTurnoHistoricoService>(
         'equipeTurnoHistoricoService'
       );
@@ -39,6 +44,7 @@ export const updateEquipeTurnoHistorico = async (rawData: unknown) =>
   handleServerAction(
     equipeTurnoHistoricoUpdateSchema,
     async (data, session) => {
+      requireEscalasUpdatePermission(session);
       const service = container.get<EquipeTurnoHistoricoService>(
         'equipeTurnoHistoricoService'
       );
@@ -57,7 +63,8 @@ export const updateEquipeTurnoHistorico = async (rawData: unknown) =>
 export const listEquipeTurnoHistorico = async (rawData: unknown) =>
   handleServerAction(
     equipeTurnoHistoricoFilterSchema,
-    async data => {
+    async (data, session) => {
+      requireSchedulesPermission(session);
       const service = container.get<EquipeTurnoHistoricoService>(
         'equipeTurnoHistoricoService'
       );
@@ -79,7 +86,8 @@ export const listEquipeTurnoHistorico = async (rawData: unknown) =>
 export const getEquipeTurnoHistoricoById = async (id: number) =>
   handleServerAction(
     z.object({}),
-    async () => {
+    async (_, session) => {
+      requireSchedulesPermission(session);
       const service = container.get<EquipeTurnoHistoricoService>(
         'equipeTurnoHistoricoService'
       );
@@ -100,6 +108,7 @@ export const deleteEquipeTurnoHistorico = async (id: number) =>
   handleServerAction(
     z.object({}),
     async (_, session) => {
+      requireEscalasUpdatePermission(session);
       const service = container.get<EquipeTurnoHistoricoService>(
         'equipeTurnoHistoricoService'
       );
@@ -115,7 +124,8 @@ export const buscarHorarioVigente = async (rawData: { equipeId: number; data?: D
       equipeId: z.number().int().positive(),
       data: z.coerce.date().optional(),
     }),
-    async data => {
+    async (data, session) => {
+      requireSchedulesPermission(session);
       const service = container.get<EquipeTurnoHistoricoService>(
         'equipeTurnoHistoricoService'
       );
@@ -140,4 +150,3 @@ export const buscarHorarioVigente = async (rawData: { equipeId: number; data?: D
     rawData,
     { entityName: 'EquipeTurnoHistorico', actionType: 'get' }
   );
-

@@ -9,6 +9,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsPermission } from '../common/permissionGuard';
 import { z } from 'zod';
 import { getTurnosPrevistosHoje } from './getTurnosPrevistos';
 import type { TurnoPrevisto } from '@/lib/types/turnoPrevisto';
@@ -28,7 +29,8 @@ const gerarSnapshotSchema = z.object({
 export const gerarSnapshotAderencia = async (rawData: unknown) =>
   handleServerAction(
     gerarSnapshotSchema,
-    async (data) => {
+    async (data, session) => {
+      requireShiftsPermission(session);
       // Determinar data de referência
       const dataReferencia = data.dataReferencia || new Date();
       dataReferencia.setHours(0, 0, 0, 0);

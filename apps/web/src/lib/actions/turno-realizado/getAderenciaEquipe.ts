@@ -5,6 +5,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireTurnoRealizadoPermission } from '../common/permissionGuard';
 import { prisma } from '../../db/db.service';
 import { getAderenciaEquipeSchema } from '../../schemas/aderenciaEquipeSchema';
 
@@ -15,7 +16,8 @@ import { getAderenciaEquipeSchema } from '../../schemas/aderenciaEquipeSchema';
 export const getAderenciaEquipe = async (rawData: unknown) =>
   handleServerAction(
     getAderenciaEquipeSchema,
-    async (data) => {
+    async (data, session) => {
+      requireTurnoRealizadoPermission(session);
       const dataInicio = new Date(data.dataInicio);
       const dataFim = new Date(data.dataFim);
 

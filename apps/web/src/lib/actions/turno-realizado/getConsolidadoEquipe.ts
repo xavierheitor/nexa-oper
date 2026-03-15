@@ -5,6 +5,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireTurnoRealizadoPermission } from '../common/permissionGuard';
 import { consolidadoEquipeResponseSchema } from '../../schemas/turnoRealizadoSchema';
 import { z } from 'zod';
 
@@ -20,7 +21,8 @@ const getConsolidadoEquipeSchema = z.object({
 export const getConsolidadoEquipe = async (rawData: unknown) =>
   handleServerAction(
     getConsolidadoEquipeSchema,
-    async (data, _session) => {
+    async (data, session) => {
+      requireTurnoRealizadoPermission(session);
       const baseUrl =
         process.env.NEXT_PUBLIC_API_URL ||
         (process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : '');
@@ -56,4 +58,3 @@ export const getConsolidadoEquipe = async (rawData: unknown) =>
     rawData,
     { entityName: 'TurnoRealizado', actionType: 'get' }
   );
-

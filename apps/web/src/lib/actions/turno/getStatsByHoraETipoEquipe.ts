@@ -9,6 +9,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsOrAttendancePermission } from '../common/permissionGuard';
 import { listTiposEquipe } from '../tipoEquipe/list';
 import {
   getDateRangeInSaoPaulo,
@@ -32,7 +33,8 @@ export const getStatsByHoraETipoEquipe = async (
 ) =>
   handleServerAction(
     turnoStatsByHoraETipoEquipeSchema,
-    async () => {
+    async (_, session) => {
+      requireShiftsOrAttendancePermission(session);
       const dateToUse = params.date ? new Date(params.date) : new Date();
       const { inicio, fim } = getDateRangeInSaoPaulo(dateToUse);
 

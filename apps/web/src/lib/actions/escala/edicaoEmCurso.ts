@@ -9,6 +9,7 @@
 import { prisma } from '@/lib/db/db.service';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireSchedulesPermission } from '../common/permissionGuard';
 
 const edicaoEmCursoSchema = z.object({
   periodoInicio: z.coerce.date(),
@@ -18,7 +19,8 @@ const edicaoEmCursoSchema = z.object({
 export const getEscalasPublicadas = async (rawData: unknown) =>
   handleServerAction(
     edicaoEmCursoSchema,
-    async (data) => {
+    async (data, session) => {
+      requireSchedulesPermission(session);
       // Busca apenas escalas PUBLICADAS que intersectam com o período
       const escalas = await prisma.escalaEquipePeriodo.findMany({
         where: {

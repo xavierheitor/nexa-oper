@@ -8,6 +8,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireReportsPermission } from '../common/permissionGuard';
 import { relatorioBaseFiltroSchema } from '@/lib/schemas/relatoriosSchema';
 
 /**
@@ -16,7 +17,8 @@ import { relatorioBaseFiltroSchema } from '@/lib/schemas/relatoriosSchema';
 export const getConsolidacaoPorBase = async (rawData?: unknown) =>
   handleServerAction(
     relatorioBaseFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
       };
@@ -172,7 +174,8 @@ export const getConsolidacaoPorBase = async (rawData?: unknown) =>
 export const getComparacaoEntreBases = async (rawData?: unknown) =>
   handleServerAction(
     relatorioBaseFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
       };
@@ -245,7 +248,8 @@ export const getComparacaoEntreBases = async (rawData?: unknown) =>
 export const getEletricistasNaoEscalados = async (rawData?: unknown) =>
   handleServerAction(
     relatorioBaseFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const whereBases: any = {
         deletedAt: null,
       };
@@ -368,7 +372,8 @@ export const getEletricistasNaoEscalados = async (rawData?: unknown) =>
 export const getEquipesPorBase = async (rawData?: unknown) =>
   handleServerAction(
     relatorioBaseFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
       };
@@ -435,7 +440,8 @@ export const getDetalhesBase = async (baseId: number, rawData?: unknown) => {
 
   return handleServerAction(
     schema,
-    async (_filtros) => {
+    async (_filtros, session) => {
+      requireReportsPermission(session);
       const base = await prisma.base.findUnique({
         where: { id: baseId },
         include: {

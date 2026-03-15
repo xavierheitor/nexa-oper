@@ -6,6 +6,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireTurnoRealizadoPermission } from '../common/permissionGuard';
 import { horaExtraFilterSchema } from '../../schemas/turnoRealizadoSchema';
 import { container } from '../../services/common/registerServices';
 import type { HoraExtraService } from '../../services/turnos/HoraExtraService';
@@ -16,7 +17,8 @@ import type { HoraExtraService } from '../../services/turnos/HoraExtraService';
 export const listHorasExtras = async (rawData: unknown) =>
   handleServerAction(
     horaExtraFilterSchema,
-    async (data) => {
+    async (data, session) => {
+      requireTurnoRealizadoPermission(session);
       const service = container.get<HoraExtraService>('horaExtraService');
       return service.list(data);
     },

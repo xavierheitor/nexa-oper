@@ -6,6 +6,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireTurnoRealizadoPermission } from '../common/permissionGuard';
 import { faltaFilterSchema } from '../../schemas/turnoRealizadoSchema';
 import { container } from '../../services/common/registerServices';
 import type { FaltaService } from '../../services/turnos/FaltaService';
@@ -16,7 +17,8 @@ import type { FaltaService } from '../../services/turnos/FaltaService';
 export const listFaltas = async (rawData: unknown) =>
   handleServerAction(
     faltaFilterSchema,
-    async (data) => {
+    async (data, session) => {
+      requireTurnoRealizadoPermission(session);
       const service = container.get<FaltaService>('faltaService');
       return service.list(data);
     },

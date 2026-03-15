@@ -8,44 +8,28 @@ export function canViewUsers(
   roles: readonly Role[],
   permissions: readonly Permission[],
 ): boolean {
-  return (
-    isAdmin(roles) ||
-    permissions.includes(PERMISSIONS.USUARIO_MANAGE) ||
-    permissions.includes(PERMISSIONS.USERS_VIEW)
-  );
+  return isAdmin(roles) || permissions.includes(PERMISSIONS.USERS_VIEW);
 }
 
 export function canCreateUsers(
   roles: readonly Role[],
   permissions: readonly Permission[],
 ): boolean {
-  return (
-    isAdmin(roles) ||
-    permissions.includes(PERMISSIONS.USUARIO_MANAGE) ||
-    permissions.includes(PERMISSIONS.USERS_CREATE)
-  );
+  return isAdmin(roles) || permissions.includes(PERMISSIONS.USERS_CREATE);
 }
 
 export function canUpdateUsers(
   roles: readonly Role[],
   permissions: readonly Permission[],
 ): boolean {
-  return (
-    isAdmin(roles) ||
-    permissions.includes(PERMISSIONS.USUARIO_MANAGE) ||
-    permissions.includes(PERMISSIONS.USERS_UPDATE)
-  );
+  return isAdmin(roles) || permissions.includes(PERMISSIONS.USERS_UPDATE);
 }
 
 export function canDeleteUsers(
   roles: readonly Role[],
   permissions: readonly Permission[],
 ): boolean {
-  return (
-    isAdmin(roles) ||
-    permissions.includes(PERMISSIONS.USUARIO_MANAGE) ||
-    permissions.includes(PERMISSIONS.USERS_DELETE)
-  );
+  return isAdmin(roles) || permissions.includes(PERMISSIONS.USERS_DELETE);
 }
 
 export function canResetUserPasswords(

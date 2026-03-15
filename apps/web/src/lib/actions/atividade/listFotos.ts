@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '@/lib/actions/common/actionHandler';
+import { requireActivitiesPermission } from '@/lib/actions/common/permissionGuard';
 
 const listAtividadeFotosSchema = z.object({
   turnoId: z.number().int().positive(),
@@ -24,7 +25,8 @@ type FotoTurnoRow = {
 export const listAtividadeFotos = async (rawData: unknown) =>
   handleServerAction(
     listAtividadeFotosSchema,
-    async data => {
+    async (data, session) => {
+      requireActivitiesPermission(session);
       const [fotosAtividade, evidenciasUpload] = await Promise.all([
         prisma.atividadeFoto.findMany({
           where: {

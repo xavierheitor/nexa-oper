@@ -6,6 +6,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireReportsPermission } from '../common/permissionGuard';
 import { relatorioEquipesFiltroSchema } from '@/lib/schemas/relatoriosSchema';
 
 /**
@@ -14,7 +15,8 @@ import { relatorioEquipesFiltroSchema } from '@/lib/schemas/relatoriosSchema';
 export const getEquipesEscaladas = async (rawData?: unknown) =>
   handleServerAction(
     relatorioEquipesFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
       };
@@ -78,7 +80,8 @@ export const getEquipesEscaladas = async (rawData?: unknown) =>
 export const getEquipesPorHorario = async (rawData?: unknown) =>
   handleServerAction(
     relatorioEquipesFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
       };
@@ -158,7 +161,8 @@ export const getEquipesPorHorario = async (rawData?: unknown) =>
 export const getEquipesSemHorario = async (rawData?: unknown) =>
   handleServerAction(
     relatorioEquipesFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
       };
@@ -233,7 +237,8 @@ export const getEquipesSemHorario = async (rawData?: unknown) =>
 export const getEquipesPorTipo = async (rawData?: unknown) =>
   handleServerAction(
     relatorioEquipesFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
       };

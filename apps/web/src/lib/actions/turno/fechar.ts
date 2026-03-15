@@ -8,6 +8,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsPermission } from '../common/permissionGuard';
 import { container } from '../../services/common/registerServices';
 import { TurnoService } from '../../services/turnos/TurnoService';
 import { z } from 'zod';
@@ -22,6 +23,7 @@ export const fecharTurno = async (rawData: unknown) =>
   handleServerAction(
     fecharTurnoSchema,
     async (data, session) => {
+      requireShiftsPermission(session);
       const service = container.get<TurnoService>('turnoService');
 
       // Buscar o turno atual para preservar os outros campos

@@ -40,6 +40,13 @@ function getAuthorization(session: Session) {
   };
 }
 
+export function requireAdminRole(session: Session): void {
+  const auth = getAuthorization(session);
+  if (!auth.roles.includes('admin')) {
+    throw new Error('Você não tem permissão administrativa para esta ação.');
+  }
+}
+
 function hasAnyPermission(
   session: Session,
   requiredPermissions: readonly Permission[],
@@ -351,6 +358,102 @@ export function requireChecklistModelosPermission(session: Session): void {
     session,
     [PERMISSIONS.CHECKLIST_MODELOS_VIEW],
     'Você não tem permissão para acessar modelos de checklist.',
+  );
+}
+
+export function requireActivitiesPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.ACTIVITIES_VIEW],
+    'Você não tem permissão para acessar atividades.',
+  );
+}
+
+export function requireShiftsPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.SHIFTS_VIEW],
+    'Você não tem permissão para acessar turnos.',
+  );
+}
+
+export function requireShiftsOrAttendancePermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.SHIFTS_VIEW, PERMISSIONS.ATTENDANCE_VIEW],
+    'Você não tem permissão para acessar dados de turnos.',
+  );
+}
+
+export function requireAttendancePermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.ATTENDANCE_VIEW],
+    'Você não tem permissão para acessar frequência.',
+  );
+}
+
+export function requireTurnoRealizadoPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.ATTENDANCE_VIEW, PERMISSIONS.REPORTS_VIEW],
+    'Você não tem permissão para acessar dados consolidados de frequência.',
+  );
+}
+
+export function requireSchedulesPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.SCHEDULES_VIEW, PERMISSIONS.ESCALAS_VIEW],
+    'Você não tem permissão para acessar escalas.',
+  );
+}
+
+export function requireEscalasCreatePermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.ESCALAS_CREATE],
+    'Você não tem permissão para criar escalas.',
+  );
+}
+
+export function requireEscalasUpdatePermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.ESCALAS_UPDATE],
+    'Você não tem permissão para editar escalas.',
+  );
+}
+
+export function requireEscalasDeletePermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.ESCALAS_DELETE],
+    'Você não tem permissão para excluir escalas.',
+  );
+}
+
+export function requireEscalasPublishPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.ESCALAS_PUBLISH],
+    'Você não tem permissão para publicar escalas.',
+  );
+}
+
+export function requireSafetyPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.SAFETY_VIEW],
+    'Você não tem permissão para acessar segurança.',
+  );
+}
+
+export function requireReportsPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.REPORTS_VIEW, PERMISSIONS.RELATORIO_VIEW],
+    'Você não tem permissão para acessar relatórios.',
   );
 }
 

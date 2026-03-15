@@ -6,6 +6,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireReportsPermission } from '../common/permissionGuard';
 import { relatorioEletricistasFiltroSchema } from '@/lib/schemas/relatoriosSchema';
 
 /**
@@ -14,7 +15,8 @@ import { relatorioEletricistasFiltroSchema } from '@/lib/schemas/relatoriosSchem
 export const getEletricistasPorLotacao = async (rawData?: unknown) =>
   handleServerAction(
     relatorioEletricistasFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
       };
@@ -80,7 +82,8 @@ export const getEletricistasPorLotacao = async (rawData?: unknown) =>
 export const getEletricistasPorTipoEquipe = async (rawData?: unknown) =>
   handleServerAction(
     relatorioEletricistasFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const whereEletricista: any = {
         deletedAt: null,
       };
@@ -164,7 +167,8 @@ export const getEletricistasPorTipoEquipe = async (rawData?: unknown) =>
 export const getEletricistasDetalhado = async (rawData?: unknown) =>
   handleServerAction(
     relatorioEletricistasFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
       };
@@ -258,7 +262,8 @@ export const getEletricistasDetalhado = async (rawData?: unknown) =>
 export const getEletricistasPorCargo = async (rawData?: unknown) =>
   handleServerAction(
     relatorioEletricistasFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
       };

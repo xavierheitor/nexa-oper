@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '@/lib/actions/common/actionHandler';
+import { requireActivitiesPermission } from '@/lib/actions/common/permissionGuard';
 
 const getAtividadeExecucaoDetalheSchema = z.object({
   id: z.number().int().positive(),
@@ -11,7 +12,8 @@ const getAtividadeExecucaoDetalheSchema = z.object({
 export const getAtividadeExecucaoDetalhe = async (rawData: unknown) =>
   handleServerAction(
     getAtividadeExecucaoDetalheSchema,
-    async data => {
+    async (data, session) => {
+      requireActivitiesPermission(session);
       const atividade = await prisma.atividadeExecucao.findFirst({
         where: {
           id: data.id,

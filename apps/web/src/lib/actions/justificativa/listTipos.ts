@@ -6,6 +6,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireAttendancePermission } from '../common/permissionGuard';
 import { container } from '../../services/common/registerServices';
 import type { TipoJustificativaService } from '../../services/justificativas/TipoJustificativaService';
 import { z } from 'zod';
@@ -16,7 +17,8 @@ import { z } from 'zod';
 export const listTiposJustificativa = async () =>
   handleServerAction(
     z.object({}),
-    async () => {
+    async (_, session) => {
+      requireAttendancePermission(session);
       const service = container.get<TipoJustificativaService>('tipoJustificativaService');
       return service.listAll(true); // Apenas tipos ativos
     },

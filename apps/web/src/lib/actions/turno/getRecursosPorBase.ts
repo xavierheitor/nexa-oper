@@ -9,6 +9,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsOrAttendancePermission } from '../common/permissionGuard';
 import { listBases } from '../base/list';
 import { DEFAULT_STATS_PAGE_SIZE, MAX_STATS_ITEMS } from '@/lib/constants/statsLimits';
 import { logger } from '@/lib/utils/logger';
@@ -34,7 +35,8 @@ export interface RecursosPorBase {
 export const getRecursosPorBase = async () =>
   handleServerAction(
     recursosPorBaseSchema,
-    async () => {
+    async (_, session) => {
+      requireShiftsOrAttendancePermission(session);
       // 1. Buscar todas as bases
       const resultBases = await listBases({
         page: 1,

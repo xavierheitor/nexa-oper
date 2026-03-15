@@ -7,6 +7,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireAttendancePermission } from '../common/permissionGuard';
 import { z } from 'zod';
 import { uploadFile } from '@/lib/utils/fileUpload';
 import { prisma } from '@/lib/db/db.service';
@@ -23,6 +24,7 @@ export const uploadAnexoJustificativa = async (rawData: unknown) =>
   handleServerAction(
     uploadAnexoSchema,
     async (data, session) => {
+      requireAttendancePermission(session);
       // 1. Fazer upload do arquivo
       const uploadResult = await uploadFile(data.file, data.justificativaId);
 

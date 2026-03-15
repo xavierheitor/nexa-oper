@@ -9,6 +9,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireSafetyPermission } from '../common/permissionGuard';
 import { formatChecklistPhotos } from '@/lib/utils/checklistPhotoFormatter';
 import { z } from 'zod';
 
@@ -76,7 +77,8 @@ function mergeChecklistRespostaFotos(
 export const getChecklistsByTurno = async (rawData: unknown) =>
   handleServerAction(
     getChecklistsByTurnoSchema,
-    async data => {
+    async (data, session) => {
+      requireSafetyPermission(session);
       const checklistsPreenchidos = await prisma.checklistPreenchido.findMany({
         where: {
           turnoId: data.turnoId,
@@ -224,7 +226,8 @@ export const getChecklistsByTurno = async (rawData: unknown) =>
 export const getChecklistByUuid = async (rawData: unknown) =>
   handleServerAction(
     getChecklistByUuidSchema,
-    async data => {
+    async (data, session) => {
+      requireSafetyPermission(session);
       const checklistPreenchido = await prisma.checklistPreenchido.findUnique({
         where: {
           uuid: data.uuid,

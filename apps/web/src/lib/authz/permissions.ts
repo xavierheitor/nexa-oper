@@ -44,7 +44,6 @@ export type Permission =
   | 'apr:manage'
   | 'checklist:manage'
   | 'relatorio:view'
-  | 'usuario:manage'
   | 'users:view'
   | 'users:create'
   | 'users:update'
@@ -125,7 +124,6 @@ export const PERMISSIONS = {
   APR_MANAGE: 'apr:manage' as const,
   CHECKLIST_MANAGE: 'checklist:manage' as const,
   RELATORIO_VIEW: 'relatorio:view' as const,
-  USUARIO_MANAGE: 'usuario:manage' as const,
   USERS_VIEW: 'users:view' as const,
   USERS_CREATE: 'users:create' as const,
   USERS_UPDATE: 'users:update' as const,
@@ -440,12 +438,6 @@ export const PERMISSION_CATALOG: PermissionCatalogItem[] = [
     label: 'Ver relatório de segurança',
     group: PERMISSION_GROUP_LABELS.safety,
     description: 'Acessa relatórios do módulo de segurança.',
-  },
-  {
-    permission: PERMISSIONS.USUARIO_MANAGE,
-    label: 'Gerenciar usuários',
-    group: PERMISSION_GROUP_LABELS.users,
-    description: 'Concede acesso administrativo geral aos usuários web.',
   },
   {
     permission: PERMISSIONS.USERS_VIEW,
