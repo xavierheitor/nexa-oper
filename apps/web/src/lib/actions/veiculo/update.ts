@@ -35,6 +35,7 @@ import type { VeiculoService } from '@/lib/services/infraestrutura/VeiculoServic
 import { container } from '@/lib/services/common/registerServices';
 import { veiculoUpdateSchema } from '../../schemas/veiculoSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireUpdateVehiclesPermission } from '../common/permissionGuard';
 
 /**
  * Atualiza um veículo existente
@@ -46,6 +47,8 @@ export const updateVeiculo = async (rawData: unknown) =>
   handleServerAction(
     veiculoUpdateSchema,
     async (data, session) => {
+      requireUpdateVehiclesPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<VeiculoService>('veiculoService');
 

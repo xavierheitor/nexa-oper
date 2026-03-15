@@ -8,11 +8,14 @@ import { handleServerAction } from '../common/actionHandler';
 import { eletricistaLoteSchema } from '@/lib/schemas/eletricistaSchema';
 import { prisma } from '@/lib/db/db.service';
 import { StatusEletricista } from '@nexa-oper/db';
+import { requireCreateElectriciansPermission } from '../common/permissionGuard';
 
 export const createEletricistasLote = async (rawData: unknown) =>
   handleServerAction(
     eletricistaLoteSchema,
     async (data, session) => {
+      requireCreateElectriciansPermission(session);
+
       // Status inicial para todos os eletricistas (padrão: ATIVO)
       const statusInicial = (data.status || 'ATIVO') as StatusEletricista;
 
@@ -233,4 +236,3 @@ export const createEletricistasLote = async (rawData: unknown) =>
     rawData,
     { entityName: 'Eletricista', actionType: 'create' }
   );
-

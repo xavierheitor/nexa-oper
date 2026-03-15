@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/db/db.service';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireViewElectriciansPermission } from '../common/permissionGuard';
 
 const getEletricistaCurrentBaseSchema = z.object({
   eletricistaId: z.number().int().positive(),
@@ -11,7 +12,9 @@ const getEletricistaCurrentBaseSchema = z.object({
 export const getEletricistaCurrentBase = async (eletricistaId: number) =>
   handleServerAction(
     getEletricistaCurrentBaseSchema,
-    async (data) => {
+    async (data, session) => {
+      requireViewElectriciansPermission(session);
+
       const currentBase = await prisma.eletricistaBaseHistorico.findFirst({
         where: {
           eletricistaId: data.eletricistaId,

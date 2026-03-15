@@ -26,6 +26,7 @@ import { z } from 'zod';
 import { EletricistaService } from '../../services/pessoas/EletricistaService';
 import { container } from '../../services/common/registerServices';
 import { handleServerAction } from '../common/actionHandler';
+import { requireDeleteElectriciansPermission } from '../common/permissionGuard';
 
 const eletricistaDeleteSchema = z.object({
   id: z.number().int().positive(),
@@ -40,6 +41,8 @@ export const deleteEletricista = async (rawData: unknown) =>
   handleServerAction(
     eletricistaDeleteSchema,
     async (data, session) => {
+      requireDeleteElectriciansPermission(session);
+
       const service = container.get<EletricistaService>('eletricistaService');
       return service.delete(data.id, session.user.id);
     },

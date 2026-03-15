@@ -33,6 +33,7 @@
 import { prisma } from '@/lib/db/db.service';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireUpdateTeamsPermission } from '../common/permissionGuard';
 
 // Schema para validação dos dados de transferência
 const transferEquipeBaseSchema = z.object({
@@ -51,6 +52,8 @@ export const transferEquipeBase = async (rawData: unknown) =>
   handleServerAction(
     transferEquipeBaseSchema,
     async (data, session) => {
+      requireUpdateTeamsPermission(session);
+
       const { equipeId, novaBaseId, motivo } = data;
 
       // 1. Finaliza o vínculo atual (se existir)
@@ -83,4 +86,3 @@ export const transferEquipeBase = async (rawData: unknown) =>
     rawData,
     { entityName: 'EquipeBaseHistorico', actionType: 'transfer' }
   );
-

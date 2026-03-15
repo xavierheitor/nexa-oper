@@ -2,11 +2,17 @@ export type Permission =
   | 'dashboard:view'
   | 'registry:view'
   | 'contratos:view'
+  | 'contratos:create'
+  | 'contratos:update'
+  | 'contratos:delete'
   | 'tipos-escala:view'
   | 'horarios-equipe:view'
   | 'tipos-equipe:view'
   | 'tipos-veiculo:view'
   | 'veiculos:view'
+  | 'veiculos:create'
+  | 'veiculos:update'
+  | 'veiculos:delete'
   | 'cargos:view'
   | 'supervisores:view'
   | 'bases:view'
@@ -26,6 +32,9 @@ export type Permission =
   | 'checklist-opcoes:view'
   | 'checklist-modelos:view'
   | 'mobile-users:view'
+  | 'mobile-users:create'
+  | 'mobile-users:update'
+  | 'mobile-users:delete'
   | 'shifts:view'
   | 'activities:view'
   | 'attendance:view'
@@ -73,11 +82,17 @@ export const PERMISSIONS = {
   DASHBOARD_VIEW: 'dashboard:view' as const,
   REGISTRY_VIEW: 'registry:view' as const,
   CONTRATOS_VIEW: 'contratos:view' as const,
+  CONTRATOS_CREATE: 'contratos:create' as const,
+  CONTRATOS_UPDATE: 'contratos:update' as const,
+  CONTRATOS_DELETE: 'contratos:delete' as const,
   TIPOS_ESCALA_VIEW: 'tipos-escala:view' as const,
   HORARIOS_EQUIPE_VIEW: 'horarios-equipe:view' as const,
   TIPOS_EQUIPE_VIEW: 'tipos-equipe:view' as const,
   TIPOS_VEICULO_VIEW: 'tipos-veiculo:view' as const,
   VEICULOS_VIEW: 'veiculos:view' as const,
+  VEICULOS_CREATE: 'veiculos:create' as const,
+  VEICULOS_UPDATE: 'veiculos:update' as const,
+  VEICULOS_DELETE: 'veiculos:delete' as const,
   CARGOS_VIEW: 'cargos:view' as const,
   SUPERVISORES_VIEW: 'supervisores:view' as const,
   BASES_VIEW: 'bases:view' as const,
@@ -98,6 +113,9 @@ export const PERMISSIONS = {
   CHECKLIST_OPCOES_VIEW: 'checklist-opcoes:view' as const,
   CHECKLIST_MODELOS_VIEW: 'checklist-modelos:view' as const,
   MOBILE_USERS_VIEW: 'mobile-users:view' as const,
+  MOBILE_USERS_CREATE: 'mobile-users:create' as const,
+  MOBILE_USERS_UPDATE: 'mobile-users:update' as const,
+  MOBILE_USERS_DELETE: 'mobile-users:delete' as const,
   SHIFTS_VIEW: 'shifts:view' as const,
   ACTIVITIES_VIEW: 'activities:view' as const,
   ATTENDANCE_VIEW: 'attendance:view' as const,
@@ -172,6 +190,24 @@ export const PERMISSION_CATALOG: PermissionCatalogItem[] = [
     description: 'Acessa a tela de contratos.',
   },
   {
+    permission: PERMISSIONS.CONTRATOS_CREATE,
+    label: 'Criar contratos',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Cria contratos.',
+  },
+  {
+    permission: PERMISSIONS.CONTRATOS_UPDATE,
+    label: 'Editar contratos',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Edita contratos.',
+  },
+  {
+    permission: PERMISSIONS.CONTRATOS_DELETE,
+    label: 'Excluir contratos',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Exclui contratos.',
+  },
+  {
     permission: PERMISSIONS.TIPOS_ESCALA_VIEW,
     label: 'Ver tipos de escala',
     group: PERMISSION_GROUP_LABELS.registry,
@@ -200,6 +236,24 @@ export const PERMISSION_CATALOG: PermissionCatalogItem[] = [
     label: 'Ver veículos',
     group: PERMISSION_GROUP_LABELS.registry,
     description: 'Acessa a tela de veículos.',
+  },
+  {
+    permission: PERMISSIONS.VEICULOS_CREATE,
+    label: 'Criar veículos',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Cria veículos.',
+  },
+  {
+    permission: PERMISSIONS.VEICULOS_UPDATE,
+    label: 'Editar veículos',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Edita veículos e transferências.',
+  },
+  {
+    permission: PERMISSIONS.VEICULOS_DELETE,
+    label: 'Excluir veículos',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Exclui veículos.',
   },
   {
     permission: PERMISSIONS.CARGOS_VIEW,
@@ -314,6 +368,24 @@ export const PERMISSION_CATALOG: PermissionCatalogItem[] = [
     label: 'Ver usuários móveis',
     group: PERMISSION_GROUP_LABELS.registry,
     description: 'Acessa a tela de usuários móveis.',
+  },
+  {
+    permission: PERMISSIONS.MOBILE_USERS_CREATE,
+    label: 'Criar usuários móveis',
+    group: PERMISSION_GROUP_LABELS.users,
+    description: 'Cria usuários móveis.',
+  },
+  {
+    permission: PERMISSIONS.MOBILE_USERS_UPDATE,
+    label: 'Editar usuários móveis',
+    group: PERMISSION_GROUP_LABELS.users,
+    description: 'Edita usuários móveis e suas permissões por contrato.',
+  },
+  {
+    permission: PERMISSIONS.MOBILE_USERS_DELETE,
+    label: 'Excluir usuários móveis',
+    group: PERMISSION_GROUP_LABELS.users,
+    description: 'Exclui usuários móveis.',
   },
   {
     permission: PERMISSIONS.SHIFTS_VIEW,
@@ -485,11 +557,17 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.DASHBOARD_VIEW,
     PERMISSIONS.REGISTRY_VIEW,
     PERMISSIONS.CONTRATOS_VIEW,
+    PERMISSIONS.CONTRATOS_CREATE,
+    PERMISSIONS.CONTRATOS_UPDATE,
+    PERMISSIONS.CONTRATOS_DELETE,
     PERMISSIONS.TIPOS_ESCALA_VIEW,
     PERMISSIONS.HORARIOS_EQUIPE_VIEW,
     PERMISSIONS.TIPOS_EQUIPE_VIEW,
     PERMISSIONS.TIPOS_VEICULO_VIEW,
     PERMISSIONS.VEICULOS_VIEW,
+    PERMISSIONS.VEICULOS_CREATE,
+    PERMISSIONS.VEICULOS_UPDATE,
+    PERMISSIONS.VEICULOS_DELETE,
     PERMISSIONS.CARGOS_VIEW,
     PERMISSIONS.SUPERVISORES_VIEW,
     PERMISSIONS.BASES_VIEW,
@@ -509,6 +587,9 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.CHECKLIST_OPCOES_VIEW,
     PERMISSIONS.CHECKLIST_MODELOS_VIEW,
     PERMISSIONS.MOBILE_USERS_VIEW,
+    PERMISSIONS.MOBILE_USERS_CREATE,
+    PERMISSIONS.MOBILE_USERS_UPDATE,
+    PERMISSIONS.MOBILE_USERS_DELETE,
     PERMISSIONS.SHIFTS_VIEW,
     PERMISSIONS.ACTIVITIES_VIEW,
     PERMISSIONS.ATTENDANCE_VIEW,
@@ -523,7 +604,13 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.ESCALAS_UPDATE,
     PERMISSIONS.ESCALAS_PUBLISH,
     PERMISSIONS.ELETRICISTAS_VIEW,
+    PERMISSIONS.ELETRICISTAS_CREATE,
+    PERMISSIONS.ELETRICISTAS_UPDATE,
+    PERMISSIONS.ELETRICISTAS_DELETE,
     PERMISSIONS.EQUIPES_VIEW,
+    PERMISSIONS.EQUIPES_CREATE,
+    PERMISSIONS.EQUIPES_UPDATE,
+    PERMISSIONS.EQUIPES_DELETE,
     PERMISSIONS.USERS_VIEW,
   ],
   supervisor: [

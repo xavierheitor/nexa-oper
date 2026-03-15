@@ -73,6 +73,7 @@ import { contratoUpdateSchema } from '@/lib/schemas/contratoSchema';
 import type { ContratoService } from '@/lib/services/catalogo/ContratoService';
 import { container } from '@/lib/services/common/registerServices';
 import { handleServerAction } from '../common/actionHandler';
+import { requireUpdateContractsPermission } from '../common/permissionGuard';
 
 /**
  * Atualiza um contrato existente
@@ -84,6 +85,8 @@ export const updateContrato = async (rawData: unknown) =>
   handleServerAction(
     contratoUpdateSchema,
     async (data, session) => {
+      requireUpdateContractsPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<ContratoService>('contratoService');
 

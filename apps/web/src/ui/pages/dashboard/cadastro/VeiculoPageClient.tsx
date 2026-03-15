@@ -8,10 +8,16 @@ import { deleteVeiculo } from '@/lib/actions/veiculo/delete';
 import { listVeiculos } from '@/lib/actions/veiculo/list';
 import { transferVeiculoBase } from '@/lib/actions/veiculo/transferBase';
 import { updateVeiculo } from '@/lib/actions/veiculo/update';
+import {
+  canCreateVehicles,
+  canDeleteVehicles,
+  canUpdateVehicles,
+} from '@/lib/authz/registry-access';
 
 // Importações dos hooks e utilitários da aplicação
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
@@ -52,10 +58,16 @@ export default function VeiculoPageClient({
   // Hook para controlar operações CRUD (modal, loading, execução de ações)
   // O parâmetro 'veiculos' é a chave usada para revalidar o cache SWR
   const controller = useCrudController<VeiculoWithBase>('veiculos');
+  const { user } = useAuth({ redirectToLogin: false });
   const { message } = App.useApp();
   const [transferTarget, setTransferTarget] = useState<VeiculoWithBase | null>(null);
   const [isTransferLoading, setIsTransferLoading] = useState(false);
   const [isLoteModalOpen, setIsLoteModalOpen] = useState(false);
+  const userRoles = user?.roles || [];
+  const userPermissions = user?.permissions || [];
+  const canCreate = canCreateVehicles(userRoles, userPermissions);
+  const canUpdate = canUpdateVehicles(userRoles, userPermissions);
+  const canDelete = canDeleteVehicles(userRoles, userPermissions);
 
 
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
@@ -198,18 +210,20 @@ export default function VeiculoPageClient({
     // Configuração das ações da tabela (botões Editar/Excluir/Transferir)
     {
       // Ação de edição - abre o modal com o item selecionado
-      onEdit: controller.open,
+      onEdit: canUpdate ? controller.open : undefined,
 
       // Ação de exclusão - executa a Server Action de delete
-      onDelete: (item) =>
-        controller
-          .exec(
-            () => deleteVeiculo({ id: item.id }), // Server Action de exclusão
-            'Veículo excluído com sucesso!' // Mensagem de sucesso
-          )
-          .finally(() => {
-            veiculos.mutate(); // Revalida os dados da tabela após exclusão
-          }),
+      onDelete: canDelete
+        ? (item) =>
+            controller
+              .exec(
+                () => deleteVeiculo({ id: item.id }), // Server Action de exclusão
+                'Veículo excluído com sucesso!' // Mensagem de sucesso
+              )
+              .finally(() => {
+                veiculos.mutate(); // Revalida os dados da tabela após exclusão
+              })
+        : undefined,
 
       // Ações customizadas
       customActions: [
@@ -219,6 +233,7 @@ export default function VeiculoPageClient({
           type: 'link',
           icon: <SwapOutlined />,
           tooltip: 'Transferir veículo para outra base',
+          visible: () => canUpdate,
           onClick: (record) => {
             setTransferTarget(record);
           },
@@ -307,7 +322,7 @@ export default function VeiculoPageClient({
       {/* Card principal que contém a tabela */}
       <Card
         title="Veículos" // Título do card
-        extra={
+        extra={canCreate ? (
           // Botões no canto superior direito
           <Space>
             <Button onClick={() => setIsLoteModalOpen(true)}>
@@ -317,7 +332,7 @@ export default function VeiculoPageClient({
               Adicionar
             </Button>
           </Space>
-        }
+        ) : null}
       >
         {/* Filtros externos (server-side) */}
         <TableExternalFilters

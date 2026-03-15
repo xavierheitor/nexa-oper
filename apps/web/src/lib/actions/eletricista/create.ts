@@ -31,6 +31,7 @@ import { eletricistaCreateSchema } from '@/lib/schemas/eletricistaSchema';
 import type { EletricistaService } from '@/lib/services/pessoas/EletricistaService';
 import { container } from '@/lib/services/common/registerServices';
 import { handleServerAction } from '../common/actionHandler';
+import { requireCreateElectriciansPermission } from '../common/permissionGuard';
 
 /**
  * Cria um novo eletricista
@@ -42,6 +43,8 @@ export const createEletricista = async (rawData: unknown) =>
   handleServerAction(
     eletricistaCreateSchema,
     async (data, session) => {
+      requireCreateElectriciansPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<EletricistaService>('eletricistaService');
 

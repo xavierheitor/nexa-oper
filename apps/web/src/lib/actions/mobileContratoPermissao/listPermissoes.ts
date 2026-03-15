@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/db/db.service';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireManageMobileUserPermissions } from '../common/permissionGuard';
 
 const listPermissoesSchema = z.object({
   page: z.number().int().positive().default(1),
@@ -15,7 +16,9 @@ const listPermissoesSchema = z.object({
 export const listMobileContratoPermissoes = async (rawData: unknown = {}) =>
   handleServerAction(
     listPermissoesSchema,
-    async (params) => {
+    async (params, session) => {
+      requireManageMobileUserPermissions(session);
+
       const where: Record<string, unknown> = {
         deletedAt: null,
       };

@@ -33,6 +33,7 @@
 import { prisma } from '@/lib/db/db.service';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireUpdateElectriciansPermission } from '../common/permissionGuard';
 
 // Schema para validação dos dados de transferência
 const transferEletricistaBaseSchema = z.object({
@@ -51,6 +52,8 @@ export const transferEletricistaBase = async (rawData: unknown) =>
   handleServerAction(
     transferEletricistaBaseSchema,
     async (data, session) => {
+      requireUpdateElectriciansPermission(session);
+
       const { eletricistaId, novaBaseId, motivo } = data;
 
       // 1. Finaliza o vínculo atual (se existir)

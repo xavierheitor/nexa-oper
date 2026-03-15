@@ -7,11 +7,13 @@
 import { handleServerAction } from '../common/actionHandler';
 import { veiculoLoteSchema } from '@/lib/schemas/veiculoSchema';
 import { prisma } from '@/lib/db/db.service';
+import { requireCreateVehiclesPermission } from '../common/permissionGuard';
 
 export const createVeiculosLote = async (rawData: unknown) =>
   handleServerAction(
     veiculoLoteSchema,
     async (data, session) => {
+      requireCreateVehiclesPermission(session);
 
       // Criar todos os veículos em uma transação
       const veiculosCriados = await prisma.$transaction(async (tx) => {
@@ -56,4 +58,3 @@ export const createVeiculosLote = async (rawData: unknown) =>
     rawData,
     { entityName: 'Veiculo', actionType: 'create' }
   );
-

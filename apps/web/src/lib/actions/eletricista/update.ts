@@ -34,6 +34,7 @@ import { eletricistaUpdateSchema } from '../../schemas/eletricistaSchema';
 import { EletricistaService } from '../../services/pessoas/EletricistaService';
 import { container } from '../../services/common/registerServices';
 import { handleServerAction } from '../common/actionHandler';
+import { requireUpdateElectriciansPermission } from '../common/permissionGuard';
 
 /**
  * Atualiza um eletricista existente
@@ -44,6 +45,8 @@ export const updateEletricista = async (rawData: unknown) =>
   handleServerAction(
     eletricistaUpdateSchema,
     async (data, session) => {
+      requireUpdateElectriciansPermission(session);
+
       const service = container.get<EletricistaService>('eletricistaService');
       return service.update(data, session.user.id);
     },

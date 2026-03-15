@@ -4,7 +4,14 @@ import React, { useState } from 'react';
 import { Card, Table, Modal, Button, Space, Tag, Spin } from 'antd';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { MobileOutlined, UserOutlined, KeyOutlined } from '@ant-design/icons';
-import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
+import {
+  canCreateMobileUsers,
+  canDeleteMobileUsers,
+  canManageMobileUserPermissions,
+  canUpdateMobileUsers,
+} from '@/lib/authz/registry-access';
+import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
@@ -27,12 +34,22 @@ export default function UsuarioMobilePageClient({
   initialData,
 }: UsuarioMobilePageClientProps) {
   const controller = useCrudController<MobileUser>('mobileUsers');
+  const { user } = useAuth({ redirectToLogin: false });
   const [permissoesModalOpen, setPermissoesModalOpen] = useState(false);
   const [selectedUserForPermissoes, setSelectedUserForPermissoes] = useState<MobileUser | null>(null);
+  const userRoles = user?.roles || [];
+  const userPermissions = user?.permissions || [];
+  const canCreate = canCreateMobileUsers(userRoles, userPermissions);
+  const canUpdate = canUpdateMobileUsers(userRoles, userPermissions);
+  const canDelete = canDeleteMobileUsers(userRoles, userPermissions);
+  const canManagePermissions = canManageMobileUserPermissions(
+    userRoles,
+    userPermissions
+  );
 
   const mobileUsers = useEntityData<MobileUser>({
     key: 'mobileUsers',
-    fetcherAction: unwrapFetcher(listMobileUsers),
+    fetcherAction: unwrapPaginatedFetcher(listMobileUsers),
     paginationEnabled: true,
     initialData,
     initialParams: {
@@ -93,20 +110,23 @@ export default function UsuarioMobilePageClient({
       },
     ],
     {
-      onEdit: controller.open,
-      onDelete: (item) =>
-        controller
-          .exec(
-            () => deleteMobileUser({ id: item.id }),
-            'Usuário móvel excluído com sucesso!'
-          )
-          .finally(() => mobileUsers.mutate()),
+      onEdit: canUpdate ? controller.open : undefined,
+      onDelete: canDelete
+        ? (item) =>
+            controller
+              .exec(
+                () => deleteMobileUser({ id: item.id }),
+                'Usuário móvel excluído com sucesso!'
+              )
+              .finally(() => mobileUsers.mutate())
+        : undefined,
       customActions: [
         {
           key: 'permissoes',
           label: 'Permissões',
           icon: <KeyOutlined />,
           type: 'link',
+          visible: () => canManagePermissions,
           onClick: handleOpenPermissoes,
         },
       ],
@@ -136,13 +156,15 @@ export default function UsuarioMobilePageClient({
           </Space>
         }
         extra={
-          <Button
-            type="primary"
-            icon={<UserOutlined />}
-            onClick={() => controller.open()}
-          >
-            Novo Usuário Móvel
-          </Button>
+          canCreate ? (
+            <Button
+              type="primary"
+              icon={<UserOutlined />}
+              onClick={() => controller.open()}
+            >
+              Novo Usuário Móvel
+            </Button>
+          ) : null
         }
       >
         <Table<MobileUser>

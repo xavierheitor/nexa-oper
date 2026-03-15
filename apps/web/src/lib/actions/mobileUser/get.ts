@@ -52,6 +52,7 @@ import type { MobileUserService } from '@/lib/services/auth/MobileUserService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireViewMobileUsersPermission } from '../common/permissionGuard';
 
 // Schema para validação dos dados de consulta
 const getMobileUserSchema = z.object({
@@ -70,7 +71,9 @@ const getMobileUserSchema = z.object({
 export const getMobileUser = async (rawData: unknown) =>
   handleServerAction(
     getMobileUserSchema,
-    async (data, _session) => {
+    async (data, session) => {
+      requireViewMobileUsersPermission(session);
+
       // Obtém o service do container
       const service = container.get<MobileUserService>('mobileUserService');
 
