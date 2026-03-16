@@ -25,9 +25,11 @@ import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { KeyOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import { User } from '@nexa-oper/db';
-import { Modal, Space, Spin, Tag } from 'antd';
+import { App, Modal, Space, Spin, Tag, Typography } from 'antd';
 import UserForm, { UserFormData } from '@/ui/pages/dashboard/cadastro/usuario/form';
 import PermissoesModal from '@/ui/pages/dashboard/cadastro/usuario/permissoesModal';
+
+const { Text } = Typography;
 
 interface UsuarioPageClientProps {
   initialData?: PaginatedResult<User>;
@@ -36,6 +38,7 @@ interface UsuarioPageClientProps {
 export default function UsuarioPageClient({
   initialData,
 }: UsuarioPageClientProps) {
+  const { message } = App.useApp();
   const controller = useCrudController<User>('usuarios');
   const { user } = useAuth({ redirectToLogin: false });
   const [permissoesModalOpen, setPermissoesModalOpen] = useState(false);
@@ -81,6 +84,52 @@ export default function UsuarioPageClient({
   const handleOpenPermissoes = (user: User) => {
     setSelectedUserForPermissoes(user);
     setPermissoesModalOpen(true);
+  };
+
+  const handleResetPassword = async (targetUser: User) => {
+    let generatedPassword: string | undefined;
+
+    await controller
+      .exec(
+        async () => {
+          const result = await resetUserPassword({
+            userId: targetUser.id,
+            sendEmail: true,
+            notifyUser: true,
+          });
+
+          if (result.success && result.data?.newPassword) {
+            generatedPassword = result.data.newPassword;
+          }
+
+          return result;
+        },
+        'Senha resetada e enviada por email!',
+        () => {
+          if (!generatedPassword) {
+            return;
+          }
+
+          message.open({
+            type: 'success',
+            duration: 12,
+            content: (
+              <Space direction='vertical' size={4}>
+                <Text strong>Nova senha gerada</Text>
+                <Text code copyable={{ text: generatedPassword }}>
+                  {generatedPassword}
+                </Text>
+                <Text type='secondary'>
+                  Copie a senha acima se quiser compartilhar manualmente.
+                </Text>
+              </Space>
+            ),
+          });
+        },
+      )
+      .finally(() => {
+        users.mutate();
+      });
   };
 
   const columns = useTableColumnsWithActions<User>(
@@ -193,19 +242,7 @@ export default function UsuarioPageClient({
             okText: 'Reset',
             cancelText: 'Cancelar'
           },
-          onClick: (user) =>
-            controller
-              .exec(
-                () => resetUserPassword({
-                  userId: user.id,
-                  sendEmail: true,
-                  notifyUser: true
-                }),
-                'Senha resetada e enviada por email!'
-              )
-              .finally(() => {
-                users.mutate();
-              })
+          onClick: handleResetPassword
         }
       ]
     },

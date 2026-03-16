@@ -76,6 +76,15 @@ export default function PermissoesModal({
     ...(data?.rolePermissions ?? []),
     ...(selectedProfile?.permissions ?? []),
   ]);
+  const effectivePermissionsPreview = new Set<Permission>([
+    ...baselinePermissions,
+    ...selectedDirectPermissions,
+  ]);
+
+  const handleProfileChange = (value: number | null) => {
+    setSelectedProfileId(value);
+    setSelectedDirectPermissions([]);
+  };
 
   const handlePermissionToggle = (
     permission: Permission,
@@ -149,9 +158,9 @@ export default function PermissoesModal({
 
           <Paragraph style={{ marginBottom: 0 }}>
             <Text strong>Permissões efetivas:</Text>{' '}
-            <Tag color='green'>{data.effectivePermissions.length}</Tag>
+            <Tag color='green'>{effectivePermissionsPreview.size}</Tag>
             <Text type='secondary'>
-              Herdadas de roles, grupo e grants salvos no banco.
+              Prévia atual considerando roles, grupo selecionado e extras marcados.
             </Text>
           </Paragraph>
         </Card>
@@ -162,7 +171,7 @@ export default function PermissoesModal({
               allowClear
               placeholder='Selecione um grupo base de permissões'
               value={selectedProfileId}
-              onChange={(value) => setSelectedProfileId(value ?? null)}
+              onChange={(value) => handleProfileChange(value ?? null)}
               options={data.availableProfiles.map((profile) => ({
                 value: profile.id,
                 label: profile.nome,
@@ -231,8 +240,8 @@ export default function PermissoesModal({
           }
         >
           <Paragraph type='secondary'>
-            Marque apenas as permissões extras. Permissões já herdadas de role
-            ou grupo aparecem desabilitadas para evitar redundância no banco.
+            Ao trocar o grupo, os extras atuais são limpos e os checks passam a
+            refletir só o padrão do grupo selecionado. Salve para efetivar a alteração.
           </Paragraph>
 
           <Space direction='vertical' size='large' style={{ width: '100%' }}>
@@ -266,7 +275,7 @@ export default function PermissoesModal({
                             </Text>
                             <Text type='secondary' style={{ fontSize: 12 }}>
                               {item.permission}
-                              {inherited ? ' · herdada do role' : ''}
+                              {inherited ? ' · herdada de role/grupo' : ''}
                             </Text>
                           </Space>
                         </Checkbox>
