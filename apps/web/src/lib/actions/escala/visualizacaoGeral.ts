@@ -9,6 +9,7 @@
 import { prisma } from '@/lib/db/db.service';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireSchedulesPermission } from '../common/permissionGuard';
 
 const visualizacaoGeralSchema = z.object({
   periodoInicio: z.coerce.date(),
@@ -18,7 +19,8 @@ const visualizacaoGeralSchema = z.object({
 export const getVisualizacaoGeral = async (rawData: unknown) =>
   handleServerAction(
     visualizacaoGeralSchema,
-    async (data) => {
+    async (data, session) => {
+      requireSchedulesPermission(session);
       // Busca todas as escalas que intersectam com o período
       const escalas = await prisma.escalaEquipePeriodo.findMany({
         where: {
@@ -174,4 +176,3 @@ export const getVisualizacaoGeral = async (rawData: unknown) =>
     rawData,
     { entityName: 'EscalaEquipePeriodo', actionType: 'get' }
   );
-

@@ -33,6 +33,7 @@ import type { BaseService } from '@/lib/services/infraestrutura/BaseService';
 import { container } from '@/lib/services/common/registerServices';
 import { baseCreateSchema } from '../../schemas/baseSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireBasesPermission } from '../common/permissionGuard';
 
 /**
  * Cria uma nova base
@@ -44,6 +45,7 @@ export const createBase = async (rawData: unknown) =>
   handleServerAction(
     baseCreateSchema,
     async (data, session) => {
+      requireBasesPermission(session);
       // Obtém o serviço do container
       const service = container.get<BaseService>('baseService');
 

@@ -1,5 +1,5 @@
 import { listAtividadeFormPerguntas } from '@/lib/actions/atividadeFormPergunta/list';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import type { PaginatedResult } from '@/lib/types/common';
 import AtividadeFormularioPerguntaPageClient from '@/ui/pages/dashboard/cadastro/AtividadeFormularioPerguntaPageClient';
 import type { AtividadeFormPergunta, AtividadeFormTemplate, Contrato } from '@nexa-oper/db';
@@ -28,7 +28,7 @@ export default async function AtividadeFormularioPerguntaPage() {
         },
       },
     }),
-    listContratos({
+    listContratosLookup({
       page: 1,
       pageSize: 1000,
       orderBy: 'nome',

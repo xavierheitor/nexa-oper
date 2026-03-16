@@ -1,5 +1,5 @@
 import { listBases } from '@/lib/actions/base/list';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { listTiposVeiculo } from '@/lib/actions/tipoVeiculo/list';
 import { listVeiculos } from '@/lib/actions/veiculo/list';
 import type { PaginatedResult } from '@/lib/types/common';
@@ -22,7 +22,7 @@ export default async function VeiculoPage() {
           contrato: true,
         },
       }),
-      listContratos({
+      listContratosLookup({
         page: 1,
         pageSize: 100,
         orderBy: 'nome',

@@ -32,6 +32,7 @@ import type { TipoEquipeService } from '@/lib/services/infraestrutura/TipoEquipe
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireTiposEquipePermission } from '../common/permissionGuard';
 
 // Schema para validação do ID do tipo a ser buscado
 const getTipoEquipeSchema = z.object({
@@ -47,7 +48,8 @@ const getTipoEquipeSchema = z.object({
 export const getTipoEquipe = async (rawData: unknown) =>
   handleServerAction(
     getTipoEquipeSchema,
-    async (data) => {
+    async (data, session) => {
+      requireTiposEquipePermission(session);
       // Obtém o serviço do container
       const service = container.get<TipoEquipeService>('tipoEquipeService');
 

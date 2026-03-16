@@ -50,6 +50,7 @@ import type { AprTipoAtividadeVinculoService } from '@/lib/services/apr/AprTipoA
 import { setAprTipoAtividadeSchema } from '@/lib/services/apr/AprTipoAtividadeVinculoService';
 import { container } from '@/lib/services/common/registerServices';
 import { handleServerAction } from '../../common/actionHandler';
+import { requireAprModelosPermission } from '../../common/permissionGuard';
 
 /**
  * Server Action para criar/atualizar vínculo APR-TipoAtividade
@@ -69,7 +70,7 @@ import { handleServerAction } from '../../common/actionHandler';
  * @example
  * ```typescript
  * // Uso em componente React com Select
- * const handleSubmit = async (formData) => {
+ * const handleSubmit = async (formData, session) => {
  *   const result = await setAprTipoAtividade({
  *     tipoAtividadeId: formData.tipoAtividadeId,
  *     aprId: formData.aprId
@@ -118,6 +119,7 @@ export const setAprTipoAtividade = async (rawData: unknown) =>
 
     // Lógica de negócio
     async (validatedData, session) => {
+      requireAprModelosPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprTipoAtividadeVinculoService>(
         'aprTipoAtividadeVinculoService'

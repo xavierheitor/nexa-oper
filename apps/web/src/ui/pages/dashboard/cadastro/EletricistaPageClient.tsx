@@ -5,9 +5,14 @@ import { useState } from 'react';
 // Importações das Server Actions para buscar dados dos selects
 import { listEletricistas } from '@/lib/actions/eletricista/list';
 import { createEletricistasLote } from '@/lib/actions/eletricista/createLote';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { listCargos } from '@/lib/actions/cargo/list';
 import { listBases } from '@/lib/actions/base/list';
+import {
+  canCreateElectricians,
+  canDeleteElectricians,
+  canUpdateElectricians,
+} from '@/lib/authz/registry-access';
 
 // Tipos do Prisma
 import { Base, Cargo, Contrato, Eletricista } from '@nexa-oper/db';
@@ -18,6 +23,7 @@ import { StatusEletricistaLabels, StatusEletricistaColors, StatusEletricista } f
 // Importações do hook e utilitários da aplicação
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
@@ -61,6 +67,7 @@ export default function EletricistaPageClient({
   // Hook para controlar operações CRUD (modal, loading, execução de ações)
   // O parâmetro 'eletricistas' é a chave usada para revalidar o cache SWR
   const controller = useCrudController<EletricistaWithBase>('eletricistas');
+  const { user } = useAuth({ redirectToLogin: false });
   // Hook para gerenciar mensagens
   const { message } = App.useApp();
   // Estado para controlar a transferência de base
@@ -75,6 +82,11 @@ export default function EletricistaPageClient({
   const [statusTarget, setStatusTarget] = useState<EletricistaWithBase | null>(null);
   // Estado para controlar o loading da alteração de status
   const [isStatusLoading, setIsStatusLoading] = useState(false);
+  const userRoles = user?.roles || [];
+  const userPermissions = user?.permissions || [];
+  const canCreate = canCreateElectricians(userRoles, userPermissions);
+  const canUpdate = canUpdateElectricians(userRoles, userPermissions);
+  const canDelete = canDeleteElectricians(userRoles, userPermissions);
 
 
   // Hook para gerenciar dados da tabela com paginação, ordenação e filtros
@@ -99,7 +111,7 @@ export default function EletricistaPageClient({
   // Hooks para dados necessários no formulário de lote
   const contratos = useEntityData<Contrato>({
     key: 'contratos-lote',
-    fetcherAction: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratosLookup),
     initialData: initialContratos,
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
@@ -243,16 +255,18 @@ export default function EletricistaPageClient({
       },
     ],
     {
-      onEdit: controller.open,
-      onDelete: (item) =>
-        controller
-          .exec(
-            () => deleteEletricista({ id: item.id }), // Server Action de exclusão
-            'Eletricista excluído com sucesso!' // Mensagem de sucesso
-          )
-          .finally(() => {
-            eletricistas.mutate(); // Revalida os dados da tabela após exclusão
-          }),
+      onEdit: canUpdate ? controller.open : undefined,
+      onDelete: canDelete
+        ? (item) =>
+            controller
+              .exec(
+                () => deleteEletricista({ id: item.id }), // Server Action de exclusão
+                'Eletricista excluído com sucesso!' // Mensagem de sucesso
+              )
+              .finally(() => {
+                eletricistas.mutate(); // Revalida os dados da tabela após exclusão
+              })
+        : undefined,
 
       // Ações customizadas
       customActions: [
@@ -262,6 +276,7 @@ export default function EletricistaPageClient({
           type: 'link',
           icon: <EditOutlined />,
           tooltip: 'Alterar status do eletricista',
+          visible: () => canUpdate,
           onClick: (record) => {
             setStatusTarget(record);
           },
@@ -272,6 +287,7 @@ export default function EletricistaPageClient({
           type: 'link',
           icon: <SwapOutlined />,
           tooltip: 'Transferir eletricista para outra base',
+          visible: () => canUpdate,
           onClick: (record) => {
             setTransferTarget(record);
           },
@@ -439,7 +455,7 @@ export default function EletricistaPageClient({
       {/* Card principal que contém a tabela */}
       <Card
         title="Eletricistas" // Título do card
-        extra={
+        extra={canCreate ? (
           <Space>
             <Button icon={<PlusOutlined />} onClick={() => setIsLoteModalOpen(true)}>
               Cadastro em Lote
@@ -448,7 +464,7 @@ export default function EletricistaPageClient({
               Adicionar
             </Button>
           </Space>
-        }
+        ) : null}
       >
         {/* Campo de busca por nome e matrícula */}
         <Space direction="vertical" size="middle" style={{ width: '100%', marginBottom: 16 }}>

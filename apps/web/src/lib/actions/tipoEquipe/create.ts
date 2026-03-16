@@ -32,6 +32,7 @@ import type { TipoEquipeService } from '@/lib/services/infraestrutura/TipoEquipe
 import { container } from '@/lib/services/common/registerServices';
 import { tipoEquipeCreateSchema } from '../../schemas/tipoEquipeSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireTiposEquipePermission } from '../common/permissionGuard';
 
 /**
  * Cria um novo tipo de equipe
@@ -43,6 +44,7 @@ export const createTipoEquipe = async (rawData: unknown) =>
   handleServerAction(
     tipoEquipeCreateSchema,
     async (data, session) => {
+      requireTiposEquipePermission(session);
       // Obtém o serviço do container
       const service = container.get<TipoEquipeService>('tipoEquipeService');
 

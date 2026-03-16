@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireFullAccessPermission } from '../common/permissionGuard';
 import { prisma } from '@/lib/db/db.service';
 
 const emptySchema = z.object({});
@@ -12,7 +13,8 @@ const updateSchema = idSchema.extend({ name: z.string().trim().min(1).max(255) }
 export const getTests = async () =>
   handleServerAction(
     emptySchema,
-    async () => {
+    async (_, session) => {
+      requireFullAccessPermission(session);
       return prisma.test.findMany();
     },
     {},
@@ -22,7 +24,8 @@ export const getTests = async () =>
 export const createTest = async (name: string) =>
   handleServerAction(
     nameSchema,
-    async (data) => {
+    async (data, session) => {
+      requireFullAccessPermission(session);
       return prisma.test.create({
         data: { name: data.name },
       });
@@ -34,7 +37,8 @@ export const createTest = async (name: string) =>
 export const getTestById = async (id: number) =>
   handleServerAction(
     idSchema,
-    async (data) => {
+    async (data, session) => {
+      requireFullAccessPermission(session);
       return prisma.test.findUnique({
         where: { id: data.id },
       });
@@ -46,7 +50,8 @@ export const getTestById = async (id: number) =>
 export const updateTest = async (id: number, name: string) =>
   handleServerAction(
     updateSchema,
-    async (data) => {
+    async (data, session) => {
+      requireFullAccessPermission(session);
       return prisma.test.update({
         where: { id: data.id },
         data: { name: data.name },
@@ -59,7 +64,8 @@ export const updateTest = async (id: number, name: string) =>
 export const deleteTest = async (id: number) =>
   handleServerAction(
     idSchema,
-    async (data) => {
+    async (data, session) => {
+      requireFullAccessPermission(session);
       return prisma.test.delete({
         where: { id: data.id },
       });
@@ -71,7 +77,8 @@ export const deleteTest = async (id: number) =>
 export const healthCheck = async () =>
   handleServerAction(
     emptySchema,
-    async () => {
+    async (_, session) => {
+      requireFullAccessPermission(session);
       await prisma.$queryRaw`SELECT 1`;
       return true;
     },

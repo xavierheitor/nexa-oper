@@ -25,6 +25,13 @@ import {
 } from '../../schemas/escalaSchemas';
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import {
+  requireEscalasCreatePermission,
+  requireEscalasDeletePermission,
+  requireEscalasPublishPermission,
+  requireEscalasUpdatePermission,
+  requireSchedulesPermission,
+} from '../common/permissionGuard';
 
 /**
  * Cria novo período de escala
@@ -33,6 +40,7 @@ export const createEscalaEquipePeriodo = async (rawData: unknown) =>
   handleServerAction(
     escalaEquipePeriodoCreateSchema,
     async (data, session) => {
+      requireEscalasCreatePermission(session);
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
@@ -49,6 +57,7 @@ export const updateEscalaEquipePeriodo = async (rawData: unknown) =>
   handleServerAction(
     escalaEquipePeriodoUpdateSchema,
     async (data, session) => {
+      requireEscalasUpdatePermission(session);
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
@@ -64,7 +73,8 @@ export const updateEscalaEquipePeriodo = async (rawData: unknown) =>
 export const listEscalasEquipePeriodo = async (rawData: unknown) =>
   handleServerAction(
     escalaEquipePeriodoFilterSchema,
-    async data => {
+    async (data, session) => {
+      requireSchedulesPermission(session);
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
@@ -80,7 +90,8 @@ export const listEscalasEquipePeriodo = async (rawData: unknown) =>
 export const getEscalaEquipePeriodoById = async (id: number) =>
   handleServerAction(
     z.object({}),
-    async () => {
+    async (_, session) => {
+      requireSchedulesPermission(session);
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
@@ -97,6 +108,7 @@ export const deleteEscalaEquipePeriodo = async (id: number) =>
   handleServerAction(
     z.object({}),
     async (_, session) => {
+      requireEscalasDeletePermission(session);
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
@@ -113,6 +125,7 @@ export const gerarSlotsEscala = async (rawData: unknown) =>
   handleServerAction(
     gerarSlotsSchema,
     async (data, session) => {
+      requireEscalasCreatePermission(session);
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
@@ -129,6 +142,7 @@ export const publicarEscala = async (rawData: unknown) =>
   handleServerAction(
     publicarPeriodoSchema,
     async (data, session) => {
+      requireEscalasPublishPermission(session);
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
@@ -145,6 +159,7 @@ export const arquivarEscala = async (rawData: unknown) =>
   handleServerAction(
     arquivarPeriodoSchema,
     async (data, session) => {
+      requireEscalasPublishPermission(session);
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
@@ -161,6 +176,7 @@ export const duplicarEscala = async (rawData: unknown) =>
   handleServerAction(
     duplicarPeriodoSchema,
     async (data, session) => {
+      requireEscalasCreatePermission(session);
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
@@ -177,6 +193,7 @@ export const prolongarEscala = async (rawData: unknown) =>
   handleServerAction(
     prolongarPeriodoSchema,
     async (data, session) => {
+      requireEscalasUpdatePermission(session);
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
@@ -193,6 +210,7 @@ export const marcarFaltaAction = async (rawData: unknown) =>
   handleServerAction(
     marcarFaltaSchema,
     async (data, session) => {
+      requireEscalasUpdatePermission(session);
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
@@ -212,6 +230,7 @@ export const registrarTrocaAction = async (rawData: unknown) =>
   handleServerAction(
     registrarTrocaSchema,
     async (data, session) => {
+      requireEscalasUpdatePermission(session);
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
@@ -230,7 +249,8 @@ export const registrarTrocaAction = async (rawData: unknown) =>
 export const visualizarEscala = async (id: number) =>
   handleServerAction(
     z.object({ id: z.number() }),
-    async (data) => {
+    async (data, session) => {
+      requireSchedulesPermission(session);
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
@@ -247,6 +267,7 @@ export const transferirEscala = async (rawData: unknown) =>
   handleServerAction(
     transferirEscalaSchema,
     async (data, session) => {
+      requireEscalasUpdatePermission(session);
       const service = container.get<EscalaEquipePeriodoService>(
         'escalaEquipePeriodoService'
       );
@@ -271,6 +292,7 @@ export const updateSlotEscala = async (rawData: unknown) =>
   handleServerAction(
     slotEscalaUpdateSchema,
     async (data, session) => {
+      requireEscalasUpdatePermission(session);
       // Verificar se o slot existe
       const slot = await prisma.slotEscala.findUnique({
         where: { id: data.id },
@@ -315,4 +337,3 @@ export const updateSlotEscala = async (rawData: unknown) =>
     rawData,
     { entityName: 'SlotEscala', actionType: 'update' }
   );
-

@@ -10,11 +10,14 @@ import {
   FileProtectOutlined,
   FileTextOutlined,
   FormOutlined,
+  KeyOutlined,
   LogoutOutlined,
   SafetyOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
+import { PERMISSIONS } from '@/lib/types/permissions';
+import type { Permission } from '@/lib/types/permissions';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import type { MenuProps } from 'antd';
@@ -27,9 +30,89 @@ export interface MenuItemConfig {
   label: React.ReactNode | string;
   icon?: React.ReactNode;
   path?: string; // Se definido, envolve o label em um Link
+  pathPrefix?: string;
+  requiredPermission?: Permission;
   children?: MenuItemConfig[];
   onClick?: () => void;
 }
+
+interface RoutePermissionRule {
+  permission?: Permission;
+  specificity: number;
+  type: 'exact' | 'prefix';
+}
+
+const resolveRequiredPermission = (
+  item: MenuItemConfig,
+  inheritedPermission?: Permission
+): Permission | undefined => item.requiredPermission ?? inheritedPermission;
+
+const isPrefixMatch = (pathname: string, prefix: string): boolean =>
+  pathname === prefix || pathname.startsWith(`${prefix}/`);
+
+const getRoutePermissionRule = (
+  pathname: string,
+  items: MenuItemConfig[],
+  inheritedPermission?: Permission
+): RoutePermissionRule | undefined => {
+  let bestMatch: RoutePermissionRule | undefined;
+
+  for (const item of items) {
+    const permission = resolveRequiredPermission(item, inheritedPermission);
+
+    if (item.path === pathname) {
+      const match: RoutePermissionRule = {
+        permission,
+        specificity: item.path.length,
+        type: 'exact',
+      };
+
+      if (
+        !bestMatch ||
+        bestMatch.type !== 'exact' ||
+        match.specificity >= bestMatch.specificity
+      ) {
+        bestMatch = match;
+      }
+    }
+
+    if (item.pathPrefix && isPrefixMatch(pathname, item.pathPrefix)) {
+      const match: RoutePermissionRule = {
+        permission,
+        specificity: item.pathPrefix.length,
+        type: 'prefix',
+      };
+
+      if (
+        !bestMatch ||
+        (bestMatch.type === 'prefix' &&
+          match.specificity >= bestMatch.specificity)
+      ) {
+        bestMatch = match;
+      }
+    }
+
+    if (item.children) {
+      const childMatch = getRoutePermissionRule(
+        pathname,
+        item.children,
+        permission
+      );
+
+      if (
+        childMatch &&
+        (!bestMatch ||
+          childMatch.type === 'exact' ||
+          (bestMatch.type === 'prefix' &&
+            childMatch.specificity >= bestMatch.specificity))
+      ) {
+        bestMatch = childMatch;
+      }
+    }
+  }
+
+  return bestMatch;
+};
 
 /**
  * Estrutura de dados do Menu Lateral
@@ -41,17 +124,20 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     icon: <DashboardOutlined />,
     label: 'Dashboard',
     path: '/dashboard',
+    requiredPermission: PERMISSIONS.DASHBOARD_VIEW,
   },
   {
     key: 'cadastro',
     icon: <FormOutlined />,
     label: 'Cadastro',
+    pathPrefix: '/dashboard/cadastro',
     children: [
       {
         icon: <FileProtectOutlined />,
         key: '/dashboard/cadastro/contrato',
         label: 'Contratos',
         path: '/dashboard/cadastro/contrato',
+        requiredPermission: PERMISSIONS.CONTRATOS_VIEW,
       },
       {
         key: 'escalas-cadastro-menu',
@@ -62,11 +148,14 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             key: '/dashboard/cadastro/tipo-escala',
             label: 'Tipos de Escala',
             path: '/dashboard/cadastro/tipo-escala',
+            pathPrefix: '/dashboard/cadastro/tipo-escala',
+            requiredPermission: PERMISSIONS.TIPOS_ESCALA_VIEW,
           },
           {
             key: '/dashboard/cadastro/horario-equipe',
             label: 'Catálogo de Horários',
             path: '/dashboard/cadastro/horario-equipe',
+            requiredPermission: PERMISSIONS.HORARIOS_EQUIPE_VIEW,
           },
         ],
       },
@@ -79,11 +168,13 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             key: '/dashboard/cadastro/tipo-equipe',
             label: 'Tipos de Equipe',
             path: '/dashboard/cadastro/tipo-equipe',
+            requiredPermission: PERMISSIONS.TIPOS_EQUIPE_VIEW,
           },
           {
             key: '/dashboard/cadastro/equipe',
             label: 'Equipes',
             path: '/dashboard/cadastro/equipe',
+            requiredPermission: PERMISSIONS.EQUIPES_VIEW,
           },
         ],
       },
@@ -96,11 +187,13 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             key: '/dashboard/cadastro/tipo-veiculo',
             label: 'Tipos de Veículo',
             path: '/dashboard/cadastro/tipo-veiculo',
+            requiredPermission: PERMISSIONS.TIPOS_VEICULO_VIEW,
           },
           {
             key: '/dashboard/cadastro/veiculo',
             label: 'Veículos',
             path: '/dashboard/cadastro/veiculo',
+            requiredPermission: PERMISSIONS.VEICULOS_VIEW,
           },
         ],
       },
@@ -108,16 +201,19 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
         key: '/dashboard/cadastro/cargo',
         label: 'Cargos',
         path: '/dashboard/cadastro/cargo',
+        requiredPermission: PERMISSIONS.CARGOS_VIEW,
       },
       {
         key: '/dashboard/cadastro/eletricista',
         label: 'Eletricista',
         path: '/dashboard/cadastro/eletricista',
+        requiredPermission: PERMISSIONS.ELETRICISTAS_VIEW,
       },
       {
         key: '/dashboard/cadastro/supervisor',
         label: 'Supervisor',
         path: '/dashboard/cadastro/supervisor',
+        requiredPermission: PERMISSIONS.SUPERVISORES_VIEW,
       },
       {
         key: 'atividades-menu',
@@ -128,31 +224,37 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             key: '/dashboard/cadastro/tipo-atividade',
             label: 'Tipos de Atividade',
             path: '/dashboard/cadastro/tipo-atividade',
+            requiredPermission: PERMISSIONS.TIPOS_ATIVIDADE_VIEW,
           },
           {
             key: '/dashboard/cadastro/subtipo-atividade',
             label: 'Subtipos de Atividade',
             path: '/dashboard/cadastro/subtipo-atividade',
+            requiredPermission: PERMISSIONS.SUBTIPOS_ATIVIDADE_VIEW,
           },
           {
             key: '/dashboard/cadastro/material-catalogo',
             label: 'Materiais',
             path: '/dashboard/cadastro/material-catalogo',
+            requiredPermission: PERMISSIONS.MATERIAIS_CATALOGO_VIEW,
           },
           {
             key: '/dashboard/cadastro/motivos-improdutivos',
             label: 'Motivos Improdutivos',
             path: '/dashboard/cadastro/motivos-improdutivos',
+            requiredPermission: PERMISSIONS.CAUSAS_IMPRODUTIVAS_VIEW,
           },
           {
             key: '/dashboard/cadastro/formulario-atividade',
             label: 'Formulários',
             path: '/dashboard/cadastro/formulario-atividade',
+            requiredPermission: PERMISSIONS.FORMULARIOS_ATIVIDADE_VIEW,
           },
           {
             key: '/dashboard/cadastro/formulario-atividade-pergunta',
             label: 'Perguntas (Catálogo)',
             path: '/dashboard/cadastro/formulario-atividade-pergunta',
+            requiredPermission: PERMISSIONS.FORMULARIOS_ATIVIDADE_PERGUNTA_VIEW,
           },
         ],
       },
@@ -160,11 +262,13 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
         key: '/dashboard/cadastro/base',
         label: 'Base',
         path: '/dashboard/cadastro/base',
+        requiredPermission: PERMISSIONS.BASES_VIEW,
       },
       {
         key: '/dashboard/cadastro/tipo-justificativa',
         label: 'Tipos de Justificativa',
         path: '/dashboard/cadastro/tipo-justificativa',
+        requiredPermission: PERMISSIONS.TIPOS_JUSTIFICATIVA_VIEW,
       },
       {
         key: 'apr',
@@ -175,21 +279,25 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             key: '/dashboard/cadastro/apr-pergunta',
             label: 'Perguntas',
             path: '/dashboard/cadastro/apr-pergunta',
+            requiredPermission: PERMISSIONS.APR_PERGUNTAS_VIEW,
           },
           {
             key: '/dashboard/cadastro/apr-opcao-resposta',
             label: 'Opções de Resposta',
             path: '/dashboard/cadastro/apr-opcao-resposta',
+            requiredPermission: PERMISSIONS.APR_OPCOES_VIEW,
           },
           {
             key: '/dashboard/cadastro/apr-grupo-pergunta',
             label: 'Grupos de Perguntas',
             path: '/dashboard/cadastro/apr-grupo-pergunta',
+            requiredPermission: PERMISSIONS.APR_GRUPOS_VIEW,
           },
           {
             key: '/dashboard/cadastro/apr-modelo',
             label: 'Modelo',
             path: '/dashboard/cadastro/apr-modelo',
+            requiredPermission: PERMISSIONS.APR_MODELOS_VIEW,
           },
         ],
       },
@@ -202,21 +310,25 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             key: '/dashboard/cadastro/tipo-checklist',
             label: 'Tipo de Checklist',
             path: '/dashboard/cadastro/tipo-checklist',
+            requiredPermission: PERMISSIONS.CHECKLIST_TIPOS_VIEW,
           },
           {
             key: '/dashboard/cadastro/checklist-pergunta',
             label: 'Perguntas',
             path: '/dashboard/cadastro/checklist-pergunta',
+            requiredPermission: PERMISSIONS.CHECKLIST_PERGUNTAS_VIEW,
           },
           {
             key: '/dashboard/cadastro/checklist-opcao-resposta',
             label: 'Opções de Resposta',
             path: '/dashboard/cadastro/checklist-opcao-resposta',
+            requiredPermission: PERMISSIONS.CHECKLIST_OPCOES_VIEW,
           },
           {
             key: '/dashboard/cadastro/checklist-modelo',
             label: 'Checklist',
             path: '/dashboard/cadastro/checklist-modelo',
+            requiredPermission: PERMISSIONS.CHECKLIST_MODELOS_VIEW,
           },
         ],
       },
@@ -229,11 +341,20 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             key: '/dashboard/cadastro/usuario',
             label: 'Usuários Web',
             path: '/dashboard/cadastro/usuario',
+            requiredPermission: PERMISSIONS.USERS_VIEW,
           },
           {
             key: '/dashboard/cadastro/usuario-mobile',
             label: 'Usuários Móveis',
             path: '/dashboard/cadastro/usuario-mobile',
+            requiredPermission: PERMISSIONS.MOBILE_USERS_VIEW,
+          },
+          {
+            key: '/dashboard/cadastro/grupo-permissao',
+            label: 'Grupos de Permissão',
+            icon: <KeyOutlined />,
+            path: '/dashboard/cadastro/grupo-permissao',
+            requiredPermission: PERMISSIONS.USERS_UPDATE,
           },
         ],
       },
@@ -243,6 +364,8 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     key: 'turnos-menu',
     icon: <ClockCircleOutlined />,
     label: 'Turnos',
+    pathPrefix: '/dashboard/turnos',
+    requiredPermission: PERMISSIONS.SHIFTS_VIEW,
     children: [
       {
         key: '/dashboard/turnos',
@@ -260,6 +383,8 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     key: 'atividades-dashboard-menu',
     icon: <AppstoreOutlined />,
     label: 'Atividades',
+    pathPrefix: '/dashboard/atividades',
+    requiredPermission: PERMISSIONS.ACTIVITIES_VIEW,
     children: [
       {
         key: '/dashboard/atividades/visao-geral',
@@ -276,17 +401,14 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
         label: 'Materiais',
         path: '/dashboard/atividades/materiais',
       },
-      {
-        key: '/dashboard/atividades/causas-improdutivas',
-        label: 'Causas Improdutivas',
-        path: '/dashboard/atividades/causas-improdutivas',
-      },
     ],
   },
   {
     key: 'frequencia-menu',
     icon: <FileTextOutlined />,
     label: 'Frequência',
+    pathPrefix: '/dashboard/frequencia',
+    requiredPermission: PERMISSIONS.ATTENDANCE_VIEW,
     children: [
       {
         key: '/dashboard/frequencia/visao-geral',
@@ -315,6 +437,8 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     key: 'escalas-menu',
     icon: <CalendarOutlined />,
     label: 'Escalas',
+    pathPrefix: '/dashboard/escalas',
+    requiredPermission: PERMISSIONS.SCHEDULES_VIEW,
     children: [
       {
         key: '/dashboard/escalas/escala-equipe-periodo',
@@ -337,6 +461,8 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     key: 'seguranca-menu',
     icon: <SafetyOutlined />,
     label: 'Segurança',
+    pathPrefix: '/dashboard/seguranca',
+    requiredPermission: PERMISSIONS.SAFETY_VIEW,
     children: [
       {
         key: '/dashboard/seguranca/consulta-checklists',
@@ -359,6 +485,8 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     key: 'relatorios',
     icon: <BarChartOutlined />,
     label: 'Relatórios',
+    pathPrefix: '/dashboard/relatorios',
+    requiredPermission: PERMISSIONS.REPORTS_VIEW,
     children: [
       {
         key: '/dashboard/relatorios/bases',
@@ -442,6 +570,50 @@ export const getAntdMenuItems = (
       children,
     } as any;
   });
+};
+
+export const filterMenuByPermissions = (
+  config: MenuItemConfig[],
+  permissions: Permission[],
+  inheritedPermission?: Permission
+): MenuItemConfig[] => {
+  return config.flatMap(item => {
+    const requiredPermission = resolveRequiredPermission(
+      item,
+      inheritedPermission
+    );
+    if (
+      requiredPermission &&
+      !permissions.includes(requiredPermission)
+    ) {
+      return [];
+    }
+
+    const children = item.children
+      ? filterMenuByPermissions(
+          item.children,
+          permissions,
+          requiredPermission
+        )
+      : undefined;
+
+    if (item.children && (!children || children.length === 0)) {
+      return [];
+    }
+
+    return [
+      {
+        ...item,
+        children,
+      },
+    ];
+  });
+};
+
+export const getRequiredPermissionForPath = (
+  pathname: string
+): Permission | undefined => {
+  return getRoutePermissionRule(pathname, MENU_STRUCTURE)?.permission;
 };
 
 /**

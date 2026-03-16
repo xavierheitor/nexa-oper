@@ -47,6 +47,7 @@ import type { AprOpcaoRespostaService } from '@/lib/services/apr/AprOpcaoRespost
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprOpcoesPermission } from '../common/permissionGuard';
 
 /**
  * Schema de validação para exclusão de opção de resposta APR
@@ -75,7 +76,7 @@ const deleteAprOpcaoRespostaSchema = z.object({
  * @example
  * ```typescript
  * // Uso em botão de exclusão
- * const handleDelete = async (opcaoId) => {
+ * const handleDelete = async (opcaoId, session) => {
  *   const confirmed = await confirm('Deseja excluir esta opção de resposta?');
  *   if (!confirmed) return;
  *
@@ -126,6 +127,7 @@ export const deleteAprOpcaoResposta = async (rawData: unknown) =>
 
     // Lógica de negócio
     async (validatedData, session) => {
+      requireAprOpcoesPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprOpcaoRespostaService>(
         'aprOpcaoRespostaService'

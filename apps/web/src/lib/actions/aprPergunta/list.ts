@@ -45,6 +45,7 @@ import type { AprPerguntaService } from '@/lib/services/apr/AprPerguntaService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprPerguntaFilterSchema } from '../../schemas/aprPerguntaSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprPerguntasPermission } from '../common/permissionGuard';
 
 /**
  * Server Action para listar perguntas APR com paginação
@@ -67,7 +68,7 @@ import { handleServerAction } from '../common/actionHandler';
  * );
  *
  * // Uso direto em componente
- * const loadPerguntas = async () => {
+ * const loadPerguntas = async (_, session) => {
  *   const result = await listAprPerguntas({
  *     page: currentPage,
  *     pageSize: 20,
@@ -88,7 +89,8 @@ export const listAprPerguntas = async (rawData: unknown) =>
     aprPerguntaFilterSchema,
 
     // Lógica de listagem
-    async (validatedParams, _session) => {
+    async (validatedParams, session) => {
+      requireAprPerguntasPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprPerguntaService>('aprPerguntaService');
 

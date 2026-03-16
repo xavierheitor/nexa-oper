@@ -44,6 +44,7 @@ import type { UserService } from '@/lib/services/auth/UserService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireResetUserPasswordPermission } from '../common/permissionGuard';
 
 // Schema para validação dos dados de reset
 const resetPasswordSchema = z.object({
@@ -65,6 +66,8 @@ export const resetUserPassword = async (rawData: unknown) =>
   handleServerAction(
     resetPasswordSchema,
     async (data, session) => {
+      requireResetUserPasswordPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<UserService>('userService');
 

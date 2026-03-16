@@ -4,6 +4,7 @@ import type { AtividadeFormPerguntaService } from '@/lib/services/catalogo/Ativi
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireFormulariosAtividadePerguntaPermission } from '../common/permissionGuard';
 
 const schema = z.object({ id: z.number().int().positive() });
 
@@ -11,6 +12,7 @@ export const deleteAtividadeFormPergunta = async (rawData: unknown) =>
   handleServerAction(
     schema,
     async (data, session) => {
+      requireFormulariosAtividadePerguntaPermission(session);
       const service = container.get<AtividadeFormPerguntaService>(
         'atividadeFormPerguntaService'
       );

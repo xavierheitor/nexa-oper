@@ -1,11 +1,13 @@
 'use client';
 
 import AuthGuard from '@/lib/components/AuthGuard';
+import { getRequiredPermissionForPath } from '@/lib/constants/navigation';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import SessionRenewer from '@/ui/components/SessionRenewer';
 import SidebarMenu from '@/ui/components/SidebarMenu';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Button, Col, Layout, Row, Spin, theme } from 'antd';
+import { usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 
 const { Header, Content } = Layout;
@@ -19,8 +21,11 @@ export default function DashboardLayoutClient({
 }: DashboardLayoutClientProps) {
   const [collapsed, setCollapsed] = useState(false);
   const hydrated = useHydrated();
+  const pathname = usePathname();
 
   const { token } = theme.useToken();
+  const requiredPermission = getRequiredPermissionForPath(pathname);
+  const isKnownDashboardPath = requiredPermission !== undefined;
 
   if (!hydrated) {
     return (
@@ -35,56 +40,69 @@ export default function DashboardLayoutClient({
   }
 
   return (
-    <AuthGuard>
-      <Layout
-        style={{
-          height: '100vh',
-          overflow: 'hidden',
-          background: token.colorBgLayout,
-        }}
-      >
-        <SessionRenewer />
+    <AuthGuard requiredPermission={requiredPermission}>
+      {!isKnownDashboardPath ? (
+        <Row
+          justify='center'
+          align='middle'
+          style={{ height: '100vh', background: token.colorBgLayout }}
+        >
+          <Col>
+            <h2>Acesso Negado</h2>
+            <p>Rota do dashboard sem mapeamento de permissão.</p>
+          </Col>
+        </Row>
+      ) : (
+        <Layout
+          style={{
+            height: '100vh',
+            overflow: 'hidden',
+            background: token.colorBgLayout,
+          }}
+        >
+          <SessionRenewer />
 
-        <SidebarMenu collapsed={collapsed} onCollapseChange={setCollapsed} />
+          <SidebarMenu collapsed={collapsed} onCollapseChange={setCollapsed} />
 
-        <Layout>
-          <Header
-            style={{
-              padding: `0 ${token.padding}px`,
-              background: token.colorBgContainer,
-            }}
-          >
-            <Row justify='space-between' align='middle'>
-              <Col>
-                <Button
-                  type='text'
-                  icon={
-                    collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
-                  }
-                  onClick={() => setCollapsed(!collapsed)}
-                  style={{
-                    fontSize: token.fontSizeLG,
-                    color: token.colorText,
-                  }}
-                />
-              </Col>
-            </Row>
-          </Header>
+          <Layout>
+            <Header
+              style={{
+                padding: `0 ${token.padding}px`,
+                background: token.colorBgContainer,
+              }}
+            >
+              <Row justify='space-between' align='middle'>
+                <Col>
+                  <Button
+                    type='text'
+                    icon={
+                      collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
+                    }
+                    onClick={() => setCollapsed(!collapsed)}
+                    style={{
+                      fontSize: token.fontSizeLG,
+                      color: token.colorText,
+                    }}
+                  />
+                </Col>
+              </Row>
+            </Header>
 
-          <Content
-            style={{
-              margin: token.margin,
-              padding: token.padding,
-              background: token.colorBgContainer,
-              borderRadius: token.borderRadiusLG,
-              flex: 1,
-              overflowY: 'auto',
-            }}
-          >
-            {children}
-          </Content>
+            <Content
+              style={{
+                margin: token.margin,
+                padding: token.padding,
+                background: token.colorBgContainer,
+                borderRadius: token.borderRadiusLG,
+                flex: 1,
+                overflowY: 'auto',
+              }}
+            >
+              {children}
+            </Content>
+          </Layout>
         </Layout>
-      </Layout>
+      )}
     </AuthGuard>
   );
 }

@@ -12,6 +12,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireSchedulesPermission } from '../common/permissionGuard';
 import { z } from 'zod';
 
 const escalasProcessadasSchema = z.object({
@@ -27,7 +28,8 @@ const escalasProcessadasSchema = z.object({
 export const getEscalasPublicadasProcessadas = async (rawData: unknown) =>
   handleServerAction(
     escalasProcessadasSchema,
-    async data => {
+    async (data, session) => {
+      requireSchedulesPermission(session);
       // Buscar escalas publicadas (mesmo padrão da action original)
       const escalas = await prisma.escalaEquipePeriodo.findMany({
         where: {

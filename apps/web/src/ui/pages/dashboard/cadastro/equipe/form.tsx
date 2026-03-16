@@ -3,7 +3,7 @@
 import { Button, Form, Input, Select, Spin, App } from 'antd';
 import { useEffect, useState } from 'react';
 
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 
 import { Contrato, TipoEquipe } from '@nexa-oper/db';
@@ -38,7 +38,7 @@ export default function EquipeForm({
         setLoadingSelects(true);
         const [tiposResponse, contratosResponse] = await Promise.all([
           listTiposEquipe({ page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' }),
-          listContratos({ page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' }),
+          listContratosLookup({ page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' }),
         ]);
         setTiposEquipe(tiposResponse.data?.data || []);
         setContratos(contratosResponse.data?.data || []);

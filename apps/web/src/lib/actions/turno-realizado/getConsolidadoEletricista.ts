@@ -7,6 +7,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireTurnoRealizadoPermission } from '../common/permissionGuard';
 import {
   consolidadoEletricistaResponseSchema,
   periodoSchema,
@@ -35,7 +36,8 @@ const getConsolidadoEletricistaSchema = z.object({
 export const getConsolidadoEletricista = async (rawData: unknown) =>
   handleServerAction(
     getConsolidadoEletricistaSchema,
-    async data => {
+    async (data, session) => {
+      requireTurnoRealizadoPermission(session);
       // Verificar se eletricista existe
       const eletricista = await prisma.eletricista.findUnique({
         where: { id: data.eletricistaId },

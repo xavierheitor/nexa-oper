@@ -36,6 +36,7 @@ import { prisma } from '@/lib/db/db.service';
 import { registrarStatusSchema } from '@/lib/schemas/eletricistaStatusSchema';
 import { StatusEletricista } from '@nexa-oper/db';
 import { handleServerAction } from '../common/actionHandler';
+import { requireUpdateElectriciansPermission } from '../common/permissionGuard';
 
 /**
  * Registra/atualiza o status de um eletricista
@@ -47,6 +48,8 @@ export const registrarStatusEletricista = async (rawData: unknown) =>
   handleServerAction(
     registrarStatusSchema,
     async (data, session) => {
+      requireUpdateElectriciansPermission(session);
+
       const { eletricistaId, status, dataInicio, dataFim, motivo, observacoes, documentoPath } = data;
 
       // 1. Verifica se o eletricista existe
@@ -129,4 +132,3 @@ export const registrarStatusEletricista = async (rawData: unknown) =>
     rawData,
     { entityName: 'EletricistaStatus', actionType: 'update' }
   );
-

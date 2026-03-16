@@ -7,11 +7,14 @@
 import { handleServerAction } from '../common/actionHandler';
 import { equipeLoteSchema } from '@/lib/schemas/equipeSchema';
 import { prisma } from '@/lib/db/db.service';
+import { requireCreateTeamsPermission } from '../common/permissionGuard';
 
 export const createEquipesLote = async (rawData: unknown) =>
   handleServerAction(
     equipeLoteSchema,
     async (data, session) => {
+      requireCreateTeamsPermission(session);
+
       // Criar todas as equipes em uma transação
       const equipesCriadas = await prisma.$transaction(async (tx) => {
         const resultados = [];
@@ -41,4 +44,3 @@ export const createEquipesLote = async (rawData: unknown) =>
     rawData,
     { entityName: 'Equipe', actionType: 'create' }
   );
-

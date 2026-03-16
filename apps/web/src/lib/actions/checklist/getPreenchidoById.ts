@@ -13,6 +13,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireSafetyPermission } from '../common/permissionGuard';
 import { z } from 'zod';
 
 const getChecklistPreenchidoByIdSchema = z.object({
@@ -22,7 +23,8 @@ const getChecklistPreenchidoByIdSchema = z.object({
 export const getChecklistPreenchidoById = async (rawData: unknown) =>
   handleServerAction(
     getChecklistPreenchidoByIdSchema,
-    async (data) => {
+    async (data, session) => {
+      requireSafetyPermission(session);
       const checklist = await prisma.checklistPreenchido.findUnique({
         where: {
           id: data.id,

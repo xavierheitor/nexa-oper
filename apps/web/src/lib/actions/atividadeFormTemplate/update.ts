@@ -4,11 +4,13 @@ import type { AtividadeFormTemplateService } from '@/lib/services/catalogo/Ativi
 import { container } from '@/lib/services/common/registerServices';
 import { atividadeFormTemplateUpdateSchema } from '../../schemas/atividadeFormTemplateSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireFormulariosAtividadePermission } from '../common/permissionGuard';
 
 export const updateAtividadeFormTemplate = async (rawData: unknown) =>
   handleServerAction(
     atividadeFormTemplateUpdateSchema,
     async (data, session) => {
+      requireFormulariosAtividadePermission(session);
       const service = container.get<AtividadeFormTemplateService>(
         'atividadeFormTemplateService'
       );

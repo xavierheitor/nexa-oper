@@ -46,6 +46,7 @@ import type { AprPerguntaService } from '@/lib/services/apr/AprPerguntaService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprPerguntasPermission } from '../common/permissionGuard';
 
 /**
  * Schema de validação para busca de pergunta APR por ID
@@ -73,7 +74,7 @@ const getAprPerguntaSchema = z.object({
  * @example
  * ```typescript
  * // Uso para carregamento de dados de edição
- * const loadPerguntaForEdit = async (perguntaId) => {
+ * const loadPerguntaForEdit = async (perguntaId, session) => {
  *   const result = await getAprPergunta({ id: perguntaId });
  *
  *   if (result.success && result.data) {
@@ -125,7 +126,8 @@ export const getAprPergunta = async (rawData: unknown) =>
     getAprPerguntaSchema,
 
     // Lógica de negócio
-    async (validatedData, _session) => {
+    async (validatedData, session) => {
+      requireAprPerguntasPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprPerguntaService>('aprPerguntaService');
 

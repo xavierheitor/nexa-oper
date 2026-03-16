@@ -6,6 +6,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireReportsPermission } from '../common/permissionGuard';
 import { relatorioVeiculosFiltroSchema } from '@/lib/schemas/relatoriosSchema';
 
 /**
@@ -14,7 +15,8 @@ import { relatorioVeiculosFiltroSchema } from '@/lib/schemas/relatoriosSchema';
 export const getVeiculosPorTipo = async (rawData?: unknown) =>
   handleServerAction(
     relatorioVeiculosFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
       };
@@ -65,7 +67,8 @@ export const getVeiculosPorTipo = async (rawData?: unknown) =>
 export const getVeiculosPorLotacao = async (rawData?: unknown) =>
   handleServerAction(
     relatorioVeiculosFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
       };
@@ -127,7 +130,8 @@ export const getVeiculosPorLotacao = async (rawData?: unknown) =>
 export const getVeiculosPorMarca = async (rawData?: unknown) =>
   handleServerAction(
     relatorioVeiculosFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
       };

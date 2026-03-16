@@ -58,6 +58,7 @@ import type { MobileUserService } from '@/lib/services/auth/MobileUserService';
 import { container } from '@/lib/services/common/registerServices';
 import { mobileUserChangePasswordSchema } from '../../schemas/mobileUserSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireUpdateMobileUsersPermission } from '../common/permissionGuard';
 
 /**
  * Altera a senha de um usuário móvel
@@ -72,6 +73,8 @@ export const changeMobileUserPassword = async (rawData: unknown) =>
   handleServerAction(
     mobileUserChangePasswordSchema,
     async (data, session) => {
+      requireUpdateMobileUsersPermission(session);
+
       // Obtém o service do container
       const service = container.get<MobileUserService>('mobileUserService');
 

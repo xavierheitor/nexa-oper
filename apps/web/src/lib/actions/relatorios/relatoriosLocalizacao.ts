@@ -6,6 +6,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireReportsPermission } from '../common/permissionGuard';
 import { z } from 'zod';
 
 /**
@@ -39,7 +40,8 @@ export interface EquipeLocalizacaoStats {
 export const getEquipesMenosLocalizacoes = async (rawData?: unknown) =>
   handleServerAction(
     relatorioLocalizacaoFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const whereTurno: any = {
         deletedAt: null,
       };
@@ -213,7 +215,8 @@ export const getEquipesMenosLocalizacoes = async (rawData?: unknown) =>
 export const getEquipesMaiorTempoSemCaptura = async (rawData?: unknown) =>
   handleServerAction(
     relatorioLocalizacaoFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const whereTurno: any = {
         deletedAt: null,
       };

@@ -12,10 +12,12 @@
 'use client';
 
 import React from 'react';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { Layout, Menu, Typography } from 'antd';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import {
+  filterMenuByPermissions,
   MENU_STRUCTURE,
   getAntdMenuItems,
   findOpenKeys,
@@ -35,13 +37,18 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
   onCollapseChange,
 }) => {
   const pathname = usePathname();
+  const { user } = useAuth({ redirectToLogin: false });
 
   // Transforma a configuração estruturada em itens do Ant Design
   // usar useMemo se houver problemas de performance, mas para menus estáticos é overkill
-  const menuItems = getAntdMenuItems(MENU_STRUCTURE);
+  const visibleMenu = filterMenuByPermissions(
+    MENU_STRUCTURE,
+    user?.permissions || []
+  );
+  const menuItems = getAntdMenuItems(visibleMenu);
 
   // Calcula chaves abertas com base na rota atual
-  const defaultOpenKeys = findOpenKeys(pathname);
+  const defaultOpenKeys = findOpenKeys(pathname, visibleMenu);
 
   return (
     <Sider

@@ -32,6 +32,7 @@ import type { TipoVeiculoService } from '@/lib/services/infraestrutura/TipoVeicu
 import { container } from '@/lib/services/common/registerServices';
 import { tipoVeiculoUpdateSchema } from '../../schemas/tipoVeiculoSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireTiposVeiculoPermission } from '../common/permissionGuard';
 
 /**
  * Atualiza um tipo de veículo existente
@@ -43,6 +44,7 @@ export const updateTipoVeiculo = async (rawData: unknown) =>
   handleServerAction(
     tipoVeiculoUpdateSchema,
     async (data, session) => {
+      requireTiposVeiculoPermission(session);
       // Obtém o serviço do container
       const service = container.get<TipoVeiculoService>('tipoVeiculoService');
 

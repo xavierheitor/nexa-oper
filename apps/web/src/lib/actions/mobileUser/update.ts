@@ -64,6 +64,7 @@ import type { MobileUserService } from '@/lib/services/auth/MobileUserService';
 import { container } from '@/lib/services/common/registerServices';
 import { mobileUserUpdateSchema } from '../../schemas/mobileUserSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireUpdateMobileUsersPermission } from '../common/permissionGuard';
 
 /**
  * Atualiza um usuário móvel existente
@@ -78,6 +79,8 @@ export const updateMobileUser = async (rawData: unknown) =>
   handleServerAction(
     mobileUserUpdateSchema,
     async (data, session) => {
+      requireUpdateMobileUsersPermission(session);
+
       // Obtém o service do container
       const service = container.get<MobileUserService>('mobileUserService');
 

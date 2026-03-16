@@ -6,6 +6,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireReportsPermission } from '../common/permissionGuard';
 import { z } from 'zod';
 
 /**
@@ -25,7 +26,8 @@ const relatorioTurnosPorPeriodoSchema = z.object({
 export const getTurnosPorPeriodo = async (rawData?: unknown) =>
   handleServerAction(
     relatorioTurnosPorPeriodoSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
         dataInicio: {

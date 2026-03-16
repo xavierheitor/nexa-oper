@@ -72,6 +72,11 @@ declare module 'next-auth' {
     email: string; // Email do usuário
     permissions: Permission[]; // Lista de permissões do usuário
     roles: Role[]; // Lista de roles do usuário
+    permissionProfile?: {
+      id: number;
+      key: string;
+      nome: string;
+    } | null;
   }
 
   /**
@@ -96,6 +101,11 @@ declare module 'next-auth' {
       email?: string; // Email (opcional)
       permissions: Permission[]; // Lista de permissões do usuário
       roles: Role[]; // Lista de roles do usuário
+      permissionProfile?: {
+        id: number;
+        key: string;
+        nome: string;
+      } | null;
     };
   }
 
@@ -121,7 +131,13 @@ declare module 'next-auth' {
     email?: string; // Email no token (opcional)
     permissions: Permission[]; // Lista de permissões do usuário no token
     roles: Role[]; // Lista de roles do usuário no token
+    permissionProfile?: {
+      id: number;
+      key: string;
+      nome: string;
+    } | null;
     lastActivity?: number; // Timestamp da última atividade (sliding session)
+    permissionsRefreshedAt?: number; // Timestamp da última atualização das permissões
   }
 }
 
@@ -155,6 +171,12 @@ declare module 'next-auth/jwt' {
     email: string; // Email (obrigatório)
     permissions: Permission[]; // Lista de permissões do usuário
     roles: Role[]; // Lista de roles do usuário
+    permissionProfile?: {
+      id: number;
+      key: string;
+      nome: string;
+    } | null;
     lastActivity?: number; // Timestamp da última atividade (sliding session)
+    permissionsRefreshedAt?: number; // Timestamp da última atualização das permissões
   }
 }

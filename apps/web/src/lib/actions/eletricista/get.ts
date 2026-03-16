@@ -28,6 +28,7 @@ import { z } from 'zod';
 import { EletricistaService } from '../../services/pessoas/EletricistaService';
 import { container } from '../../services/common/registerServices';
 import { handleServerAction } from '../common/actionHandler';
+import { requireViewElectriciansPermission } from '../common/permissionGuard';
 
 const getEletricistaSchema = z.object({
   id: z.number().int().positive(),
@@ -41,7 +42,9 @@ const getEletricistaSchema = z.object({
 export const getEletricista = async (rawData: unknown) =>
   handleServerAction(
     getEletricistaSchema,
-    async data => {
+    async (data, session) => {
+      requireViewElectriciansPermission(session);
+
       const service = container.get<EletricistaService>('eletricistaService');
       return service.getById(data.id);
     },

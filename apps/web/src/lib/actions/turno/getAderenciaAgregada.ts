@@ -11,6 +11,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsOrAttendancePermission } from '../common/permissionGuard';
 import { z } from 'zod';
 
 const aderenciaAgregadaSchema = z.object({
@@ -24,7 +25,8 @@ const aderenciaAgregadaSchema = z.object({
 export const getAderenciaAgregada = async (rawData: unknown) =>
   handleServerAction(
     aderenciaAgregadaSchema,
-    async (data) => {
+    async (data, session) => {
+      requireShiftsOrAttendancePermission(session);
       const dataInicio = new Date(data.dataInicio);
       dataInicio.setHours(0, 0, 0, 0);
       const dataFim = new Date(data.dataFim);

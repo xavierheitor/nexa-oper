@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/db/db.service';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireManageMobileUserPermissions } from '../common/permissionGuard';
 
 const setMobileContratoPermissaoSchema = z.object({
   mobileUserId: z.number().int().positive(),
@@ -13,6 +14,8 @@ export const setMobileContratoPermissao = async (rawData: unknown) =>
   handleServerAction(
     setMobileContratoPermissaoSchema,
     async (data, session) => {
+      requireManageMobileUserPermissions(session);
+
       const existing = await prisma.mobileContratoPermissao.findFirst({
         where: {
           mobileUserId: data.mobileUserId,

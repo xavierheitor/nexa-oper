@@ -159,7 +159,7 @@
 // Importações necessárias
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons'; // Ícones
 import { Button, Popconfirm, Space, Tooltip } from 'antd'; // Componentes do Ant Design
-import React from 'react';
+import React, { useState } from 'react';
 
 /**
  * Interface para ações customizadas
@@ -184,7 +184,7 @@ export interface CustomAction<T> {
     okText?: string;              // Texto do botão OK
     cancelText?: string;          // Texto do botão Cancelar
   };
-  onClick: (record: T) => void;   // Função executada ao clicar
+  onClick: (record: T) => Promise<void> | void;   // Função executada ao clicar
 }
 
 /**
@@ -222,6 +222,25 @@ export default function TableActionButtons<T>({
   editTooltip,    // Tooltip para o botão de edição
   deleteTooltip,  // Tooltip para o botão de exclusão
 }: TableActionButtonsProps<T>) {
+  const [pendingActionKey, setPendingActionKey] = useState<string | null>(null);
+
+  const runAction = async (
+    actionKey: string,
+    callback: (record: T) => Promise<void> | void,
+  ) => {
+    if (pendingActionKey === actionKey) {
+      return;
+    }
+
+    setPendingActionKey(actionKey);
+
+    try {
+      await callback(record);
+    } finally {
+      setPendingActionKey((current) => (current === actionKey ? null : current));
+    }
+  };
+
   /**
    * Função para renderizar um botão com tooltip opcional
    *
@@ -256,12 +275,21 @@ export default function TableActionButtons<T>({
    * @returns JSX do botão com ou sem confirmação e tooltip
    */
   const renderCustomAction = (action: CustomAction<T>) => {
+    const isPending = pendingActionKey === action.key;
     const button = (
       <Button
         type={action.type || 'link'}
         danger={action.danger}
         icon={action.icon}
-        onClick={() => action.onClick(record)}
+        onClick={
+          action.confirm
+            ? undefined
+            : () => {
+                void runAction(action.key, action.onClick);
+              }
+        }
+        loading={isPending}
+        disabled={isPending}
       >
         {action.label}
       </Button>
@@ -275,7 +303,10 @@ export default function TableActionButtons<T>({
           description={action.confirm.description}
           okText={action.confirm.okText || 'Sim'}
           cancelText={action.confirm.cancelText || 'Não'}
-          onConfirm={() => action.onClick(record)}
+          onConfirm={() => runAction(action.key, action.onClick)}
+          okButtonProps={{ loading: isPending, disabled: isPending }}
+          cancelButtonProps={{ disabled: isPending }}
+          disabled={isPending}
         >
           {button}
         </Popconfirm>

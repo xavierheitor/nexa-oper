@@ -52,6 +52,7 @@ import type { MobileUserService } from '@/lib/services/auth/MobileUserService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireDeleteMobileUsersPermission } from '../common/permissionGuard';
 
 // Schema para validação dos dados de exclusão
 const deleteMobileUserSchema = z.object({
@@ -71,6 +72,8 @@ export const deleteMobileUser = async (rawData: unknown) =>
   handleServerAction(
     deleteMobileUserSchema,
     async (data, session) => {
+      requireDeleteMobileUsersPermission(session);
+
       // Obtém o service do container
       const service = container.get<MobileUserService>('mobileUserService');
 

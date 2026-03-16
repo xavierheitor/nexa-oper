@@ -91,6 +91,7 @@ import type { ContratoService } from '@/lib/services/catalogo/ContratoService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireDeleteContractsPermission } from '../common/permissionGuard';
 
 // Schema de validação para ID do contrato
 const deleteSchema = z.object({
@@ -110,6 +111,8 @@ export const deleteContrato = async (rawData: unknown) =>
   handleServerAction(
     deleteSchema,
     async ({ id }, session) => {
+      requireDeleteContractsPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<ContratoService>('contratoService');
 

@@ -48,6 +48,7 @@ import type { MobileUserService } from '@/lib/services/auth/MobileUserService';
 import { container } from '@/lib/services/common/registerServices';
 import { mobileUserCreateSchema } from '../../schemas/mobileUserSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireCreateMobileUsersPermission } from '../common/permissionGuard';
 
 /**
  * Cria um novo usuário móvel
@@ -62,6 +63,8 @@ export const createMobileUser = async (rawData: unknown) =>
   handleServerAction(
     mobileUserCreateSchema,
     async (data, session) => {
+      requireCreateMobileUsersPermission(session);
+
       // Obtém o service do container
       const service = container.get<MobileUserService>('mobileUserService');
 

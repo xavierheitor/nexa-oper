@@ -9,6 +9,7 @@
 
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireEscalasPublishPermission } from '../common/permissionGuard';
 import { container } from '@/lib/services/common/registerServices';
 import { EscalaEquipePeriodoService } from '@/lib/services/escala/EscalaEquipePeriodoService';
 
@@ -21,6 +22,7 @@ export const publicarEscalasEmLote = async (rawData: unknown) =>
   handleServerAction(
     publicarEmLoteSchema,
     async (data, session) => {
+      requireEscalasPublishPermission(session);
       const service = container.get<EscalaEquipePeriodoService>('escalaEquipePeriodoService');
 
       const resultados = {
@@ -54,4 +56,3 @@ export const publicarEscalasEmLote = async (rawData: unknown) =>
     rawData,
     { entityName: 'EscalaEquipePeriodo', actionType: 'update' }
   );
-

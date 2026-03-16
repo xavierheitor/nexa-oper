@@ -61,6 +61,7 @@ import type { AprService } from '@/lib/services/apr/AprService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprUpdateSchema } from '../../schemas/aprSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprModelosPermission } from '../common/permissionGuard';
 
 /**
  * Server Action para atualizar APR existente
@@ -81,7 +82,7 @@ import { handleServerAction } from '../common/actionHandler';
  * @example
  * ```typescript
  * // Uso em componente de edição com Transfer
- * const handleUpdate = async (formData) => {
+ * const handleUpdate = async (formData, session) => {
  *   const result = await updateApr({
  *     id: editingApr.id,
  *     nome: formData.nome,
@@ -133,6 +134,7 @@ export const updateApr = async (rawData: unknown) =>
 
     // Lógica de negócio
     async (validatedData, session) => {
+      requireAprModelosPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprService>('aprService');
 

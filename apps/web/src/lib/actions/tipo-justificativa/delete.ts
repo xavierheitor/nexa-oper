@@ -5,6 +5,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireTiposJustificativaPermission } from '../common/permissionGuard';
 import { container } from '../../services/common/registerServices';
 import type { TipoJustificativaService } from '../../services/justificativas/TipoJustificativaService';
 import { z } from 'zod';
@@ -20,6 +21,7 @@ export const deleteTipoJustificativa = async (rawData: unknown) =>
   handleServerAction(
     deleteTipoJustificativaSchema,
     async (data, session) => {
+      requireTiposJustificativaPermission(session);
       const service = container.get<TipoJustificativaService>('tipoJustificativaService');
       return service.delete(data.id, session.user.id);
     },

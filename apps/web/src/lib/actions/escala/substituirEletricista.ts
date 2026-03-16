@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireEscalasUpdatePermission } from '../common/permissionGuard';
 
 const substituirEletricistaSchema = z.object({
   escalaId: z.coerce.number(),
@@ -16,6 +17,7 @@ export const substituirEletricistaAction = async (rawData: unknown) => {
   return handleServerAction(
     substituirEletricistaSchema,
     async (data, session) => {
+      requireEscalasUpdatePermission(session);
       // 1. Verificar conflito básico (opcional): O substituto já está nessa mesma escala nesse período?
       // Isso pode ser complexo pois ele pode estar em OUTRA equipe.
       // Vamos apenas logar ou confiar no gestor.

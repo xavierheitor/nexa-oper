@@ -1,10 +1,10 @@
 'use server';
 
-import { PERMISSIONS } from '@/lib/types/permissions';
 import { prisma } from '@/lib/db/db.service';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { handleServerAction } from './actionHandler';
+import { requireCreateUsersPermission } from './permissionGuard';
 
 const cadastrarUsuarioSchema = z.object({
   username: z.string().trim().min(1, 'Usuário é obrigatório'),
@@ -22,14 +22,7 @@ export const cadastrarUsuario = async (rawData: unknown) =>
   handleServerAction(
     cadastrarUsuarioSchema,
     async (data, session) => {
-      const hasPermission =
-        session.user.roles.includes('admin') ||
-        session.user.permissions.includes(PERMISSIONS.USERS_CREATE) ||
-        session.user.permissions.includes(PERMISSIONS.USUARIO_MANAGE);
-
-      if (!hasPermission) {
-        throw new Error('Sem permissão para cadastrar usuários.');
-      }
+      requireCreateUsersPermission(session);
 
       const existing = await prisma.user.findUnique({
         where: { username: data.username },

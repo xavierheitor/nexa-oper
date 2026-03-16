@@ -32,6 +32,7 @@ import type { VeiculoService } from '@/lib/services/infraestrutura/VeiculoServic
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireDeleteVehiclesPermission } from '../common/permissionGuard';
 
 // Schema para validação do ID do veículo a ser excluído
 const deleteVeiculoSchema = z.object({
@@ -48,6 +49,8 @@ export const deleteVeiculo = async (rawData: unknown) =>
   handleServerAction(
     deleteVeiculoSchema,
     async (data, session) => {
+      requireDeleteVehiclesPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<VeiculoService>('veiculoService');
 

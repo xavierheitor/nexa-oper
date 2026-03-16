@@ -37,6 +37,7 @@ import type { VeiculoService } from '@/lib/services/infraestrutura/VeiculoServic
 import { container } from '@/lib/services/common/registerServices';
 import { veiculoFilterSchema } from '../../schemas/veiculoSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireViewVehiclesPermission } from '../common/permissionGuard';
 
 /**
  * Lista veículos com paginação e filtros
@@ -47,7 +48,9 @@ import { handleServerAction } from '../common/actionHandler';
 export const listVeiculos = async (rawData: unknown) =>
   handleServerAction(
     veiculoFilterSchema,
-    async (data) => {
+    async (data, session) => {
+      requireViewVehiclesPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<VeiculoService>('veiculoService');
 

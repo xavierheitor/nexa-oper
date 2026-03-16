@@ -37,6 +37,7 @@ import type { VeiculoService } from '@/lib/services/infraestrutura/VeiculoServic
 import { container } from '@/lib/services/common/registerServices';
 import { veiculoCreateSchema } from '../../schemas/veiculoSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireCreateVehiclesPermission } from '../common/permissionGuard';
 
 /**
  * Cria um novo veículo
@@ -48,6 +49,8 @@ export const createVeiculo = async (rawData: unknown) =>
   handleServerAction(
     veiculoCreateSchema,
     async (data, session) => {
+      requireCreateVehiclesPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<VeiculoService>('veiculoService');
 

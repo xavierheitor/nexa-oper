@@ -5,7 +5,7 @@ import { deleteAtividadeFormTemplate } from '@/lib/actions/atividadeFormTemplate
 import { listAtividadeFormTemplates } from '@/lib/actions/atividadeFormTemplate/list';
 import { updateAtividadeFormTemplate } from '@/lib/actions/atividadeFormTemplate/update';
 import { listAtividadeFormPerguntas } from '@/lib/actions/atividadeFormPergunta/list';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { listTiposAtividadeServico } from '@/lib/actions/tipoAtividadeServico/list';
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
@@ -89,7 +89,7 @@ export default function AtividadeFormularioPageClient({
 
   const contratos = useEntityData<Contrato>({
     key: 'contratos-atividade-formulario',
-    fetcherAction: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratosLookup),
     paginationEnabled: false,
     initialData: initialContratos,
     initialParams: {

@@ -4,11 +4,13 @@ import type { TipoAtividadeService } from '@/lib/services/catalogo/TipoAtividade
 import { container } from '@/lib/services/common/registerServices';
 import { tipoAtividadeUpdateSchema } from '../../schemas/tipoAtividadeSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireTiposAtividadePermission } from '../common/permissionGuard';
 
 export const updateTipoAtividade = async (rawData: unknown) =>
   handleServerAction(
     tipoAtividadeUpdateSchema,
     async (data, session) => {
+      requireTiposAtividadePermission(session);
       const service = container.get<TipoAtividadeService>('tipoAtividadeService');
       return service.update(data, session.user.id);
     },

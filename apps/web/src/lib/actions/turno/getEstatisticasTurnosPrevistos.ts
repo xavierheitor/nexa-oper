@@ -9,6 +9,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsOrAttendancePermission } from '../common/permissionGuard';
 import { z } from 'zod';
 import type { EstatisticasTurnosPrevistos } from '@/lib/types/turnoPrevisto';
 
@@ -20,7 +21,8 @@ import type { EstatisticasTurnosPrevistos } from '@/lib/types/turnoPrevisto';
 export const getEstatisticasTurnosPrevistos = async () =>
   handleServerAction(
     z.object({}), // Sem parâmetros, sempre busca hoje
-    async () => {
+    async (_, session) => {
+      requireShiftsOrAttendancePermission(session);
       // Reutilizar a mesma lógica de getTurnosPrevistosHoje
       // Para evitar duplicação, vamos fazer a query diretamente aqui
       // (em produção, pode-se criar uma função helper compartilhada)

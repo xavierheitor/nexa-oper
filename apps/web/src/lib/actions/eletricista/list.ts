@@ -14,6 +14,7 @@ import { eletricistaFilterSchema } from '../../schemas/eletricistaSchema';
 import { container } from '../../services/common/registerServices';
 import { handleServerAction } from '../common/actionHandler';
 import { EletricistaService } from '../../services/pessoas/EletricistaService';
+import { requireViewElectriciansPermission } from '../common/permissionGuard';
 
 /**
  * Lista eletricistas com paginação e filtros
@@ -24,7 +25,9 @@ import { EletricistaService } from '../../services/pessoas/EletricistaService';
 export const listEletricistas = async (rawData: unknown) =>
   handleServerAction(
     eletricistaFilterSchema,
-    async data => {
+    async (data, session) => {
+      requireViewElectriciansPermission(session);
+
       const service = container.get<EletricistaService>('eletricistaService');
       return service.list(data);
     },

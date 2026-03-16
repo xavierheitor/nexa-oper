@@ -15,6 +15,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireSafetyPermission } from '../common/permissionGuard';
 import { z } from 'zod';
 import dayjs from 'dayjs';
 
@@ -35,7 +36,8 @@ const listChecklistsPreenchidosSchema = z.object({
 export const listChecklistsPreenchidos = async (rawData: unknown) =>
   handleServerAction(
     listChecklistsPreenchidosSchema,
-    async (data) => {
+    async (data, session) => {
+      requireSafetyPermission(session);
       // Converter strings para Date se necessário
       const dataInicio = data.dataInicio
         ? (typeof data.dataInicio === 'string' ? new Date(data.dataInicio) : data.dataInicio)

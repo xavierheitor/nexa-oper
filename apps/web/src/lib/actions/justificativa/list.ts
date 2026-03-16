@@ -5,6 +5,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireAttendancePermission } from '../common/permissionGuard';
 import { container } from '../../services/common/registerServices';
 import type { JustificativaService } from '../../services/justificativas/JustificativaService';
 import { listarJustificativasSchema } from '../../schemas/justificativaSchema';
@@ -16,7 +17,8 @@ import type { PaginationParams } from '../../types/common';
 export const listJustificativas = async (rawData: unknown) =>
   handleServerAction(
     listarJustificativasSchema,
-    async (data) => {
+    async (data, session) => {
+      requireAttendancePermission(session);
       const service = container.get<JustificativaService>('justificativaService');
 
       // Converte datas de string para Date se necessário e adiciona orderBy/orderDir

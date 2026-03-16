@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireSchedulesPermission } from '../common/permissionGuard';
 
 const slotsEscalaEquipeSchema = z.object({
   equipeId: z.number().int().positive(),
@@ -13,7 +14,8 @@ const slotsEscalaEquipeSchema = z.object({
 export const getSlotsEscalaEquipePeriodo = async (rawData: unknown) =>
   handleServerAction(
     slotsEscalaEquipeSchema,
-    async (data) => {
+    async (data, session) => {
+      requireSchedulesPermission(session);
       const slots = await prisma.slotEscala.findMany({
         where: {
           deletedAt: null,

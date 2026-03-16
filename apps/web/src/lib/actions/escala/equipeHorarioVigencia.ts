@@ -15,6 +15,10 @@ import {
   equipeHorarioVigenciaFilterSchema,
 } from '../../schemas/escalaSchemas';
 import { handleServerAction } from '../common/actionHandler';
+import {
+  requireEscalasUpdatePermission,
+  requireSchedulesPermission,
+} from '../common/permissionGuard';
 
 /**
  * Cria novo horário de vigência para equipe
@@ -23,6 +27,7 @@ export const createEquipeHorarioVigencia = async (rawData: unknown) =>
   handleServerAction(
     equipeHorarioVigenciaCreateSchema,
     async (data, session) => {
+      requireEscalasUpdatePermission(session);
       const service = container.get<EquipeHorarioVigenciaService>(
         'equipeHorarioVigenciaService'
       );
@@ -39,6 +44,7 @@ export const updateEquipeHorarioVigencia = async (rawData: unknown) =>
   handleServerAction(
     equipeHorarioVigenciaUpdateSchema,
     async (data, session) => {
+      requireEscalasUpdatePermission(session);
       const service = container.get<EquipeHorarioVigenciaService>(
         'equipeHorarioVigenciaService'
       );
@@ -54,7 +60,8 @@ export const updateEquipeHorarioVigencia = async (rawData: unknown) =>
 export const listEquipeHorarioVigencia = async (rawData: unknown) =>
   handleServerAction(
     equipeHorarioVigenciaFilterSchema,
-    async data => {
+    async (data, session) => {
+      requireSchedulesPermission(session);
       const service = container.get<EquipeHorarioVigenciaService>(
         'equipeHorarioVigenciaService'
       );
@@ -70,7 +77,8 @@ export const listEquipeHorarioVigencia = async (rawData: unknown) =>
 export const getEquipeHorarioVigenciaById = async (id: number) =>
   handleServerAction(
     z.object({}),
-    async () => {
+    async (_, session) => {
+      requireSchedulesPermission(session);
       const service = container.get<EquipeHorarioVigenciaService>(
         'equipeHorarioVigenciaService'
       );
@@ -87,6 +95,7 @@ export const deleteEquipeHorarioVigencia = async (id: number) =>
   handleServerAction(
     z.object({}),
     async (_, session) => {
+      requireEscalasUpdatePermission(session);
       const service = container.get<EquipeHorarioVigenciaService>(
         'equipeHorarioVigenciaService'
       );
@@ -102,7 +111,8 @@ export const deleteEquipeHorarioVigencia = async (id: number) =>
 export const buscarHorarioVigente = async (equipeId: number, data: Date) =>
   handleServerAction(
     z.object({}),
-    async () => {
+    async (_, session) => {
+      requireSchedulesPermission(session);
       const service = container.get<EquipeHorarioVigenciaService>(
         'equipeHorarioVigenciaService'
       );
@@ -111,4 +121,3 @@ export const buscarHorarioVigente = async (equipeId: number, data: Date) =>
     {},
     { entityName: 'EquipeHorarioVigencia', actionType: 'get' }
   );
-

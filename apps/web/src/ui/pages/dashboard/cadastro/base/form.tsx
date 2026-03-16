@@ -5,7 +5,7 @@ import { Button, Form, Input, Select, Spin } from 'antd';
 import { useEffect, useState } from 'react';
 
 // Importações de actions para buscar contratos
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 
 // Interface que define a estrutura dos dados do formulário
 // Deve corresponder aos campos que serão enviados para a Server Action
@@ -41,7 +41,7 @@ export default function BaseForm({
     const loadContratos = async () => {
       setContratosLoading(true);
       try {
-        const result = await listContratos({
+        const result = await listContratosLookup({
           page: 1,
           pageSize: 1000, // Busca todos os contratos
           orderBy: 'nome',

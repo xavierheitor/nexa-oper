@@ -11,6 +11,7 @@
 import { turnoFilterSchema } from '../../schemas/turnoSchema';
 import { container } from '../../services/common/registerServices';
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsOrAttendancePermission } from '../common/permissionGuard';
 import { TurnoService } from '../../services/turnos/TurnoService';
 
 /**
@@ -22,7 +23,8 @@ import { TurnoService } from '../../services/turnos/TurnoService';
 export const listTurnos = async (rawData: unknown) =>
   handleServerAction(
     turnoFilterSchema,
-    async (data) => {
+    async (data, session) => {
+      requireShiftsOrAttendancePermission(session);
       const service = container.get<TurnoService>('turnoService');
       return service.list(data);
     },

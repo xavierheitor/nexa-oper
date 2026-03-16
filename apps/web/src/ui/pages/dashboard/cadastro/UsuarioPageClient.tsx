@@ -1,23 +1,35 @@
 'use client';
 
+import React, { useState } from 'react';
 import { createUser } from '@/lib/actions/user/create';
 import { deleteUser } from '@/lib/actions/user/delete';
 import { listUsers } from '@/lib/actions/user/list';
 import { resetUserPassword } from '@/lib/actions/user/resetPassword';
 import { updateUser } from '@/lib/actions/user/update';
+import {
+  canCreateUsers,
+  canDeleteUsers,
+  canManageUserPermissions,
+  canResetUserPasswords,
+  canUpdateUsers,
+} from '@/lib/authz/user-access';
 import CrudPage from '@/lib/components/CrudPage';
-import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
+import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
 import { useHydrated } from '@/lib/hooks/useHydrated';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
-import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
+import { KeyOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import { User } from '@nexa-oper/db';
-import { Space, Spin, Tag } from 'antd';
+import { App, Modal, Space, Spin, Tag, Typography } from 'antd';
 import UserForm, { UserFormData } from '@/ui/pages/dashboard/cadastro/usuario/form';
+import PermissoesModal from '@/ui/pages/dashboard/cadastro/usuario/permissoesModal';
+
+const { Text } = Typography;
 
 interface UsuarioPageClientProps {
   initialData?: PaginatedResult<User>;
@@ -26,11 +38,27 @@ interface UsuarioPageClientProps {
 export default function UsuarioPageClient({
   initialData,
 }: UsuarioPageClientProps) {
+  const { message } = App.useApp();
   const controller = useCrudController<User>('usuarios');
+  const { user } = useAuth({ redirectToLogin: false });
+  const [permissoesModalOpen, setPermissoesModalOpen] = useState(false);
+  const [selectedUserForPermissoes, setSelectedUserForPermissoes] =
+    useState<User | null>(null);
+
+  const userRoles = user?.roles || [];
+  const userPermissions = user?.permissions || [];
+  const canCreate = canCreateUsers(userRoles, userPermissions);
+  const canUpdate = canUpdateUsers(userRoles, userPermissions);
+  const canDelete = canDeleteUsers(userRoles, userPermissions);
+  const canResetPasswords = canResetUserPasswords(userRoles, userPermissions);
+  const canManagePermissions = canManageUserPermissions(
+    userRoles,
+    userPermissions
+  );
 
   const users = useEntityData<User>({
     key: 'usuarios',
-    fetcherAction: unwrapFetcher(listUsers),
+    fetcherAction: unwrapPaginatedFetcher(listUsers),
     paginationEnabled: true,
     initialData,
     initialParams: {
@@ -52,6 +80,57 @@ export default function UsuarioPageClient({
     onSuccess: () => users.mutate(),
     successMessage: 'Usuário salvo com sucesso!',
   });
+
+  const handleOpenPermissoes = (user: User) => {
+    setSelectedUserForPermissoes(user);
+    setPermissoesModalOpen(true);
+  };
+
+  const handleResetPassword = async (targetUser: User) => {
+    let generatedPassword: string | undefined;
+
+    await controller
+      .exec(
+        async () => {
+          const result = await resetUserPassword({
+            userId: targetUser.id,
+            sendEmail: true,
+            notifyUser: true,
+          });
+
+          if (result.success && result.data?.newPassword) {
+            generatedPassword = result.data.newPassword;
+          }
+
+          return result;
+        },
+        'Senha resetada e enviada por email!',
+        () => {
+          if (!generatedPassword) {
+            return;
+          }
+
+          message.open({
+            type: 'success',
+            duration: 12,
+            content: (
+              <Space direction='vertical' size={4}>
+                <Text strong>Nova senha gerada</Text>
+                <Text code copyable={{ text: generatedPassword }}>
+                  {generatedPassword}
+                </Text>
+                <Text type='secondary'>
+                  Copie a senha acima se quiser compartilhar manualmente.
+                </Text>
+              </Space>
+            ),
+          });
+        },
+      )
+      .finally(() => {
+        users.mutate();
+      });
+  };
 
   const columns = useTableColumnsWithActions<User>(
     [
@@ -130,8 +209,9 @@ export default function UsuarioPageClient({
       },
     ],
     {
-      onEdit: controller.open,
-      onDelete: (item) =>
+      onEdit: canUpdate ? controller.open : undefined,
+      onDelete: canDelete
+        ? (item) =>
         controller
           .exec(
             () => deleteUser({ id: item.id }),
@@ -139,32 +219,30 @@ export default function UsuarioPageClient({
           )
           .finally(() => {
             users.mutate();
-          }),
+          })
+        : undefined,
       customActions: [
+        {
+          key: 'permissions',
+          label: 'Permissões',
+          icon: <KeyOutlined />,
+          type: 'link',
+          visible: () => canManagePermissions,
+          onClick: handleOpenPermissoes,
+        },
         {
           key: 'reset-password',
           label: 'Reset Senha',
           icon: <LockOutlined />,
           type: 'link',
+          visible: () => canResetPasswords,
           confirm: {
             title: 'Reset de Senha',
             description: 'Uma nova senha será gerada e enviada por email. Continuar?',
             okText: 'Reset',
             cancelText: 'Cancelar'
           },
-          onClick: (user) =>
-            controller
-              .exec(
-                () => resetUserPassword({
-                  userId: user.id,
-                  sendEmail: true,
-                  notifyUser: true
-                }),
-                'Senha resetada e enviada por email!'
-              )
-              .finally(() => {
-                users.mutate();
-              })
+          onClick: handleResetPassword
         }
       ]
     },
@@ -181,15 +259,43 @@ export default function UsuarioPageClient({
   }
 
   return (
-    <CrudPage
-      title="Usuários"
-      entityKey="usuarios"
-      controller={controller}
-      entityData={users}
-      columns={columns}
-      formComponent={UserForm}
-      onSubmit={handleSubmit}
-      modalWidth={600}
-    />
+    <>
+      <CrudPage
+        title="Usuários"
+        entityKey="usuarios"
+        controller={controller}
+        entityData={users}
+        columns={columns}
+        formComponent={UserForm}
+        onSubmit={handleSubmit}
+        modalWidth={600}
+        hideAddButton={!canCreate}
+      />
+
+      <Modal
+        title="Gerenciar Permissões"
+        open={permissoesModalOpen}
+        onCancel={() => {
+          setPermissoesModalOpen(false);
+          setSelectedUserForPermissoes(null);
+        }}
+        footer={null}
+        destroyOnHidden
+        width={960}
+      >
+        {selectedUserForPermissoes && (
+          <PermissoesModal
+            userId={selectedUserForPermissoes.id}
+            userName={selectedUserForPermissoes.nome}
+            onSaved={() => {
+              users.mutate();
+              setPermissoesModalOpen(false);
+              setSelectedUserForPermissoes(null);
+            }}
+            controllerExec={controller.exec}
+          />
+        )}
+      </Modal>
+    </>
   );
 }

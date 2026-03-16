@@ -48,6 +48,7 @@ import type { AprService } from '@/lib/services/apr/AprService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprModelosPermission } from '../common/permissionGuard';
 
 /**
  * Schema de validação para exclusão de APR
@@ -76,7 +77,7 @@ const deleteAprSchema = z.object({
  * @example
  * ```typescript
  * // Uso em botão de exclusão
- * const handleDelete = async (aprId) => {
+ * const handleDelete = async (aprId, session) => {
  *   const confirmed = await confirm('Deseja excluir esta APR?');
  *   if (!confirmed) return;
  *
@@ -154,6 +155,7 @@ export const deleteApr = async (rawData: unknown) =>
 
     // Lógica de negócio
     async (validatedData, session) => {
+      requireAprModelosPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprService>('aprService');
 

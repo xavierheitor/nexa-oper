@@ -4,11 +4,13 @@ import type { MaterialCatalogoService } from '@/lib/services/catalogo/MaterialCa
 import { container } from '@/lib/services/common/registerServices';
 import { materialCatalogoUpdateSchema } from '../../schemas/materialCatalogoSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireMateriaisCatalogoPermission } from '../common/permissionGuard';
 
 export const updateMaterialCatalogo = async (rawData: unknown) =>
   handleServerAction(
     materialCatalogoUpdateSchema,
     async (data, session) => {
+      requireMateriaisCatalogoPermission(session);
       const service = container.get<MaterialCatalogoService>(
         'materialCatalogoService'
       );

@@ -4,11 +4,13 @@ import type { ChecklistPendenciaService } from '@/lib/services/checklist/Checkli
 import { container } from '@/lib/services/common/registerServices';
 import { checklistPendenciaFilterSchema } from '../../schemas/checklistPendenciaSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireSafetyPermission } from '../common/permissionGuard';
 
 export const listChecklistPendencias = async (rawData: unknown) =>
   handleServerAction(
     checklistPendenciaFilterSchema,
-    async (data) => {
+    async (data, session) => {
+      requireSafetyPermission(session);
       const service = container.get<ChecklistPendenciaService>('checklistPendenciaService');
       return service.list(data);
     },

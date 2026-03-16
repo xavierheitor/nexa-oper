@@ -1,12 +1,12 @@
 import { listBases } from '@/lib/actions/base/list';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import RelatoriosEscalasPageClient from '@/ui/pages/dashboard/relatorios/RelatoriosEscalasPageClient';
 import type { Base, Contrato } from '@nexa-oper/db';
 import { redirect } from 'next/navigation';
 
 export default async function RelatoriosEscalasPage() {
   const [contratosResult, basesResult] = await Promise.all([
-    listContratos({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' }),
+    listContratosLookup({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' }),
     listBases({ page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' }),
   ]);
 

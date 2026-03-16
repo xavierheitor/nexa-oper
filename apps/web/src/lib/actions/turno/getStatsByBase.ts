@@ -9,6 +9,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsOrAttendancePermission } from '../common/permissionGuard';
 import { listBases } from '../base/list';
 import { listTiposEquipe } from '../tipoEquipe/list';
 import { getDateRangeInSaoPaulo } from '@/lib/utils/dateHelpers';
@@ -27,7 +28,8 @@ const turnoStatsByBaseSchema = z.object({
 export const getStatsByBase = async (params: { date?: string | Date } = {}) =>
   handleServerAction(
     turnoStatsByBaseSchema,
-    async () => {
+    async (_, session) => {
+      requireShiftsOrAttendancePermission(session);
       const dateToUse = params.date ? new Date(params.date) : new Date();
       const { inicio, fim } = getDateRangeInSaoPaulo(dateToUse);
 

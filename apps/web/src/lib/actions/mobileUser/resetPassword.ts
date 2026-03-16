@@ -54,6 +54,7 @@ import type { MobileUserService } from '@/lib/services/auth/MobileUserService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireResetMobileUserPasswordPermission } from '../common/permissionGuard';
 
 // Schema para validação dos dados de reset
 const resetMobileUserPasswordSchema = z.object({
@@ -75,6 +76,8 @@ export const resetMobileUserPassword = async (rawData: unknown) =>
   handleServerAction(
     resetMobileUserPasswordSchema,
     async (data, session) => {
+      requireResetMobileUserPasswordPermission(session);
+
       // Obtém o service do container
       const service = container.get<MobileUserService>('mobileUserService');
 

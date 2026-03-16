@@ -30,6 +30,7 @@ import type { BaseService } from '@/lib/services/infraestrutura/BaseService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireBasesPermission } from '../common/permissionGuard';
 
 // Schema para validação do ID da base a ser buscada
 const getBaseSchema = z.object({
@@ -45,7 +46,8 @@ const getBaseSchema = z.object({
 export const getBase = async (rawData: unknown) =>
   handleServerAction(
     getBaseSchema,
-    async (data) => {
+    async (data, session) => {
+      requireBasesPermission(session);
       // Obtém o serviço do container
       const service = container.get<BaseService>('baseService');
 

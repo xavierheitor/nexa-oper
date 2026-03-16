@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/db/db.service';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireViewContractsPermission } from '../common/permissionGuard';
 
 const listContratosSchema = z.object({
   page: z.number().int().positive().default(1),
@@ -15,7 +16,9 @@ const listContratosSchema = z.object({
 export const listContratos = async (rawData: unknown = {}) =>
   handleServerAction(
     listContratosSchema,
-    async (params) => {
+    async (params, session) => {
+      requireViewContractsPermission(session);
+
       const where: Record<string, unknown> = {
         deletedAt: null,
       };

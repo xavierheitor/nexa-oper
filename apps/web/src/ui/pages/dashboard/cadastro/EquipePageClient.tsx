@@ -6,12 +6,18 @@ import { deleteEquipe } from '@/lib/actions/equipe/delete';
 import { listEquipes } from '@/lib/actions/equipe/list';
 import { updateEquipe } from '@/lib/actions/equipe/update';
 import { transferEquipeBase } from '@/lib/actions/equipe/transferBase';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { listTiposEquipe } from '@/lib/actions/tipoEquipe/list';
 import { listBases } from '@/lib/actions/base/list';
+import {
+  canCreateTeams,
+  canDeleteTeams,
+  canUpdateTeams,
+} from '@/lib/authz/registry-access';
 
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
@@ -45,10 +51,16 @@ export default function EquipePageClient({
   initialTiposEquipe = [],
 }: EquipePageClientProps) {
   const controller = useCrudController<EquipeWithBase>('equipes');
+  const { user } = useAuth({ redirectToLogin: false });
   const { message } = App.useApp();
   const [isLoteModalOpen, setIsLoteModalOpen] = useState(false);
   const [transferTarget, setTransferTarget] = useState<EquipeWithBase | null>(null);
   const [isTransferLoading, setIsTransferLoading] = useState(false);
+  const userRoles = user?.roles || [];
+  const userPermissions = user?.permissions || [];
+  const canCreate = canCreateTeams(userRoles, userPermissions);
+  const canUpdate = canUpdateTeams(userRoles, userPermissions);
+  const canDelete = canDeleteTeams(userRoles, userPermissions);
 
   const equipes = useEntityData<EquipeWithBase>({
     key: 'equipes',
@@ -79,7 +91,7 @@ export default function EquipePageClient({
   // Carregar dados para o formulário em lote
   const { data: contratos } = useEntityData<Contrato>({
     key: 'contratos-lote-equipe',
-    fetcherAction: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratosLookup),
     initialData: initialContratos,
     initialParams: { page: 1, pageSize: 100, orderBy: 'nome', orderDir: 'asc' },
     paginationEnabled: false,
@@ -142,13 +154,15 @@ export default function EquipePageClient({
       },
     ],
     {
-      onEdit: controller.open,
-      onDelete: (item) =>
-        controller
-          .exec(() => deleteEquipe({ id: item.id }), 'Equipe excluída com sucesso!')
-          .finally(() => {
-            equipes.mutate();
-          }),
+      onEdit: canUpdate ? controller.open : undefined,
+      onDelete: canDelete
+        ? (item) =>
+            controller
+              .exec(() => deleteEquipe({ id: item.id }), 'Equipe excluída com sucesso!')
+              .finally(() => {
+                equipes.mutate();
+              })
+        : undefined,
       customActions: [
         {
           key: 'transfer-base',
@@ -156,6 +170,7 @@ export default function EquipePageClient({
           type: 'link',
           icon: <SwapOutlined />,
           tooltip: 'Transferir equipe para outra base',
+          visible: () => canUpdate,
           onClick: (record) => {
             setTransferTarget(record);
           },
@@ -228,7 +243,7 @@ export default function EquipePageClient({
     <>
       <Card
         title="Equipes"
-        extra={
+        extra={canCreate ? (
           <Space>
             <Button onClick={() => setIsLoteModalOpen(true)}>
               Cadastro em Lote
@@ -237,7 +252,7 @@ export default function EquipePageClient({
               Adicionar
             </Button>
           </Space>
-        }
+        ) : null}
       >
         {/* Filtros externos (server-side) */}
         <TableExternalFilters

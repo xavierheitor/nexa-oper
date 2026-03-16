@@ -49,6 +49,11 @@ interface UseAuthReturn {
     email?: string;
     permissions: Permission[];
     roles: Role[];
+    permissionProfile?: {
+      id: number;
+      key: string;
+      nome: string;
+    } | null;
   } | null;
 
   /** Se o usuário está autenticado */
@@ -164,6 +169,7 @@ export function useAuth(options?: {
           email: session.user.email,
           permissions: session.user.permissions || [],
           roles: session.user.roles || [],
+          permissionProfile: session.user.permissionProfile || null,
         }
       : null,
     isAuthenticated,

@@ -15,6 +15,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsOrAttendancePermission } from '../common/permissionGuard';
 import { container } from '../../services/common/registerServices';
 import { TurnoService } from '../../services/turnos/TurnoService';
 import { z } from 'zod';
@@ -96,7 +97,8 @@ export async function getHistoricoProcessed(
 ): Promise<{ success: boolean; data?: HistoricoProcessedData; error?: string }> {
   return handleServerAction(
     getHistoricoProcessedSchema,
-    async (params) => {
+    async (params, session) => {
+      requireShiftsOrAttendancePermission(session);
       const turnoService = container.get<TurnoService>('turnoService');
 
       // Buscar turnos do período

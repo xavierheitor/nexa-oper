@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '@/lib/actions/common/actionHandler';
+import { requireActivitiesPermission } from '@/lib/actions/common/permissionGuard';
 
 const listAtividadeAprsSchema = z.object({
   turnoId: z.number().int().positive(),
@@ -13,7 +14,8 @@ const listAtividadeAprsSchema = z.object({
 export const listAtividadeAprs = async (rawData: unknown) =>
   handleServerAction(
     listAtividadeAprsSchema,
-    async data => {
+    async (data, session) => {
+      requireActivitiesPermission(session);
       const page = data.page;
       const pageSize = data.pageSize;
       const skip = (page - 1) * pageSize;

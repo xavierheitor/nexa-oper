@@ -4,11 +4,13 @@ import type { AtividadeFormPerguntaService } from '@/lib/services/catalogo/Ativi
 import { container } from '@/lib/services/common/registerServices';
 import { atividadeFormPerguntaFilterSchema } from '../../schemas/atividadeFormPerguntaSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireFormulariosAtividadePerguntaPermission } from '../common/permissionGuard';
 
 export const listAtividadeFormPerguntas = async (rawData: unknown) =>
   handleServerAction(
     atividadeFormPerguntaFilterSchema,
-    async (data) => {
+    async (data, session) => {
+      requireFormulariosAtividadePerguntaPermission(session);
       const service = container.get<AtividadeFormPerguntaService>(
         'atividadeFormPerguntaService'
       );

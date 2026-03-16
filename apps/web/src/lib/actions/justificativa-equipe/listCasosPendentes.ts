@@ -5,6 +5,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireAttendancePermission } from '../common/permissionGuard';
 import { prisma } from '../../db/db.service';
 import { z } from 'zod';
 
@@ -23,7 +24,8 @@ const listCasosPendentesSchema = z.object({
 export const listCasosJustificativaEquipe = async (rawData: unknown) =>
   handleServerAction(
     listCasosPendentesSchema,
-    async (data) => {
+    async (data, session) => {
+      requireAttendancePermission(session);
       const where: any = {};
 
       if (data.status) {

@@ -58,6 +58,7 @@ import type { MobileUserService } from '@/lib/services/auth/MobileUserService';
 import { container } from '@/lib/services/common/registerServices';
 import { mobileUserFilterSchema } from '../../schemas/mobileUserSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireViewMobileUsersPermission } from '../common/permissionGuard';
 
 /**
  * Lista usuários móveis com paginação e filtros
@@ -71,7 +72,9 @@ import { handleServerAction } from '../common/actionHandler';
 export const listMobileUsers = async (rawData: unknown = {}) =>
   handleServerAction(
     mobileUserFilterSchema,
-    async (data, _session) => {
+    async (data, session) => {
+      requireViewMobileUsersPermission(session);
+
       // Obtém o service do container
       const service = container.get<MobileUserService>('mobileUserService');
 

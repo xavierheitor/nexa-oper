@@ -45,6 +45,7 @@ import type { UserService } from '@/lib/services/auth/UserService';
 import { container } from '@/lib/services/common/registerServices';
 import { userFilterSchema } from '../../schemas/userSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireViewUsersPermission } from '../common/permissionGuard';
 
 /**
  * Lista usuários web com paginação e filtros
@@ -58,7 +59,9 @@ import { handleServerAction } from '../common/actionHandler';
 export const listUsers = async (rawData: unknown) =>
   handleServerAction(
     userFilterSchema,
-    async (data) => {
+    async (data, session) => {
+      requireViewUsersPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<UserService>('userService');
 

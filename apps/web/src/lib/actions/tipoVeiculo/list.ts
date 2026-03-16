@@ -36,6 +36,7 @@ import type { TipoVeiculoService } from '@/lib/services/infraestrutura/TipoVeicu
 import { container } from '@/lib/services/common/registerServices';
 import { tipoVeiculoFilterSchema } from '../../schemas/tipoVeiculoSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireTiposVeiculoPermission } from '../common/permissionGuard';
 
 /**
  * Lista tipos de veículo com paginação e filtros
@@ -46,7 +47,8 @@ import { handleServerAction } from '../common/actionHandler';
 export const listTiposVeiculo = async (rawData: unknown) =>
   handleServerAction(
     tipoVeiculoFilterSchema,
-    async (data) => {
+    async (data, session) => {
+      requireTiposVeiculoPermission(session);
       // Obtém o serviço do container
       const service = container.get<TipoVeiculoService>('tipoVeiculoService');
 

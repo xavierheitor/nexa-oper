@@ -4,11 +4,13 @@ import type { AprGrupoPerguntaService } from '@/lib/services/apr/AprGrupoPergunt
 import { container } from '@/lib/services/common/registerServices';
 import { aprGrupoPerguntaCreateSchema } from '../../schemas/aprGrupoPerguntaSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprGruposPermission } from '../common/permissionGuard';
 
 export const createAprGrupoPergunta = async (rawData: unknown) =>
   handleServerAction(
     aprGrupoPerguntaCreateSchema,
     async (validatedData, session) => {
+      requireAprGruposPermission(session);
       const service = container.get<AprGrupoPerguntaService>('aprGrupoPerguntaService');
       return service.create(validatedData, session.user.id);
     },

@@ -41,6 +41,7 @@ import type { AprPerguntaService } from '@/lib/services/apr/AprPerguntaService';
 import { container } from '@/lib/services/common/registerServices';
 import { aprPerguntaCreateSchema } from '../../schemas/aprPerguntaSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprPerguntasPermission } from '../common/permissionGuard';
 
 /**
  * Server Action para criar nova pergunta APR
@@ -58,7 +59,7 @@ import { handleServerAction } from '../common/actionHandler';
  * @example
  * ```typescript
  * // Uso em componente React
- * const handleSubmit = async (formData) => {
+ * const handleSubmit = async (formData, session) => {
  *   const result = await createAprPergunta({
  *     nome: formData.nome
  *   });
@@ -79,6 +80,7 @@ export const createAprPergunta = async (rawData: unknown) =>
 
     // Lógica de negócio
     async (validatedData, session) => {
+      requireAprPerguntasPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprPerguntaService>('aprPerguntaService');
 

@@ -12,7 +12,7 @@ import { useSelectOptions } from '@/lib/hooks/useSelectOptions';
 import { useTableFilters } from '@/lib/hooks/useTableFilters';
 import FilterBar from '@/ui/components/FilterBar';
 import { listBases } from '@/lib/actions/base/list';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 
 const { Title } = Typography;
 
@@ -27,7 +27,7 @@ export default function RelatoriosBasesPage() {
 
   const { data: contratos, isLoading: loadingContratos } = useEntityData({
     key: 'relatorios-bases-contratos',
-    fetcherAction: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratosLookup),
     paginationEnabled: false,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },
   });

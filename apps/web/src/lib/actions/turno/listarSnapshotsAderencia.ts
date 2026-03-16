@@ -9,6 +9,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsOrAttendancePermission } from '../common/permissionGuard';
 import { z } from 'zod';
 
 const listarSnapshotsSchema = z.object({
@@ -32,7 +33,8 @@ const listarSnapshotsSchema = z.object({
 export const listarSnapshotsAderencia = async (rawData: unknown) =>
   handleServerAction(
     listarSnapshotsSchema,
-    async (data) => {
+    async (data, session) => {
+      requireShiftsOrAttendancePermission(session);
       const where: any = {
         deletedAt: null,
       };

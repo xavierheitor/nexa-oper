@@ -3,7 +3,7 @@
 import { Button, Form, Input, Select, Spin, App } from 'antd';
 import { useEffect, useState } from 'react';
 
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { Contrato } from '@nexa-oper/db';
 
 export interface SupervisorFormData {
@@ -32,7 +32,7 @@ export default function SupervisorForm({
     const loadSelectData = async () => {
       try {
         setLoadingSelects(true);
-        const contratosResponse = await listContratos({
+        const contratosResponse = await listContratosLookup({
           page: 1,
           pageSize: 100,
           orderBy: 'nome',
@@ -96,4 +96,3 @@ export default function SupervisorForm({
     </Spin>
   );
 }
-

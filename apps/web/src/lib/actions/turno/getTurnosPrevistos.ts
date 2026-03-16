@@ -9,6 +9,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsOrAttendancePermission } from '../common/permissionGuard';
 import { z } from 'zod';
 import type { TurnoPrevisto } from '@/lib/types/turnoPrevisto';
 import {
@@ -25,7 +26,8 @@ import {
 export const getTurnosPrevistosHoje = async () =>
   handleServerAction(
     z.object({}), // Sem parâmetros, sempre busca hoje
-    async () => {
+    async (_, session) => {
+      requireShiftsOrAttendancePermission(session);
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
       const hojeFim = new Date(hoje);

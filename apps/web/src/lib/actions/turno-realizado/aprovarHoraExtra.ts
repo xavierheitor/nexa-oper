@@ -5,6 +5,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireAttendancePermission } from '../common/permissionGuard';
 import {
   aprovarHoraExtraResponseSchema,
   aprovarHoraExtraSchema,
@@ -22,6 +23,7 @@ export const aprovarHoraExtra = async (rawData: unknown) =>
   handleServerAction(
     aprovarHoraExtraRequestSchema,
     async (data, session) => {
+      requireAttendancePermission(session);
       const baseUrl =
         process.env.NEXT_PUBLIC_API_URL ||
         (process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : '');

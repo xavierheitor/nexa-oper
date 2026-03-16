@@ -45,6 +45,7 @@ import type { AprOpcaoRespostaService } from '@/lib/services/apr/AprOpcaoRespost
 import { container } from '@/lib/services/common/registerServices';
 import { aprOpcaoRespostaFilterSchema } from '../../schemas/aprOpcaoRespostaSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprOpcoesPermission } from '../common/permissionGuard';
 
 /**
  * Server Action para listar opções de resposta APR com paginação
@@ -67,7 +68,7 @@ import { handleServerAction } from '../common/actionHandler';
  * );
  *
  * // Uso direto em componente
- * const loadOpcoes = async () => {
+ * const loadOpcoes = async (_, session) => {
  *   const result = await listAprOpcoesResposta({
  *     page: currentPage,
  *     pageSize: 20,
@@ -88,7 +89,8 @@ export const listAprOpcoesResposta = async (rawData: unknown) =>
     aprOpcaoRespostaFilterSchema,
 
     // Lógica de listagem
-    async (validatedParams, _session) => {
+    async (validatedParams, session) => {
+      requireAprOpcoesPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprOpcaoRespostaService>(
         'aprOpcaoRespostaService'

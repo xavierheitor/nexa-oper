@@ -1,6 +1,6 @@
 import { listAtividadeFormTemplates } from '@/lib/actions/atividadeFormTemplate/list';
 import { listAtividadeFormPerguntas } from '@/lib/actions/atividadeFormPergunta/list';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { listTiposAtividadeServico } from '@/lib/actions/tipoAtividadeServico/list';
 import type { PaginatedResult } from '@/lib/types/common';
 import AtividadeFormularioPageClient from '@/ui/pages/dashboard/cadastro/AtividadeFormularioPageClient';
@@ -56,7 +56,7 @@ export default async function AtividadeFormularioPage() {
           },
         },
       }),
-      listContratos({
+      listContratosLookup({
         page: 1,
         pageSize: 1000,
         orderBy: 'nome',

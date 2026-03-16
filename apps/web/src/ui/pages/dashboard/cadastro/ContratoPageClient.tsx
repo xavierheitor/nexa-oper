@@ -4,8 +4,14 @@ import { createContrato } from '@/lib/actions/contrato/create';
 import { deleteContrato } from '@/lib/actions/contrato/delete';
 import { listContratos } from '@/lib/actions/contrato/list';
 import { updateContrato } from '@/lib/actions/contrato/update';
+import {
+  canCreateContracts,
+  canDeleteContracts,
+  canUpdateContracts,
+} from '@/lib/authz/registry-access';
 import CrudPage from '@/lib/components/CrudPage';
 import { unwrapPaginatedFetcher } from '@/lib/db/helpers/unwrapPaginatedFetcher';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useCrudController } from '@/lib/hooks/useCrudController';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
@@ -23,6 +29,12 @@ export default function ContratoPageClient({
   initialData,
 }: ContratoPageClientProps) {
   const controller = useCrudController<Contrato>('contratos');
+  const { user } = useAuth({ redirectToLogin: false });
+  const userRoles = user?.roles || [];
+  const userPermissions = user?.permissions || [];
+  const canCreate = canCreateContracts(userRoles, userPermissions);
+  const canUpdate = canUpdateContracts(userRoles, userPermissions);
+  const canDelete = canDeleteContracts(userRoles, userPermissions);
 
   const contratos = useEntityData<Contrato>({
     key: 'contratos',
@@ -70,14 +82,16 @@ export default function ContratoPageClient({
       },
     ],
     {
-      onEdit: controller.open,
-      onDelete: (item) =>
-        controller
-          .exec(
-            () => deleteContrato({ id: item.id }),
-            'Contrato excluído com sucesso!'
-          )
-          .finally(() => contratos.mutate()),
+      onEdit: canUpdate ? controller.open : undefined,
+      onDelete: canDelete
+        ? (item) =>
+            controller
+              .exec(
+                () => deleteContrato({ id: item.id }),
+                'Contrato excluído com sucesso!'
+              )
+              .finally(() => contratos.mutate())
+        : undefined,
     }
   );
 
@@ -90,6 +104,7 @@ export default function ContratoPageClient({
       columns={columns}
       formComponent={ContratoForm}
       onSubmit={handleSubmit}
+      hideAddButton={!canCreate}
     />
   );
 }

@@ -6,6 +6,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireReportsPermission } from '../common/permissionGuard';
 import { relatorioEscalasFiltroSchema } from '@/lib/schemas/relatoriosSchema';
 import { z } from 'zod';
 
@@ -15,7 +16,8 @@ import { z } from 'zod';
 export const getDiasTrabalhadosPorEletricista = async (rawData?: unknown) =>
   handleServerAction(
     relatorioEscalasFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const whereSlot: any = {
         deletedAt: null,
         estado: 'TRABALHO',
@@ -96,7 +98,8 @@ export const getDiasTrabalhadosPorEletricista = async (rawData?: unknown) =>
 export const getFaltasPorPeriodo = async (rawData?: unknown) =>
   handleServerAction(
     relatorioEscalasFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const whereEvento: any = {
         deletedAt: null,
         tipo: 'FALTA',
@@ -175,7 +178,8 @@ export const getFaltasPorPeriodo = async (rawData?: unknown) =>
 export const getComparacaoFolgaTrabalho = async (rawData?: unknown) =>
   handleServerAction(
     relatorioEscalasFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const whereSlot: any = {
         deletedAt: null,
       };
@@ -242,7 +246,8 @@ export const getComparacaoFolgaTrabalho = async (rawData?: unknown) =>
 export const getEstatisticasEscalas = async (rawData?: unknown) =>
   handleServerAction(
     relatorioEscalasFiltroSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       const where: any = {
         deletedAt: null,
       };
@@ -313,7 +318,8 @@ const escaladosPorDiaSchema = z.object({
 export const getEscaladosPorDia = async (rawData?: unknown) =>
   handleServerAction(
     escaladosPorDiaSchema,
-    async (filtros) => {
+    async (filtros, session) => {
+      requireReportsPermission(session);
       // Converter data para início e fim do dia
       const dataSelecionada = new Date(filtros.data);
       const inicioDia = new Date(dataSelecionada);

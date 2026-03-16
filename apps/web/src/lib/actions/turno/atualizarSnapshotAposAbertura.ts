@@ -10,6 +10,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsPermission } from '../common/permissionGuard';
 import { z } from 'zod';
 import {
   parseTimeToDate,
@@ -33,7 +34,8 @@ const atualizarSnapshotSchema = z.object({
 export const atualizarSnapshotAposAbertura = async (rawData: unknown) =>
   handleServerAction(
     atualizarSnapshotSchema,
-    async (data) => {
+    async (data, session) => {
+      requireShiftsPermission(session);
       // Normalizar data de referência
       const dataRef = new Date(data.dataReferencia);
       dataRef.setHours(0, 0, 0, 0);

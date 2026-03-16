@@ -47,6 +47,7 @@ import type { AprPerguntaService } from '@/lib/services/apr/AprPerguntaService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireAprPerguntasPermission } from '../common/permissionGuard';
 
 /**
  * Schema de validação para exclusão de pergunta APR
@@ -75,7 +76,7 @@ const deleteAprPerguntaSchema = z.object({
  * @example
  * ```typescript
  * // Uso em botão de exclusão
- * const handleDelete = async (perguntaId) => {
+ * const handleDelete = async (perguntaId, session) => {
  *   const confirmed = await confirm('Deseja excluir esta pergunta?');
  *   if (!confirmed) return;
  *
@@ -126,6 +127,7 @@ export const deleteAprPergunta = async (rawData: unknown) =>
 
     // Lógica de negócio
     async (validatedData, session) => {
+      requireAprPerguntasPermission(session);
       // Obtém instância do service via container de DI
       const service = container.get<AprPerguntaService>('aprPerguntaService');
 

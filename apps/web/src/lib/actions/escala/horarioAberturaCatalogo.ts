@@ -15,11 +15,13 @@ import {
   horarioAberturaCatalogoFilterSchema,
 } from '../../schemas/escalaSchemas';
 import { handleServerAction } from '../common/actionHandler';
+import { requireHorariosEquipePermission } from '../common/permissionGuard';
 
 export const createHorarioAberturaCatalogo = async (rawData: unknown) =>
   handleServerAction(
     horarioAberturaCatalogoCreateSchema,
     async (data, session) => {
+      requireHorariosEquipePermission(session);
       const service = container.get<HorarioAberturaCatalogoService>(
         'horarioAberturaCatalogoService'
       );
@@ -39,6 +41,7 @@ export const updateHorarioAberturaCatalogo = async (rawData: unknown) =>
   handleServerAction(
     horarioAberturaCatalogoUpdateSchema,
     async (data, session) => {
+      requireHorariosEquipePermission(session);
       const service = container.get<HorarioAberturaCatalogoService>(
         'horarioAberturaCatalogoService'
       );
@@ -57,7 +60,8 @@ export const updateHorarioAberturaCatalogo = async (rawData: unknown) =>
 export const listHorarioAberturaCatalogo = async (rawData: unknown) =>
   handleServerAction(
     horarioAberturaCatalogoFilterSchema,
-    async data => {
+    async (data, session) => {
+      requireHorariosEquipePermission(session);
       const service = container.get<HorarioAberturaCatalogoService>(
         'horarioAberturaCatalogoService'
       );
@@ -79,7 +83,8 @@ export const listHorarioAberturaCatalogo = async (rawData: unknown) =>
 export const getHorarioAberturaCatalogoById = async (id: number) =>
   handleServerAction(
     z.object({}),
-    async () => {
+    async (_, session) => {
+      requireHorariosEquipePermission(session);
       const service = container.get<HorarioAberturaCatalogoService>(
         'horarioAberturaCatalogoService'
       );
@@ -100,6 +105,7 @@ export const deleteHorarioAberturaCatalogo = async (id: number) =>
   handleServerAction(
     z.object({}),
     async (_, session) => {
+      requireHorariosEquipePermission(session);
       const service = container.get<HorarioAberturaCatalogoService>(
         'horarioAberturaCatalogoService'
       );
@@ -108,4 +114,3 @@ export const deleteHorarioAberturaCatalogo = async (id: number) =>
     {},
     { entityName: 'HorarioAberturaCatalogo', actionType: 'delete' }
   );
-

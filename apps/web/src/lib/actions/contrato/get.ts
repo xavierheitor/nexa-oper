@@ -48,6 +48,7 @@ import type { ContratoService } from '@/lib/services/catalogo/ContratoService';
 import { container } from '@/lib/services/common/registerServices';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireViewContractsPermission } from '../common/permissionGuard';
 
 // Schema de validação para ID do contrato
 const idSchema = z.object({
@@ -63,7 +64,9 @@ const idSchema = z.object({
 export const getContrato = async (rawData: unknown) =>
   handleServerAction(
     idSchema,
-    async ({ id }) => {
+    async ({ id }, session) => {
+      requireViewContractsPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<ContratoService>('contratoService');
 

@@ -12,6 +12,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsOrAttendancePermission } from '../common/permissionGuard';
 import { getDateRangeInSaoPaulo } from '@/lib/utils/dateHelpers';
 import { z } from 'zod';
 
@@ -28,7 +29,8 @@ const dailyStatsSchema = z.object({
 export const getDailyStats = async (params: { date?: string | Date } = {}) =>
   handleServerAction(
     dailyStatsSchema,
-    async () => {
+    async (_, session) => {
+      requireShiftsOrAttendancePermission(session);
       const dateToUse = params.date ? new Date(params.date) : new Date();
       const { inicio, fim } = getDateRangeInSaoPaulo(dateToUse);
 

@@ -34,6 +34,7 @@
 import { contratoCreateSchema } from '@/lib/schemas/contratoSchema';
 import type { ContratoService } from '@/lib/services/catalogo/ContratoService';
 import { container } from '@/lib/services/common/registerServices';
+import { requireCreateContractsPermission } from '../common/permissionGuard';
 import { handleServerAction } from '../common/actionHandler';
 
 /**
@@ -46,6 +47,8 @@ export const createContrato = async (rawData: unknown) =>
   handleServerAction(
     contratoCreateSchema,
     async (data, session) => {
+      requireCreateContractsPermission(session);
+
       // Obtém o serviço do container
       const service = container.get<ContratoService>('contratoService');
 

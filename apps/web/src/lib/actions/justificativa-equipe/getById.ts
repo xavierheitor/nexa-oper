@@ -5,6 +5,7 @@
 'use server';
 
 import { handleServerAction } from '../common/actionHandler';
+import { requireAttendancePermission } from '../common/permissionGuard';
 import { container } from '../../services/common/registerServices';
 import type { JustificativaEquipeService } from '../../services/justificativas/JustificativaEquipeService';
 import { getJustificativaEquipeByIdSchema } from '../../schemas/justificativaEquipeSchema';
@@ -15,7 +16,8 @@ import { getJustificativaEquipeByIdSchema } from '../../schemas/justificativaEqu
 export const getJustificativaEquipeById = async (rawData: unknown) =>
   handleServerAction(
     getJustificativaEquipeByIdSchema,
-    async (data) => {
+    async (data, session) => {
+      requireAttendancePermission(session);
       const service = container.get<JustificativaEquipeService>('justificativaEquipeService');
       return service.getById(data.id);
     },

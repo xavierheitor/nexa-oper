@@ -9,6 +9,7 @@
 
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsOrAttendancePermission } from '../common/permissionGuard';
 import { prisma } from '../../db/db.service';
 
 /**
@@ -27,7 +28,8 @@ const getLocalizacoesSchema = z.object({
 export const getLocalizacoesTurno = async (rawData: unknown) =>
   handleServerAction(
     getLocalizacoesSchema,
-    async (data) => {
+    async (data, session) => {
+      requireShiftsOrAttendancePermission(session);
       const localizacoes = await prisma.mobileLocation.findMany({
         where: {
           turnoId: data.turnoId,

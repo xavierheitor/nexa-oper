@@ -32,6 +32,7 @@ import type { TipoEquipeService } from '@/lib/services/infraestrutura/TipoEquipe
 import { container } from '@/lib/services/common/registerServices';
 import { tipoEquipeUpdateSchema } from '../../schemas/tipoEquipeSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireTiposEquipePermission } from '../common/permissionGuard';
 
 /**
  * Atualiza um tipo de equipe existente
@@ -43,6 +44,7 @@ export const updateTipoEquipe = async (rawData: unknown) =>
   handleServerAction(
     tipoEquipeUpdateSchema,
     async (data, session) => {
+      requireTiposEquipePermission(session);
       // Obtém o serviço do container
       const service = container.get<TipoEquipeService>('tipoEquipeService');
 

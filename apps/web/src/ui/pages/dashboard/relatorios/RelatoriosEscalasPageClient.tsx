@@ -11,7 +11,7 @@ import TurnosPorPeriodo from '@/ui/pages/dashboard/relatorios/turnos-por-periodo
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { unwrapFetcher } from '@/lib/db/helpers/unwrapFetcher';
 import { listBases } from '@/lib/actions/base/list';
-import { listContratos } from '@/lib/actions/contrato/list';
+import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import type { Base, Contrato } from '@nexa-oper/db';
 
 const { RangePicker } = DatePicker;
@@ -35,7 +35,7 @@ export default function RelatoriosEscalasPageClient({
 
   const { data: contratos, isLoading: loadingContratos } = useEntityData({
     key: 'relatorios-escalas-contratos',
-    fetcherAction: unwrapFetcher(listContratos),
+    fetcherAction: unwrapFetcher(listContratosLookup),
     paginationEnabled: false,
     initialData: initialContratos,
     initialParams: { page: 1, pageSize: 1000, orderBy: 'nome', orderDir: 'asc' },

@@ -33,6 +33,7 @@
 import { prisma } from '@/lib/db/db.service';
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
+import { requireUpdateVehiclesPermission } from '../common/permissionGuard';
 
 // Schema para validação dos dados de transferência
 const transferVeiculoBaseSchema = z.object({
@@ -51,6 +52,8 @@ export const transferVeiculoBase = async (rawData: unknown) =>
   handleServerAction(
     transferVeiculoBaseSchema,
     async (data, session) => {
+      requireUpdateVehiclesPermission(session);
+
       const { veiculoId, novaBaseId, motivo } = data;
 
       // 1. Finaliza o vínculo atual (se existir)

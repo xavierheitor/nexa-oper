@@ -3,11 +3,13 @@
 import { prisma } from '@/lib/db/db.service';
 import { materialCatalogoLoteSchema } from '@/lib/schemas/materialCatalogoSchema';
 import { handleServerAction } from '../common/actionHandler';
+import { requireMateriaisCatalogoPermission } from '../common/permissionGuard';
 
 export const createMateriaisCatalogoLote = async (rawData: unknown) =>
   handleServerAction(
     materialCatalogoLoteSchema,
     async (data, session) => {
+      requireMateriaisCatalogoPermission(session);
       const materiaisCriados = await prisma.$transaction(async (tx) => {
         const resultados = [];
 

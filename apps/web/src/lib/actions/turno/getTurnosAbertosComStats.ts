@@ -11,6 +11,7 @@
 
 import { prisma } from '@/lib/db/db.service';
 import { handleServerAction } from '../common/actionHandler';
+import { requireShiftsOrAttendancePermission } from '../common/permissionGuard';
 import { z } from 'zod';
 import { getTodayDateRange } from '@/lib/utils/dateHelpers';
 
@@ -43,7 +44,8 @@ export const getTurnosAbertosComStats = async (
 ) =>
   handleServerAction(
     turnosAbertosComStatsSchema,
-    async () => {
+    async (_, session) => {
+      requireShiftsOrAttendancePermission(session);
       const { inicio: inicioHoje, fim: fimHoje } = getTodayDateRange();
 
       // Construir WHERE clause base para turnos abertos

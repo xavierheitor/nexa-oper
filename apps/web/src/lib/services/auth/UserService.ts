@@ -353,7 +353,7 @@ export class UserService extends AbstractCrudService<
 
     return {
       success: true,
-      newPassword: data.sendEmail ? undefined : newPassword, // Só retorna se não enviou por email
+      newPassword,
       emailSent,
     };
   }
