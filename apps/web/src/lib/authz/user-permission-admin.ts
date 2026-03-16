@@ -3,7 +3,6 @@ import {
   PERMISSION_CATALOG,
   type Permission,
   type PermissionCatalogItem,
-  type Role,
 } from './permissions';
 
 export interface PermissionCatalogGroup {
@@ -28,11 +27,8 @@ export interface UserPermissionSummary {
     email: string;
     username: string;
   };
-  roleNames: string[];
-  roles: Role[];
   assignedProfile: AvailablePermissionProfile | null;
   availableProfiles: AvailablePermissionProfile[];
-  rolePermissions: Permission[];
   profilePermissions: Permission[];
   inheritedPermissions: Permission[];
   directPermissions: Permission[];

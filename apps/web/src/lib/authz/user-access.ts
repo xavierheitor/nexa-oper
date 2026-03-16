@@ -1,35 +1,31 @@
 import { PERMISSIONS, type Permission, type Role } from './permissions';
 
-function isAdmin(roles: readonly Role[]): boolean {
-  return roles.includes('admin');
-}
-
 export function canViewUsers(
-  roles: readonly Role[],
+  _roles: readonly Role[],
   permissions: readonly Permission[],
 ): boolean {
-  return isAdmin(roles) || permissions.includes(PERMISSIONS.USERS_VIEW);
+  return permissions.includes(PERMISSIONS.USERS_VIEW);
 }
 
 export function canCreateUsers(
-  roles: readonly Role[],
+  _roles: readonly Role[],
   permissions: readonly Permission[],
 ): boolean {
-  return isAdmin(roles) || permissions.includes(PERMISSIONS.USERS_CREATE);
+  return permissions.includes(PERMISSIONS.USERS_CREATE);
 }
 
 export function canUpdateUsers(
-  roles: readonly Role[],
+  _roles: readonly Role[],
   permissions: readonly Permission[],
 ): boolean {
-  return isAdmin(roles) || permissions.includes(PERMISSIONS.USERS_UPDATE);
+  return permissions.includes(PERMISSIONS.USERS_UPDATE);
 }
 
 export function canDeleteUsers(
-  roles: readonly Role[],
+  _roles: readonly Role[],
   permissions: readonly Permission[],
 ): boolean {
-  return isAdmin(roles) || permissions.includes(PERMISSIONS.USERS_DELETE);
+  return permissions.includes(PERMISSIONS.USERS_DELETE);
 }
 
 export function canResetUserPasswords(

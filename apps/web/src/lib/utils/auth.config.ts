@@ -41,7 +41,6 @@ import CredentialsProvider from 'next-auth/providers/credentials'; // Provedor d
 import { prisma } from '../db/db.service'; // Serviço de banco de dados
 import {
   isPermission,
-  normalizeRoles,
   resolveEffectivePermissions,
   type Permission,
   type Role,
@@ -58,7 +57,6 @@ type AuthorizationSnapshot = {
 };
 
 function buildAuthorizationSnapshot(user: {
-  RoleUser: Array<{ role: { nome: string } }>;
   UserPermissionGrant: Array<{ permission: string }>;
   permissionProfile: {
     id: number;
@@ -67,7 +65,7 @@ function buildAuthorizationSnapshot(user: {
     PermissionProfileGrant: Array<{ permission: string }>;
   } | null;
 }): AuthorizationSnapshot {
-  const roles = normalizeRoles(user.RoleUser.map((ru) => ru.role.nome));
+  const roles: Role[] = [];
   const profilePermissions =
     user.permissionProfile?.PermissionProfileGrant.map((grant) => grant.permission)
       .filter(isPermission) ?? [];
@@ -98,11 +96,6 @@ async function loadAuthorizationSnapshot(
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
-      RoleUser: {
-        include: {
-          role: true,
-        },
-      },
       UserPermissionGrant: {
         select: {
           permission: true,
@@ -172,11 +165,6 @@ export const authOptions: NextAuthOptions = {
         const user = await prisma.user.findUnique({
           where: { username },
           include: {
-            RoleUser: {
-              include: {
-                role: true, // Inclui dados do role
-              },
-            },
             UserPermissionGrant: {
               select: {
                 permission: true,

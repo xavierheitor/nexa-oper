@@ -72,10 +72,7 @@ export default function PermissoesModal({
     data?.availableProfiles.find((profile) => profile.id === selectedProfileId) ??
     (data?.assignedProfile?.id === selectedProfileId ? data.assignedProfile : null) ??
     null;
-  const baselinePermissions = new Set<Permission>([
-    ...(data?.rolePermissions ?? []),
-    ...(selectedProfile?.permissions ?? []),
-  ]);
+  const baselinePermissions = new Set<Permission>(selectedProfile?.permissions ?? []);
   const effectivePermissionsPreview = new Set<Permission>([
     ...baselinePermissions,
     ...selectedDirectPermissions,
@@ -134,19 +131,6 @@ export default function PermissoesModal({
     <Spin spinning={loading}>
       <Space direction='vertical' size='middle' style={{ width: '100%' }}>
         <Card title={`Permissões de ${userName}`}>
-          <Paragraph style={{ marginBottom: 8 }}>
-            <Text strong>Roles atuais:</Text>{' '}
-            {data.roleNames.length > 0 ? (
-              data.roleNames.map((role) => (
-                <Tag color='blue' key={role}>
-                  {role}
-                </Tag>
-              ))
-            ) : (
-              <Text type='secondary'>Nenhum role vinculado</Text>
-            )}
-          </Paragraph>
-
           <Paragraph style={{ marginBottom: 0 }}>
             <Text strong>Grupo atual:</Text>{' '}
             {selectedProfile ? (
@@ -160,7 +144,7 @@ export default function PermissoesModal({
             <Text strong>Permissões efetivas:</Text>{' '}
             <Tag color='green'>{effectivePermissionsPreview.size}</Tag>
             <Text type='secondary'>
-              Prévia atual considerando roles, grupo selecionado e extras marcados.
+              Prévia atual considerando grupo selecionado e extras marcados.
             </Text>
           </Paragraph>
         </Card>
@@ -188,26 +172,10 @@ export default function PermissoesModal({
             ) : (
               <Text type='secondary'>
                 Sem grupo vinculado. O usuário continuará recebendo permissões
-                apenas por role e grants diretos.
+                apenas pelos grants diretos.
               </Text>
             )}
           </Space>
-        </Card>
-
-        <Card title='Permissões herdadas dos roles'>
-          {data.rolePermissions.length === 0 ? (
-            <Text type='secondary'>
-              Este usuário não herda permissões diretamente dos roles atuais.
-            </Text>
-          ) : (
-            <Space size={[8, 8]} wrap>
-              {data.rolePermissions.map((permission) => (
-                <Tag color='geekblue' key={permission}>
-                  {permission}
-                </Tag>
-              ))}
-            </Space>
-          )}
         </Card>
 
         <Card title='Permissões do grupo'>
@@ -275,7 +243,7 @@ export default function PermissoesModal({
                             </Text>
                             <Text type='secondary' style={{ fontSize: 12 }}>
                               {item.permission}
-                              {inherited ? ' · herdada de role/grupo' : ''}
+                              {inherited ? ' · herdada do grupo' : ''}
                             </Text>
                           </Space>
                         </Checkbox>

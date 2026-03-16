@@ -6,9 +6,7 @@ import {
 } from '@/lib/authz/user-permission-admin';
 import { prisma } from '@/lib/db/db.service';
 import {
-  getPermissionsByRoles,
   isPermission,
-  normalizeRoles,
   resolveEffectivePermissions,
 } from '@/lib/types/permissions';
 import { z } from 'zod';
@@ -28,11 +26,6 @@ export const getUserPermissionSummary = async (rawData: unknown) =>
       const user = await prisma.user.findUnique({
         where: { id: data.userId },
         include: {
-          RoleUser: {
-            include: {
-              role: true,
-            },
-          },
           UserPermissionGrant: {
             select: {
               permission: true,
@@ -65,23 +58,16 @@ export const getUserPermissionSummary = async (rawData: unknown) =>
         throw new Error('Usuário não encontrado.');
       }
 
-      const roleNames = user.RoleUser.map((item) => item.role.nome);
-      const roles = normalizeRoles(roleNames);
-      const rolePermissions = getPermissionsByRoles(roles);
       const profilePermissions =
         user.permissionProfile?.PermissionProfileGrant.map((grant) => grant.permission).filter(
           isPermission,
         ) ?? [];
-      const inheritedPermissions = resolveEffectivePermissions(
-        roles,
-        [],
-        profilePermissions,
-      );
+      const inheritedPermissions = resolveEffectivePermissions([], [], profilePermissions);
       const directPermissions = user.UserPermissionGrant.map(
         (grant) => grant.permission,
       ).filter(isPermission);
       const effectivePermissions = resolveEffectivePermissions(
-        roles,
+        [],
         directPermissions,
         profilePermissions,
       );
@@ -122,8 +108,6 @@ export const getUserPermissionSummary = async (rawData: unknown) =>
           email: user.email,
           username: user.username,
         },
-        roleNames,
-        roles,
         assignedProfile: user.permissionProfile
           ? {
               id: user.permissionProfile.id,
@@ -139,12 +123,11 @@ export const getUserPermissionSummary = async (rawData: unknown) =>
           key: profile.key,
           nome: profile.nome,
           descricao: profile.descricao,
-          ativo: profile.ativo,
-          permissions: profile.PermissionProfileGrant.map((grant) => grant.permission).filter(
-            isPermission,
-          ),
+            ativo: profile.ativo,
+            permissions: profile.PermissionProfileGrant.map((grant) => grant.permission).filter(
+              isPermission,
+            ),
         })),
-        rolePermissions,
         profilePermissions,
         inheritedPermissions,
         directPermissions,

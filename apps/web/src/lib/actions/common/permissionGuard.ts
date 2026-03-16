@@ -23,7 +23,11 @@ import {
   canViewTeams,
   canViewVehicles,
 } from '@/lib/authz/registry-access';
-import { PERMISSIONS, type Permission } from '@/lib/authz/permissions';
+import {
+  ALL_PERMISSIONS,
+  PERMISSIONS,
+  type Permission,
+} from '@/lib/authz/permissions';
 import {
   canCreateUsers,
   canDeleteUsers,
@@ -40,10 +44,10 @@ function getAuthorization(session: Session) {
   };
 }
 
-export function requireAdminRole(session: Session): void {
+export function requireFullAccessPermission(session: Session): void {
   const auth = getAuthorization(session);
-  if (!auth.roles.includes('admin')) {
-    throw new Error('Você não tem permissão administrativa para esta ação.');
+  if (!ALL_PERMISSIONS.every((permission) => auth.permissions.includes(permission))) {
+    throw new Error('Você não tem permissão de acesso total para esta ação.');
   }
 }
 
@@ -52,11 +56,8 @@ function hasAnyPermission(
   requiredPermissions: readonly Permission[],
 ): boolean {
   const auth = getAuthorization(session);
-  return (
-    auth.roles.includes('admin') ||
-    requiredPermissions.some((permission) =>
-      auth.permissions.includes(permission),
-    )
+  return requiredPermissions.some((permission) =>
+    auth.permissions.includes(permission),
   );
 }
 

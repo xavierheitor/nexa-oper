@@ -3,7 +3,6 @@
 import { prisma } from '@/lib/db/db.service';
 import {
   isPermission,
-  normalizeRoles,
   resolveEffectivePermissions,
   type Permission,
 } from '@/lib/types/permissions';
@@ -26,11 +25,6 @@ export const updateUserPermissionGrants = async (rawData: unknown) =>
       const user = await prisma.user.findUnique({
         where: { id: data.userId },
         include: {
-          RoleUser: {
-            include: {
-              role: true,
-            },
-          },
           permissionProfile: {
             select: {
               id: true,
@@ -48,7 +42,6 @@ export const updateUserPermissionGrants = async (rawData: unknown) =>
         throw new Error('Usuário não encontrado.');
       }
 
-      const roles = normalizeRoles(user.RoleUser.map((item) => item.role.nome));
       let profilePermissions: Permission[] = [];
 
       if (data.profileId != null) {
@@ -77,7 +70,7 @@ export const updateUserPermissionGrants = async (rawData: unknown) =>
       }
 
       const inheritedPermissions = new Set<Permission>(
-        resolveEffectivePermissions(roles, [], profilePermissions),
+        resolveEffectivePermissions([], [], profilePermissions),
       );
       const directPermissions = [...new Set(data.permissions)]
         .filter(isPermission)

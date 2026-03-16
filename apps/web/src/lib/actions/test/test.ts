@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { handleServerAction } from '../common/actionHandler';
-import { requireAdminRole } from '../common/permissionGuard';
+import { requireFullAccessPermission } from '../common/permissionGuard';
 import { prisma } from '@/lib/db/db.service';
 
 const emptySchema = z.object({});
@@ -14,7 +14,7 @@ export const getTests = async () =>
   handleServerAction(
     emptySchema,
     async (_, session) => {
-      requireAdminRole(session);
+      requireFullAccessPermission(session);
       return prisma.test.findMany();
     },
     {},
@@ -25,7 +25,7 @@ export const createTest = async (name: string) =>
   handleServerAction(
     nameSchema,
     async (data, session) => {
-      requireAdminRole(session);
+      requireFullAccessPermission(session);
       return prisma.test.create({
         data: { name: data.name },
       });
@@ -38,7 +38,7 @@ export const getTestById = async (id: number) =>
   handleServerAction(
     idSchema,
     async (data, session) => {
-      requireAdminRole(session);
+      requireFullAccessPermission(session);
       return prisma.test.findUnique({
         where: { id: data.id },
       });
@@ -51,7 +51,7 @@ export const updateTest = async (id: number, name: string) =>
   handleServerAction(
     updateSchema,
     async (data, session) => {
-      requireAdminRole(session);
+      requireFullAccessPermission(session);
       return prisma.test.update({
         where: { id: data.id },
         data: { name: data.name },
@@ -65,7 +65,7 @@ export const deleteTest = async (id: number) =>
   handleServerAction(
     idSchema,
     async (data, session) => {
-      requireAdminRole(session);
+      requireFullAccessPermission(session);
       return prisma.test.delete({
         where: { id: data.id },
       });
@@ -78,7 +78,7 @@ export const healthCheck = async () =>
   handleServerAction(
     emptySchema,
     async (_, session) => {
-      requireAdminRole(session);
+      requireFullAccessPermission(session);
       await prisma.$queryRaw`SELECT 1`;
       return true;
     },
