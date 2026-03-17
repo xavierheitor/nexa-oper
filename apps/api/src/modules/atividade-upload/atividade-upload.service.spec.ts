@@ -74,7 +74,7 @@ describe('AtividadeUploadService', () => {
       },
       $transaction: jest
         .fn()
-        .mockImplementation(async (callback: (client: unknown) => unknown) =>
+        .mockImplementation((callback: (client: unknown) => unknown) =>
           callback(tx),
         ),
     };
@@ -112,9 +112,9 @@ describe('AtividadeUploadService', () => {
     });
 
     expect(tx.$queryRaw).toHaveBeenCalledTimes(1);
-    expect(
-      tx.$queryRaw.mock.invocationCallOrder[0],
-    ).toBeLessThan(tx.atividadeEvento.deleteMany.mock.invocationCallOrder[0]);
+    expect(tx.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
+      tx.atividadeEvento.deleteMany.mock.invocationCallOrder[0],
+    );
     expect(tx.atividadeEvento.createMany).toHaveBeenCalledWith({
       data: [
         expect.objectContaining({
@@ -155,7 +155,8 @@ describe('AtividadeUploadService', () => {
     prisma.atividadeFoto.create.mockRejectedValue({
       code: 'P2002',
       meta: { constraint: 'uq_atividade_foto_exec_checksum' },
-      message: 'Unique constraint failed on the constraint: `uq_atividade_foto_exec_checksum`',
+      message:
+        'Unique constraint failed on the constraint: `uq_atividade_foto_exec_checksum`',
     });
 
     await expect(

@@ -24,7 +24,9 @@ const csvOrJsonArray = z
     if (trimmed.startsWith('[')) {
       try {
         const arr: unknown = JSON.parse(trimmed);
-        if (Array.isArray(arr)) {return arr.map(String);}
+        if (Array.isArray(arr)) {
+          return arr.map(String);
+        }
       } catch {
         // cai pro CSV
       }

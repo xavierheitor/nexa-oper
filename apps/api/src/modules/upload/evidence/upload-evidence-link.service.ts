@@ -239,6 +239,12 @@ export class UploadEvidenceLinkService {
         .filter(([, item]) => item !== undefined);
       return Object.fromEntries(entries);
     }
-    return String(value);
+    if (typeof value === 'bigint') {
+      return value.toString();
+    }
+    if (typeof value === 'symbol') {
+      return value.description ?? value.toString();
+    }
+    return undefined;
   }
 }

@@ -337,7 +337,8 @@ describe('OpenTurnoUseCase (concurrency)', () => {
     ).rejects.toMatchObject({
       code: 'CONFLICT',
       status: 409,
-      message: 'Já existe um turno aberto para o veículo, equipe ou eletricista',
+      message:
+        'Já existe um turno aberto para o veículo, equipe ou eletricista',
     });
 
     expect(repo.createTurno).not.toHaveBeenCalled();
