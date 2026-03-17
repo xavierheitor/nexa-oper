@@ -1,15 +1,47 @@
 /* eslint-disable no-console */
 import { PrismaClient } from '@nexa-oper/db';
-import {
-  ALL_PERMISSIONS,
-  type Permission,
-} from '../../../apps/web/src/lib/authz/permissions.ts';
 
 const prisma = new PrismaClient();
 const SCRIPT_USER = 'system-script';
 
+async function loadAllPermissions(): Promise<string[]> {
+  const permissionsModule = await import(
+    '../../../apps/web/src/lib/authz/permissions.ts'
+  );
+  const candidateExports = [
+    permissionsModule.ALL_PERMISSIONS,
+    permissionsModule.default?.ALL_PERMISSIONS,
+    permissionsModule.default?.default?.ALL_PERMISSIONS,
+  ];
+
+  for (const candidate of candidateExports) {
+    if (Array.isArray(candidate) && candidate.every((item) => typeof item === 'string')) {
+      return [...new Set(candidate)];
+    }
+  }
+
+  const candidatePermissionMaps = [
+    permissionsModule.PERMISSIONS,
+    permissionsModule.default?.PERMISSIONS,
+    permissionsModule.default?.default?.PERMISSIONS,
+  ];
+
+  for (const candidate of candidatePermissionMaps) {
+    if (candidate && typeof candidate === 'object') {
+      const values = Object.values(candidate);
+      if (values.every((item) => typeof item === 'string')) {
+        return [...new Set(values)];
+      }
+    }
+  }
+
+  throw new Error(
+    'Não foi possível carregar o catálogo de permissões do web para sincronizar o perfil admin.',
+  );
+}
+
 async function syncAdminProfilePermissions(profileId: number): Promise<void> {
-  const desiredPermissions = [...new Set<Permission>(ALL_PERMISSIONS)];
+  const desiredPermissions = await loadAllPermissions();
   const existingGrants = await prisma.permissionProfileGrant.findMany({
     where: { profileId },
     select: { permission: true },
@@ -20,7 +52,7 @@ async function syncAdminProfilePermissions(profileId: number): Promise<void> {
     (permission) => !existingPermissions.has(permission),
   );
   const stalePermissions = [...existingPermissions].filter(
-    (permission) => !desiredPermissions.includes(permission as Permission),
+    (permission) => !desiredPermissions.includes(permission),
   );
 
   if (stalePermissions.length > 0) {
