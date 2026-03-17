@@ -1,7 +1,57 @@
 /* eslint-disable no-console */
 import { PrismaClient } from '@nexa-oper/db';
+import {
+  ALL_PERMISSIONS,
+  type Permission,
+} from '../../../apps/web/src/lib/authz/permissions.ts';
 
 const prisma = new PrismaClient();
+const SCRIPT_USER = 'system-script';
+
+async function syncAdminProfilePermissions(profileId: number): Promise<void> {
+  const desiredPermissions = [...new Set<Permission>(ALL_PERMISSIONS)];
+  const existingGrants = await prisma.permissionProfileGrant.findMany({
+    where: { profileId },
+    select: { permission: true },
+  });
+
+  const existingPermissions = new Set(existingGrants.map((grant) => grant.permission));
+  const missingPermissions = desiredPermissions.filter(
+    (permission) => !existingPermissions.has(permission),
+  );
+  const stalePermissions = [...existingPermissions].filter(
+    (permission) => !desiredPermissions.includes(permission as Permission),
+  );
+
+  if (stalePermissions.length > 0) {
+    console.log('🧹 Removendo grants obsoletos do perfil "admin"...');
+    await prisma.permissionProfileGrant.deleteMany({
+      where: {
+        profileId,
+        permission: {
+          in: stalePermissions,
+        },
+      },
+    });
+  }
+
+  if (missingPermissions.length > 0) {
+    console.log(
+      `🔐 Adicionando ${missingPermissions.length} permissões ao perfil "admin"...`,
+    );
+    await prisma.permissionProfileGrant.createMany({
+      data: missingPermissions.map((permission) => ({
+        profileId,
+        permission,
+        createdBy: SCRIPT_USER,
+        updatedBy: SCRIPT_USER,
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  console.log(`✅ Perfil "admin" sincronizado com ${desiredPermissions.length} permissões.`);
+}
 
 async function main() {
   const args = process.argv.slice(2);
@@ -45,7 +95,7 @@ async function main() {
     adminRole = await prisma.role.create({
       data: {
         nome: 'admin',
-        createdBy: 'system-script',
+        createdBy: SCRIPT_USER,
       },
     });
   }
@@ -79,10 +129,12 @@ async function main() {
         nome: 'Administrador do Sistema',
         descricao: 'Acesso total ao sistema (Gerado via script)',
         ativo: true,
-        createdBy: 'system-script',
+        createdBy: SCRIPT_USER,
       },
     });
   }
+
+  await syncAdminProfilePermissions(adminProfile.id);
 
   if (user.permissionProfileId !== adminProfile.id) {
     console.log('🔄 Associando PermissionProfile "admin" ao usuário...');
