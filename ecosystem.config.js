@@ -2,6 +2,34 @@
 const path = require('path');
 const fs = require('fs');
 
+// Ajuste só estes dois valores no deploy.
+const MONOREPO_ROOT =
+  process.env.MONOREPO_ROOT || '/var/www/apps/nexa-oper';
+const MONOREPO_BASE_URL =
+  process.env.MONOREPO_BASE_URL || 'https://nexa.xsys.team';
+
+function stripTrailingSlash(value) {
+  return String(value || '').trim().replace(/\/+$/g, '');
+}
+
+function deriveSiblingUrl(baseUrl, subdomainPrefix) {
+  const url = new URL(stripTrailingSlash(baseUrl));
+  url.hostname = `${subdomainPrefix}.${url.hostname}`;
+  return stripTrailingSlash(url.toString());
+}
+
+const WEB_BASE_URL = stripTrailingSlash(MONOREPO_BASE_URL);
+const API_BASE_URL = deriveSiblingUrl(WEB_BASE_URL, 'api');
+const API_UPLOADS_BASE_URL = `${API_BASE_URL}/uploads`;
+const PHOTOS_BASE_URL = stripTrailingSlash(
+  process.env.MONOREPO_PHOTOS_BASE_URL || API_UPLOADS_BASE_URL,
+);
+const LOG_DIR = path.join(MONOREPO_ROOT, 'logs');
+const API_ENV_PATH = path.join(MONOREPO_ROOT, 'apps/api/.env');
+const WEB_ENV_PATH = path.join(MONOREPO_ROOT, 'apps/web/.env.local');
+const API_DIST_PATH = path.join(MONOREPO_ROOT, 'apps/api/dist/main.js');
+const WEB_NEXT_BIN = path.join(MONOREPO_ROOT, 'node_modules/.bin/next');
+
 // Função para carregar variáveis de ambiente de um arquivo .env
 function loadEnvFile(filePath) {
   const env = {};
@@ -27,16 +55,16 @@ function loadEnvFile(filePath) {
 }
 
 // Carregar variáveis de ambiente dos arquivos .env
-const apiEnv = loadEnvFile('/var/www/nexa-oper/apps/api/.env');
-const webEnv = loadEnvFile('/var/www/nexa-oper/apps/web/.env.local');
+const apiEnv = loadEnvFile(API_ENV_PATH);
+const webEnv = loadEnvFile(WEB_ENV_PATH);
 
 module.exports = {
   apps: [
     // ===================== API =====================
     {
       name: 'nexa-api',
-      cwd: '/var/www/nexa-oper',
-      script: './apps/api/dist/main.js',
+      cwd: MONOREPO_ROOT,
+      script: API_DIST_PATH,
       exec_mode: 'cluster',
       instances: 2,
       // Interpreter & Node flags
@@ -59,27 +87,27 @@ module.exports = {
         ...apiEnv,
         NODE_ENV: 'production',
         PORT: 3001,
-        LOG_PATH: '/var/www/nexa-oper/logs',
+        LOG_PATH: LOG_DIR,
         TRUST_PROXY: 'true',
         HAS_HTTPS: 'false',
-        // Especificar caminho do .env para o NestJS encontrar o arquivo
-        ENV_FILE_PATH: '/var/www/nexa-oper/apps/api/.env',
-        // Carregar todas as variáveis do arquivo .env
-        ...apiEnv,
+        NEXT_PUBLIC_API_URL: API_BASE_URL,
+        UPLOAD_PROXY_TARGET: API_BASE_URL,
+        UPLOAD_BASE_URL: API_UPLOADS_BASE_URL,
+        ENV_FILE_PATH: API_ENV_PATH,
       },
       // Logs
       merge_logs: true,
       time: true,
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      out_file: '/var/www/nexa-oper/logs/api-out.log',
-      error_file: '/var/www/nexa-oper/logs/api-error.log',
+      out_file: path.join(LOG_DIR, 'api-out.log'),
+      error_file: path.join(LOG_DIR, 'api-error.log'),
     },
 
     // ===================== WEB (Next.js) =====================
     {
       name: 'nexa-web',
-      cwd: '/var/www/nexa-oper/apps/web',
-      script: './node_modules/.bin/next',
+      cwd: path.join(MONOREPO_ROOT, 'apps/web'),
+      script: WEB_NEXT_BIN,
       args: 'start -p 3000',
       exec_mode: 'cluster',
       instances: 2,
@@ -100,16 +128,18 @@ module.exports = {
         ...webEnv,
         NODE_ENV: 'production',
         PORT: 3000,
-        LOG_PATH: '/var/www/nexa-oper/logs',
-        // Carregar todas as variáveis do arquivo .env
-        ...webEnv,
+        LOG_PATH: LOG_DIR,
+        NEXTAUTH_URL: WEB_BASE_URL,
+        NEXT_PUBLIC_API_URL: API_BASE_URL,
+        UPLOAD_PROXY_TARGET: API_BASE_URL,
+        NEXT_PUBLIC_UPLOAD_BASE_URL: PHOTOS_BASE_URL,
+        NEXT_PUBLIC_PHOTOS_BASE_URL: PHOTOS_BASE_URL,
       },
       merge_logs: true,
       time: true,
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      out_file: '/var/www/nexa-oper/logs/web-out.log',
-      error_file: '/var/www/nexa-oper/logs/web-error.log',
+      out_file: path.join(LOG_DIR, 'web-out.log'),
+      error_file: path.join(LOG_DIR, 'web-error.log'),
     },
   ],
 };
-
