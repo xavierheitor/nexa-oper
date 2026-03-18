@@ -10,6 +10,7 @@ import { AppLogger } from '../../core/logger/app-logger';
 import type { UploadProcessorPort } from './domain/ports/upload-processor.port';
 import type { UploadFingerprint } from './evidence/evidence.handler';
 import type { StorageAdapter } from './storage/storage.adapter';
+import { normalizeStoredUploadResult } from './storage/upload-url';
 import { UploadRegistry } from './upload.registry';
 
 const NUMERIC_METADATA_KEYS = [
@@ -143,22 +144,25 @@ export class UploadService implements UploadProcessorPort {
 
     const existing = await handler.findExisting?.(ctx, fingerprint);
     if (existing) {
+      const normalizedExisting = normalizeStoredUploadResult(existing);
       this.logger.debug('Upload duplicado detectado (idempotência)', {
         type: ctx.type,
         entityId: ctx.entityId,
         checksum: fingerprint.checksum,
       });
-      return existing;
+      return normalizedExisting;
     }
 
     const path = handler.buildStoragePath(ctx, safeFilename);
 
-    const uploadResult = await this.storage.upload({
-      buffer: file.buffer,
-      mimeType: file.mimetype,
-      size: file.size,
-      path,
-    });
+    const uploadResult = normalizeStoredUploadResult(
+      await this.storage.upload({
+        buffer: file.buffer,
+        mimeType: file.mimetype,
+        size: file.size,
+        path,
+      }),
+    );
 
     let persistedResult: UploadEvidenceResponseContract | void;
     try {
@@ -193,11 +197,11 @@ export class UploadService implements UploadProcessorPort {
           { path: uploadResult.path, type: ctx.type, entityId: ctx.entityId },
         );
       }
-      return persistedResult;
+      return normalizeStoredUploadResult(persistedResult);
     }
 
     if (persistedResult) {
-      return persistedResult;
+      return normalizeStoredUploadResult(persistedResult);
     }
 
     return uploadResult;

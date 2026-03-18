@@ -8,6 +8,7 @@ import type {
   UploadResult,
 } from './evidence.handler';
 import { CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS } from './common-metadata-spec';
+import { normalizeStoredUploadResult } from '../storage/upload-url';
 import { UploadEvidenceLinkService } from './upload-evidence-link.service';
 
 @Injectable()
@@ -84,13 +85,13 @@ export class ChecklistAssinaturaEvidenceHandler implements EvidenceHandler {
 
     if (!existing) return null;
 
-    return {
+    return normalizeStoredUploadResult({
       url: existing.url,
       path: existing.path,
       size: existing.tamanho,
       mimeType: existing.mimeType ?? undefined,
       filename: existing.nomeArquivo ?? undefined,
-    };
+    });
   }
 
   async persist(
@@ -98,17 +99,18 @@ export class ChecklistAssinaturaEvidenceHandler implements EvidenceHandler {
     upload: UploadResult,
     fingerprint?: UploadFingerprint,
   ): Promise<UploadResult> {
+    const normalizedUpload = normalizeStoredUploadResult(upload);
     if (!fingerprint) {
       const created = await this.prisma.uploadEvidence.create({
         data: {
           tipo: this.type,
           entityType: ctx.entityType ?? 'checklistPreenchido',
           entityId: String(ctx.entityId),
-          url: upload.url,
-          path: upload.path,
-          tamanho: upload.size,
-          mimeType: upload.mimeType,
-          nomeArquivo: upload.filename,
+          url: normalizedUpload.url,
+          path: normalizedUpload.path,
+          tamanho: normalizedUpload.size,
+          mimeType: normalizedUpload.mimeType,
+          nomeArquivo: normalizedUpload.filename,
           createdBy: 'system',
         },
         select: { id: true },
@@ -120,11 +122,11 @@ export class ChecklistAssinaturaEvidenceHandler implements EvidenceHandler {
         createdBy: 'system',
       });
 
-      return upload;
+      return normalizedUpload;
     }
 
     const idempotencyKey = this.buildIdempotencyKey(ctx, fingerprint);
-    if (!idempotencyKey) return upload;
+    if (!idempotencyKey) return normalizedUpload;
 
     const evidence = await this.prisma.uploadEvidence.upsert({
       where: { idempotencyKey },
@@ -132,16 +134,23 @@ export class ChecklistAssinaturaEvidenceHandler implements EvidenceHandler {
         tipo: this.type,
         entityType: ctx.entityType ?? 'checklistPreenchido',
         entityId: String(ctx.entityId),
-        url: upload.url,
-        path: upload.path,
-        tamanho: upload.size,
-        mimeType: upload.mimeType,
-        nomeArquivo: upload.filename,
+        url: normalizedUpload.url,
+        path: normalizedUpload.path,
+        tamanho: normalizedUpload.size,
+        mimeType: normalizedUpload.mimeType,
+        nomeArquivo: normalizedUpload.filename,
         checksum: fingerprint.checksum,
         idempotencyKey,
         createdBy: 'system',
       },
-      update: {},
+      update: {
+        url: normalizedUpload.url,
+        path: normalizedUpload.path,
+        tamanho: normalizedUpload.size,
+        mimeType: normalizedUpload.mimeType,
+        nomeArquivo: normalizedUpload.filename,
+        checksum: fingerprint.checksum,
+      },
       select: {
         id: true,
         url: true,
@@ -158,12 +167,12 @@ export class ChecklistAssinaturaEvidenceHandler implements EvidenceHandler {
       createdBy: 'system',
     });
 
-    return {
+    return normalizeStoredUploadResult({
       url: evidence.url,
       path: evidence.path,
       size: evidence.tamanho,
       mimeType: evidence.mimeType ?? undefined,
       filename: evidence.nomeArquivo ?? undefined,
-    };
+    });
   }
 }

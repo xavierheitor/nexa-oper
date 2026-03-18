@@ -1,64 +1,12 @@
-/**
- * Utilitários para Manipulação de URLs de Fotos
- *
- * Este módulo fornece funções helper para construir URLs completas
- * para fotos enviadas pelo aplicativo mobile, permitindo configuração
- * de URL base através de variáveis de ambiente.
- *
- * FUNCIONALIDADES:
- * - Monta URLs completas de fotos com base configurável
- * - Suporta paths relativos vindos do servidor
- * - Configurável via variável de ambiente NEXT_PUBLIC_PHOTOS_BASE_URL
- * - Fallback automático para path relativo se não configurado
- *
- * COMO FUNCIONA:
- * 1. Lê variável de ambiente NEXT_PUBLIC_PHOTOS_BASE_URL
- * 2. Se configurada, concatena com o path da foto
- * 3. Normaliza slashes para evitar duplicações
- * 4. Retorna URL completa ou path relativo
- *
- * CONFIGURAÇÃO:
- * No arquivo .env.local:
- * NEXT_PUBLIC_PHOTOS_BASE_URL=http://localhost:3001
- * ou
- * NEXT_PUBLIC_PHOTOS_BASE_URL=https://storage.nexaoper.com.br
- * ou
- * NEXT_PUBLIC_UPLOAD_BASE_URL=https://storage.nexaoper.com.br/uploads
- *
- * SEGURANÇA:
- * - Usa variáveis de ambiente públicas (NEXT_PUBLIC_*)
- * - Não expõe informações sensíveis
- * - Suporta HTTPS/HTTP
- */
+const API_UPLOADS_TOKEN = '/api/uploads/';
+const UPLOADS_TOKEN = '/uploads/';
+const MOBILE_PHOTOS_TOKEN = '/mobile/photos/';
 
-/**
- * Constrói a URL completa para uma foto mobile
- *
- * Esta função monta a URL completa para uma foto, usando a URL base
- * configurada na variável de ambiente NEXT_PUBLIC_PHOTOS_BASE_URL se
- * disponível. Caso contrário, retorna o path relativo.
- *
- * @param photoPath - Path da foto (relativo ou absoluto)
- * @param fallbackPath - Path alternativo caso photoPath seja inválido
- * @returns URL completa da foto ou path relativo
- *
- * @example
- * ```typescript
- * // Com URL base configurada:
- * buildPhotoUrl('/uploads/checklists/123/photo.jpg')
- * // => 'https://storage.nexaoper.com.br/uploads/checklists/123/photo.jpg'
- *
- * // Sem URL base:
- * buildPhotoUrl('/mobile/photos/123/photo.jpg')
- * // => '/mobile/photos/123/photo.jpg'
- *
- * // Com fallback:
- * buildPhotoUrl('', '/mobile/photos/default.jpg')
- * // => 'https://storage.nexaoper.com.br/mobile/photos/default.jpg'
- * ```
- */
-function isAbsoluteUrl(value: string): boolean {
-  if (value.startsWith('data:') || value.startsWith('blob:')) return true;
+function isBrowserUrl(value: string): boolean {
+  return value.startsWith('data:') || value.startsWith('blob:');
+}
+
+function isRemoteUrl(value: string): boolean {
   if (value.startsWith('//')) return true;
   try {
     const parsed = new URL(value);
@@ -68,76 +16,141 @@ function isAbsoluteUrl(value: string): boolean {
   }
 }
 
-function normalizePhotoPath(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed) return '';
+function extractRemotePathname(value: string): string | null {
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return null;
+    }
+    return parsed.pathname;
+  } catch {
+    return null;
+  }
+}
 
-  if (isAbsoluteUrl(trimmed)) return trimmed;
-  const normalized = trimmed.replace(/[\\]+/g, '/');
+function extractPublicUploadPath(value: string): string | null {
+  const normalized = value.replace(/[\\]+/g, '/');
 
-  // Compatibilidade legado: URLs sem prefixo /uploads
-  if (normalized.startsWith('/mobile/photos/')) return `/uploads${normalized}`;
-  if (normalized.startsWith('mobile/photos/')) return `/uploads/${normalized}`;
+  const pathname = extractRemotePathname(normalized);
+  if (pathname) {
+    return extractPublicUploadPath(pathname);
+  }
 
-  // Compatibilidade legado: caminho absoluto do SO (ex: /var/www/.../uploads/mobile/photos/...)
-  const uploadsToken = '/uploads/';
-  const uploadsIndex = normalized.toLowerCase().lastIndexOf(uploadsToken);
+  if (normalized.startsWith(MOBILE_PHOTOS_TOKEN)) {
+    return `/uploads/${normalized.slice(MOBILE_PHOTOS_TOKEN.length)}`;
+  }
+  if (normalized.startsWith(MOBILE_PHOTOS_TOKEN.slice(1))) {
+    return `/uploads/${normalized.slice(MOBILE_PHOTOS_TOKEN.length - 1)}`;
+  }
+
+  if (normalized.startsWith(API_UPLOADS_TOKEN)) {
+    return `/uploads/${normalized.slice(API_UPLOADS_TOKEN.length)}`;
+  }
+  if (normalized.startsWith(API_UPLOADS_TOKEN.slice(1))) {
+    return `/uploads/${normalized.slice(API_UPLOADS_TOKEN.length - 1)}`;
+  }
+
+  if (normalized.startsWith(UPLOADS_TOKEN)) {
+    return normalized;
+  }
+  if (normalized.startsWith(UPLOADS_TOKEN.slice(1))) {
+    return `/${normalized}`;
+  }
+
+  const lower = normalized.toLowerCase();
+  const apiUploadsIndex = lower.lastIndexOf(API_UPLOADS_TOKEN);
+  if (apiUploadsIndex >= 0) {
+    return `/uploads/${normalized
+      .slice(apiUploadsIndex + API_UPLOADS_TOKEN.length)
+      .replace(/^\/+/, '')}`;
+  }
+
+  const uploadsIndex = lower.lastIndexOf(UPLOADS_TOKEN);
   if (uploadsIndex >= 0) {
     return normalized.slice(uploadsIndex);
   }
 
-  if (normalized.startsWith('/uploads/')) return normalized;
-  if (normalized.startsWith('uploads/')) return `/${normalized}`;
-  if (normalized.startsWith('/')) return normalized;
+  return null;
+}
 
-  // storagePath legado salvo sem prefixo público (ex.: "checklists/...")
+function normalizeUploadPath(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  if (isBrowserUrl(trimmed) || trimmed.startsWith('//')) return trimmed;
+
+  const uploadPath = extractPublicUploadPath(trimmed);
+  if (uploadPath) return uploadPath;
+
+  if (isRemoteUrl(trimmed)) {
+    const pathname = extractRemotePathname(trimmed);
+    if (!pathname || pathname === '/') {
+      return trimmed;
+    }
+    return `/uploads/${pathname.replace(/^\/+/, '')}`;
+  }
+
+  const normalized = trimmed.replace(/[\\]+/g, '/');
+  if (normalized.startsWith('/')) {
+    return `/uploads${normalized}`;
+  }
+
   return `/uploads/${normalized}`;
 }
 
-function resolvePhotoBaseUrl(): string {
+function resolveUploadBaseUrl(): string {
   const base =
-    process.env.NEXT_PUBLIC_PHOTOS_BASE_URL ||
     process.env.NEXT_PUBLIC_UPLOAD_BASE_URL ||
+    process.env.NEXT_PUBLIC_PHOTOS_BASE_URL ||
     '';
   return base.trim();
 }
 
-export function buildPhotoUrl(photoPath?: string | null, fallbackPath?: string): string {
-  const rawPath = photoPath || fallbackPath || '';
-  if (!rawPath || rawPath.trim() === '') {
-    return '';
-  }
-
-  const normalizedPath = normalizePhotoPath(rawPath);
-  if (!normalizedPath) return '';
-  if (isAbsoluteUrl(normalizedPath)) return normalizedPath;
-
-  const baseUrl = resolvePhotoBaseUrl();
-  if (!baseUrl || baseUrl.trim() === '') {
-    return normalizedPath;
-  }
-
+function joinUploadBaseUrl(baseUrl: string, publicPath: string): string {
   const normalizedBaseUrl = baseUrl.endsWith('/')
     ? baseUrl.slice(0, -1)
     : baseUrl;
 
-  // Evita duplicação quando a base já contém "/uploads"
   if (
     normalizedBaseUrl.endsWith('/uploads') &&
-    normalizedPath.startsWith('/uploads/')
+    publicPath.startsWith('/uploads/')
   ) {
-    return `${normalizedBaseUrl}${normalizedPath.slice('/uploads'.length)}`;
+    return `${normalizedBaseUrl}${publicPath.slice('/uploads'.length)}`;
   }
 
-  return `${normalizedBaseUrl}${normalizedPath}`;
+  return `${normalizedBaseUrl}${publicPath}`;
 }
 
-/**
- * Type guard para verificar se uma foto tem URL válida
- *
- * @param photoPath - Path da foto a ser validado
- * @returns true se o path é válido e não vazio
- */
+export function buildUploadUrl(
+  uploadPath?: string | null,
+  fallbackPath?: string
+): string {
+  const rawPath = uploadPath || fallbackPath || '';
+  if (!rawPath || rawPath.trim() === '') {
+    return '';
+  }
+
+  const normalizedPath = normalizeUploadPath(rawPath);
+  if (!normalizedPath) return '';
+  if (isBrowserUrl(normalizedPath) || normalizedPath.startsWith('//')) {
+    return normalizedPath;
+  }
+
+  const baseUrl = resolveUploadBaseUrl();
+  if (!baseUrl) {
+    return normalizedPath;
+  }
+
+  return joinUploadBaseUrl(baseUrl, normalizedPath);
+}
+
+export function buildPhotoUrl(photoPath?: string | null, fallbackPath?: string): string {
+  return buildUploadUrl(photoPath, fallbackPath);
+}
+
+export function isValidUploadPath(uploadPath?: string | null): boolean {
+  return Boolean(uploadPath && uploadPath.trim() !== '');
+}
+
 export function isValidPhotoPath(photoPath?: string | null): boolean {
-  return Boolean(photoPath && photoPath.trim() !== '');
+  return isValidUploadPath(photoPath);
 }

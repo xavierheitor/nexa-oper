@@ -223,4 +223,83 @@ describe('UploadService', () => {
       'checklists/1/reprovas/foto-new.jpg',
     );
   });
+
+  it('normalizes legacy absolute upload URLs before persisting', async () => {
+    const storage = {
+      upload: jest.fn().mockResolvedValue({
+        path: 'medidores/10/foto.jpg',
+        size: 10,
+        url: 'https://api.nexa.xsys.team/api/uploads/medidores/10/foto.jpg',
+        mimeType: 'image/jpeg',
+      }),
+      delete: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const handler = {
+      validate: jest.fn().mockResolvedValue(undefined),
+      findExisting: jest.fn().mockResolvedValue(null),
+      buildStoragePath: jest.fn().mockReturnValue('medidores/10/foto.jpg'),
+      persist: jest
+        .fn()
+        .mockImplementation(
+          async (
+            _ctx: unknown,
+            upload: {
+              path: string;
+              url: string;
+              size: number;
+              mimeType: string;
+              filename: string;
+            },
+          ) => upload,
+        ),
+    };
+
+    const registry = {
+      get: jest.fn().mockReturnValue(handler),
+    };
+
+    const logger = {
+      debug: jest.fn(),
+      error: jest.fn(),
+    };
+
+    const service = new UploadService(
+      storage as never,
+      registry as never,
+      logger as never,
+    );
+
+    await expect(
+      service.upload(
+        {
+          buffer: Buffer.from('abc'),
+          mimetype: 'image/jpeg',
+          size: 10,
+          originalname: 'foto.jpg',
+        },
+        {
+          type: 'medidor',
+          entityId: '10',
+        },
+      ),
+    ).resolves.toMatchObject({
+      path: 'medidores/10/foto.jpg',
+      url: '/uploads/medidores/10/foto.jpg',
+    });
+
+    expect(handler.persist).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'medidor',
+        entityId: '10',
+      }),
+      expect.objectContaining({
+        path: 'medidores/10/foto.jpg',
+        url: '/uploads/medidores/10/foto.jpg',
+      }),
+      expect.objectContaining({
+        checksum: expect.any(String),
+      }),
+    );
+  });
 });

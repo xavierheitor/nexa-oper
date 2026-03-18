@@ -15,6 +15,10 @@ import {
 import { AppLogger } from '../../../core/logger/app-logger';
 import { PrismaService } from '../../../database/prisma.service';
 import { UploadEvidenceLinkService } from '../evidence/upload-evidence-link.service';
+import {
+  buildStoredUploadUrl,
+  resolveStoredUploadPath,
+} from '../storage/upload-url';
 
 const JOB_NAME = 'checklist-photo-reconcile';
 const UPLOAD_TYPE_CHECKLIST_REPROVA = 'checklist-reprova';
@@ -80,30 +84,7 @@ function normalizeRelativePath(
   urlValue: string | null | undefined,
   pathValue: string | null | undefined,
 ): string | null {
-  const normalizedUrl = normalizeSlashes(String(urlValue ?? ''));
-  const normalizedPath = normalizeSlashes(String(pathValue ?? ''));
-
-  if (normalizedUrl.startsWith('/uploads/')) {
-    return normalizedUrl.slice('/uploads/'.length);
-  }
-  if (normalizedUrl.startsWith('/mobile/photos/')) {
-    return `mobile/photos/${normalizedUrl.slice('/mobile/photos/'.length)}`;
-  }
-
-  const uploadsIndex = normalizedPath.toLowerCase().lastIndexOf('/uploads/');
-  if (uploadsIndex >= 0) {
-    return normalizedPath.slice(uploadsIndex + '/uploads/'.length);
-  }
-
-  if (normalizedPath.startsWith('uploads/')) {
-    return normalizedPath.slice('uploads/'.length);
-  }
-
-  if (normalizedPath && !path.isAbsolute(normalizedPath)) {
-    return normalizedPath.replace(/^\/+/, '');
-  }
-
-  return null;
+  return resolveStoredUploadPath(urlValue, pathValue);
 }
 
 function inferMimeType(filename: string, fallback?: string | null): string {
@@ -338,12 +319,7 @@ export class ChecklistPhotoReconcileJob
   }
 
   private buildPublicUrl(relativePath: string): string {
-    const normalized = normalizeSlashes(relativePath).replace(/^\/+/, '');
-    const publicBaseUrl = env.UPLOAD_BASE_URL?.replace(/\/+$/g, '');
-    if (publicBaseUrl) {
-      return `${publicBaseUrl}/${normalized}`;
-    }
-    return `/uploads/${normalized}`;
+    return buildStoredUploadUrl(relativePath);
   }
 
   private async resolveChecklistPreenchido(params: {

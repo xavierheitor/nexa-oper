@@ -3,6 +3,7 @@ import { AppError } from '../../../core/errors/app-error';
 import type { StorageAdapter } from './storage.adapter';
 import type { StorageUploadInput } from './storage.adapter';
 import type { StorageUploadResult } from './storage.adapter';
+import { buildStoredUploadUrl } from './upload-url';
 
 /**
  * S3 Storage Adapter.
@@ -17,9 +18,6 @@ export class S3StorageAdapter implements StorageAdapter {
     const bucket = process.env.AWS_S3_BUCKET ?? '';
     const region = process.env.AWS_REGION ?? 'us-east-1';
     const endpoint = process.env.AWS_S3_ENDPOINT;
-    const publicUrl =
-      process.env.AWS_S3_PUBLIC_URL ??
-      `https://${bucket}.s3.${region}.amazonaws.com`;
 
     if (!bucket) {
       throw AppError.internal(
@@ -48,14 +46,10 @@ export class S3StorageAdapter implements StorageAdapter {
       }),
     );
 
-    const url = publicUrl.endsWith('/')
-      ? `${publicUrl}${key}`
-      : `${publicUrl}/${key}`;
-
     return {
-      path: input.path,
+      path: key,
       size: input.size,
-      url,
+      url: buildStoredUploadUrl(key),
       mimeType: input.mimeType,
       filename: key.split('/').pop(),
     };

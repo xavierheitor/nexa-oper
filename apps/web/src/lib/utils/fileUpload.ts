@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from 'fs';
 import { dirname, isAbsolute, join } from 'path';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
+import { buildUploadUrl } from './photos';
 
 function hasWorkspaceConfig(dir: string): boolean {
   const packageJsonPath = join(dir, 'package.json');
@@ -59,15 +60,6 @@ const UPLOAD_ROOT = join(
   'justificativas',
   'anexos'
 );
-
-/**
- * URL base pública para acessar os anexos.
- * Se UPLOAD_BASE_URL estiver configurada, será usada como base (ex: https://storage.nexaoper.com.br).
- * Caso contrário, usa path relativo para servir via Next.js (ex: /uploads/justificativas/anexos).
- */
-const UPLOAD_PUBLIC_PREFIX = process.env.UPLOAD_BASE_URL
-  ? process.env.UPLOAD_BASE_URL
-  : '/uploads/justificativas/anexos';
 
 /**
  * Tipos MIME permitidos
@@ -158,18 +150,7 @@ export async function uploadFile(
   // Montar path relativo para o banco (sem UPLOAD_ROOT, apenas o caminho relativo)
   const dbPath = `/justificativas/anexos/${relativePath}`;
 
-  // Montar URL pública
-  // Se UPLOAD_BASE_URL estiver configurada, concatena com o path
-  // Caso contrário, usa path relativo
-  let publicUrl: string;
-  if (process.env.UPLOAD_BASE_URL) {
-    const baseUrl = UPLOAD_PUBLIC_PREFIX.endsWith('/')
-      ? UPLOAD_PUBLIC_PREFIX.slice(0, -1)
-      : UPLOAD_PUBLIC_PREFIX;
-    publicUrl = `${baseUrl}/justificativas/anexos/${relativePath}`;
-  } else {
-    publicUrl = `${UPLOAD_PUBLIC_PREFIX}/${relativePath}`;
-  }
+  const publicUrl = buildUploadUrl(dbPath);
 
   return {
     filePath: dbPath,
