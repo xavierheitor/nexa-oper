@@ -4,6 +4,7 @@ import * as path from 'path';
 import { env } from '../../../core/config/env';
 import { AppError } from '../../../core/errors/app-error';
 import { resolveUploadRoot } from '../../../core/config/workspace-paths';
+import { buildStoredUploadUrl } from './upload-url';
 import {
   StorageAdapter,
   type StorageUploadInput,
@@ -29,10 +30,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     await fs.writeFile(fullPath, input.buffer);
 
     const urlPath = relativePath.replace(/[\\]+/g, '/');
-    const publicBaseUrl = env.UPLOAD_BASE_URL?.replace(/\/+$/g, '');
-    const url = publicBaseUrl
-      ? `${publicBaseUrl}/${urlPath}`
-      : `/uploads/${urlPath}`;
+    const url = buildStoredUploadUrl(urlPath);
 
     return {
       path: relativePath,

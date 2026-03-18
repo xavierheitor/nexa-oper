@@ -10,6 +10,7 @@ import {
   UploadResult,
 } from './evidence.handler';
 import { CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS } from './common-metadata-spec';
+import { normalizeStoredUploadResult } from '../storage/upload-url';
 import { UploadEvidenceLinkService } from './upload-evidence-link.service';
 
 @Injectable()
@@ -119,14 +120,13 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
     mimeType: string;
   }): UploadResult {
     const normalizedPath = String(photo.caminhoArquivo).replace(/^[/\\]+/, '');
-    return {
+    return normalizeStoredUploadResult({
       path: normalizedPath,
-      url:
-        photo.urlPublica ?? `/uploads/${normalizedPath.replace(/[\\]+/g, '/')}`,
+      url: photo.urlPublica ?? '',
       size: Number(photo.tamanhoBytes),
       mimeType: photo.mimeType,
       filename: path.basename(normalizedPath),
-    };
+    });
   }
 
   private async findExistingChecklistFoto(
@@ -304,14 +304,15 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
     upload: UploadResult,
     fingerprint?: UploadFingerprint,
   ): Promise<UploadResult> {
+    const normalizedUpload = normalizeStoredUploadResult(upload);
     const meta = this.parseMetadata(ctx);
     if (!meta) {
       await this.persistEvidenceRecord({
         ctx,
-        result: upload,
+        result: normalizedUpload,
         fingerprint,
       });
-      return upload;
+      return normalizedUpload;
     }
 
     const checklistPreenchido = await this.buscarChecklistPreenchido(
@@ -381,16 +382,16 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
       );
     }
 
-    let finalResult = upload;
+    let finalResult = normalizedUpload;
     try {
       await this.prisma.checklistRespostaFoto.create({
         data: {
           checklistRespostaId: resposta.id,
           checklistPendenciaId: pendencia?.id ?? null,
-          caminhoArquivo: upload.path,
-          urlPublica: upload.url,
-          tamanhoBytes: BigInt(upload.size),
-          mimeType: upload.mimeType ?? 'application/octet-stream',
+          caminhoArquivo: normalizedUpload.path,
+          urlPublica: normalizedUpload.url,
+          tamanhoBytes: BigInt(normalizedUpload.size),
+          mimeType: normalizedUpload.mimeType ?? 'application/octet-stream',
           checksum: fingerprint?.checksum,
           sincronizadoEm: new Date(),
           metadados: {

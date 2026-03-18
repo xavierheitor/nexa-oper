@@ -14,6 +14,7 @@ import { env } from '../../core/config/env';
 import { AppLogger } from '../../core/logger/app-logger';
 import { PrismaService } from '../../database/prisma.service';
 import type { StorageAdapter } from '../upload/storage/storage.adapter';
+import { normalizeStoredUploadResult } from '../upload/storage/upload-url';
 import {
   type AtividadeTurnoSnapshotPort,
   type AtividadeUploadRepositoryPort,
@@ -918,12 +919,14 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
         safeFilename,
       );
 
-      const uploaded = await this.storage.upload({
-        buffer,
-        mimeType,
-        size: buffer.length,
-        path: storagePath,
-      });
+      const uploaded = normalizeStoredUploadResult(
+        await this.storage.upload({
+          buffer,
+          mimeType,
+          size: buffer.length,
+          path: storagePath,
+        }),
+      );
       try {
         const created = await this.prisma.atividadeFoto.create({
           data: {
