@@ -1,0 +1,59 @@
+/// ===============================================
+/// Catálogos técnicos do módulo de projetos
+/// ===============================================
+
+model ProjTipoPoste {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@index([nome])
+}
+
+model ProjTipoEstrutura {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@index([nome])
+}
+
+model ProjTipoRamal {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@index([nome])
+}
+
+model ProjEstrutura {
+  id   Int    @id @default(autoincrement())
+  nome String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@index([nome])
+}
