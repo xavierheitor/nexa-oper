@@ -231,6 +231,7 @@ model ProjetoProgramacao {
 
   status ProjStatusProjeto @default(PENDENTE)
 
+  equipamento    String? @db.VarChar(255)
   concessionaria String? @db.VarChar(255)
   municipio      String? @db.VarChar(255)
   observacao     String? @db.Text
