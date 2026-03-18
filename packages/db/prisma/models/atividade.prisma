@@ -37,7 +37,7 @@ model TipoAtividadeServico {
   atividadeTipoId Int
   atividadeTipo   TipoAtividade @relation(fields: [atividadeTipoId], references: [id])
 
-  atividadeExecucoes               AtividadeExecucao[]
+  atividadeExecucoes              AtividadeExecucao[]
   atividadeFormTipoServicoRelacao AtividadeFormTipoServicoRelacao[]
   atividadeAprPreenchidas         AtividadeAprPreenchida[]
 
@@ -65,7 +65,7 @@ model AtividadeFormTemplate {
   contratoId Int
   contrato   Contrato @relation(fields: [contratoId], references: [id])
 
-  atividadeExecucoes                AtividadeExecucao[]
+  atividadeExecucoes               AtividadeExecucao[]
   atividadeFormPerguntas           AtividadeFormPergunta[]
   atividadeFormTipoServicoRelacoes AtividadeFormTipoServicoRelacao[]
 
@@ -148,12 +148,14 @@ model MaterialCatalogo {
 
   atividadeMateriaisAplicados AtividadeMaterialAplicado[]
 
-  createdAt DateTime  @default(now())
-  createdBy String    @db.VarChar(255)
-  updatedAt DateTime? @updatedAt
-  updatedBy String?   @db.VarChar(255)
-  deletedAt DateTime?
-  deletedBy String?   @db.VarChar(255)
+  createdAt                  DateTime                    @default(now())
+  createdBy                  String                      @db.VarChar(255)
+  updatedAt                  DateTime?                   @updatedAt
+  updatedBy                  String?                     @db.VarChar(255)
+  deletedAt                  DateTime?
+  deletedBy                  String?                     @db.VarChar(255)
+  projTipoEstruturaMaterials ProjTipoEstruturaMaterial[]
+  projTipoRamalMaterials     ProjTipoRamalMaterial[]
 
   @@unique([contratoId, codigo], map: "uq_material_catalogo_contrato_codigo")
   @@index([contratoId])
@@ -162,8 +164,8 @@ model MaterialCatalogo {
 }
 
 model CausaImprodutiva {
-  id    Int    @id @default(autoincrement())
-  causa String @db.VarChar(255)
+  id    Int     @id @default(autoincrement())
+  causa String  @db.VarChar(255)
   ativo Boolean @default(true)
 
   createdAt DateTime  @default(now())
@@ -188,10 +190,10 @@ model AtividadeExecucao {
   turnoId Int
   turno   Turno @relation(fields: [turnoId], references: [id])
 
-  tipoAtividadeId      Int?
-  tipoAtividade        TipoAtividade? @relation(fields: [tipoAtividadeId], references: [id])
-  tipoAtividadeServicoId Int?
-  tipoAtividadeServico TipoAtividadeServico? @relation(fields: [tipoAtividadeServicoId], references: [id])
+  tipoAtividadeId         Int?
+  tipoAtividade           TipoAtividade?         @relation(fields: [tipoAtividadeId], references: [id])
+  tipoAtividadeServicoId  Int?
+  tipoAtividadeServico    TipoAtividadeServico?  @relation(fields: [tipoAtividadeServicoId], references: [id])
   atividadeFormTemplateId Int?
   atividadeFormTemplate   AtividadeFormTemplate? @relation(fields: [atividadeFormTemplateId], references: [id])
 
@@ -201,22 +203,22 @@ model AtividadeExecucao {
   tipoLigacao     String? @db.VarChar(100)
   numeroDocumento String? @db.VarChar(100)
 
-  aplicaMedidor  Boolean @default(false)
-  aplicaRamal    Boolean @default(false)
-  aplicaMaterial Boolean @default(false)
+  aplicaMedidor      Boolean @default(false)
+  aplicaRamal        Boolean @default(false)
+  aplicaMaterial     Boolean @default(false)
   atividadeProdutiva Boolean @default(true)
-  causaImprodutiva  String? @db.VarChar(255)
+  causaImprodutiva   String? @db.VarChar(255)
 
   statusFluxo String @default("em_execucao") @db.VarChar(60)
   etapaAtual  String @default("identificacao") @db.VarChar(60)
 
-  aprPreenchidaEm       DateTime?
-  finalizadaEm          DateTime?
-  observacoesFinalizacao String? @db.Text
+  aprPreenchidaEm        DateTime?
+  finalizadaEm           DateTime?
+  observacoesFinalizacao String?   @db.Text
 
-  syncStatus   String @default("received") @db.VarChar(30)
-  attemptCount Int    @default(0)
-  syncError    String? @db.Text
+  syncStatus    String    @default("received") @db.VarChar(30)
+  attemptCount  Int       @default(0)
+  syncError     String?   @db.Text
   lastAttemptAt DateTime?
 
   createdAt DateTime  @default(now())
@@ -246,17 +248,17 @@ model AtividadeFoto {
   atividadeExecucaoId Int
   atividadeExecucao   AtividadeExecucao @relation(fields: [atividadeExecucaoId], references: [id], onDelete: Cascade)
 
-  atividadeUuid String @db.VarChar(36)
-  ref          String? @db.VarChar(120)
-  contexto     String? @db.VarChar(120)
+  atividadeUuid String  @db.VarChar(36)
+  ref           String? @db.VarChar(120)
+  contexto      String? @db.VarChar(120)
 
-  checksum   String @db.VarChar(128)
-  mimeType   String @db.VarChar(100)
-  fileName   String @db.VarChar(255)
-  fileSize   Int
-  storagePath String @db.VarChar(1024)
-  url        String @db.VarChar(1024)
-  capturedAt DateTime?
+  checksum    String    @db.VarChar(128)
+  mimeType    String    @db.VarChar(100)
+  fileName    String    @db.VarChar(255)
+  fileSize    Int
+  storagePath String    @db.VarChar(1024)
+  url         String    @db.VarChar(1024)
+  capturedAt  DateTime?
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -265,9 +267,9 @@ model AtividadeFoto {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  respostas                 AtividadeFormResposta[] @relation("AtividadeFormRespostaFoto")
-  medidoresInstalados       AtividadeMedidor[] @relation("AtividadeMedidorInstaladoFoto")
-  medidoresRetirados        AtividadeMedidor[] @relation("AtividadeMedidorRetiradoFoto")
+  respostas           AtividadeFormResposta[] @relation("AtividadeFormRespostaFoto")
+  medidoresInstalados AtividadeMedidor[]      @relation("AtividadeMedidorInstaladoFoto")
+  medidoresRetirados  AtividadeMedidor[]      @relation("AtividadeMedidorRetiradoFoto")
 
   @@unique([atividadeExecucaoId, checksum], map: "uq_atividade_foto_exec_checksum")
   @@index([atividadeExecucaoId])
@@ -277,22 +279,22 @@ model AtividadeFoto {
 model AtividadeMedidor {
   id Int @id @default(autoincrement())
 
-  atividadeExecucaoId Int @unique
+  atividadeExecucaoId Int               @unique
   atividadeExecucao   AtividadeExecucao @relation(fields: [atividadeExecucaoId], references: [id], onDelete: Cascade)
 
   somenteRetirada Boolean @default(false)
 
-  instaladoNumero         String? @db.VarChar(100)
+  instaladoNumero         String?        @db.VarChar(100)
   instaladoFotoId         Int?
   instaladoFoto           AtividadeFoto? @relation("AtividadeMedidorInstaladoFoto", fields: [instaladoFotoId], references: [id], onDelete: SetNull)
   instaladoFotoExternalId Int?
 
-  retiradoStatus          String? @db.VarChar(100)
-  retiradoNumero          String? @db.VarChar(100)
-  retiradoLeitura         String? @db.VarChar(100)
-  retiradoFotoId          Int?
-  retiradoFoto            AtividadeFoto? @relation("AtividadeMedidorRetiradoFoto", fields: [retiradoFotoId], references: [id], onDelete: SetNull)
-  retiradoFotoExternalId  Int?
+  retiradoStatus         String?        @db.VarChar(100)
+  retiradoNumero         String?        @db.VarChar(100)
+  retiradoLeitura        String?        @db.VarChar(100)
+  retiradoFotoId         Int?
+  retiradoFoto           AtividadeFoto? @relation("AtividadeMedidorRetiradoFoto", fields: [retiradoFotoId], references: [id], onDelete: SetNull)
+  retiradoFotoExternalId Int?
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -309,11 +311,11 @@ model AtividadeMaterialAplicado {
   materialCatalogoId Int?
   materialCatalogo   MaterialCatalogo? @relation(fields: [materialCatalogoId], references: [id])
 
-  materialCatalogoRemoteId Int?
-  materialCodigoSnapshot   String @db.VarChar(100)
+  materialCatalogoRemoteId  Int?
+  materialCodigoSnapshot    String @db.VarChar(100)
   materialDescricaoSnapshot String @db.VarChar(255)
-  unidadeMedidaSnapshot    String @db.VarChar(30)
-  quantidade              Float
+  unidadeMedidaSnapshot     String @db.VarChar(30)
+  quantidade                Float
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -333,9 +335,9 @@ model AtividadeFormResposta {
   perguntaRemoteId Int?
   pergunta         AtividadeFormPergunta? @relation(fields: [perguntaRemoteId], references: [id])
 
-  perguntaChaveSnapshot  String @db.VarChar(120)
-  perguntaTituloSnapshot String @db.VarChar(255)
-  ordem                  Int    @default(0)
+  perguntaChaveSnapshot  String  @db.VarChar(120)
+  perguntaTituloSnapshot String  @db.VarChar(255)
+  ordem                  Int     @default(0)
   respostaTexto          String? @db.Text
   obrigaFotoSnapshot     Boolean @default(false)
 
@@ -360,14 +362,14 @@ model AtividadeEvento {
   atividadeExecucaoId Int
   atividadeExecucao   AtividadeExecucao @relation(fields: [atividadeExecucaoId], references: [id], onDelete: Cascade)
 
-  tipoEvento String @db.VarChar(80)
+  tipoEvento      String   @db.VarChar(80)
   locationTrackId Int?
-  latitude    Float?
-  longitude   Float?
-  accuracy    Float?
-  detalhe     String? @db.Text
-  capturadoEm DateTime @default(now())
-  signature   String? @db.VarChar(128)
+  latitude        Float?
+  longitude       Float?
+  accuracy        Float?
+  detalhe         String?  @db.Text
+  capturadoEm     DateTime @default(now())
+  signature       String?  @db.VarChar(128)
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -382,7 +384,7 @@ model AtividadeEvento {
 model AtividadeAprPreenchida {
   id Int @id @default(autoincrement())
 
-  aprUuid String @unique @db.VarChar(36)
+  aprUuid  String @unique @db.VarChar(36)
   remoteId Int?
 
   turnoId Int
@@ -400,12 +402,12 @@ model AtividadeAprPreenchida {
   tipoAtividadeServicoId Int?
   tipoAtividadeServico   TipoAtividadeServico? @relation(fields: [tipoAtividadeServicoId], references: [id])
 
-  observacoes        String? @db.Text
+  observacoes        String?  @db.Text
   preenchidaEm       DateTime @default(now())
   latitude           Float?
   longitude          Float?
-  vinculadaAoServico Boolean @default(true)
-  signature          String? @db.VarChar(128)
+  vinculadaAoServico Boolean  @default(true)
+  signature          String?  @db.VarChar(128)
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -414,7 +416,7 @@ model AtividadeAprPreenchida {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  respostas  AtividadeAprResposta[]
+  respostas   AtividadeAprResposta[]
   assinaturas AtividadeAprAssinatura[]
 
   @@index([turnoId, preenchidaEm])
@@ -441,15 +443,15 @@ model AtividadeAprResposta {
   aprOpcaoRespostaId Int?
   aprOpcaoResposta   AprOpcaoResposta? @relation(fields: [aprOpcaoRespostaId], references: [id])
 
-  grupoNomeSnapshot      String? @db.VarChar(255)
-  perguntaNomeSnapshot   String  @db.VarChar(255)
-  tipoRespostaSnapshot   String  @db.VarChar(30)
-  opcaoNomeSnapshot      String? @db.VarChar(255)
-  respostaTexto          String? @db.Text
-  marcado                Boolean?
-  ordemGrupo             Int     @default(0)
-  ordemPergunta          Int     @default(0)
-  dataResposta           DateTime @default(now())
+  grupoNomeSnapshot    String?  @db.VarChar(255)
+  perguntaNomeSnapshot String   @db.VarChar(255)
+  tipoRespostaSnapshot String   @db.VarChar(30)
+  opcaoNomeSnapshot    String?  @db.VarChar(255)
+  respostaTexto        String?  @db.Text
+  marcado              Boolean?
+  ordemGrupo           Int      @default(0)
+  ordemPergunta        Int      @default(0)
+  dataResposta         DateTime @default(now())
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -474,20 +476,20 @@ model AtividadeAprAssinatura {
   eletricistaId Int?
   eletricista   Eletricista? @relation(fields: [eletricistaId], references: [id], onDelete: SetNull)
 
-  nomeAssinante     String  @db.VarChar(255)
-  matriculaAssinante String? @db.VarChar(100)
-  assinaturaHash    String? @db.VarChar(128)
-  assinaturaData    DateTime @default(now())
-  assinanteExtra    Boolean @default(false)
+  nomeAssinante      String   @db.VarChar(255)
+  matriculaAssinante String?  @db.VarChar(100)
+  assinaturaHash     String?  @db.VarChar(128)
+  assinaturaData     DateTime @default(now())
+  assinanteExtra     Boolean  @default(false)
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
   updatedAt DateTime? @updatedAt
   updatedBy String?   @db.VarChar(255)
 
+  @@unique([atividadeAprPreenchidaId, assinaturaHash], map: "uq_atividade_apr_assinatura_hash")
   @@index([atividadeAprPreenchidaId])
   @@index([turnoEletricistaId])
   @@index([eletricistaId])
   @@index([assinaturaData])
-  @@unique([atividadeAprPreenchidaId, assinaturaHash], map: "uq_atividade_apr_assinatura_hash")
 }

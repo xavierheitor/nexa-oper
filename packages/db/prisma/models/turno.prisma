@@ -24,13 +24,15 @@ model Turno {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  TurnoEletricistas    TurnoEletricista[]
-  ChecklistPreenchidos ChecklistPreenchido[]
-  ChecklistPendencias  ChecklistPendencia[]
-  TurnoRealizado       TurnoRealizado[]
+  TurnoEletricistas       TurnoEletricista[]
+  ChecklistPreenchidos    ChecklistPreenchido[]
+  ChecklistPendencias     ChecklistPendencia[]
+  TurnoRealizado          TurnoRealizado[]
   AderenciaEscalaSnapshot AderenciaEscalaSnapshot[]
-  AtividadeExecucoes   AtividadeExecucao[]
+  AtividadeExecucoes      AtividadeExecucao[]
   AtividadeAprPreenchidas AtividadeAprPreenchida[]
+
+  projExecucaos ProjExecucao[]
 }
 
 model TurnoEletricista {

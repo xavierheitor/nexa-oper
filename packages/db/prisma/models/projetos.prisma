@@ -1,10 +1,83 @@
 /// ===============================================
-/// Catálogos técnicos do módulo de projetos
+/// ENUMS
+/// ===============================================
+
+enum ProjTipoConsumoMaterial {
+  FIXO
+  VARIAVEL
+}
+
+enum ProjStatusProjeto {
+  PENDENTE
+  EM_VIABILIZACAO
+  VIABILIZADO
+  EM_PROGRAMACAO
+  AGUARDANDO_AVISOS
+  AGUARDANDO_DESLIGAMENTO
+  LIBERADO_EXECUCAO
+  EM_EXECUCAO
+  PARCIAL
+  AGUARDANDO_REPROGRAMACAO
+  CONCLUIDO
+  CONCLUIDO_POR_TERCEIROS
+  CANCELADO
+}
+
+enum ProjStatusProgramacao {
+  PENDENTE
+  PLANEJADA
+  AVISOS_ENTREGUES
+  DESLIGAMENTO_CONFIRMADO
+  LIBERADA
+  EM_EXECUCAO
+  PARCIAL
+  CONCLUIDA
+  CANCELADA
+}
+
+enum ProjResultadoExecucao {
+  EXECUTADO
+  PARCIAL
+  TERCEIROS
+  IMPEDIDO
+  NAO_EXECUTADO
+}
+
+enum ProjTipoItemExecucao {
+  POSTE
+  VAO
+  RAMAL
+}
+
+enum ProjTipoEvidencia {
+  FOTO
+  VIDEO
+  DOCUMENTO
+}
+
+enum ProjTipoMotivoOcorrencia {
+  CANCELAMENTO_PROGRAMACAO
+  NAO_EXECUCAO_ITEM
+}
+
+enum ProjStatusFilaProgramacao {
+  PENDENTE
+  PROGRAMADA
+  EM_EXECUCAO
+  PARCIAL
+  RESOLVIDO_EXECUTADO
+  RESOLVIDO_TRATADO
+}
+
+/// ===============================================
+/// CATALOGOS TECNICOS
 /// ===============================================
 
 model ProjTipoPoste {
   id   Int    @id @default(autoincrement())
-  nome String @db.VarChar(255)
+  nome String @db.VarChar(255) // ex: 12/300
+
+  postes ProjPoste[]
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -14,11 +87,15 @@ model ProjTipoPoste {
   deletedBy String?   @db.VarChar(255)
 
   @@index([nome])
+  @@index([deletedAt])
 }
 
 model ProjTipoEstrutura {
   id   Int    @id @default(autoincrement())
-  nome String @db.VarChar(255)
+  nome String @db.VarChar(255) // ex: N4, N1+S1
+
+  estruturaMateriais ProjTipoEstruturaMaterial[]
+  posteEstruturas    ProjPosteEstrutura[]
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -28,11 +105,18 @@ model ProjTipoEstrutura {
   deletedBy String?   @db.VarChar(255)
 
   @@index([nome])
+  @@index([deletedAt])
 }
 
 model ProjTipoRamal {
   id   Int    @id @default(autoincrement())
-  nome String @db.VarChar(255)
+  nome String @db.VarChar(255) // MONO, BI, TRI
+
+  tipoRamalMateriais ProjTipoRamalMaterial[]
+  posteRamais        ProjPosteRamal[]
+  execucoesRamais    ProjExecucaoRamal[]
+  programacoesRamais ProjProgramacaoRamal[]
+  filaProgramacao    ProjFilaProgramacao[]
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -42,11 +126,22 @@ model ProjTipoRamal {
   deletedBy String?   @db.VarChar(255)
 
   @@index([nome])
+  @@index([deletedAt])
 }
 
-model ProjEstrutura {
-  id   Int    @id @default(autoincrement())
-  nome String @db.VarChar(255)
+model ProjMotivoOcorrencia {
+  id Int @id @default(autoincrement())
+
+  codigo    String                   @db.VarChar(100)
+  descricao String                   @db.VarChar(255)
+  tipo      ProjTipoMotivoOcorrencia
+  ativo     Boolean                  @default(true)
+
+  programacoesCanceladas ProjProgramacao[]
+  programacaoPostes      ProjProgramacaoPoste[]
+  programacaoVaos        ProjProgramacaoVao[]
+  programacaoRamais      ProjProgramacaoRamal[]
+  filaProgramacao        ProjFilaProgramacao[]
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -55,5 +150,692 @@ model ProjEstrutura {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  @@index([nome])
+  @@unique([codigo], map: "uq_proj_motivo_ocorrencia_codigo")
+  @@index([tipo])
+  @@index([ativo])
+  @@index([deletedAt])
+}
+
+/// ===============================================
+/// COMPOSICAO DE MATERIAIS POR CONTRATO
+/// ===============================================
+
+model ProjTipoEstruturaMaterial {
+  id Int @id @default(autoincrement())
+
+  contratoId      Int
+  tipoEstruturaId Int
+  materialId      Int
+
+  quantidadeBase Decimal                 @db.Decimal(10, 4)
+  tipoConsumo    ProjTipoConsumoMaterial
+
+  contrato      Contrato          @relation(fields: [contratoId], references: [id])
+  tipoEstrutura ProjTipoEstrutura @relation(fields: [tipoEstruturaId], references: [id])
+  material      MaterialCatalogo  @relation(fields: [materialId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([contratoId, tipoEstruturaId, materialId], map: "uq_proj_tipo_estrutura_material")
+  @@index([contratoId])
+  @@index([tipoEstruturaId])
+  @@index([materialId])
+  @@index([deletedAt])
+}
+
+model ProjTipoRamalMaterial {
+  id Int @id @default(autoincrement())
+
+  contratoId  Int
+  tipoRamalId Int
+  materialId  Int
+
+  quantidadeBase Decimal                 @db.Decimal(10, 4)
+  tipoConsumo    ProjTipoConsumoMaterial
+
+  contrato  Contrato         @relation(fields: [contratoId], references: [id])
+  tipoRamal ProjTipoRamal    @relation(fields: [tipoRamalId], references: [id])
+  material  MaterialCatalogo @relation(fields: [materialId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([contratoId, tipoRamalId, materialId], map: "uq_proj_tipo_ramal_material")
+  @@index([contratoId])
+  @@index([tipoRamalId])
+  @@index([materialId])
+  @@index([deletedAt])
+}
+
+/// ===============================================
+/// PROJETO
+/// ===============================================
+
+model ProjetoProgramacao {
+  id Int @id @default(autoincrement())
+
+  codigo String @db.VarChar(100)
+  nome   String @db.VarChar(255)
+
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+  status ProjStatusProjeto @default(PENDENTE)
+
+  concessionaria String? @db.VarChar(255)
+  municipio      String? @db.VarChar(255)
+  observacao     String? @db.Text
+
+  postes          ProjPoste[]
+  vaos            ProjVao[]
+  programacoes    ProjProgramacao[]
+  execucoes       ProjExecucao[]
+  evidencias      ProjEvidencia[]
+  filaProgramacao ProjFilaProgramacao[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([codigo], map: "uq_projeto_programacao_codigo")
+  @@index([contratoId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+/// ===============================================
+/// POSTES
+/// ===============================================
+
+model ProjPoste {
+  id Int @id @default(autoincrement())
+
+  projetoId Int
+  projeto   ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+
+  numeroIdentificacao String @db.VarChar(100) // ex: 86004563
+
+  tipoPosteId Int?
+  tipoPoste   ProjTipoPoste? @relation(fields: [tipoPosteId], references: [id])
+
+  latitude  Decimal? @db.Decimal(10, 7)
+  longitude Decimal? @db.Decimal(10, 7)
+
+  ordem       Int?
+  statusAtual ProjResultadoExecucao? // snapshot calculado a partir das execucoes
+  observacao  String?                @db.Text
+
+  estruturas        ProjPosteEstrutura[]
+  ramaisPrevistos   ProjPosteRamal[]
+  vaosOrigem        ProjVao[]              @relation("ProjVaoOrigem")
+  vaosDestino       ProjVao[]              @relation("ProjVaoDestino")
+  execucoesPoste    ProjExecucaoPoste[]
+  execucoesRamais   ProjExecucaoRamal[]
+  programacoes      ProjProgramacaoPoste[]
+  programacoesRamal ProjProgramacaoRamal[]
+  evidencias        ProjEvidencia[]
+  filaProgramacao   ProjFilaProgramacao[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([projetoId, numeroIdentificacao], map: "uq_proj_poste_projeto_numero")
+  @@unique([id, projetoId], map: "uq_proj_poste_id_projeto")
+  @@index([projetoId])
+  @@index([numeroIdentificacao])
+  @@index([tipoPosteId])
+  @@index([statusAtual])
+  @@index([deletedAt])
+}
+
+model ProjPosteEstrutura {
+  id Int @id @default(autoincrement())
+
+  posteId         Int
+  tipoEstruturaId Int
+
+  poste         ProjPoste         @relation(fields: [posteId], references: [id])
+  tipoEstrutura ProjTipoEstrutura @relation(fields: [tipoEstruturaId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([posteId, tipoEstruturaId], map: "uq_proj_poste_estrutura")
+  @@index([posteId])
+  @@index([tipoEstruturaId])
+  @@index([deletedAt])
+}
+
+model ProjPosteRamal {
+  id Int @id @default(autoincrement())
+
+  posteId     Int
+  tipoRamalId Int
+
+  quantidadePrevista       Int                    @default(0)
+  quantidadeExecutadaAtual Int                    @default(0)
+  statusAtual              ProjResultadoExecucao?
+
+  poste     ProjPoste     @relation(fields: [posteId], references: [id])
+  tipoRamal ProjTipoRamal @relation(fields: [tipoRamalId], references: [id])
+
+  programacoes    ProjProgramacaoRamal[]
+  execucoes       ProjExecucaoRamal[]
+  filaProgramacao ProjFilaProgramacao[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([posteId, tipoRamalId], map: "uq_proj_poste_ramal")
+  @@index([posteId])
+  @@index([tipoRamalId])
+  @@index([statusAtual])
+  @@index([deletedAt])
+}
+
+/// ===============================================
+/// VAOS
+/// ===============================================
+
+model ProjVao {
+  id Int @id @default(autoincrement())
+
+  projetoId Int
+  projeto   ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+
+  posteOrigemId  Int
+  posteDestinoId Int
+
+  posteOrigem  ProjPoste @relation("ProjVaoOrigem", fields: [posteOrigemId, projetoId], references: [id, projetoId])
+  posteDestino ProjPoste @relation("ProjVaoDestino", fields: [posteDestinoId, projetoId], references: [id, projetoId])
+
+  distanciaMetros     Decimal? @db.Decimal(10, 2)
+  caboPrevistoMetros  Decimal? @db.Decimal(10, 2)
+  caboExecutadoMetros Decimal? @db.Decimal(10, 2)
+  valorServicoMetro   Decimal? @db.Decimal(12, 2)
+
+  statusAtual ProjResultadoExecucao? // snapshot calculado a partir das execucoes
+  observacao  String?                @db.Text
+
+  execucoesVao    ProjExecucaoVao[]
+  programacoes    ProjProgramacaoVao[]
+  evidencias      ProjEvidencia[]
+  filaProgramacao ProjFilaProgramacao[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([id, projetoId], map: "uq_proj_vao_id_projeto")
+  @@index([projetoId])
+  @@index([posteOrigemId])
+  @@index([posteDestinoId])
+  @@index([statusAtual])
+  @@index([deletedAt])
+}
+
+/// ===============================================
+/// PROGRAMACAO
+/// ===============================================
+
+model ProjProgramacao {
+  id Int @id @default(autoincrement())
+
+  projetoId Int
+  projeto   ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+
+  status ProjStatusProgramacao @default(PENDENTE)
+
+  dataProgramada     DateTime?
+  percentualPrevisto Decimal?  @db.Decimal(5, 2)
+
+  viabilizado            Boolean @default(false)
+  avisosEntregues        Boolean @default(false)
+  desligamentoNecessario Boolean @default(false)
+  desligamentoConfirmado Boolean @default(false)
+
+  protocoloConcessionaria String? @db.VarChar(255)
+  observacao              String? @db.Text
+
+  motivoCancelamentoId  Int?
+  motivoCancelamento    ProjMotivoOcorrencia? @relation(fields: [motivoCancelamentoId], references: [id])
+  motivoCancelamentoObs String?               @db.Text
+  canceladaEm           DateTime?
+
+  postesPlanejados ProjProgramacaoPoste[]
+  vaosPlanejados   ProjProgramacaoVao[]
+  ramaisPlanejados ProjProgramacaoRamal[]
+
+  execucoes   ProjExecucao[]
+  filaOrigem  ProjFilaProgramacao[] @relation("ProjFilaProgramacaoOrigem")
+  filaDestino ProjFilaProgramacao[] @relation("ProjFilaProgramacaoDestino")
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([id, projetoId], map: "uq_proj_programacao_id_projeto")
+  @@index([projetoId])
+  @@index([status])
+  @@index([dataProgramada])
+  @@index([motivoCancelamentoId])
+  @@index([canceladaEm])
+  @@index([deletedAt])
+}
+
+model ProjProgramacaoPoste {
+  id Int @id @default(autoincrement())
+
+  projetoId     Int
+  programacaoId Int
+  posteId       Int
+
+  ordemPlanejamento Int?
+  encerrado         Boolean                @default(false)
+  statusAtual       ProjResultadoExecucao?
+
+  motivoNaoExecucaoId  Int?
+  motivoNaoExecucao    ProjMotivoOcorrencia? @relation(fields: [motivoNaoExecucaoId], references: [id])
+  motivoNaoExecucaoObs String?               @db.Text
+
+  programacao ProjProgramacao @relation(fields: [programacaoId, projetoId], references: [id, projetoId])
+  poste       ProjPoste       @relation(fields: [posteId, projetoId], references: [id, projetoId])
+
+  execucoes ProjExecucaoPoste[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([programacaoId, posteId], map: "uq_proj_programacao_poste")
+  @@unique([id, projetoId], map: "uq_proj_programacao_poste_id_projeto")
+  @@index([projetoId])
+  @@index([programacaoId])
+  @@index([posteId])
+  @@index([encerrado])
+  @@index([statusAtual])
+  @@index([motivoNaoExecucaoId])
+  @@index([deletedAt])
+}
+
+model ProjProgramacaoVao {
+  id Int @id @default(autoincrement())
+
+  projetoId     Int
+  programacaoId Int
+  vaoId         Int
+
+  ordemPlanejamento Int?
+  encerrado         Boolean                @default(false)
+  statusAtual       ProjResultadoExecucao?
+
+  motivoNaoExecucaoId  Int?
+  motivoNaoExecucao    ProjMotivoOcorrencia? @relation(fields: [motivoNaoExecucaoId], references: [id])
+  motivoNaoExecucaoObs String?               @db.Text
+
+  programacao ProjProgramacao @relation(fields: [programacaoId, projetoId], references: [id, projetoId])
+  vao         ProjVao         @relation(fields: [vaoId, projetoId], references: [id, projetoId])
+
+  execucoes ProjExecucaoVao[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([programacaoId, vaoId], map: "uq_proj_programacao_vao")
+  @@unique([id, projetoId], map: "uq_proj_programacao_vao_id_projeto")
+  @@index([projetoId])
+  @@index([programacaoId])
+  @@index([vaoId])
+  @@index([encerrado])
+  @@index([statusAtual])
+  @@index([motivoNaoExecucaoId])
+  @@index([deletedAt])
+}
+
+model ProjProgramacaoRamal {
+  id Int @id @default(autoincrement())
+
+  projetoId     Int
+  programacaoId Int
+  posteId       Int
+  tipoRamalId   Int
+
+  quantidadePlanejada Int                    @default(0)
+  quantidadeExecutada Int                    @default(0)
+  encerrado           Boolean                @default(false)
+  statusAtual         ProjResultadoExecucao?
+
+  motivoNaoExecucaoId  Int?
+  motivoNaoExecucao    ProjMotivoOcorrencia? @relation(fields: [motivoNaoExecucaoId], references: [id])
+  motivoNaoExecucaoObs String?               @db.Text
+
+  programacao ProjProgramacao @relation(fields: [programacaoId, projetoId], references: [id, projetoId])
+  poste       ProjPoste       @relation(fields: [posteId, projetoId], references: [id, projetoId])
+  tipoRamal   ProjTipoRamal   @relation(fields: [tipoRamalId], references: [id])
+  posteRamal  ProjPosteRamal  @relation(fields: [posteId, tipoRamalId], references: [posteId, tipoRamalId])
+
+  execucoes ProjExecucaoRamal[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([programacaoId, posteId, tipoRamalId], map: "uq_proj_programacao_ramal")
+  @@unique([id, projetoId], map: "uq_proj_programacao_ramal_id_projeto")
+  @@index([projetoId])
+  @@index([programacaoId])
+  @@index([posteId])
+  @@index([tipoRamalId])
+  @@index([encerrado])
+  @@index([statusAtual])
+  @@index([motivoNaoExecucaoId])
+  @@index([deletedAt])
+}
+
+/// ===============================================
+/// EXECUCAO
+/// ===============================================
+
+model ProjExecucao {
+  id Int @id @default(autoincrement())
+
+  projetoId Int
+  projeto   ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+
+  programacaoId Int?
+  programacao   ProjProgramacao? @relation(fields: [programacaoId, projetoId], references: [id, projetoId])
+
+  turnoId Int?
+  turno   Turno? @relation(fields: [turnoId], references: [id])
+
+  dataExecucao DateTime?
+  enviadaEm    DateTime?
+
+  statusGeral ProjResultadoExecucao?
+  observacao  String?                @db.Text
+
+  postes     ProjExecucaoPoste[]
+  vaos       ProjExecucaoVao[]
+  ramais     ProjExecucaoRamal[]
+  evidencias ProjEvidencia[]
+
+  filaOrigem    ProjFilaProgramacao[] @relation("ProjFilaProgramacaoExecucaoOrigem")
+  filaResolucao ProjFilaProgramacao[] @relation("ProjFilaProgramacaoExecucaoResolucao")
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([id, projetoId], map: "uq_proj_execucao_id_projeto")
+  @@index([projetoId])
+  @@index([programacaoId])
+  @@index([turnoId])
+  @@index([dataExecucao])
+  @@index([enviadaEm])
+  @@index([deletedAt])
+}
+
+model ProjExecucaoPoste {
+  id Int @id @default(autoincrement())
+
+  projetoId  Int
+  execucaoId Int
+  posteId    Int
+
+  programacaoPosteId Int?
+  programacaoPoste   ProjProgramacaoPoste? @relation(fields: [programacaoPosteId, projetoId], references: [id, projetoId])
+
+  resultado  ProjResultadoExecucao
+  observacao String?               @db.Text
+
+  execucao ProjExecucao @relation(fields: [execucaoId, projetoId], references: [id, projetoId])
+  poste    ProjPoste    @relation(fields: [posteId, projetoId], references: [id, projetoId])
+
+  evidencias ProjEvidencia[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([id, projetoId], map: "uq_proj_execucao_poste_id_projeto")
+  @@index([projetoId])
+  @@index([execucaoId])
+  @@index([posteId])
+  @@index([programacaoPosteId])
+  @@index([resultado])
+  @@index([deletedAt])
+}
+
+model ProjExecucaoVao {
+  id Int @id @default(autoincrement())
+
+  projetoId  Int
+  execucaoId Int
+  vaoId      Int
+
+  programacaoVaoId Int?
+  programacaoVao   ProjProgramacaoVao? @relation(fields: [programacaoVaoId, projetoId], references: [id, projetoId])
+
+  resultado           ProjResultadoExecucao
+  caboExecutadoMetros Decimal?              @db.Decimal(10, 2)
+  observacao          String?               @db.Text
+
+  execucao ProjExecucao @relation(fields: [execucaoId, projetoId], references: [id, projetoId])
+  vao      ProjVao      @relation(fields: [vaoId, projetoId], references: [id, projetoId])
+
+  evidencias ProjEvidencia[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([id, projetoId], map: "uq_proj_execucao_vao_id_projeto")
+  @@index([projetoId])
+  @@index([execucaoId])
+  @@index([vaoId])
+  @@index([programacaoVaoId])
+  @@index([resultado])
+  @@index([deletedAt])
+}
+
+model ProjExecucaoRamal {
+  id Int @id @default(autoincrement())
+
+  projetoId   Int
+  execucaoId  Int
+  posteId     Int
+  tipoRamalId Int
+
+  programacaoRamalId Int?
+  programacaoRamal   ProjProgramacaoRamal? @relation(fields: [programacaoRamalId, projetoId], references: [id, projetoId])
+
+  resultado           ProjResultadoExecucao
+  quantidadeExecutada Int                   @default(0)
+  caboExecutadoMetros Decimal?              @db.Decimal(10, 2)
+  observacao          String?               @db.Text
+
+  execucao   ProjExecucao   @relation(fields: [execucaoId, projetoId], references: [id, projetoId])
+  poste      ProjPoste      @relation(fields: [posteId, projetoId], references: [id, projetoId])
+  tipoRamal  ProjTipoRamal  @relation(fields: [tipoRamalId], references: [id])
+  posteRamal ProjPosteRamal @relation(fields: [posteId, tipoRamalId], references: [posteId, tipoRamalId])
+
+  evidencias ProjEvidencia[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([id, projetoId], map: "uq_proj_execucao_ramal_id_projeto")
+  @@index([projetoId])
+  @@index([execucaoId])
+  @@index([posteId])
+  @@index([tipoRamalId])
+  @@index([programacaoRamalId])
+  @@index([resultado])
+  @@index([deletedAt])
+}
+
+/// ===============================================
+/// EVIDENCIAS
+/// ===============================================
+
+model ProjEvidencia {
+  id Int @id @default(autoincrement())
+
+  projetoId Int
+  projeto   ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+
+  execucaoId Int?
+  execucao   ProjExecucao? @relation(fields: [execucaoId], references: [id])
+
+  execucaoPosteId Int?
+  execucaoPoste   ProjExecucaoPoste? @relation(fields: [execucaoPosteId], references: [id])
+
+  execucaoVaoId Int?
+  execucaoVao   ProjExecucaoVao? @relation(fields: [execucaoVaoId], references: [id])
+
+  execucaoRamalId Int?
+  execucaoRamal   ProjExecucaoRamal? @relation(fields: [execucaoRamalId], references: [id])
+
+  posteId Int?
+  poste   ProjPoste? @relation(fields: [posteId], references: [id])
+
+  vaoId Int?
+  vao   ProjVao? @relation(fields: [vaoId], references: [id])
+
+  tipo       ProjTipoEvidencia
+  arquivo    String            @db.VarChar(500)
+  latitude   Decimal?          @db.Decimal(10, 7)
+  longitude  Decimal?          @db.Decimal(10, 7)
+  observacao String?           @db.Text
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@index([projetoId])
+  @@index([execucaoId])
+  @@index([execucaoPosteId])
+  @@index([execucaoVaoId])
+  @@index([execucaoRamalId])
+  @@index([posteId])
+  @@index([vaoId])
+  @@index([deletedAt])
+}
+
+/// ===============================================
+/// FILA DE PROGRAMACAO
+/// ===============================================
+
+model ProjFilaProgramacao {
+  id Int @id @default(autoincrement())
+
+  projetoId Int
+  projeto   ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+
+  tipoItem ProjTipoItemExecucao
+  status   ProjStatusFilaProgramacao @default(PENDENTE)
+
+  posteId     Int?
+  vaoId       Int?
+  tipoRamalId Int?
+
+  quantidadePendente Int? @default(0)
+
+  programacaoOrigemId Int?
+  programacaoOrigem   ProjProgramacao? @relation("ProjFilaProgramacaoOrigem", fields: [programacaoOrigemId, projetoId], references: [id, projetoId])
+
+  programacaoDestinoId Int?
+  programacaoDestino   ProjProgramacao? @relation("ProjFilaProgramacaoDestino", fields: [programacaoDestinoId, projetoId], references: [id, projetoId])
+
+  execucaoOrigemId Int?
+  execucaoOrigem   ProjExecucao? @relation("ProjFilaProgramacaoExecucaoOrigem", fields: [execucaoOrigemId, projetoId], references: [id, projetoId])
+
+  execucaoResolucaoId Int?
+  execucaoResolucao   ProjExecucao? @relation("ProjFilaProgramacaoExecucaoResolucao", fields: [execucaoResolucaoId, projetoId], references: [id, projetoId])
+
+  poste      ProjPoste?      @relation(fields: [posteId, projetoId], references: [id, projetoId])
+  vao        ProjVao?        @relation(fields: [vaoId, projetoId], references: [id, projetoId])
+  tipoRamal  ProjTipoRamal?  @relation(fields: [tipoRamalId], references: [id])
+  posteRamal ProjPosteRamal? @relation(fields: [posteId, tipoRamalId], references: [posteId, tipoRamalId])
+
+  motivoOcorrenciaId Int?
+  motivoOcorrencia   ProjMotivoOcorrencia? @relation(fields: [motivoOcorrenciaId], references: [id])
+
+  observacao  String?   @db.Text
+  resolvidaEm DateTime?
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@index([projetoId, status])
+  @@index([posteId])
+  @@index([vaoId])
+  @@index([tipoRamalId])
+  @@index([programacaoOrigemId])
+  @@index([programacaoDestinoId])
+  @@index([execucaoOrigemId])
+  @@index([execucaoResolucaoId])
+  @@index([motivoOcorrenciaId])
+  @@index([resolvidaEm])
+  @@index([deletedAt])
 }
