@@ -8,6 +8,8 @@ export type Permission =
   | 'tipos-escala:view'
   | 'horarios-equipe:view'
   | 'tipos-equipe:view'
+  | 'projetos-tipos-poste:view'
+  | 'projetos-tipos-estrutura:view'
   | 'tipos-veiculo:view'
   | 'veiculos:view'
   | 'veiculos:create'
@@ -87,6 +89,8 @@ export const PERMISSIONS = {
   TIPOS_ESCALA_VIEW: 'tipos-escala:view' as const,
   HORARIOS_EQUIPE_VIEW: 'horarios-equipe:view' as const,
   TIPOS_EQUIPE_VIEW: 'tipos-equipe:view' as const,
+  PROJETOS_TIPOS_POSTE_VIEW: 'projetos-tipos-poste:view' as const,
+  PROJETOS_TIPOS_ESTRUTURA_VIEW: 'projetos-tipos-estrutura:view' as const,
   TIPOS_VEICULO_VIEW: 'tipos-veiculo:view' as const,
   VEICULOS_VIEW: 'veiculos:view' as const,
   VEICULOS_CREATE: 'veiculos:create' as const,
@@ -222,6 +226,18 @@ export const PERMISSION_CATALOG: PermissionCatalogItem[] = [
     label: 'Ver tipos de equipe',
     group: PERMISSION_GROUP_LABELS.registry,
     description: 'Acessa a tela de tipos de equipe.',
+  },
+  {
+    permission: PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
+    label: 'Ver tipos de poste',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de tipos de poste dos projetos.',
+  },
+  {
+    permission: PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
+    label: 'Ver tipos de estrutura',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de tipos de estrutura dos projetos.',
   },
   {
     permission: PERMISSIONS.TIPOS_VEICULO_VIEW,
@@ -555,6 +571,8 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.TIPOS_ESCALA_VIEW,
     PERMISSIONS.HORARIOS_EQUIPE_VIEW,
     PERMISSIONS.TIPOS_EQUIPE_VIEW,
+    PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
+    PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
     PERMISSIONS.TIPOS_VEICULO_VIEW,
     PERMISSIONS.VEICULOS_VIEW,
     PERMISSIONS.VEICULOS_CREATE,

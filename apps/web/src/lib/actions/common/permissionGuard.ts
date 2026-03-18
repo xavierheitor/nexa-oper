@@ -262,6 +262,22 @@ export function requireTiposEquipePermission(session: Session): void {
   );
 }
 
+export function requireProjetosTiposPostePermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW],
+    'Você não tem permissão para acessar tipos de poste dos projetos.',
+  );
+}
+
+export function requireProjetosTiposEstruturaPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW],
+    'Você não tem permissão para acessar tipos de estrutura dos projetos.',
+  );
+}
+
 export function requireTiposVeiculoPermission(session: Session): void {
   assertAnyPermission(
     session,

@@ -1,0 +1,19 @@
+import { z } from 'zod';
+import type { IncludeConfig } from '../types/common';
+
+export const projTipoEstruturaCreateSchema = z.object({
+  nome: z.string().min(1).max(255),
+});
+
+export const projTipoEstruturaUpdateSchema = projTipoEstruturaCreateSchema.extend({
+  id: z.number().int(),
+});
+
+export const projTipoEstruturaFilterSchema = z.object({
+  page: z.number().int(),
+  pageSize: z.number().int(),
+  orderBy: z.string(),
+  orderDir: z.enum(['asc', 'desc']),
+  search: z.string().optional(),
+  include: z.custom<IncludeConfig>().optional(),
+});

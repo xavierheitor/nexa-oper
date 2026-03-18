@@ -45,6 +45,8 @@ import { EquipeSupervisorService } from '../infraestrutura/EquipeSupervisorServi
 import { TipoEquipeService } from '../infraestrutura/TipoEquipeService';
 import { TipoVeiculoService } from '../infraestrutura/TipoVeiculoService';
 import { VeiculoService } from '../infraestrutura/VeiculoService';
+import { ProjTipoEstruturaService } from '../projetos/ProjTipoEstruturaService';
+import { ProjTipoPosteService } from '../projetos/ProjTipoPosteService';
 import { CargoService } from '../pessoas/CargoService';
 import { EletricistaService } from '../pessoas/EletricistaService';
 import { SupervisorService } from '../pessoas/SupervisorService';
@@ -77,6 +79,11 @@ export function registerServices(): void {
   container.register('baseService', () => new BaseService());
   container.register('cargoService', () => new CargoService());
   container.register('tipoEquipeService', () => new TipoEquipeService());
+  container.register('projTipoPosteService', () => new ProjTipoPosteService());
+  container.register(
+    'projTipoEstruturaService',
+    () => new ProjTipoEstruturaService()
+  );
   container.register('equipeService', () => new EquipeService());
   container.register('tipoVeiculoService', () => new TipoVeiculoService());
   container.register('veiculoService', () => new VeiculoService());

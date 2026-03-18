@@ -198,6 +198,25 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
         ],
       },
       {
+        key: 'projetos-cadastro-menu',
+        label: 'Projetos',
+        icon: <AppstoreOutlined />,
+        children: [
+          {
+            key: '/dashboard/cadastro/projetos/tipo-poste',
+            label: 'Tipos de Poste',
+            path: '/dashboard/cadastro/projetos/tipo-poste',
+            requiredPermission: PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
+          },
+          {
+            key: '/dashboard/cadastro/projetos/tipo-estrutura',
+            label: 'Tipos de Estrutura',
+            path: '/dashboard/cadastro/projetos/tipo-estrutura',
+            requiredPermission: PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
+          },
+        ],
+      },
+      {
         key: '/dashboard/cadastro/cargo',
         label: 'Cargos',
         path: '/dashboard/cadastro/cargo',
