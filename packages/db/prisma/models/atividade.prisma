@@ -154,6 +154,7 @@ model MaterialCatalogo {
   updatedBy                  String?                     @db.VarChar(255)
   deletedAt                  DateTime?
   deletedBy                  String?                     @db.VarChar(255)
+  projVaosMaterialCondutor   ProjVao[]                   @relation("ProjVaoMaterialCondutor")
   projTipoEstruturaMaterials ProjTipoEstruturaMaterial[]
   projTipoRamalMaterials     ProjTipoRamalMaterial[]
 

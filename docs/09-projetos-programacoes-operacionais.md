@@ -11,88 +11,309 @@ Ele deve servir como:
 - guia de implementacao da API
 - guia de implementacao do mobile
 - guia de implementacao do backoffice web
-- referencia para discussoes futuras de medicao/faturamento
+- referencia para discussoes futuras de materiais, medicao e faturamento
 
 Este documento assume como base o schema atual em:
 
 - `packages/db/prisma/models/projetos.prisma`
 
-## Escopo desta fase
+## Principio central
 
-Nesta fase, o foco e modelar corretamente os fatos de negocio no banco.
-
-O principio central aprovado e:
+O principio aprovado para este modulo e:
 
 - o banco grava fatos
-- analise, pendencia, fila de reprogramacao, progresso e indicadores sao derivados por consulta
+- progresso, pendencia, backlog de reprogramacao, indicadores e listas operacionais sao derivados por consulta
 
 Isso significa que o modelo evita:
 
 - fila persistida como fonte de verdade
-- contadores pre-calculados
-- snapshots operacionais autoritativos em item tecnico
+- snapshots operacionais autoritativos por item tecnico
+- contadores pre-calculados como fonte oficial
+- status derivado persistido em poste, vao ou ramal
 
 ## Resumo do dominio
 
-O processo real e este:
+O processo real da fase atual e este:
 
-1. Existe um projeto tecnico/operacional.
-2. O projeto contem itens fisicos executaveis.
-3. Os principais itens sao postes, vaos e ramais previstos.
-4. O projeto entra em planejamento.
-5. Depois sao feitas programacoes com a distribuidora.
-6. Cada programacao possui sua propria SI.
-7. Cada programacao seleciona um subconjunto de itens do projeto.
-8. Em campo, a equipe executa, nao executa ou encontra item resolvido por terceiros.
-9. A parcial existe no conjunto dos itens programados e, para ramal, no saldo de quantidade
-   executada. Ela nao existe no poste ou vao individual.
-10. O que sobrar em aberto entra na proxima programacao por consulta, nao por fila manual.
-11. O projeto so e considerado operacionalmente fechado quando nao houver item pendente no
-    escopo e todo item tiver registro operacional de execucao/resolucao. Quando a regra exigir,
-    isso inclui evidencia anexada.
+1. o projeto nasce como cadastro administrativo
+2. o projeto entra em viabilizacao tecnica no mobile
+3. a viabilizacao levanta postes, estruturas, ramais por tipo, observacoes, GPS e fotos
+4. quando houver dados suficientes, a mesma viabilizacao tambem levanta vaos e informa um unico material condutor para cada vao
+5. cada envio de viabilizacao informa se o levantamento do projeto/equipamento foi parcial ou total
+6. a programacao sempre seleciona subconjuntos do escopo tecnico ja levantado
+7. cada programacao ou reprogramacao gera uma nova SI
+8. a SI pertence a programacao, nunca ao projeto
+9. a execucao registra o fato ocorrido em campo
+10. pendencia e reprogramacao nascem de consulta sobre escopo + historico operacional
+11. a lista de materiais para requisicao e derivada da programacao com base em estruturas, ramais e vaos
 
-## Conceitos principais
+## Entidades centrais
 
 ### Projeto
 
-`Projeto` e o agregado principal.
+`ProjetoProgramacao` continua sendo a entidade principal nesta fase.
 
-Ele representa:
+Ele representa o cadastro administrativo e o agregado do projeto.
 
-- contrato
-- numero do projeto
-- municipio
-- concessionaria
-- equipamento
-- escopo tecnico associado
+Campos centrais do projeto:
 
-O projeto nao carrega a SI.
+- `contratoId`
+- `numeroProjeto`
+- `descricao`
+- `equipamento`
+- `municipio`
+- `concessionaria`
+- `observacao`
+- `status`
 
-O projeto nao carrega o detalhe operacional de cada tentativa.
+O projeto nao carrega SI.
 
-O projeto tem status macro:
+O projeto nao carrega fila de reprogramacao.
+
+O projeto nao carrega percentual consolidado como verdade operacional.
+
+### Viabilizacao
+
+`ProjViabilizacao` registra o fato de um envio de viabilizacao tecnica.
+
+Cada registro informa:
+
+- `projetoId`
+- `resultado` (`PARCIAL` ou `TOTAL`)
+- `dataViabilizacao`
+- `enviadaEm`
+- `observacao`
+
+O resultado de viabilizacao e um fato de negocio persistido.
+
+O status macro do projeto pode refletir:
+
+- `EM_VIABILIZACAO`
+- `VIABILIZADO_PARCIAL`
+- `VIABILIZADO_TOTAL`
+
+Mas o banco nao persiste "fila de itens faltando viabilizar".
+
+Essa lista deve ser derivada pelo que existe ou nao no escopo tecnico do projeto.
+
+### Escopo tecnico
+
+O modelo separa:
+
+- cadastro mestre do poste
+- poste do projeto
+
+Essa separacao existe para que:
+
+- a identificacao estavel do poste nao seja a mesma coisa que o numero do poste da distribuidora
+- o numero do poste possa ser corrigido no cadastro sem quebrar relacoes de vao
+- o vao relacione postes por chave estavel, nunca por numero editavel
+
+#### Cadastro mestre do poste
+
+`ProjCadastroPoste` representa o cadastro principal do poste.
+
+Campos centrais:
+
+- `contratoId`
+- `identificador`
+- `numeroPoste`
+
+Regras:
+
+- `identificador` e a chave estavel usada pelo sistema/app
+- `numeroPoste` e o numero atual da distribuidora
+- ambos devem ser unicos por contrato
+
+#### Poste do projeto
+
+`ProjPoste` representa o uso daquele poste dentro do projeto.
+
+Ele referencia:
+
+- `cadastroPosteId`
+- `projetoId`
+- `viabilizacaoId`
+
+E guarda os fatos de campo do projeto:
+
+- GPS
+- tipo do poste
+- observacao
+- estruturas
+- ramais previstos
+
+O escopo tecnico levantado do projeto e composto por:
+
+- `ProjCadastroPoste`
+- `ProjPoste`
+- `ProjPosteEstrutura`
+- `ProjPosteRamal`
+- `ProjVao`
+
+Interpretacao:
+
+- `ProjCadastroPoste` representa o cadastro estavel do poste
+- `ProjPoste` representa o poste daquele projeto/levantamento
+- `ProjPosteEstrutura` representa as estruturas informadas para o poste
+- `ProjPosteRamal` representa a quantidade prevista por tipo de ramal naquele poste
+- `ProjVao` representa a ligacao tecnica entre dois postes, com um unico material condutor informado
+
+Os fatos levantados em campo sao persistidos no proprio escopo tecnico.
+
+Nao existe tabela separada de "pendencia de levantamento".
+
+Nao existe status individual de viabilizacao por item.
+
+O modelo adotado e:
+
+- `ProjPoste.viabilizacaoId` identifica a viabilizacao que levantou ou consolidou o poste
+- `ProjVao.viabilizacaoId` identifica a viabilizacao que levantou ou consolidou o vao
+- `ProjPosteEstrutura` e `ProjPosteRamal` sao detalhes tecnicos do poste levantado
+- `ProjVao` guarda apenas os extremos do vao e o material condutor
+- a metragem do vao e derivada pelas coordenadas GPS dos postes do projeto
+
+Decisao de modelagem:
+
+- faz sentido marcar viabilizacao nos itens tecnicos levantados quando isso representa procedencia factual
+- nao faz sentido criar booleano `viabilizado` por item, porque isso seria redundante
+
+### Programacao
+
+`ProjProgramacao` representa a tentativa operacional junto a distribuidora.
+
+Cada programacao possui:
+
+- `projetoId`
+- `siNumero`
+- `status`
+- `dataProgramada`
+- `percentualPrevisto`
+- `reprogramadaDeId`
+- marcos operacionais
+- motivo de cancelamento, quando houver
+
+Marcos operacionais da programacao:
+
+- `avisosEntregues`
+- `desligamentoNecessario`
+- `desligamentoConfirmado`
+
+Importante:
+
+- o booleano `viabilizado` nao existe mais na programacao
+- viabilizacao e fato do projeto/levantamento, nao da SI
+- `percentualPrevisto` e apenas metadado de planejamento, nao fonte oficial de progresso
+
+### Item programado
+
+Um item programado e apenas um vinculo entre programacao e escopo tecnico.
+
+Tabelas:
+
+- `ProjProgramacaoPoste`
+- `ProjProgramacaoVao`
+- `ProjProgramacaoRamal`
+
+Essas tabelas guardam somente:
+
+- referencia ao item tecnico
+- referencia a programacao
+- ordem planejada
+- quantidade planejada, no caso de ramal
+
+Elas nao guardam:
+
+- resultado
+- motivo
+- pendencia
+- encerramento manual
+- status derivado
+
+### Execucao
+
+`ProjExecucao` e o cabecalho de uma ida a campo ou lote sincronizado.
+
+Ela pode estar:
+
+- vinculada a uma programacao
+- vinculada opcionalmente a um turno
+
+Os fatos detalhados sao:
+
+- `ProjExecucaoPoste`
+- `ProjExecucaoVao`
+- `ProjExecucaoRamal`
+
+Esses detalhes sao a verdade operacional sobre o que ocorreu em campo.
+
+`statusGeral` no cabecalho de execucao pode existir como resumo informado, mas nunca substitui os
+detalhes como fonte oficial para pendencia.
+
+### Evidencia
+
+`ProjEvidencia` atende tanto viabilizacao quanto execucao.
+
+Os alvos permitidos no schema atual sao:
+
+- `VIABILIZACAO`
+- `POSTE`
+- `VAO`
+- `EXECUCAO`
+- `EXECUCAO_POSTE`
+- `EXECUCAO_VAO`
+- `EXECUCAO_RAMAL`
+
+Regra obrigatoria:
+
+- exatamente um dono logico deve ser preenchido
+
+Campos de dono logico possiveis:
+
+- `viabilizacaoId`
+- `posteId`
+- `vaoId`
+- `execucaoId`
+- `execucaoPosteId`
+- `execucaoVaoId`
+- `execucaoRamalId`
+
+### Historico
+
+Os historicos continuam sendo:
+
+- `ProjHistoricoProjeto`
+- `ProjHistoricoProgramacao`
+
+Eles servem para trilha de mudanca de estado, e nao para substituir os fatos principais.
+
+## Status macro do projeto
+
+O status macro aprovado para `ProjetoProgramacao` e:
 
 - `PENDENTE`
+- `EM_VIABILIZACAO`
+- `VIABILIZADO_PARCIAL`
+- `VIABILIZADO_TOTAL`
 - `EM_PLANEJAMENTO`
 - `EM_EXECUCAO`
 - `FINALIZADO`
 - `CANCELADO`
 
-### Programacao
+Justificativa:
 
-`Programacao` representa uma tentativa operacional de execucao do projeto junto a distribuidora.
+- `PENDENTE` cobre o cadastro administrativo ainda nao iniciado em campo
+- `EM_VIABILIZACAO` cobre projeto em levantamento tecnico
+- `VIABILIZADO_PARCIAL` cobre projeto que ja pode ser programado apenas com o escopo levantado
+- `VIABILIZADO_TOTAL` cobre projeto com escopo tecnico completo para o equipamento/projeto
+- `EM_PLANEJAMENTO` cobre preparacao operacional das SIs
+- `EM_EXECUCAO` cobre projeto com tentativa operacional em andamento
+- `FINALIZADO` cobre projeto sem itens pendentes
+- `CANCELADO` cobre encerramento administrativo sem novas programacoes, salvo regra de reabertura
 
-A programacao possui:
+## Status da programacao
 
-- SI
-- data programada
-- status proprio
-- marcos operacionais
-- itens incluidos naquela tentativa
-- motivo de cancelamento, se houver
-- encadeamento com programacao anterior, se for reprogramacao
-
-Status da programacao:
+O status detalhado de `ProjProgramacao` e:
 
 - `PENDENTE`
 - `PLANEJADA`
@@ -104,102 +325,40 @@ Status da programacao:
 - `CONCLUIDA`
 - `CANCELADA`
 
-Importante:
+Regras importantes:
 
-- status da programacao nao deve ser confundido com status do projeto
-- `PARCIAL` na programacao significa que parte dos itens previstos ficou em aberto
-- a relacao de reprogramacao usa o nome `reprogramadaDeId` em banco, API e interface
-- os booleans `viabilizado`, `avisosEntregues`, `desligamentoNecessario` e `desligamentoConfirmado`
-  sao marcos operacionais
-- os booleans nao substituem o status
+- status da programacao nao substitui status do projeto
+- `PARCIAL` em programacao significa que parte do que entrou na SI nao foi resolvido
+- a relacao oficial entre tentativas continua sendo `reprogramadaDeId`
+- nao usar nomes alternativos como `programacaoAnteriorId`
 
-### Convencoes de nome
+## Resultado de execucao por item
 
-Para evitar drift entre banco, API, web e mobile, estas convencoes devem ser mantidas:
+### Poste
 
-- o campo oficial de encadeamento entre programacoes e `reprogramadaDeId`
-- nao introduzir nomes alternativos como `programacaoAnteriorId`, `origemProgramacaoId` ou similares
-- a entidade principal do projeto segue como `ProjetoProgramacao` nesta fase
-- se houver futura simplificacao de nomenclatura, ela deve acontecer como refactor global, nao de forma parcial
-
-### SI
-
-A `SI` pertence a `Programacao`.
-
-Ela nao pertence ao `Projeto`.
-
-Uma nova programacao ou reprogramacao gera nova SI.
-
-### Escopo tecnico
-
-O escopo tecnico do projeto e composto por:
-
-- `ProjPoste`
-- `ProjVao`
-- `ProjPosteEstrutura`
-- `ProjPosteRamal`
-
-Interpretacao:
-
-- `ProjPoste` e o poste fisico do projeto
-- `ProjVao` e a ligacao entre postes
-- `ProjTipoEstrutura` e o cadastro padrao de estruturas
-- `ProjPosteEstrutura` define as estruturas previstas naquele poste
-- `ProjPosteRamal` define a previsao agregada de ramais por tipo naquele poste
-
-### Item programado
-
-Um item programado e um item do escopo que entrou em uma SI.
-
-No banco isso aparece em:
-
-- `ProjProgramacaoPoste`
-- `ProjProgramacaoVao`
-- `ProjProgramacaoRamal`
-
-Essas tabelas devem guardar apenas:
-
-- o vinculo do item com a programacao
-- a ordem planejada, quando houver
-- a quantidade planejada de ramal
-
-Elas nao devem guardar:
-
-- resultado da execucao
-- motivo de nao execucao
-- encerramento manual
-- status atual derivado
-
-### Execucao
-
-`ProjExecucao` e o cabecalho de uma ida a campo ou lote de execucao sincronizado.
-
-Ela pode estar:
-
-- vinculada a uma programacao
-- opcionalmente vinculada a um turno
-
-Os fatos detalhados sao registrados em:
-
-- `ProjExecucaoPoste`
-- `ProjExecucaoVao`
-- `ProjExecucaoRamal`
-
-Essas tabelas sao a verdade operacional sobre o que aconteceu com cada item.
-
-### Resultado de execucao
-
-Para `Poste` e `Vao`, o resultado permitido e:
+Resultados permitidos:
 
 - `EXECUTADO`
 - `TERCEIROS`
 - `IMPEDIDO`
 - `NAO_EXECUTADO`
 
-`PARCIAL` foi removido de poste e vao porque, no dominio atual, ambos sao tratados como itens
-integrais.
+`PARCIAL` nao existe para poste.
 
-Para `Ramal`, o resultado permitido e:
+### Vao
+
+Resultados permitidos:
+
+- `EXECUTADO`
+- `TERCEIROS`
+- `IMPEDIDO`
+- `NAO_EXECUTADO`
+
+`PARCIAL` nao existe para vao.
+
+### Ramal
+
+Resultados permitidos:
 
 - `EXECUTADO`
 - `PARCIAL`
@@ -207,378 +366,256 @@ Para `Ramal`, o resultado permitido e:
 - `IMPEDIDO`
 - `NAO_EXECUTADO`
 
-### Pendencia
-
-Neste desenho, pendencia nao e tabela.
-
-Pendencia e resultado de consulta.
-
-Um item pendente e um item ainda nao resolvido terminalmente.
+Aqui `PARCIAL` faz sentido porque existe saldo de quantidade.
 
 ## Casos de uso principais
 
-## Caso 1: cadastrar/importar projeto
+## Caso 1: cadastrar projeto administrativamente
 
 Objetivo:
 
-- criar o projeto
-- gravar o escopo tecnico inicial
+- criar o projeto administrativo
 
 Fluxo:
 
-1. usuario importa ou cadastra projeto
-2. sistema cria `ProjetoProgramacao`
-3. sistema grava postes, vaos, estruturas e ramais previstos
-4. sistema coloca projeto em `PENDENTE` ou `EM_PLANEJAMENTO`
+1. usuario cria `ProjetoProgramacao`
+2. informa contrato, numero do projeto, descricao, equipamento e municipio
+3. projeto nasce em `PENDENTE`
 
-Regras:
+Importante:
 
-- numero do projeto deve ser unico por contrato
-- poste deve ser unico por `projetoId + numeroIdentificacao`
-- ramal previsto deve ser unico por `poste + tipoRamal`
+- nesta fase o cadastro do projeto nao precisa carregar escopo tecnico completo
+- o escopo tecnico sera levantado na viabilizacao
 
-## Caso 2: planejar projeto
+## Caso 2: iniciar e concluir viabilizacao
 
 Objetivo:
 
-- completar ou revisar dados operacionais antes da primeira SI
+- registrar o levantamento tecnico em campo
 
 Fluxo:
 
-1. equipe de planejamento revisa projeto
-2. atualiza observacoes, ordenacao, dados complementares
-3. projeto fica `EM_PLANEJAMENTO`
+1. mobile seleciona um projeto
+2. projeto pode ir para `EM_VIABILIZACAO`
+3. mobile envia um `ProjViabilizacao`
+4. o envio informa `PARCIAL` ou `TOTAL`
+5. sistema grava os fatos tecnicos levantados:
+   - `ProjCadastroPoste`
+   - `ProjPoste`
+   - `ProjPosteEstrutura`
+   - `ProjPosteRamal`
+   - `ProjVao`, quando houver dados suficientes
+6. sistema grava evidencias de viabilizacao em `ProjEvidencia`
+7. projeto pode evoluir para `VIABILIZADO_PARCIAL` ou `VIABILIZADO_TOTAL`
 
-Observacao:
+Campos esperados na viabilizacao:
 
-- versao tecnica do projeto ainda nao esta modelada nesta fase
-- se houver revisoes frequentes de KMZ, este sera um proximo passo importante
+- identificador interno do poste
+- foto proxima ao poste
+- GPS
+- numero do poste da distribuidora
+- estruturas do poste
+- quantidade de ramais por tipo
+- observacoes
+- vaos, quando houver conectividade suficiente entre dois postes ja levantados
+- um unico material condutor por vao
 
-## Caso 3: criar programacao
+## Caso 3: programar projeto parcial ou totalmente viabilizado
 
 Objetivo:
 
-- selecionar parte do escopo do projeto para uma SI
+- criar uma SI com subconjunto do escopo levantado
 
 Fluxo:
 
 1. usuario cria `ProjProgramacao`
-2. informa SI, data, marcos operacionais e observacoes
-3. escolhe os itens do projeto que entrarao na tentativa
-4. sistema grava os vinculos em `ProjProgramacaoPoste`, `ProjProgramacaoVao` e
-   `ProjProgramacaoRamal`
+2. informa `siNumero`, data programada e observacoes
+3. sistema seleciona apenas itens tecnicos ja levantados no projeto
+4. usuario escolhe os itens que entrarao na SI
+5. sistema grava os vinculos em:
+   - `ProjProgramacaoPoste`
+   - `ProjProgramacaoVao`
+   - `ProjProgramacaoRamal`
 
 Regras:
 
-- a programacao representa uma tentativa operacional
-- item planejado nao deve gravar resultado
-- `reprogramadaDeId` deve ser preenchido quando a tentativa nasce de outra programacao
+- projeto `VIABILIZADO_PARCIAL` so pode programar itens existentes no escopo levantado
+- projeto `VIABILIZADO_TOTAL` pode programar qualquer item do escopo completo
+- a programacao nao cria item tecnico novo
 
-## Caso 4: cancelar programacao antes do campo
+## Caso 4: cancelar programacao
 
 Objetivo:
 
-- encerrar uma tentativa sem gerar execucao
+- encerrar tentativa sem confundir isso com encerramento do projeto
 
 Fluxo:
 
 1. usuario cancela a programacao
 2. informa motivo e observacao
 3. sistema muda `ProjProgramacao.status` para `CANCELADA`
-4. os itens continuam pendentes por consulta
+4. itens continuam pendentes por consulta
 
-Importante:
-
-- cancelamento antes do campo nao cria `ProjExecucao*`
-- os itens nao saem do escopo
-- eles apenas permanecem elegiveis para futura programacao
-
-## Caso 5: executar item em campo
+## Caso 5: gerar lista de materiais para requisicao
 
 Objetivo:
 
-- registrar o fato real ocorrido em campo
+- derivar necessidade de materiais a partir da SI
 
-Fluxo:
+Base de calculo:
 
-1. app mobile sincroniza um cabecalho de execucao
-2. sistema cria `ProjExecucao`
-3. para cada item operado, cria o detalhe correspondente
-4. opcionalmente vincula o detalhe ao item planejado da programacao
+- postes programados -> estruturas do poste -> `ProjTipoEstruturaMaterial`
+- ramais programados -> `ProjTipoRamalMaterial`
+- vaos programados -> `ProjVao.materialCondutorId` + distancia derivada pelos GPS dos postes
 
-Campos relevantes:
+Regra conceitual:
 
-- resultado
-- motivo de ocorrencia
-- observacao
-- quantidade executada, no caso de ramal
-- cabo executado em metros, no caso de vao/ramal
+- a lista de materiais nao e tabela de dominio autoritativa
+- ela deve ser derivada por consulta a partir da programacao e do escopo tecnico
 
-## Caso 6: registrar nao execucao
+Recomendacao de calculo:
+
+- a metragem do vao nao deve ser persistida como fonte oficial
+- a aplicacao mobile pode calcular localmente para orientar o usuario
+- o backend/web recalcula pela coordenada dos dois postes do projeto
+- aplicar regras de arredondamento/perda apenas na camada de negocio/leitura
+
+## Caso 6: executar itens em campo
 
 Objetivo:
 
-- manter historico da tentativa que falhou sem perder o item para reprogramacao
+- registrar o fato operacional ocorrido
 
 Fluxo:
 
-1. item entrou na programacao
+1. mobile sincroniza `ProjExecucao`
+2. sistema registra os detalhes:
+   - `ProjExecucaoPoste`
+   - `ProjExecucaoVao`
+   - `ProjExecucaoRamal`
+3. cada detalhe guarda resultado, motivo, observacao e quantidade/metragem real quando aplicavel
+
+## Caso 7: registrar nao execucao ou impedimento
+
+Objetivo:
+
+- manter o historico da tentativa sem perder o item para reprogramacao
+
+Fluxo:
+
+1. item entrou na SI
 2. equipe foi a campo
-3. item nao foi executado
-4. sistema grava `ProjExecucaoPoste/Vao/Ramal` com `NAO_EXECUTADO` ou `IMPEDIDO`
-5. o item continua pendente por consulta
+3. item ficou `IMPEDIDO` ou `NAO_EXECUTADO`
+4. sistema grava o detalhe de execucao com motivo
+5. item continua pendente por consulta
 
-Regra:
-
-- o motivo da nao execucao pertence ao fato de execucao, nao ao item planejado
-
-## Caso 7: registrar parcial
+## Caso 8: registrar terceiros
 
 Objetivo:
 
-- registrar que a programacao nao resolveu todos os itens previstos
-- registrar saldo residual de ramal quando a quantidade executada for menor que a planejada
-
-No desenho atual:
-
-- `PARCIAL` faz sentido no status da `Programacao`
-- `PARCIAL` faz sentido no `statusGeral` da `ProjExecucao`
-- `PARCIAL` faz sentido em `Ramal`
-- `PARCIAL` nao existe em `Poste`
-- `PARCIAL` nao existe em `Vao`
-
-Ramal:
-
-- `quantidadeExecutada` registra o que foi resolvido naquela tentativa
-- o saldo remanescente continua pendente
-
-Vao:
-
-- `caboExecutadoMetros` registra a metragem realizada no vao executado
-- se o vao nao foi executado, o resultado deve ser `NAO_EXECUTADO` ou `IMPEDIDO`
-- o fato de a programacao ter deixado vaos pendentes fica no agregado da programacao/execucao, nao
-  no resultado do vao individual
-
-## Caso 8: item ja executado por terceiros
-
-Objetivo:
-
-- resolver o item operacionalmente, sem gerar producao propria
+- marcar o item como resolvido operacionalmente sem producao propria
 
 Fluxo:
 
 1. equipe encontra item resolvido por terceiros
 2. sistema grava `TERCEIROS` no detalhe de execucao
 3. item deixa de ser pendente
-4. item nao entra como producao propria para medicao futura
+4. item nao entra como producao propria
 
-Observacao:
-
-- evidencia pode existir ou nao
-- esse caso deve ser aceito pela regra de negocio
-
-## Caso 9: reprogramar itens pendentes
+## Caso 9: reprogramar
 
 Objetivo:
 
-- criar nova tentativa a partir do que segue em aberto
+- criar nova tentativa a partir do que continua em aberto
 
 Fluxo:
 
-1. usuario abre a tela de reprogramacao
-2. sistema consulta itens pendentes do projeto
-3. usuario seleciona total ou parcialmente os pendentes
-4. sistema cria nova `ProjProgramacao`
-5. nova programacao pode apontar para `reprogramadaDeId`
+1. sistema consulta pendencias do projeto
+2. usuario seleciona o subconjunto reprogramavel
+3. sistema cria nova `ProjProgramacao`
+4. a nova programacao pode apontar para `reprogramadaDeId`
 
 Importante:
 
-- nao existe tabela de fila como fonte de verdade
-- a lista de reprogramar e derivada por consulta
+- nao existe tabela de fila persistida
+- reprogramacao e uma projection de leitura sobre escopo + historico
 
-## Caso 10: fechar projeto
+## Caso 10: finalizar projeto
 
 Objetivo:
 
-- encerrar o projeto quando todo o escopo estiver resolvido
+- encerrar o projeto quando nao houver mais saldo pendente
 
 Fluxo:
 
-1. sistema verifica se ainda existe item pendente
-2. se nao houver, projeto pode ir para `FINALIZADO`
+1. sistema verifica pendencias de poste, vao e ramal
+2. se nao houver item pendente, projeto pode ir para `FINALIZADO`
 3. se houver cancelamento administrativo, projeto pode ir para `CANCELADO`
 
-Observacao:
+## Regras de integridade obrigatorias
 
-- `FINALIZADO` nao significa necessariamente "100% executado por nos"
-- pode haver combinacao de `EXECUTADO` e `TERCEIROS`
-- o fechamento exige que o escopo inteiro tenha registro operacional de execucao/resolucao
+## Projeto
 
-## Caso 11: analise operacional
+- projeto so pode ser `FINALIZADO` quando nao houver item pendente
+- projeto `CANCELADO` nao aceita nova programacao sem regra explicita de reabertura
+- `VIABILIZADO_TOTAL` so pode ser usado quando o escopo exigido tiver sido levantado
+- `VIABILIZADO_PARCIAL` pode receber programacao apenas dos itens ja existentes no escopo
 
-Objetivo:
+## Viabilizacao
 
-- extrair indicadores sem poluir o modelo transacional
-
-Exemplos:
-
-- quantos postes foram programados no projeto
-- quantos postes foram executados
-- quantos postes nao executaram em cada SI
-- quantos vaos seguem pendentes
-- quantos ramais previstos ainda faltam
-- principais motivos de cancelamento
-- principais motivos de nao execucao
-- historico das programacoes
-
-Esses dados devem sair de consulta, nao de campos persistidos de resumo.
-
-## Modelo de dados atual
-
-## Catalogos
-
-- `ProjTipoPoste`
-- `ProjTipoEstrutura`
-- `ProjTipoRamal`
-- `ProjMotivoOcorrencia`
-- `ProjTipoEstruturaMaterial`
-- `ProjTipoRamalMaterial`
-
-Responsabilidade:
-
-- padronizar tipos tecnicos
-- padronizar composicoes por contrato
-- padronizar catalogo de motivos
-
-## Projeto e escopo
-
-- `ProjetoProgramacao`
-- `ProjPoste`
-- `ProjPosteEstrutura`
-- `ProjPosteRamal`
-- `ProjVao`
-
-Responsabilidade:
-
-- representar o escopo base do projeto
-- nunca representar tentativa operacional
+- `ProjViabilizacao.resultado` deve ser `PARCIAL` ou `TOTAL`
+- `ProjCadastroPoste.identificador` deve ser estavel e unico por contrato
+- `ProjCadastroPoste.numeroPoste` deve ser unico por contrato
+- poste e vao levantados podem guardar `viabilizacaoId` para procedencia
+- estrutura e ramal previsto nao recebem status individual de viabilizacao
+- `ProjVao.materialCondutorId` deve ser coerente com o contrato do projeto
+- `ProjVao` deve ligar exatamente dois postes distintos do mesmo projeto
+- a API deve normalizar a ordem dos extremos do vao antes de persistir para evitar duplicidade invertida
 
 ## Programacao
 
-- `ProjProgramacao`
-- `ProjProgramacaoPoste`
-- `ProjProgramacaoVao`
-- `ProjProgramacaoRamal`
+- SI pertence a programacao
+- cancelamento exige motivo
+- `reprogramadaDeId` so pode apontar para programacao do mesmo projeto
 
-Responsabilidade:
+## Item planejado
 
-- representar a SI/tentativa
-- representar o subconjunto de itens que entrou naquela tentativa
+- item planejado deve pertencer ao mesmo projeto da programacao
+- `ProjProgramacaoRamal` deve respeitar `ProjPosteRamal`
+- `quantidadePlanejada` de ramal nao pode ultrapassar o saldo programavel, salvo regra explicita
 
 ## Execucao
 
-- `ProjExecucao`
-- `ProjExecucaoPoste`
-- `ProjExecucaoVao`
-- `ProjExecucaoRamal`
-
-Responsabilidade:
-
-- representar o que aconteceu de fato em campo
-- guardar motivo, observacao, resultado e metragens/quantidades reais
+- execucao vinculada a programacao deve apontar para itens do mesmo projeto
+- `PARCIAL` e proibido para poste e vao
+- motivo e obrigatorio para `NAO_EXECUTADO` e `IMPEDIDO`
+- `quantidadeExecutada` nao pode ser negativa
+- `caboExecutadoMetros` nao pode ser negativo
 
 ## Evidencia
 
-- `ProjEvidencia`
-
-Responsabilidade:
-
-- guardar anexo vinculado a uma execucao ou detalhe de execucao
-
-Regra obrigatoria de backend:
-
+- evidencia deve ter exatamente um dono logico
 - `alvoTipo` deve ser coerente com exatamente um FK preenchido
-- `EXECUCAO` usa `execucaoId`
-- `EXECUCAO_POSTE` usa `execucaoPosteId`
-- `EXECUCAO_VAO` usa `execucaoVaoId`
-- `EXECUCAO_RAMAL` usa `execucaoRamalId`
-- a API deve validar que exatamente um entre `execucaoId`, `execucaoPosteId`, `execucaoVaoId`,
-  `execucaoRamalId` esteja preenchido
-- a API deve rejeitar payload com mais de um alvo preenchido
-- a API deve rejeitar payload sem alvo preenchido
-
-## Historico
-
-- `ProjHistoricoProjeto`
-- `ProjHistoricoProgramacao`
-
-Responsabilidade:
-
-- trilha de transicao de status
-- auditoria de mudanca de estado
+- a API deve rejeitar payload com zero ou mais de um alvo preenchido
 
 ## O que propositalmente nao existe no modelo
 
 Estas ausencias sao intencionais:
 
 - nao existe `ProjFilaProgramacao`
-- nao existe `statusAtual` em poste, vao ou ramal previsto
-- nao existe contador de "vezes executou"
-- nao existe contador de "vezes programou"
-- nao existe percentuais consolidados por item
+- nao existe status atual persistido em poste, vao ou ramal previsto
+- nao existe backlog persistido de reprogramacao
+- nao existe lista oficial persistida de materiais por SI
+- nao existe snapshot autoritativo do progresso por item tecnico
+- nao existe contador oficial de vezes programado ou vezes executado
 
-Todos esses dados devem ser derivados.
-
-## Regras de negocio que precisam existir no backend
-
-## Integridade de projeto
-
-- projeto so pode ser `FINALIZADO` quando nao houver item pendente
-- projeto `CANCELADO` nao deve aceitar nova programacao sem regra explicita de reabertura
-
-## Integridade de programacao
-
-- `SI` pertence a programacao
-- cancelamento exige motivo
-- `reprogramadaDeId` so pode apontar para programacao do mesmo projeto
-
-## Integridade de item planejado
-
-- item planejado deve pertencer ao mesmo projeto da programacao
-- `ProjProgramacaoRamal` deve respeitar o `ProjPosteRamal` existente
-
-## Integridade de execucao
-
-- execucao vinculada a programacao deve apontar para itens do mesmo projeto
-- resultado `PARCIAL` nao e permitido para poste nem vao
-- motivo de ocorrencia deve ser obrigatorio para `NAO_EXECUTADO` e `IMPEDIDO`
-- `quantidadeExecutada` de ramal nao pode ser negativa
-- `caboExecutadoMetros` nao pode ser negativo
-
-## Integridade de evidencia
-
-- evidencia deve ter um unico dono logico
-- evidencia nao deve ficar solta sem alvo coerente
-
-## Regras obrigatorias de transicao de status
-
-Estas regras devem ser tratadas como contrato minimo de implementacao:
-
-- projeto nao vai para `FINALIZADO` se houver item pendente
-- programacao `CANCELADA` nao aceita execucao posterior sem regra explicita de reabertura
-- execucao vinculada a item planejado deve ser do mesmo projeto
-- `PARCIAL` e proibido para `Poste` e `Vao`
-- motivo de ocorrencia e obrigatorio para `NAO_EXECUTADO` e `IMPEDIDO`
+Tudo isso deve ser derivado.
 
 ## Como derivar pendencias
 
 ## Pendencia de poste
 
-Definicao operacional:
-
-- poste esta pendente se nao existir resultado terminal para ele
-
-Resultados terminais de poste:
+Resultados terminais:
 
 - `EXECUTADO`
 - `TERCEIROS`
@@ -590,11 +627,7 @@ Resultados nao terminais:
 
 ## Pendencia de vao
 
-Definicao operacional:
-
-- vao esta pendente se nao existir resultado terminal para ele
-
-Resultados terminais de vao:
+Resultados terminais:
 
 - `EXECUTADO`
 - `TERCEIROS`
@@ -606,35 +639,62 @@ Resultados nao terminais:
 
 ## Pendencia de ramal
 
-Definicao operacional:
+Definicao:
 
-- ramal esta pendente enquanto houver saldo entre quantidade prevista e quantidade resolvida
-
-Regra recomendada:
-
-- `quantidadeExecutada` deve representar a quantidade resolvida naquela ocorrencia, mesmo quando o
-  resultado for `TERCEIROS`
-- faturamento futuro filtra pelo resultado, nao pela existencia de quantidade
+- ramal segue pendente enquanto houver saldo entre quantidade prevista e quantidade resolvida
 
 Formula conceitual:
 
-- `saldo = quantidadePrevista - soma(quantidadeExecutada considerada resolvida)`
+- `saldo = quantidadePrevista - soma(quantidadeExecutada resolvida)`
 
-Enquanto `saldo > 0`, o ramal segue pendente.
+## Como derivar materiais
 
-## Como derivar listas de reprogramacao
+## Estruturas
 
-A tela de reprogramacao deve ser uma consulta sobre o escopo.
+Para cada poste programado:
 
-Ela deve unir:
+1. localizar `ProjPosteEstrutura`
+2. resolver `ProjTipoEstrutura`
+3. aplicar `ProjTipoEstruturaMaterial`
+4. agregar por material
+
+Observacao:
+
+- como `ProjTipoEstrutura` e vinculado ao contrato, a composicao da estrutura ja nasce coerente com o contrato
+
+## Ramais
+
+Para cada `ProjProgramacaoRamal`:
+
+1. localizar a quantidade planejada
+2. aplicar `ProjTipoRamalMaterial`
+3. multiplicar pelos fatores da composicao
+4. agregar por material
+
+## Vaos
+
+Para cada `ProjProgramacaoVao`:
+
+1. localizar `ProjVao.materialCondutorId`
+2. calcular a distancia entre `ProjPoste` origem e destino usando GPS
+3. somar a metragem por material
+
+Base de metragem:
+
+- distancia geodesica entre `ProjPoste.latitude/longitude` de origem e destino
+- se a regra de negocio exigir fator tecnico, aplicar em leitura, nao no fato persistido
+
+## Como derivar reprogramacao
+
+A lista de reprogramacao deve ser derivada por consulta sobre:
 
 - itens nunca programados
 - itens programados e ainda nao resolvidos
-- itens com historico de nao execucao
-- ramais com saldo parcial
-- itens de programacoes canceladas que permaneceram em aberto
+- itens de programacoes canceladas
+- ramais com saldo residual
+- itens com ultimo resultado `IMPEDIDO` ou `NAO_EXECUTADO`
 
-Colunas uteis para a view:
+Campos uteis para a projection:
 
 - item
 - tipo do item
@@ -642,22 +702,14 @@ Colunas uteis para a view:
 - ultima SI
 - ultimo resultado
 - ultimo motivo
-- quantidade/metragem pendente, quando aplicavel
+- saldo residual ou metragem pendente
 - origem da pendencia
-
-`origem da pendencia` pode ser derivada como:
-
-- `NUNCA_PROGRAMADO`
-- `CANCELADA`
-- `NAO_EXECUTADO`
-- `IMPEDIDO`
-- `PARCIAL` para saldo residual de ramal
 
 ## Como derivar progresso do projeto
 
-O projeto nao deve guardar percentual unico de progresso como verdade.
+O projeto nao deve guardar percentual consolidado como verdade.
 
-O ideal e expor indicadores separados:
+Indicadores recomendados:
 
 - postes totais
 - postes resolvidos
@@ -668,43 +720,17 @@ O ideal e expor indicadores separados:
 - ramais previstos
 - ramais resolvidos
 - ramais pendentes
+- quantidade de viabilizacoes
+- quantidade de programacoes
 
 Tambem e importante separar:
 
 - resolucao operacional
 - producao propria
 
-Exemplo:
-
-- um item `TERCEIROS` pode contar como resolvido operacionalmente
-- o mesmo item nao conta como producao propria
-
-## Como derivar aptidao para faturamento
-
-Nesta fase, faturamento ainda nao e modulo fechado.
-
-Mesmo assim, a regra conceitual fica:
-
-- projeto apto para faturamento quando nao houver item pendente no escopo
-
-No futuro, podem existir filtros adicionais:
-
-- evidencias obrigatorias presentes
-- validacao de supervisor
-- consistencia de metragem/quantidade
-- composicao vigente por contrato
-
 ## Arquitetura recomendada
 
-## Filosofia de implementacao
-
-- escrita simples e fiel ao fato
-- leitura rica por query/projecao
-- sem duplicar estado derivado em varias tabelas
-
-## Camadas
-
-### Banco
+## Banco
 
 Responsabilidade:
 
@@ -712,121 +738,78 @@ Responsabilidade:
 - garantir chaves e relacionamentos
 - evitar redundancia estrutural
 
-### API
+## API
 
 Responsabilidade:
 
 - aplicar regras de negocio
-- validar coerencia entre programacao, execucao e evidencias
-- expor queries de analise e listas operacionais
+- validar coerencia entre viabilizacao, programacao, execucao e evidencia
+- expor queries de leitura para pendencia, reprogramacao, historico e materiais
 
-Validacoes obrigatorias na API:
+Validacoes obrigatorias:
 
 - manter consistencia de nomenclatura usando `reprogramadaDeId`
 - validar que `reprogramadaDeId`, quando informado, aponta para programacao do mesmo projeto
-- validar que evidencia tenha exatamente um dono logico coerente com `alvoTipo`
-- bloquear execucao de programacao cancelada, salvo fluxo explicito de reabertura
+- validar coerencia de `alvoTipo` com exatamente um FK em `ProjEvidencia`
 - bloquear `FINALIZADO` quando houver pendencia
+- bloquear programacao de item inexistente no escopo levantado
+- bloquear `PARCIAL` para poste e vao
 
-### Mobile
+## Mobile
 
 Responsabilidade:
 
-- capturar execucao e evidencia
+- capturar viabilizacao e execucao
 - funcionar offline-first
-- sincronizar via payload idempotente
+- enviar payload idempotente
 
-### Web
+## Web
 
 Responsabilidade:
 
-- criar/manter projeto
-- montar programacao
+- manter cadastro administrativo do projeto
+- consultar escopo levantado
+- criar programacoes
 - consultar pendencias
-- visualizar historico e analises
+- gerar leitura de materiais por programacao
+- visualizar historico operacional
 
-## Escrita x leitura
+## Queries essenciais
 
-Recomendacao:
-
-- o modulo transacional grava apenas fatos
-- consultas de backlog, historico e indicadores podem virar views SQL, queries dedicadas ou
-  endpoints de leitura
-
-## Queries essenciais do modulo
-
-Estas consultas precisam existir para o modulo ser operacional:
+Estas leituras precisam existir:
 
 - resumo do projeto
+- resumo de viabilizacao do projeto
+- itens elegiveis para programacao
 - pendencias por projeto
 - itens elegiveis para reprogramacao
-- historico de programacoes do projeto
+- historico de programacoes
 - execucoes por programacao
-- itens executados por terceiros
-- motivos mais frequentes de nao execucao
-- motivos mais frequentes de cancelamento
 - comparativo entre programado e executado
-- detalhamento de evidencias por execucao e por item
+- lista de materiais derivada da programacao
+- detalhamento de evidencias por viabilizacao, execucao e item
 
-Descricao esperada de cada consulta:
-
-- `resumo do projeto`: totais, resolvidos, pendentes, quantidade de programacoes e status macro
-- `pendencias por projeto`: itens ainda nao resolvidos, com ultima tentativa, ultimo motivo e origem da pendencia
-- `itens elegiveis para reprogramacao`: subconjunto de pendencias que pode entrar em nova SI
-- `historico de programacoes do projeto`: cadeia de tentativas, SI, status, cancelamentos e `reprogramadaDeId`
-- `execucoes por programacao`: o que foi executado, nao executado, impedido ou resolvido por terceiros em cada tentativa
-- `itens executados por terceiros`: lista para acompanhamento operacional sem producao propria
-- `motivos mais frequentes de nao execucao`: agregacao analitica por motivo
-- `motivos mais frequentes de cancelamento`: agregacao analitica por motivo
-- `comparativo entre programado e executado`: visao de aderencia entre o que entrou na SI e o que foi resolvido
-- `detalhamento de evidencias por execucao e por item`: suporte a auditoria, validacao e rastreabilidade
-
-## Regras para sync mobile
-
-- payload deve ser idempotente
-- repeticao de envio nao pode duplicar execucao
-- detalhes de execucao devem ser reconciliados com o cabecalho sincronizado
-
-## Ordem sugerida de implementacao
-
-1. estabilizar schema de banco
-2. implementar CRUD/importacao de projeto
-3. implementar CRUD de programacao
-4. implementar sync de execucao mobile
-5. implementar consulta de pendencias/reprogramacao
-6. implementar consultas de historico e analise
-7. implementar camada futura de faturamento
-
-## Pontos em aberto
-
-Estes pontos ainda podem ser refinados:
-
-- se `caboExecutadoMetros` de vao sera obrigatorio quando o resultado for `EXECUTADO`
-- se `TERCEIROS` em vao precisa metragem obrigatoria ou apenas resolve operacionalmente
-- se havera revisao/versionamento formal do escopo tecnico importado
-- se uma programacao pode coexistir com outra programacao aberta no mesmo projeto
-- se evidencia sera obrigatoria para certos resultados
-
-## Decisoes ja fechadas
-
-Estas decisoes devem ser tratadas como base atual:
+## Decisoes fechadas
 
 - SI pertence a programacao
 - projeto tem status macro
 - programacao tem status detalhado
-- `reprogramadaDeId` e o nome oficial da relacao de reprogramacao
-- `ProjetoProgramacao` permanece como nome da entidade principal nesta fase
+- o projeto nasce administrativo e depende de viabilizacao tecnica
+- viabilizacao pode ser parcial ou total
+- `reprogramadaDeId` e o nome oficial da relacao entre programacoes
+- `ProjetoProgramacao` continua sendo o nome da entidade principal nesta fase
 - itens programados nao guardam resultado
 - execucao guarda motivo e resultado
-- fila de reprogramacao nao e tabela de dominio
 - pendencia e derivada por consulta
+- reprogramacao e derivada por consulta
 - `PARCIAL` nao existe para poste
 - `PARCIAL` nao existe para vao
 - `PARCIAL` em item individual existe apenas para ramal
+- lista de materiais para requisicao e derivada da programacao
 
 ## Arquivos relacionados
 
 - `packages/db/prisma/models/projetos.prisma`
-- `packages/db/prisma/models/migrations/20260318183000_refactor_oper_projetos/migration.sql`
+- `packages/db/prisma/models/atividade.prisma`
 - `docs/01-arquitetura-monorepo.md`
 - `docs/03-guia-criacao-modulo-api.md`

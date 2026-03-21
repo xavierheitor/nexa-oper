@@ -29,6 +29,7 @@ model Contrato {
   AtividadeFormTemplate AtividadeFormTemplate[]
   MaterialCatalogo      MaterialCatalogo[]
 
+  projCadastroPostes ProjCadastroPoste[]
   projTiposEstrutura ProjTipoEstrutura[]
 
   projTipoRamalMaterials ProjTipoRamalMaterial[]
