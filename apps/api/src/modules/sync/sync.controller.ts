@@ -10,14 +10,16 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
+
 import type {
   SyncCollectionResponseContract,
   SyncScopeContract,
 } from '../../contracts/sync/sync.contract';
 import { envelope } from '../../core/http/interceptors';
-import { InjectUserContracts } from '../auth/modules/contract-permissions/decorators/inject-user-contracts.decorator';
 import { GetUserContracts } from '../auth/modules/contract-permissions/decorators/get-user-contracts.decorator';
 import { GetUsuarioMobileId } from '../auth/modules/contract-permissions/decorators/get-usuario-mobile-id.decorator';
+import { InjectUserContracts } from '../auth/modules/contract-permissions/decorators/inject-user-contracts.decorator';
+
 import { BuildSyncManifestUseCase } from './application/use-cases/build-sync-manifest.use-case';
 import { GetSyncCollectionUseCase } from './application/use-cases/get-sync-collection.use-case';
 import { SyncManifestDto } from './dto/sync-manifest.dto';
@@ -116,6 +118,10 @@ export class SyncController {
     name: 'name',
     description: 'Nome da coleção',
     enum: [
+      'projeto-tipo-poste',
+      'projeto-tipo-estrutura',
+      'projeto-tipo-ramal',
+      'projeto-viabilizacao',
       'eletricista',
       'equipe',
       'veiculo',
@@ -160,7 +166,7 @@ export class SyncController {
       'Snapshot: { serverTime, nextSince: null, items, deletedIds: [] }. Delta: { serverTime, nextSince, items, deletedIds }',
   })
   @ApiResponse({ status: 404, description: 'Coleção não encontrada' })
-  async collection(
+  collection(
     @GetUsuarioMobileId() userId: number | undefined,
     @GetUserContracts() contractIds: number[],
     @Param('name') name: string,

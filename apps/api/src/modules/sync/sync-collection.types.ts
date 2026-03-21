@@ -1,4 +1,5 @@
 import type { Prisma } from '@nexa-oper/db';
+
 import type { PrismaService } from '../../database/prisma.service';
 
 export type SyncMode = 'snapshot' | 'delta';
@@ -33,6 +34,9 @@ export type SyncModelName =
   | 'materialCatalogo'
   | 'causaImprodutiva'
   | 'veiculo'
+  | 'projTipoPoste'
+  | 'projTipoEstrutura'
+  | 'projTipoRamal'
   | 'tipoAtividade'
   | 'tipoAtividadeServico'
   | 'tipoEquipe'
@@ -63,6 +67,9 @@ export interface SyncModelSelectMap {
   materialCatalogo: Prisma.MaterialCatalogoSelect;
   causaImprodutiva: Prisma.CausaImprodutivaSelect;
   veiculo: Prisma.VeiculoSelect;
+  projTipoPoste: Prisma.ProjTipoPosteSelect;
+  projTipoEstrutura: Prisma.ProjTipoEstruturaSelect;
+  projTipoRamal: Prisma.ProjTipoRamalSelect;
   tipoAtividade: Prisma.TipoAtividadeSelect;
   tipoAtividadeServico: Prisma.TipoAtividadeServicoSelect;
   tipoEquipe: Prisma.TipoEquipeSelect;
@@ -94,6 +101,9 @@ export interface SyncModelIncludeMap {
   materialCatalogo: Prisma.MaterialCatalogoInclude;
   causaImprodutiva: never;
   veiculo: Prisma.VeiculoInclude;
+  projTipoPoste: Prisma.ProjTipoPosteInclude;
+  projTipoEstrutura: Prisma.ProjTipoEstruturaInclude;
+  projTipoRamal: Prisma.ProjTipoRamalInclude;
   tipoAtividade: Prisma.TipoAtividadeInclude;
   tipoAtividadeServico: Prisma.TipoAtividadeServicoInclude;
   tipoEquipe: Prisma.TipoEquipeInclude;
@@ -183,8 +193,7 @@ export function defTable<M extends SyncModelName>(
     mode: def.mode,
     select: def.select as Record<string, unknown> | undefined,
     include: def.include as Record<string, unknown> | undefined,
-    contractField:
-      def.contractField !== undefined ? def.contractField : 'contratoId',
+    contractField: def.contractField ?? 'contratoId',
   };
 }
 

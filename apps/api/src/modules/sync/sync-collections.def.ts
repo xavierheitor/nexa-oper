@@ -1,7 +1,68 @@
-import { defTable } from './sync-collection.types';
-import type { SyncCollectionDefInput } from './sync-collection.types';
+import {
+  computeProjetosParaViabilizacaoEtag,
+  listProjetosParaViabilizacao,
+} from '../projetos/projeto-viabilizacao.query';
+
+import {
+  defCustom,
+  defTable,
+  type SyncCollectionDefInput,
+} from './sync-collection.types';
 
 export const SYNC_DEFINITIONS: SyncCollectionDefInput[] = [
+  defTable({
+    name: 'projeto-tipo-poste',
+    model: 'projTipoPoste',
+    mode: 'snapshot',
+    contractField: false,
+    select: {
+      id: true,
+      nome: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'projeto-tipo-estrutura',
+    model: 'projTipoEstrutura',
+    mode: 'snapshot',
+    select: {
+      id: true,
+      contratoId: true,
+      nome: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'projeto-tipo-ramal',
+    model: 'projTipoRamal',
+    mode: 'snapshot',
+    contractField: false,
+    select: {
+      id: true,
+      nome: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defCustom({
+    name: 'projeto-viabilizacao',
+    mode: 'snapshot',
+    computeEtag: (prisma, scope) =>
+      computeProjetosParaViabilizacaoEtag(prisma, scope.contractIds),
+    resolver: async (prisma, scope) => {
+      const result = await listProjetosParaViabilizacao(
+        prisma,
+        scope.contractIds,
+      );
+      return { items: result.items };
+    },
+  }),
+
   defTable({
     name: 'eletricista',
     model: 'eletricista',
