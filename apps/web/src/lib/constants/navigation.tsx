@@ -32,20 +32,23 @@ export interface MenuItemConfig {
   path?: string; // Se definido, envolve o label em um Link
   pathPrefix?: string;
   requiredPermission?: Permission;
+  requiredPermissionsAny?: Permission[];
   children?: MenuItemConfig[];
   onClick?: () => void;
 }
 
 interface RoutePermissionRule {
-  permission?: Permission;
+  permissions?: Permission[];
   specificity: number;
   type: 'exact' | 'prefix';
 }
 
-const resolveRequiredPermission = (
+const resolveRequiredPermissions = (
   item: MenuItemConfig,
-  inheritedPermission?: Permission
-): Permission | undefined => item.requiredPermission ?? inheritedPermission;
+  inheritedPermissions?: Permission[]
+): Permission[] | undefined =>
+  item.requiredPermissionsAny ??
+  (item.requiredPermission ? [item.requiredPermission] : inheritedPermissions);
 
 const isPrefixMatch = (pathname: string, prefix: string): boolean =>
   pathname === prefix || pathname.startsWith(`${prefix}/`);
@@ -53,16 +56,16 @@ const isPrefixMatch = (pathname: string, prefix: string): boolean =>
 const getRoutePermissionRule = (
   pathname: string,
   items: MenuItemConfig[],
-  inheritedPermission?: Permission
+  inheritedPermissions?: Permission[]
 ): RoutePermissionRule | undefined => {
   let bestMatch: RoutePermissionRule | undefined;
 
   for (const item of items) {
-    const permission = resolveRequiredPermission(item, inheritedPermission);
+    const permissions = resolveRequiredPermissions(item, inheritedPermissions);
 
     if (item.path === pathname) {
       const match: RoutePermissionRule = {
-        permission,
+        permissions,
         specificity: item.path.length,
         type: 'exact',
       };
@@ -78,7 +81,7 @@ const getRoutePermissionRule = (
 
     if (item.pathPrefix && isPrefixMatch(pathname, item.pathPrefix)) {
       const match: RoutePermissionRule = {
-        permission,
+        permissions,
         specificity: item.pathPrefix.length,
         type: 'prefix',
       };
@@ -96,7 +99,7 @@ const getRoutePermissionRule = (
       const childMatch = getRoutePermissionRule(
         pathname,
         item.children,
-        permission
+        permissions
       );
 
       if (
@@ -465,6 +468,28 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
     ],
   },
   {
+    key: 'projetos-menu',
+    icon: <AppstoreOutlined />,
+    label: 'Projetos',
+    pathPrefix: '/dashboard/projetos',
+    requiredPermissionsAny: [
+      PERMISSIONS.PROJECTS_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW,
+      PERMISSIONS.PROJETOS_MOTIVOS_OCORRENCIA_VIEW,
+      PERMISSIONS.PROJETOS_MATERIAIS_ESTRUTURA_VIEW,
+      PERMISSIONS.PROJETOS_MATERIAIS_RAMAL_VIEW,
+    ],
+    children: [
+      {
+        key: '/dashboard/projetos/cadastro',
+        label: 'Cadastro de Projetos',
+        path: '/dashboard/projetos/cadastro',
+      },
+    ],
+  },
+  {
     key: 'escalas-menu',
     icon: <CalendarOutlined />,
     label: 'Escalas',
@@ -606,16 +631,17 @@ export const getAntdMenuItems = (
 export const filterMenuByPermissions = (
   config: MenuItemConfig[],
   permissions: Permission[],
-  inheritedPermission?: Permission
+  inheritedPermissions?: Permission[]
 ): MenuItemConfig[] => {
   return config.flatMap(item => {
-    const requiredPermission = resolveRequiredPermission(
+    const requiredPermissions = resolveRequiredPermissions(
       item,
-      inheritedPermission
+      inheritedPermissions
     );
     if (
-      requiredPermission &&
-      !permissions.includes(requiredPermission)
+      requiredPermissions &&
+      requiredPermissions.length > 0 &&
+      !requiredPermissions.some((permission) => permissions.includes(permission))
     ) {
       return [];
     }
@@ -624,7 +650,7 @@ export const filterMenuByPermissions = (
       ? filterMenuByPermissions(
           item.children,
           permissions,
-          requiredPermission
+          requiredPermissions
         )
       : undefined;
 
@@ -641,10 +667,10 @@ export const filterMenuByPermissions = (
   });
 };
 
-export const getRequiredPermissionForPath = (
+export const getRequiredPermissionsForPath = (
   pathname: string
-): Permission | undefined => {
-  return getRoutePermissionRule(pathname, MENU_STRUCTURE)?.permission;
+): Permission[] | undefined => {
+  return getRoutePermissionRule(pathname, MENU_STRUCTURE)?.permissions;
 };
 
 /**

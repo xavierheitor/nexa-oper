@@ -166,6 +166,8 @@ export function requireContractLookupPermission(session: Session): void {
   assertAnyPermission(
     session,
     [
+      PERMISSIONS.PROJECTS_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
       PERMISSIONS.CONTRATOS_VIEW,
       PERMISSIONS.CONTRATOS_CREATE,
       PERMISSIONS.CONTRATOS_UPDATE,
@@ -189,6 +191,8 @@ export function requireContractLookupPermission(session: Session): void {
       PERMISSIONS.FORMULARIOS_ATIVIDADE_PERGUNTA_VIEW,
       PERMISSIONS.MATERIAIS_CATALOGO_VIEW,
       PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW,
+      PERMISSIONS.PROJETOS_MOTIVOS_OCORRENCIA_VIEW,
       PERMISSIONS.PROJETOS_MATERIAIS_ESTRUTURA_VIEW,
       PERMISSIONS.PROJETOS_MATERIAIS_RAMAL_VIEW,
       PERMISSIONS.MOBILE_USERS_VIEW,
@@ -198,6 +202,22 @@ export function requireContractLookupPermission(session: Session): void {
       PERMISSIONS.REPORTS_VIEW,
     ],
     'Você não tem permissão para consultar contratos.',
+  );
+}
+
+export function requireProjectsPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [
+      PERMISSIONS.PROJECTS_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW,
+      PERMISSIONS.PROJETOS_MOTIVOS_OCORRENCIA_VIEW,
+      PERMISSIONS.PROJETOS_MATERIAIS_ESTRUTURA_VIEW,
+      PERMISSIONS.PROJETOS_MATERIAIS_RAMAL_VIEW,
+    ],
+    'Você não tem permissão para acessar projetos.',
   );
 }
 

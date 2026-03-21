@@ -65,6 +65,9 @@ interface UseAuthReturn {
   /** Função para verificar permissões */
   hasPermission: (permission: Permission) => boolean;
 
+  /** Função para verificar qualquer permissão de um conjunto */
+  hasAnyPermission: (permissions: Permission[]) => boolean;
+
   /** Função para verificar roles */
   hasRole: (role: Role) => boolean;
 
@@ -83,10 +86,15 @@ interface UseAuthReturn {
 export function useAuth(options?: {
   redirectToLogin?: boolean;
   requiredPermission?: Permission;
+  requiredPermissions?: Permission[];
 }): UseAuthReturn {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { redirectToLogin = true, requiredPermission } = options || {};
+  const {
+    redirectToLogin = true,
+    requiredPermission,
+    requiredPermissions,
+  } = options || {};
 
   const isAuthenticated = !!session?.user;
   const isLoading = status === 'loading';
@@ -122,6 +130,16 @@ export function useAuth(options?: {
     [isAuthenticated, session]
   );
 
+  const hasAnyPermission = useCallback(
+    (permissions: Permission[]): boolean => {
+      if (!isAuthenticated || !session?.user) return false;
+
+      const userPermissions = session.user.permissions || [];
+      return permissions.some((permission) => userPermissions.includes(permission));
+    },
+    [isAuthenticated, session]
+  );
+
   /**
    * Verifica se o usuário possui um role específico
    *
@@ -143,14 +161,24 @@ export function useAuth(options?: {
     if (
       !isLoading &&
       isAuthenticated &&
-      requiredPermission &&
-      !hasPermission(requiredPermission)
+      ((requiredPermission && !hasPermission(requiredPermission)) ||
+        (requiredPermissions &&
+          requiredPermissions.length > 0 &&
+          !hasAnyPermission(requiredPermissions)))
     ) {
       // Redireciona para dashboard quando não tem permissão requerida
       // TODO: Criar página de acesso negado quando necessário
       router.push('/dashboard');
     }
-  }, [isLoading, isAuthenticated, requiredPermission, hasPermission, router]);
+  }, [
+    isLoading,
+    isAuthenticated,
+    requiredPermission,
+    requiredPermissions,
+    hasPermission,
+    hasAnyPermission,
+    router,
+  ]);
 
   // Função de logout
   const logout = async () => {
@@ -175,6 +203,7 @@ export function useAuth(options?: {
     isAuthenticated,
     isLoading,
     hasPermission,
+    hasAnyPermission,
     hasRole,
     logout,
   };

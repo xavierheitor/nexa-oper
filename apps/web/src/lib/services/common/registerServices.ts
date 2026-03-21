@@ -48,6 +48,7 @@ import { VeiculoService } from '../infraestrutura/VeiculoService';
 import { ProjTipoEstruturaService } from '../projetos/ProjTipoEstruturaService';
 import { ProjTipoEstruturaMaterialService } from '../projetos/ProjTipoEstruturaMaterialService';
 import { ProjMotivoOcorrenciaService } from '../projetos/ProjMotivoOcorrenciaService';
+import { ProjetoProgramacaoService } from '../projetos/ProjetoProgramacaoService';
 import { ProjTipoPosteService } from '../projetos/ProjTipoPosteService';
 import { ProjTipoRamalMaterialService } from '../projetos/ProjTipoRamalMaterialService';
 import { ProjTipoRamalService } from '../projetos/ProjTipoRamalService';
@@ -83,6 +84,10 @@ export function registerServices(): void {
   container.register('baseService', () => new BaseService());
   container.register('cargoService', () => new CargoService());
   container.register('tipoEquipeService', () => new TipoEquipeService());
+  container.register(
+    'projetoProgramacaoService',
+    () => new ProjetoProgramacaoService()
+  );
   container.register('projTipoPosteService', () => new ProjTipoPosteService());
   container.register(
     'projTipoEstruturaService',
