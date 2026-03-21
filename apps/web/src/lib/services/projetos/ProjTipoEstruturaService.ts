@@ -7,7 +7,7 @@ import {
   projTipoEstruturaFilterSchema,
   projTipoEstruturaUpdateSchema,
 } from '../../schemas/projTipoEstruturaSchema';
-import { PaginatedResult } from '../../types/common';
+import type { PaginatedResult } from '../../types/common';
 
 type ProjTipoEstruturaCreate = z.infer<typeof projTipoEstruturaCreateSchema>;
 type ProjTipoEstruturaUpdate = z.infer<typeof projTipoEstruturaUpdateSchema>;
@@ -17,33 +17,47 @@ export class ProjTipoEstruturaService extends AbstractCrudService<
   ProjTipoEstruturaCreate,
   ProjTipoEstruturaUpdate,
   ProjTipoEstruturaFilter,
-  ProjTipoEstrutura
+  ProjTipoEstrutura,
+  ProjTipoEstruturaRepository
 > {
   constructor() {
     super(new ProjTipoEstruturaRepository());
   }
 
-  async create(raw: any, _userId: string): Promise<ProjTipoEstrutura> {
-    const { createdBy, createdAt, ...businessData } = raw;
-    const data = projTipoEstruturaCreateSchema.parse(businessData);
+  async create(raw: unknown, userId: string): Promise<ProjTipoEstrutura> {
+    const data = projTipoEstruturaCreateSchema.parse(raw);
 
-    return this.repo.create({
-      ...data,
-      ...(createdBy && { createdBy }),
-      ...(createdAt && { createdAt }),
-    } as any);
+    return this.repo.create(
+      {
+        nome: data.nome,
+        createdBy: userId,
+        contrato: {
+          connect: {
+            id: data.contratoId,
+          },
+        },
+      },
+      userId
+    );
   }
 
-  async update(raw: any, _userId: string): Promise<ProjTipoEstrutura> {
-    const { updatedBy, updatedAt, ...businessData } = raw;
-    const data = projTipoEstruturaUpdateSchema.parse(businessData);
-    const { id, ...rest } = data;
+  async update(raw: unknown, userId: string): Promise<ProjTipoEstrutura> {
+    const data = projTipoEstruturaUpdateSchema.parse(raw);
+    const { id, contratoId, nome } = data;
 
-    return this.repo.update(id, {
-      ...rest,
-      ...(updatedBy && { updatedBy }),
-      ...(updatedAt && { updatedAt }),
-    } as any);
+    return this.repo.update(
+      id,
+      {
+        nome,
+        updatedBy: userId,
+        contrato: {
+          connect: {
+            id: contratoId,
+          },
+        },
+      },
+      userId
+    );
   }
 
   async delete(id: number, userId: string): Promise<ProjTipoEstrutura> {

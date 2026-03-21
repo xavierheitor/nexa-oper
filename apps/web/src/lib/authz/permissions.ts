@@ -10,6 +10,10 @@ export type Permission =
   | 'tipos-equipe:view'
   | 'projetos-tipos-poste:view'
   | 'projetos-tipos-estrutura:view'
+  | 'projetos-tipos-ramal:view'
+  | 'projetos-motivos-ocorrencia:view'
+  | 'projetos-materiais-estrutura:view'
+  | 'projetos-materiais-ramal:view'
   | 'tipos-veiculo:view'
   | 'veiculos:view'
   | 'veiculos:create'
@@ -91,6 +95,10 @@ export const PERMISSIONS = {
   TIPOS_EQUIPE_VIEW: 'tipos-equipe:view' as const,
   PROJETOS_TIPOS_POSTE_VIEW: 'projetos-tipos-poste:view' as const,
   PROJETOS_TIPOS_ESTRUTURA_VIEW: 'projetos-tipos-estrutura:view' as const,
+  PROJETOS_TIPOS_RAMAL_VIEW: 'projetos-tipos-ramal:view' as const,
+  PROJETOS_MOTIVOS_OCORRENCIA_VIEW: 'projetos-motivos-ocorrencia:view' as const,
+  PROJETOS_MATERIAIS_ESTRUTURA_VIEW: 'projetos-materiais-estrutura:view' as const,
+  PROJETOS_MATERIAIS_RAMAL_VIEW: 'projetos-materiais-ramal:view' as const,
   TIPOS_VEICULO_VIEW: 'tipos-veiculo:view' as const,
   VEICULOS_VIEW: 'veiculos:view' as const,
   VEICULOS_CREATE: 'veiculos:create' as const,
@@ -238,6 +246,30 @@ export const PERMISSION_CATALOG: PermissionCatalogItem[] = [
     label: 'Ver tipos de estrutura',
     group: PERMISSION_GROUP_LABELS.registry,
     description: 'Acessa a tela de tipos de estrutura dos projetos.',
+  },
+  {
+    permission: PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW,
+    label: 'Ver tipos de ramal',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de tipos de ramal dos projetos.',
+  },
+  {
+    permission: PERMISSIONS.PROJETOS_MOTIVOS_OCORRENCIA_VIEW,
+    label: 'Ver motivos de ocorrência de projetos',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de motivos de ocorrência dos projetos.',
+  },
+  {
+    permission: PERMISSIONS.PROJETOS_MATERIAIS_ESTRUTURA_VIEW,
+    label: 'Ver composições por estrutura',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de materiais por tipo de estrutura dos projetos.',
+  },
+  {
+    permission: PERMISSIONS.PROJETOS_MATERIAIS_RAMAL_VIEW,
+    label: 'Ver composições por ramal',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de materiais por tipo de ramal dos projetos.',
   },
   {
     permission: PERMISSIONS.TIPOS_VEICULO_VIEW,
@@ -573,6 +605,10 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.TIPOS_EQUIPE_VIEW,
     PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
     PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
+    PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW,
+    PERMISSIONS.PROJETOS_MOTIVOS_OCORRENCIA_VIEW,
+    PERMISSIONS.PROJETOS_MATERIAIS_ESTRUTURA_VIEW,
+    PERMISSIONS.PROJETOS_MATERIAIS_RAMAL_VIEW,
     PERMISSIONS.TIPOS_VEICULO_VIEW,
     PERMISSIONS.VEICULOS_VIEW,
     PERMISSIONS.VEICULOS_CREATE,

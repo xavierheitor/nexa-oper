@@ -46,7 +46,11 @@ import { TipoEquipeService } from '../infraestrutura/TipoEquipeService';
 import { TipoVeiculoService } from '../infraestrutura/TipoVeiculoService';
 import { VeiculoService } from '../infraestrutura/VeiculoService';
 import { ProjTipoEstruturaService } from '../projetos/ProjTipoEstruturaService';
+import { ProjTipoEstruturaMaterialService } from '../projetos/ProjTipoEstruturaMaterialService';
+import { ProjMotivoOcorrenciaService } from '../projetos/ProjMotivoOcorrenciaService';
 import { ProjTipoPosteService } from '../projetos/ProjTipoPosteService';
+import { ProjTipoRamalMaterialService } from '../projetos/ProjTipoRamalMaterialService';
+import { ProjTipoRamalService } from '../projetos/ProjTipoRamalService';
 import { CargoService } from '../pessoas/CargoService';
 import { EletricistaService } from '../pessoas/EletricistaService';
 import { SupervisorService } from '../pessoas/SupervisorService';
@@ -83,6 +87,19 @@ export function registerServices(): void {
   container.register(
     'projTipoEstruturaService',
     () => new ProjTipoEstruturaService()
+  );
+  container.register('projTipoRamalService', () => new ProjTipoRamalService());
+  container.register(
+    'projMotivoOcorrenciaService',
+    () => new ProjMotivoOcorrenciaService()
+  );
+  container.register(
+    'projTipoEstruturaMaterialService',
+    () => new ProjTipoEstruturaMaterialService()
+  );
+  container.register(
+    'projTipoRamalMaterialService',
+    () => new ProjTipoRamalMaterialService()
   );
   container.register('equipeService', () => new EquipeService());
   container.register('tipoVeiculoService', () => new TipoVeiculoService());

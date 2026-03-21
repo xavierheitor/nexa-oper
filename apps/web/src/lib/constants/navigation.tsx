@@ -214,6 +214,18 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             path: '/dashboard/cadastro/projetos/tipo-estrutura',
             requiredPermission: PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
           },
+          {
+            key: '/dashboard/cadastro/projetos/tipo-ramal',
+            label: 'Tipos de Ramal',
+            path: '/dashboard/cadastro/projetos/tipo-ramal',
+            requiredPermission: PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW,
+          },
+          {
+            key: '/dashboard/cadastro/projetos/motivo-ocorrencia',
+            label: 'Motivos de Ocorrência',
+            path: '/dashboard/cadastro/projetos/motivo-ocorrencia',
+            requiredPermission: PERMISSIONS.PROJETOS_MOTIVOS_OCORRENCIA_VIEW,
+          },
         ],
       },
       {

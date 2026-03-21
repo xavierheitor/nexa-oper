@@ -85,6 +85,9 @@ model ProjTipoEstrutura {
   id   Int    @id @default(autoincrement())
   nome String @db.VarChar(255) // ex: N4, N1+S1
 
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+
   estruturaMateriais ProjTipoEstruturaMaterial[]
   posteEstruturas    ProjPosteEstrutura[]
 
@@ -95,6 +98,8 @@ model ProjTipoEstrutura {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
+  @@unique([contratoId, nome], map: "uq_proj_tipo_estrutura_contrato_nome")
+  @@index([contratoId])
   @@index([nome])
   @@index([deletedAt])
 }
@@ -148,20 +153,18 @@ model ProjMotivoOcorrencia {
 }
 
 /// ===============================================
-/// COMPOSICAO DE MATERIAIS POR CONTRATO
+/// COMPOSICAO DE MATERIAIS POR TIPO
 /// ===============================================
 
 model ProjTipoEstruturaMaterial {
   id Int @id @default(autoincrement())
 
-  contratoId      Int
   tipoEstruturaId Int
   materialId      Int
 
   quantidadeBase Decimal                 @db.Decimal(10, 4)
   tipoConsumo    ProjTipoConsumoMaterial
 
-  contrato      Contrato          @relation(fields: [contratoId], references: [id])
   tipoEstrutura ProjTipoEstrutura @relation(fields: [tipoEstruturaId], references: [id])
   material      MaterialCatalogo  @relation(fields: [materialId], references: [id])
 
@@ -172,8 +175,7 @@ model ProjTipoEstruturaMaterial {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  @@unique([contratoId, tipoEstruturaId, materialId], map: "uq_proj_tipo_estrutura_material")
-  @@index([contratoId])
+  @@unique([tipoEstruturaId, materialId], map: "uq_proj_tipo_estrutura_material")
   @@index([tipoEstruturaId])
   @@index([materialId])
   @@index([deletedAt])

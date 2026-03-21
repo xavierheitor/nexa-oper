@@ -8,7 +8,9 @@ import type {
   GenericPrismaWhereInput,
 } from '../../types/prisma';
 
-interface ProjTipoEstruturaFilter extends PaginationParams {}
+interface ProjTipoEstruturaFilter extends PaginationParams {
+  contratoId?: number;
+}
 
 export class ProjTipoEstruturaRepository extends AbstractCrudRepository<
   ProjTipoEstrutura,
@@ -55,11 +57,25 @@ export class ProjTipoEstruturaRepository extends AbstractCrudRepository<
   findById(id: number): Promise<ProjTipoEstrutura | null> {
     return prisma.projTipoEstrutura.findUnique({
       where: { id, deletedAt: null },
+      include: this.getDefaultInclude(),
     });
   }
 
   protected getSearchFields(): string[] {
     return ['nome'];
+  }
+
+  protected buildCustomFilters(
+    params: ProjTipoEstruturaFilter,
+    baseWhere: GenericPrismaWhereInput
+  ): GenericPrismaWhereInput {
+    const where = { ...baseWhere };
+
+    if (params.contratoId) {
+      where.contratoId = params.contratoId;
+    }
+
+    return where;
   }
 
   protected async findMany(
@@ -83,6 +99,8 @@ export class ProjTipoEstruturaRepository extends AbstractCrudRepository<
   }
 
   protected getDefaultInclude(): GenericPrismaIncludeInput {
-    return undefined;
+    return {
+      contrato: true,
+    };
   }
 }
