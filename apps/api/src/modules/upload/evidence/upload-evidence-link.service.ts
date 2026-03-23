@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@nexa-oper/db';
+
 import { AppLogger } from '../../../core/logger/app-logger';
 import { PrismaService } from '../../../database/prisma.service';
+
 import type { EvidenceContext } from './evidence.handler';
 
 type CanonicalLinkData = {
@@ -30,6 +32,7 @@ const LINK_OWNER_TYPE_BY_UPLOAD_TYPE: Record<string, string> = {
   'checklist-assinatura': 'checklist',
   'atividade-turno': 'atividade',
   'apr-evidence': 'apr',
+  'projeto-viabilizacao-poste': 'projeto-poste',
   medidor: 'atividadeMedidor',
   servico: 'servico',
 };
@@ -40,6 +43,7 @@ const LINK_ENTITY_TYPE_BY_OWNER_TYPE: Record<string, string> = {
   atividadeMedidor: 'medicao',
   medidor: 'medicao',
   apr: 'aprPreenchido',
+  'projeto-poste': 'projPoste',
   servico: 'servico',
 };
 
@@ -146,7 +150,7 @@ export class UploadEvidenceLinkService {
   private inferPhotoCategory(
     uploadType: string,
     ownerType: string,
-    metadata: Record<string, any>,
+    metadata: Record<string, unknown>,
   ): string {
     const atividadeContexto = this.readString(metadata.atividadeContexto);
     const explicitType = this.readString(metadata.photoType);
@@ -173,8 +177,8 @@ export class UploadEvidenceLinkService {
         return 'APR_EVIDENCIA';
       case 'medidor':
         if (atividadeContexto === 'medidor:instalado')
-          return 'MEDIDOR_INSTALADO';
-        if (atividadeContexto === 'medidor:retirado') return 'MEDIDOR_RETIRADO';
+          {return 'MEDIDOR_INSTALADO';}
+        if (atividadeContexto === 'medidor:retirado') {return 'MEDIDOR_RETIRADO';}
         return 'MEDIDOR';
       case 'atividade-turno':
         if (atividadeContexto?.startsWith('form:') === true) {
@@ -184,6 +188,8 @@ export class UploadEvidenceLinkService {
           return 'ATIVIDADE_FINALIZACAO';
         }
         return 'ATIVIDADE_GERAL';
+      case 'projeto-viabilizacao-poste':
+        return 'VIABILIZACAO_POSTE';
       case 'servico':
         return 'SERVICO';
       default:
@@ -196,7 +202,7 @@ export class UploadEvidenceLinkService {
   }
 
   private readString(value: unknown): string | null {
-    if (typeof value !== 'string') return null;
+    if (typeof value !== 'string') {return null;}
     const trimmed = value.trim();
     return trimmed.length > 0 ? trimmed : null;
   }
@@ -214,13 +220,13 @@ export class UploadEvidenceLinkService {
 
   private toSafeJson(value: unknown): Prisma.InputJsonValue | undefined {
     const encoded = this.encodeJson(value);
-    if (encoded === undefined) return undefined;
+    if (encoded === undefined) {return undefined;}
     return encoded as Prisma.InputJsonValue;
   }
 
   private encodeJson(value: unknown): unknown {
-    if (value === null) return null;
-    if (value === undefined) return undefined;
+    if (value === null) {return null;}
+    if (value === undefined) {return undefined;}
     if (
       typeof value === 'string' ||
       typeof value === 'number' ||

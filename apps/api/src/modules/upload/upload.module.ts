@@ -12,6 +12,7 @@ import { ChecklistAssinaturaEvidenceHandler } from './evidence/checklist-assinat
 import { ChecklistReprovaEvidenceHandler } from './evidence/checklist-reprova.handler';
 import type { EvidenceHandler } from './evidence/evidence.handler';
 import { MedidorEvidenceHandler } from './evidence/medidor.handler';
+import { ProjetoViabilizacaoPosteEvidenceHandler } from './evidence/projeto-viabilizacao-poste.handler';
 import { UploadEvidenceLinkService } from './evidence/upload-evidence-link.service';
 import { ChecklistPhotoReconcileJob } from './jobs/checklist-photo-reconcile.job';
 import { StorageFactory } from './storage/storage.factory';
@@ -25,6 +26,7 @@ const EVIDENCE_HANDLERS = [
   AprEvidenceHandler,
   AtividadeTurnoEvidenceHandler,
   MedidorEvidenceHandler,
+  ProjetoViabilizacaoPosteEvidenceHandler,
 ] as const;
 
 @Module({
