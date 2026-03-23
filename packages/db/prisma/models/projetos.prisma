@@ -10,6 +10,8 @@ enum ProjTipoConsumoMaterial {
 enum ProjStatusProjeto {
   PENDENTE
   EM_VIABILIZACAO
+  AGUARDANDO_VALIDACAO
+  EM_CORRECAO
   VIABILIZADO_PARCIAL
   VIABILIZADO_TOTAL
   EM_PLANEJAMENTO
@@ -21,6 +23,12 @@ enum ProjStatusProjeto {
 enum ProjResultadoViabilizacao {
   PARCIAL
   TOTAL
+}
+
+enum ProjResultadoValidacaoViabilizacao {
+  APROVADA
+  CORRIGIDA
+  REJEITADA
 }
 
 enum ProjStatusProgramacao {
@@ -267,6 +275,7 @@ model ProjetoProgramacao {
   observacao     String? @db.Text
 
   viabilizacoes ProjViabilizacao[]
+  validacoes    ProjValidacaoViabilizacao[]
   postes        ProjPoste[]
   vaos          ProjVao[]
   programacoes  ProjProgramacao[]
@@ -304,6 +313,7 @@ model ProjViabilizacao {
 
   postes     ProjPoste[]
   vaos       ProjVao[]
+  validacoes ProjValidacaoViabilizacao[]
   evidencias ProjEvidencia[]
 
   createdAt DateTime  @default(now())
@@ -318,6 +328,38 @@ model ProjViabilizacao {
   @@index([resultado])
   @@index([dataViabilizacao])
   @@index([enviadaEm])
+  @@index([deletedAt])
+}
+
+model ProjValidacaoViabilizacao {
+  id Int @id @default(autoincrement())
+
+  projetoId Int
+  projeto   ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+
+  viabilizacaoId Int
+  viabilizacao   ProjViabilizacao @relation(fields: [viabilizacaoId, projetoId], references: [id, projetoId])
+
+  resultado ProjResultadoValidacaoViabilizacao
+
+  validadaEm  DateTime
+  observacao  String? @db.Text
+
+  postesValidados ProjPoste[]
+  vaosValidados   ProjVao[]
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([id, projetoId], map: "uq_proj_validacao_viabilizacao_id_projeto")
+  @@index([projetoId])
+  @@index([viabilizacaoId])
+  @@index([resultado])
+  @@index([validadaEm])
   @@index([deletedAt])
 }
 
@@ -336,6 +378,9 @@ model ProjPoste {
 
   viabilizacaoId Int?
   viabilizacao   ProjViabilizacao? @relation(fields: [viabilizacaoId, projetoId], references: [id, projetoId])
+
+  validacaoId Int?
+  validacao   ProjValidacaoViabilizacao? @relation(fields: [validacaoId, projetoId], references: [id, projetoId])
 
   tipoPosteId Int?
   tipoPoste   ProjTipoPoste? @relation(fields: [tipoPosteId], references: [id])
@@ -368,6 +413,7 @@ model ProjPoste {
   @@index([projetoId])
   @@index([cadastroPosteId])
   @@index([viabilizacaoId])
+  @@index([validacaoId])
   @@index([tipoPosteId])
   @@index([deletedAt])
 }
@@ -434,6 +480,9 @@ model ProjVao {
   viabilizacaoId Int?
   viabilizacao   ProjViabilizacao? @relation(fields: [viabilizacaoId, projetoId], references: [id, projetoId])
 
+  validacaoId Int?
+  validacao   ProjValidacaoViabilizacao? @relation(fields: [validacaoId, projetoId], references: [id, projetoId])
+
   posteOrigemId  Int
   posteDestinoId Int
 
@@ -460,6 +509,7 @@ model ProjVao {
   @@unique([id, projetoId], map: "uq_proj_vao_id_projeto")
   @@index([projetoId])
   @@index([viabilizacaoId])
+  @@index([validacaoId])
   @@index([posteOrigemId])
   @@index([posteDestinoId])
   @@index([materialCondutorId])

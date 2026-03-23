@@ -26,7 +26,7 @@ export class ProjetosController {
   @ApiOperation({
     summary: 'Listar projetos pendentes de viabilização no mobile',
     description:
-      'Retorna apenas projetos que ainda precisam de viabilização total ou complementar. Projetos totalmente viabilizados não são enviados ao app.',
+      'Retorna apenas projetos que ainda precisam de viabilização total, continuidade parcial ou correção em campo. O payload inclui o escopo técnico já persistido para retomada do levantamento. Projetos aguardando validação ou totalmente viabilizados não são enviados ao app.',
   })
   @ApiOkResponse({
     description:

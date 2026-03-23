@@ -40,12 +40,15 @@ O processo real da fase atual e este:
 3. a viabilizacao levanta postes, estruturas, ramais por tipo, observacoes, GPS e fotos
 4. quando houver dados suficientes, a mesma viabilizacao tambem levanta vaos e informa um unico material condutor para cada vao
 5. cada envio de viabilizacao informa se o levantamento do projeto/equipamento foi parcial ou total
-6. a programacao sempre seleciona subconjuntos do escopo tecnico ja levantado
-7. cada programacao ou reprogramacao gera uma nova SI
-8. a SI pertence a programacao, nunca ao projeto
-9. a execucao registra o fato ocorrido em campo
-10. pendencia e reprogramacao nascem de consulta sobre escopo + historico operacional
-11. a lista de materiais para requisicao e derivada da programacao com base em estruturas, ramais e vaos
+6. a viabilizacao parcial precisa devolver ao mobile o escopo tecnico ja levantado para que outra pessoa consiga continuar o levantamento
+7. apos cada envio de viabilizacao existe uma etapa de validacao/correcao do levantamento
+8. apenas o escopo tecnico validado fica elegivel para programacao
+9. a programacao sempre seleciona subconjuntos do escopo tecnico ja levantado e validado
+10. cada programacao ou reprogramacao gera uma nova SI
+11. a SI pertence a programacao, nunca ao projeto
+12. a execucao registra o fato ocorrido em campo
+13. pendencia e reprogramacao nascem de consulta sobre escopo + historico operacional
+14. a lista de materiais para requisicao e derivada da programacao com base em estruturas, ramais e vaos
 
 ## Entidades centrais
 
@@ -89,12 +92,33 @@ O resultado de viabilizacao e um fato de negocio persistido.
 O status macro do projeto pode refletir:
 
 - `EM_VIABILIZACAO`
+- `AGUARDANDO_VALIDACAO`
+- `EM_CORRECAO`
 - `VIABILIZADO_PARCIAL`
 - `VIABILIZADO_TOTAL`
 
 Mas o banco nao persiste "fila de itens faltando viabilizar".
 
 Essa lista deve ser derivada pelo que existe ou nao no escopo tecnico do projeto.
+
+### Validacao da viabilizacao
+
+`ProjValidacaoViabilizacao` registra o fato de revisao, aprovacao, correcao ou rejeicao sobre um envio de viabilizacao.
+
+Cada registro informa:
+
+- `projetoId`
+- `viabilizacaoId`
+- `resultado` (`APROVADA`, `CORRIGIDA` ou `REJEITADA`)
+- `validadaEm`
+- `observacao`
+
+Regras funcionais:
+
+- `validadaEm` representa o instante efetivo da decisao de validacao
+- o mobile continua vendo o escopo tecnico atual em projetos `VIABILIZADO_PARCIAL` e `EM_CORRECAO`
+- projeto `AGUARDANDO_VALIDACAO` nao volta para o mobile ate receber uma decisao de validacao
+- a programacao so pode usar itens que tenham procedencia de validacao
 
 ### Escopo tecnico
 
@@ -134,6 +158,7 @@ Ele referencia:
 - `cadastroPosteId`
 - `projetoId`
 - `viabilizacaoId`
+- `validacaoId`
 
 E guarda os fatos de campo do projeto:
 
@@ -168,7 +193,9 @@ Nao existe status individual de viabilizacao por item.
 O modelo adotado e:
 
 - `ProjPoste.viabilizacaoId` identifica a viabilizacao que levantou ou consolidou o poste
+- `ProjPoste.validacaoId` identifica a validacao que aprovou a versao atual do poste para programacao
 - `ProjVao.viabilizacaoId` identifica a viabilizacao que levantou ou consolidou o vao
+- `ProjVao.validacaoId` identifica a validacao que aprovou a versao atual do vao para programacao
 - `ProjPosteEstrutura` e `ProjPosteRamal` sao detalhes tecnicos do poste levantado
 - `ProjVao` guarda apenas os extremos do vao e o material condutor
 - a metragem do vao e derivada pelas coordenadas GPS dos postes do projeto
@@ -176,7 +203,9 @@ O modelo adotado e:
 Decisao de modelagem:
 
 - faz sentido marcar viabilizacao nos itens tecnicos levantados quando isso representa procedencia factual
+- faz sentido marcar validacao nos itens tecnicos quando isso representa procedencia factual de liberacao para programacao
 - nao faz sentido criar booleano `viabilizado` por item, porque isso seria redundante
+- nao faz sentido criar booleano `validado` por item, porque `validacaoId` aponta para um fato de negocio persistido
 
 ### Programacao
 
@@ -293,6 +322,8 @@ O status macro aprovado para `ProjetoProgramacao` e:
 
 - `PENDENTE`
 - `EM_VIABILIZACAO`
+- `AGUARDANDO_VALIDACAO`
+- `EM_CORRECAO`
 - `VIABILIZADO_PARCIAL`
 - `VIABILIZADO_TOTAL`
 - `EM_PLANEJAMENTO`
@@ -304,8 +335,10 @@ Justificativa:
 
 - `PENDENTE` cobre o cadastro administrativo ainda nao iniciado em campo
 - `EM_VIABILIZACAO` cobre projeto em levantamento tecnico
-- `VIABILIZADO_PARCIAL` cobre projeto que ja pode ser programado apenas com o escopo levantado
-- `VIABILIZADO_TOTAL` cobre projeto com escopo tecnico completo para o equipamento/projeto
+- `AGUARDANDO_VALIDACAO` cobre levantamento enviado e pendente de revisao
+- `EM_CORRECAO` cobre projeto cujo levantamento precisa de ajuste antes de novo aceite
+- `VIABILIZADO_PARCIAL` cobre projeto com escopo parcial ja validado e elegivel para programacao parcial
+- `VIABILIZADO_TOTAL` cobre projeto com escopo tecnico completo ja validado para o equipamento/projeto
 - `EM_PLANEJAMENTO` cobre preparacao operacional das SIs
 - `EM_EXECUCAO` cobre projeto com tentativa operacional em andamento
 - `FINALIZADO` cobre projeto sem itens pendentes
@@ -406,7 +439,8 @@ Fluxo:
    - `ProjPosteRamal`
    - `ProjVao`, quando houver dados suficientes
 6. sistema grava evidencias de viabilizacao em `ProjEvidencia`
-7. projeto pode evoluir para `VIABILIZADO_PARCIAL` ou `VIABILIZADO_TOTAL`
+7. projeto evolui para `AGUARDANDO_VALIDACAO`
+8. se o projeto ja tinha escopo parcial anterior, a API deve devolver ao mobile o escopo tecnico atual acumulado para continuidade do levantamento
 
 Campos esperados na viabilizacao:
 
@@ -419,6 +453,25 @@ Campos esperados na viabilizacao:
 - observacoes
 - vaos, quando houver conectividade suficiente entre dois postes ja levantados
 - um unico material condutor por vao
+
+## Caso 2B: validar ou corrigir viabilizacao
+
+Objetivo:
+
+- revisar o levantamento antes de liberar programacao
+
+Fluxo:
+
+1. backoffice abre a viabilizacao enviada
+2. analisa fotos, GPS, postes, estruturas, ramais e vaos
+3. se necessario, corrige o escopo tecnico atual
+4. sistema grava um `ProjValidacaoViabilizacao`
+5. sistema atualiza `validacaoId` nos itens tecnicos aprovados na versao atual do escopo
+6. projeto pode evoluir para:
+   - `VIABILIZADO_PARCIAL`, quando o escopo validado ainda nao e completo
+   - `VIABILIZADO_TOTAL`, quando o escopo validado ja e completo
+   - `EM_CORRECAO`, quando o levantamento precisa de novo ajuste em campo
+7. quando houver `EM_CORRECAO`, o mobile deve receber o escopo tecnico atual e a observacao da ultima validacao para orientar o retorno a campo
 
 ## Caso 3: programar projeto parcial ou totalmente viabilizado
 
@@ -439,8 +492,8 @@ Fluxo:
 
 Regras:
 
-- projeto `VIABILIZADO_PARCIAL` so pode programar itens existentes no escopo levantado
-- projeto `VIABILIZADO_TOTAL` pode programar qualquer item do escopo completo
+- projeto `VIABILIZADO_PARCIAL` so pode programar itens existentes no escopo levantado e validados
+- projeto `VIABILIZADO_TOTAL` pode programar qualquer item do escopo completo validado
 - a programacao nao cria item tecnico novo
 
 ## Caso 4: cancelar programacao
@@ -558,8 +611,10 @@ Fluxo:
 
 - projeto so pode ser `FINALIZADO` quando nao houver item pendente
 - projeto `CANCELADO` nao aceita nova programacao sem regra explicita de reabertura
+- `AGUARDANDO_VALIDACAO` nao deve liberar programacao
+- `EM_CORRECAO` nao deve liberar programacao, mas continua elegivel para nova viabilizacao
 - `VIABILIZADO_TOTAL` so pode ser usado quando o escopo exigido tiver sido levantado
-- `VIABILIZADO_PARCIAL` pode receber programacao apenas dos itens ja existentes no escopo
+- `VIABILIZADO_PARCIAL` pode receber programacao apenas dos itens ja existentes no escopo e validados
 
 ## Viabilizacao
 
@@ -567,10 +622,19 @@ Fluxo:
 - `ProjCadastroPoste.identificador` deve ser estavel e unico por contrato
 - `ProjCadastroPoste.numeroPoste` deve ser unico por contrato
 - poste e vao levantados podem guardar `viabilizacaoId` para procedencia
+- poste e vao aprovados para programacao podem guardar `validacaoId` para procedencia de validacao
 - estrutura e ramal previsto nao recebem status individual de viabilizacao
 - `ProjVao.materialCondutorId` deve ser coerente com o contrato do projeto
 - `ProjVao` deve ligar exatamente dois postes distintos do mesmo projeto
 - a API deve normalizar a ordem dos extremos do vao antes de persistir para evitar duplicidade invertida
+
+## Validacao da viabilizacao
+
+- `ProjValidacaoViabilizacao` deve apontar para viabilizacao do mesmo projeto
+- `APROVADA` e `CORRIGIDA` liberam os itens cuja versao atual recebeu `validacaoId`
+- `REJEITADA` nao libera programacao
+- quando a viabilizacao parcial ou em correcao for retomada no mobile, a API deve devolver o escopo tecnico atual ja persistido para continuidade
+- `AGUARDANDO_VALIDACAO` nao deve voltar ao mobile como projeto editavel
 
 ## Programacao
 
