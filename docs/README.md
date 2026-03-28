@@ -13,6 +13,7 @@ Este diretório concentra a documentação ativa do monorepo.
 7. `docs/07-deploy-producao-pm2.md`
 8. `docs/08-sistema-permissoes-web.md`
 9. `docs/09-projetos-programacoes-operacionais.md`
+10. `docs/10-contrato-mobile-projetos-viabilizacao.md`
 
 ## Quando usar cada guia
 
@@ -25,12 +26,13 @@ Este diretório concentra a documentação ativa do monorepo.
 - operação em produção com PM2: `07`
 - desenho do sistema de permissões do web: `08`
 - desenho funcional do modulo de projetos/programacoes: `09`
+- contrato de sync e tabelas locais do mobile para viabilizacao: `10`
 
 ## Política de manutenção
 
 - guias ativos vivem em `docs/` (nível raiz)
 - materiais históricos ficam em `docs/archive/*`
-- qualquer conflito deve ser resolvido a favor dos guias `01..09`
+- qualquer conflito deve ser resolvido a favor dos guias `01..10`
 
 ## Legado
 

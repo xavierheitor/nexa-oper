@@ -148,15 +148,13 @@ model MaterialCatalogo {
 
   atividadeMateriaisAplicados AtividadeMaterialAplicado[]
 
-  createdAt                  DateTime                    @default(now())
-  createdBy                  String                      @db.VarChar(255)
-  updatedAt                  DateTime?                   @updatedAt
-  updatedBy                  String?                     @db.VarChar(255)
-  deletedAt                  DateTime?
-  deletedBy                  String?                     @db.VarChar(255)
-  projVaosMaterialCondutor   ProjVao[]                   @relation("ProjVaoMaterialCondutor")
-  projTipoEstruturaMaterials ProjTipoEstruturaMaterial[]
-  projTipoRamalMaterials     ProjTipoRamalMaterial[]
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+  projVaos  ProjVao[]
 
   @@unique([contratoId, codigo], map: "uq_material_catalogo_contrato_codigo")
   @@index([contratoId])

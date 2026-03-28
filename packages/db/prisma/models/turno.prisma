@@ -31,8 +31,6 @@ model Turno {
   AderenciaEscalaSnapshot AderenciaEscalaSnapshot[]
   AtividadeExecucoes      AtividadeExecucao[]
   AtividadeAprPreenchidas AtividadeAprPreenchida[]
-
-  projExecucaos ProjExecucao[]
 }
 
 model TurnoEletricista {
