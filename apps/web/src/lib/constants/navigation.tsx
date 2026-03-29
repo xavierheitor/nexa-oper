@@ -209,7 +209,7 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             key: '/dashboard/cadastro/projetos/programas',
             label: 'Programas',
             path: '/dashboard/cadastro/projetos/programas',
-            requiredPermission: PERMISSIONS.PROJECTS_VIEW,
+            requiredPermission: PERMISSIONS.PROJETOS_PROGRAMAS_VIEW,
           },
           {
             key: '/dashboard/cadastro/projetos/tipo-poste',

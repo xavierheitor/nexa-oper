@@ -2,6 +2,7 @@ export type Permission =
   | 'dashboard:view'
   | 'registry:view'
   | 'projects:view'
+  | 'projetos-programas:view'
   | 'contratos:view'
   | 'contratos:create'
   | 'contratos:update'
@@ -88,6 +89,7 @@ export const PERMISSIONS = {
   DASHBOARD_VIEW: 'dashboard:view' as const,
   REGISTRY_VIEW: 'registry:view' as const,
   PROJECTS_VIEW: 'projects:view' as const,
+  PROJETOS_PROGRAMAS_VIEW: 'projetos-programas:view' as const,
   CONTRATOS_VIEW: 'contratos:view' as const,
   CONTRATOS_CREATE: 'contratos:create' as const,
   CONTRATOS_UPDATE: 'contratos:update' as const,
@@ -201,6 +203,12 @@ export const PERMISSION_CATALOG: PermissionCatalogItem[] = [
     label: 'Ver projetos',
     group: PERMISSION_GROUP_LABELS.projects,
     description: 'Acessa o módulo de projetos e o cadastro administrativo.',
+  },
+  {
+    permission: PERMISSIONS.PROJETOS_PROGRAMAS_VIEW,
+    label: 'Ver programas de projetos',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de programas dos projetos no cadastro.',
   },
   {
     permission: PERMISSIONS.CONTRATOS_VIEW,
@@ -606,6 +614,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.DASHBOARD_VIEW,
     PERMISSIONS.REGISTRY_VIEW,
     PERMISSIONS.PROJECTS_VIEW,
+    PERMISSIONS.PROJETOS_PROGRAMAS_VIEW,
     PERMISSIONS.CONTRATOS_VIEW,
     PERMISSIONS.CONTRATOS_CREATE,
     PERMISSIONS.CONTRATOS_UPDATE,

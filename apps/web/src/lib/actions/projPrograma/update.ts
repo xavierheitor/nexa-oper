@@ -4,13 +4,13 @@ import type { ProjProgramaService } from '@/lib/services/projetos/ProjProgramaSe
 import { container } from '@/lib/services/common/registerServices';
 import { projProgramaUpdateSchema } from '../../schemas/projProgramaSchema';
 import { handleServerAction } from '../common/actionHandler';
-import { requireProjectsPermission } from '../common/permissionGuard';
+import { requireProjetosProgramasPermission } from '../common/permissionGuard';
 
 export const updateProjPrograma = async (rawData: unknown) =>
   handleServerAction(
     projProgramaUpdateSchema,
     async (data, session) => {
-      requireProjectsPermission(session);
+      requireProjetosProgramasPermission(session);
       const service = container.get<ProjProgramaService>('projProgramaService');
       return service.update(data, session.user.id);
     },

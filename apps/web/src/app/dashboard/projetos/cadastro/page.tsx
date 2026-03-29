@@ -40,19 +40,9 @@ function mapContratos(input: unknown): ContratoOption[] {
 }
 
 export default async function ProjetoCadastroPage() {
-  const [
-    projetosResult,
-    programasResult,
-    programasLookupResult,
-    contratosResult,
-  ] = await Promise.all([
+  const [projetosResult, programasLookupResult, contratosResult] =
+    await Promise.all([
     listProjProjetos({
-      page: 1,
-      pageSize: 10,
-      orderBy: 'id',
-      orderDir: 'desc',
-    }),
-    listProjProgramas({
       page: 1,
       pageSize: 10,
       orderBy: 'id',
@@ -74,7 +64,6 @@ export default async function ProjetoCadastroPage() {
 
   if (
     projetosResult.redirectToLogin ||
-    programasResult.redirectToLogin ||
     programasLookupResult.redirectToLogin ||
     contratosResult.redirectToLogin
   ) {
@@ -84,10 +73,6 @@ export default async function ProjetoCadastroPage() {
   const initialProjetos: PaginatedResult<ProjProjetoListItem> | undefined =
     projetosResult.success && projetosResult.data
       ? projetosResult.data
-      : undefined;
-  const initialProgramas: PaginatedResult<ProjProgramaListItem> | undefined =
-    programasResult.success && programasResult.data
-      ? programasResult.data
       : undefined;
   const initialProgramasLookup =
     programasLookupResult.success && programasLookupResult.data
@@ -101,7 +86,6 @@ export default async function ProjetoCadastroPage() {
   return (
     <ProjetoCadastroPageClient
       initialContratos={contratos}
-      initialProgramas={initialProgramas}
       initialProgramasLookup={initialProgramasLookup}
       initialProjetos={initialProjetos}
     />

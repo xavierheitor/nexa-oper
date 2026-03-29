@@ -2,10 +2,7 @@
 
 import { Tag } from 'antd';
 import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
-import { createProjPrograma } from '@/lib/actions/projPrograma/create';
-import { deleteProjPrograma } from '@/lib/actions/projPrograma/delete';
 import { listProjProgramas } from '@/lib/actions/projPrograma/list';
-import { updateProjPrograma } from '@/lib/actions/projPrograma/update';
 import { createProjProjeto } from '@/lib/actions/projProjeto/create';
 import { deleteProjProjeto } from '@/lib/actions/projProjeto/delete';
 import { listProjProjetos } from '@/lib/actions/projProjeto/list';
@@ -21,7 +18,6 @@ import TableExternalFilters from '@/ui/components/TableExternalFilters';
 import { getSelectFilter, getTextFilter } from '@/ui/components/tableFilters';
 import type { ProjProgramaListItem } from '@/lib/repositories/projetos/ProjProgramaRepository';
 import type { ProjProjetoListItem } from '@/lib/repositories/projetos/ProjProjetoRepository';
-import ProjProgramaForm, { type ProjProgramaFormData } from './ProjProgramaForm';
 import ProjProjetoForm, {
   PROJECT_STATUS_OPTIONS,
   type ProjProjetoFormData,
@@ -35,7 +31,6 @@ interface ContratoOption {
 
 interface Props {
   initialContratos?: ContratoOption[];
-  initialProgramas?: PaginatedResult<ProjProgramaListItem>;
   initialProgramasLookup?: ProjProgramaListItem[];
   initialProjetos?: PaginatedResult<ProjProjetoListItem>;
 }
@@ -59,11 +54,9 @@ const STATUS_LABELS = Object.fromEntries(
 
 export default function ProjetoCadastroPageClient({
   initialContratos = [],
-  initialProgramas,
   initialProgramasLookup = [],
   initialProjetos,
 }: Props) {
-  const programaController = useCrudController<ProjProgramaListItem>('proj-programas');
   const projetoController = useCrudController<ProjProjetoListItem>('proj-projetos');
 
   const contratos = useEntityData<ContratoOption>({
@@ -92,19 +85,6 @@ export default function ProjetoCadastroPageClient({
     },
   });
 
-  const programas = useEntityData<ProjProgramaListItem>({
-    key: 'proj-programas',
-    fetcherAction: unwrapFetcher(listProjProgramas),
-    paginationEnabled: true,
-    initialData: initialProgramas,
-    initialParams: {
-      page: 1,
-      pageSize: 10,
-      orderBy: 'id',
-      orderDir: 'desc',
-    },
-  });
-
   const projetos = useEntityData<ProjProjetoListItem>({
     key: 'proj-projetos',
     fetcherAction: unwrapFetcher(listProjProjetos),
@@ -118,21 +98,6 @@ export default function ProjetoCadastroPageClient({
     },
   });
 
-  const handleProgramaSubmit = useCrudFormHandler<
-    ProjProgramaFormData,
-    ProjProgramaListItem
-  >({
-    controller: programaController,
-    createAction: createProjPrograma,
-    updateAction: updateProjPrograma,
-    onSuccess: () => {
-      programas.mutate();
-      programasLookup.mutate();
-      projetos.mutate();
-    },
-    successMessage: 'Programa salvo com sucesso!',
-  });
-
   const handleProjetoSubmit = useCrudFormHandler<
     ProjProjetoFormData,
     ProjProjetoListItem
@@ -143,56 +108,6 @@ export default function ProjetoCadastroPageClient({
     onSuccess: () => projetos.mutate(),
     successMessage: 'Projeto salvo com sucesso!',
   });
-
-  const programaColumns = useTableColumnsWithActions<ProjProgramaListItem>(
-    [
-      {
-        title: 'ID',
-        dataIndex: 'id',
-        key: 'id',
-        sorter: true,
-        width: 80,
-      },
-      {
-        title: 'Nome',
-        dataIndex: 'nome',
-        key: 'nome',
-        sorter: true,
-        ...getTextFilter<ProjProgramaListItem>('nome', 'nome do programa'),
-      },
-      {
-        title: 'Contrato',
-        dataIndex: ['contrato', 'nome'],
-        key: 'contrato',
-        render: (_value: unknown, record) =>
-          record.contrato.numero
-            ? `${record.contrato.nome} (${record.contrato.numero})`
-            : record.contrato.nome,
-      },
-      {
-        title: 'Criado em',
-        dataIndex: 'createdAt',
-        key: 'createdAt',
-        sorter: true,
-        render: (date: Date) => new Date(date).toLocaleDateString('pt-BR'),
-        width: 120,
-      },
-    ],
-    {
-      onEdit: programaController.open,
-      onDelete: (item) =>
-        programaController
-          .exec(
-            () => deleteProjPrograma({ id: item.id }),
-            'Programa excluído com sucesso!'
-          )
-          .finally(() => {
-            programas.mutate();
-            programasLookup.mutate();
-            projetos.mutate();
-          }),
-    }
-  );
 
   const projetoColumns = useTableColumnsWithActions<ProjProjetoListItem>(
     [
@@ -298,88 +213,51 @@ export default function ProjetoCadastroPageClient({
     })) ?? [];
 
   return (
-    <div style={{ display: 'grid', gap: 24 }}>
-      <CrudPage
-        title='Programas'
-        entityKey='proj-programas'
-        controller={programaController}
-        entityData={programas}
-        columns={programaColumns}
-        formComponent={(props) => (
-          <ProjProgramaForm
-            {...props}
-            contratos={contratos.data ?? []}
-          />
-        )}
-        onSubmit={handleProgramaSubmit}
-        modalWidth={560}
-        addButtonText='Novo Programa'
-        tableHeaderContent={
-          <TableExternalFilters
-            filters={[
-              {
-                label: 'Contrato',
-                placeholder: 'Filtrar por contrato',
-                options: contratoOptions,
-                onChange: (contratoId) =>
-                  programas.setParams((prev) => ({
-                    ...prev,
-                    contratoId: contratoId ? Number(contratoId) : undefined,
-                    page: 1,
-                  })),
-                loading: contratos.isLoading,
-              },
-            ]}
-          />
-        }
-      />
-
-      <CrudPage
-        title='Projetos'
-        entityKey='proj-projetos'
-        controller={projetoController}
-        entityData={projetos}
-        columns={projetoColumns}
-        formComponent={(props) => (
-          <ProjProjetoForm
-            {...props}
-            programas={programasLookup.data ?? []}
-          />
-        )}
-        onSubmit={handleProjetoSubmit}
-        modalWidth={720}
-        addButtonText='Novo Projeto'
-        tableHeaderContent={
-          <TableExternalFilters
-            filters={[
-              {
-                label: 'Contrato',
-                placeholder: 'Filtrar por contrato',
-                options: contratoOptions,
-                onChange: (contratoId) =>
-                  projetos.setParams((prev) => ({
-                    ...prev,
-                    contratoId: contratoId ? Number(contratoId) : undefined,
-                    page: 1,
-                  })),
-                loading: contratos.isLoading,
-              },
-              {
-                label: 'Programa',
-                placeholder: 'Filtrar por programa',
-                options: programaOptions,
-                onChange: (programaId) =>
-                  projetos.setParams((prev) => ({
-                    ...prev,
-                    programaId: programaId ? Number(programaId) : undefined,
-                    page: 1,
-                  })),
-                loading: programasLookup.isLoading,
-              },
-            ]}
-          />
-        }
-      />
-    </div>
+    <CrudPage
+      title='Projetos'
+      entityKey='proj-projetos'
+      controller={projetoController}
+      entityData={projetos}
+      columns={projetoColumns}
+      formComponent={(props) => (
+        <ProjProjetoForm
+          {...props}
+          programas={programasLookup.data ?? []}
+        />
+      )}
+      onSubmit={handleProjetoSubmit}
+      modalWidth={720}
+      addButtonText='Novo Projeto'
+      tableHeaderContent={
+        <TableExternalFilters
+          filters={[
+            {
+              label: 'Contrato',
+              placeholder: 'Filtrar por contrato',
+              options: contratoOptions,
+              onChange: (contratoId) =>
+                projetos.setParams((prev) => ({
+                  ...prev,
+                  contratoId: contratoId ? Number(contratoId) : undefined,
+                  page: 1,
+                })),
+              loading: contratos.isLoading,
+            },
+            {
+              label: 'Programa',
+              placeholder: 'Filtrar por programa',
+              options: programaOptions,
+              onChange: (programaId) =>
+                projetos.setParams((prev) => ({
+                  ...prev,
+                  programaId: programaId ? Number(programaId) : undefined,
+                  page: 1,
+                })),
+              loading: programasLookup.isLoading,
+            },
+          ]}
+        />
+      }
+    />
   );
 }

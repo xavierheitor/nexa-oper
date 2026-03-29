@@ -167,6 +167,7 @@ export function requireContractLookupPermission(session: Session): void {
     session,
     [
       PERMISSIONS.PROJECTS_VIEW,
+      PERMISSIONS.PROJETOS_PROGRAMAS_VIEW,
       PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
       PERMISSIONS.CONTRATOS_VIEW,
       PERMISSIONS.CONTRATOS_CREATE,
@@ -290,6 +291,14 @@ export function requireProjetosTiposPostePermission(session: Session): void {
     session,
     [PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW],
     'Você não tem permissão para acessar tipos de poste dos projetos.',
+  );
+}
+
+export function requireProjetosProgramasPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.PROJETOS_PROGRAMAS_VIEW],
+    'Você não tem permissão para acessar programas dos projetos.',
   );
 }
 
