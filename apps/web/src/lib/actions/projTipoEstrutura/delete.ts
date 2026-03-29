@@ -21,5 +21,5 @@ export const deleteProjTipoEstrutura = async (rawData: unknown) =>
       return service.delete(data.id, session.user.id);
     },
     rawData,
-    { entityName: 'ProjTipoEstrutura', actionType: 'delete' }
+    { entityName: 'ProjEstrutura', actionType: 'delete' }
   );

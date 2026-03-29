@@ -17,5 +17,5 @@ export const listProjTiposEstrutura = async (rawData: unknown) =>
       return service.list(data);
     },
     rawData,
-    { entityName: 'ProjTipoEstrutura', actionType: 'list' }
+    { entityName: 'ProjEstrutura', actionType: 'list' }
   );

@@ -1,7 +1,6 @@
 'use client';
 
-import type { Contrato, ProjTipoEstrutura } from '@nexa-oper/db';
-import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
+import type { ProjEstrutura } from '@nexa-oper/db';
 import { createProjTipoEstrutura } from '@/lib/actions/projTipoEstrutura/create';
 import { deleteProjTipoEstrutura } from '@/lib/actions/projTipoEstrutura/delete';
 import { listProjTiposEstrutura } from '@/lib/actions/projTipoEstrutura/list';
@@ -13,54 +12,19 @@ import { useCrudFormHandler } from '@/lib/hooks/useCrudFormHandler';
 import { useEntityData } from '@/lib/hooks/useEntityData';
 import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActions';
 import type { PaginatedResult } from '@/lib/types/common';
-import TableExternalFilters from '@/ui/components/TableExternalFilters';
 import { getTextFilter } from '@/ui/components/tableFilters';
-import ProjTipoEstruturaForm, {
-  type ProjTipoEstruturaFormData,
-} from './ProjTipoEstruturaForm';
-import ProjTipoEstruturaMaterialPageClient, {
-  type ProjTipoEstruturaMaterialPageClientProps,
-} from './ProjTipoEstruturaMaterialPageClient';
-
-type ContratoOption = Pick<Contrato, 'id' | 'nome' | 'numero'>;
-
-export type ProjTipoEstruturaTableRow = ProjTipoEstrutura & {
-  contrato?: ContratoOption | null;
-};
+import CatalogoProjetoNomeForm from './CatalogoProjetoNomeForm';
 
 interface Props {
-  initialData?: PaginatedResult<ProjTipoEstruturaTableRow>;
-  initialContratos?: ContratoOption[];
-  initialMaterialData?: ProjTipoEstruturaMaterialPageClientProps['initialData'];
-  initialTiposEstruturaLookup?: ProjTipoEstruturaMaterialPageClientProps['initialTiposEstrutura'];
-  initialMateriais?: ProjTipoEstruturaMaterialPageClientProps['initialMateriais'];
+  initialData?: PaginatedResult<ProjEstrutura>;
 }
 
 export default function ProjTipoEstruturaPageClient({
   initialData,
-  initialContratos = [],
-  initialMaterialData,
-  initialTiposEstruturaLookup = [],
-  initialMateriais = [],
 }: Props) {
-  const controller = useCrudController<ProjTipoEstruturaTableRow>(
-    'proj-tipos-estrutura'
-  );
+  const controller = useCrudController<ProjEstrutura>('proj-tipos-estrutura');
 
-  const contratos = useEntityData<ContratoOption>({
-    key: 'proj-tipos-estrutura-contratos',
-    fetcherAction: unwrapFetcher(listContratosLookup),
-    paginationEnabled: false,
-    initialData: initialContratos,
-    initialParams: {
-      page: 1,
-      pageSize: 1000,
-      orderBy: 'nome',
-      orderDir: 'asc',
-    },
-  });
-
-  const tiposEstrutura = useEntityData<ProjTipoEstruturaTableRow>({
+  const tiposEstrutura = useEntityData<ProjEstrutura>({
     key: 'proj-tipos-estrutura',
     fetcherAction: unwrapFetcher(listProjTiposEstrutura),
     paginationEnabled: true,
@@ -70,13 +34,10 @@ export default function ProjTipoEstruturaPageClient({
       pageSize: 10,
       orderBy: 'id',
       orderDir: 'desc',
-      include: {
-        contrato: true,
-      },
     },
   });
 
-  const handleSubmit = useCrudFormHandler<ProjTipoEstruturaFormData, ProjTipoEstruturaTableRow>({
+  const handleSubmit = useCrudFormHandler({
     controller,
     createAction: createProjTipoEstrutura,
     updateAction: updateProjTipoEstrutura,
@@ -84,7 +45,7 @@ export default function ProjTipoEstruturaPageClient({
     successMessage: 'Tipo de estrutura salvo com sucesso!',
   });
 
-  const columns = useTableColumnsWithActions<ProjTipoEstruturaTableRow>(
+  const columns = useTableColumnsWithActions<ProjEstrutura>(
     [
       {
         title: 'ID',
@@ -94,23 +55,11 @@ export default function ProjTipoEstruturaPageClient({
         width: 80,
       },
       {
-        title: 'Contrato',
-        dataIndex: ['contrato', 'nome'],
-        key: 'contrato',
-        sorter: true,
-        render: (_: unknown, record) =>
-          record.contrato
-            ? record.contrato.numero
-              ? `${record.contrato.nome} (${record.contrato.numero})`
-              : record.contrato.nome
-            : '-',
-      },
-      {
         title: 'Nome',
         dataIndex: 'nome',
         key: 'nome',
         sorter: true,
-        ...getTextFilter<ProjTipoEstruturaTableRow>('nome', 'nome do tipo de estrutura'),
+        ...getTextFilter<ProjEstrutura>('nome', 'nome da estrutura'),
       },
       {
         title: 'Criado em',
@@ -134,53 +83,21 @@ export default function ProjTipoEstruturaPageClient({
   );
 
   return (
-    <div style={{ display: 'grid', gap: 24 }}>
-      <CrudPage
-        title='Tipos de Estrutura'
-        entityKey='proj-tipos-estrutura'
-        controller={controller}
-        entityData={tiposEstrutura}
-        columns={columns}
-        formComponent={(props) => (
-          <ProjTipoEstruturaForm
-            {...props}
-            contratos={contratos.data ?? []}
-          />
-        )}
-        onSubmit={handleSubmit}
-        modalWidth={560}
-        tableHeaderContent={
-          <TableExternalFilters
-            filters={[
-              {
-                label: 'Contrato',
-                placeholder: 'Filtrar por contrato',
-                options:
-                  contratos.data?.map((contrato) => ({
-                    label: contrato.numero
-                      ? `${contrato.nome} (${contrato.numero})`
-                      : contrato.nome,
-                    value: contrato.id,
-                  })) ?? [],
-                onChange: (contratoId) =>
-                  tiposEstrutura.setParams((prev) => ({
-                    ...prev,
-                    contratoId: contratoId ? Number(contratoId) : undefined,
-                    page: 1,
-                  })),
-                loading: contratos.isLoading,
-              },
-            ]}
-          />
-        }
-      />
-
-      <ProjTipoEstruturaMaterialPageClient
-        title='Materiais Padrão por Estrutura'
-        initialData={initialMaterialData}
-        initialTiposEstrutura={initialTiposEstruturaLookup}
-        initialMateriais={initialMateriais}
-      />
-    </div>
+    <CrudPage
+      title='Tipos de Estrutura'
+      entityKey='proj-tipos-estrutura'
+      controller={controller}
+      entityData={tiposEstrutura}
+      columns={columns}
+      formComponent={(props) => (
+        <CatalogoProjetoNomeForm
+          {...props}
+          label='Nome da Estrutura'
+          placeholder='Digite o nome da estrutura (ex: N4, N1+S1)'
+        />
+      )}
+      onSubmit={handleSubmit}
+      modalWidth={500}
+    />
   );
 }

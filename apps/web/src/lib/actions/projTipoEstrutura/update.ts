@@ -17,5 +17,5 @@ export const updateProjTipoEstrutura = async (rawData: unknown) =>
       return service.update(data, session.user.id);
     },
     rawData,
-    { entityName: 'ProjTipoEstrutura', actionType: 'update' }
+    { entityName: 'ProjEstrutura', actionType: 'update' }
   );

@@ -1,4 +1,4 @@
-import { Prisma, ProjTipoEstrutura } from '@nexa-oper/db';
+import { Prisma, ProjEstrutura } from '@nexa-oper/db';
 import { AbstractCrudRepository } from '../../abstracts/AbstractCrudRepository';
 import { prisma } from '../../db/db.service';
 import type { PaginationParams } from '../../types/common';
@@ -8,22 +8,20 @@ import type {
   GenericPrismaWhereInput,
 } from '../../types/prisma';
 
-interface ProjTipoEstruturaFilter extends PaginationParams {
-  contratoId?: number;
-}
+interface ProjTipoEstruturaFilter extends PaginationParams {}
 
 export class ProjTipoEstruturaRepository extends AbstractCrudRepository<
-  ProjTipoEstrutura,
+  ProjEstrutura,
   ProjTipoEstruturaFilter
 > {
   create(
-    data: Prisma.ProjTipoEstruturaCreateInput,
+    data: Prisma.ProjEstruturaCreateInput,
     userId?: string
-  ): Promise<ProjTipoEstrutura> {
-    return prisma.projTipoEstrutura.create({
+  ): Promise<ProjEstrutura> {
+    return prisma.projEstrutura.create({
       data: {
         ...data,
-        createdBy: userId || '',
+        createdBy: userId ?? '',
         createdAt: new Date(),
       },
     });
@@ -31,21 +29,21 @@ export class ProjTipoEstruturaRepository extends AbstractCrudRepository<
 
   update(
     id: number,
-    data: Prisma.ProjTipoEstruturaUpdateInput,
+    data: Prisma.ProjEstruturaUpdateInput,
     userId?: string
-  ): Promise<ProjTipoEstrutura> {
-    return prisma.projTipoEstrutura.update({
+  ): Promise<ProjEstrutura> {
+    return prisma.projEstrutura.update({
       where: { id },
       data: {
         ...data,
-        updatedBy: userId || '',
+        updatedBy: userId ?? '',
         updatedAt: new Date(),
       },
     });
   }
 
-  delete(id: number, userId: string): Promise<ProjTipoEstrutura> {
-    return prisma.projTipoEstrutura.update({
+  delete(id: number, userId: string): Promise<ProjEstrutura> {
+    return prisma.projEstrutura.update({
       where: { id },
       data: {
         deletedAt: new Date(),
@@ -54,28 +52,14 @@ export class ProjTipoEstruturaRepository extends AbstractCrudRepository<
     });
   }
 
-  findById(id: number): Promise<ProjTipoEstrutura | null> {
-    return prisma.projTipoEstrutura.findUnique({
+  findById(id: number): Promise<ProjEstrutura | null> {
+    return prisma.projEstrutura.findUnique({
       where: { id, deletedAt: null },
-      include: this.getDefaultInclude(),
     });
   }
 
   protected getSearchFields(): string[] {
     return ['nome'];
-  }
-
-  protected buildCustomFilters(
-    params: ProjTipoEstruturaFilter,
-    baseWhere: GenericPrismaWhereInput
-  ): GenericPrismaWhereInput {
-    const where = { ...baseWhere };
-
-    if (params.contratoId) {
-      where.contratoId = params.contratoId;
-    }
-
-    return where;
   }
 
   protected async findMany(
@@ -84,23 +68,21 @@ export class ProjTipoEstruturaRepository extends AbstractCrudRepository<
     skip: number,
     take: number,
     include?: GenericPrismaIncludeInput
-  ): Promise<ProjTipoEstrutura[]> {
-    return prisma.projTipoEstrutura.findMany({
+  ): Promise<ProjEstrutura[]> {
+    return prisma.projEstrutura.findMany({
       where,
       orderBy,
       skip,
       take,
-      include: include || this.getDefaultInclude(),
+      include: include ?? this.getDefaultInclude(),
     });
   }
 
   protected async count(where: GenericPrismaWhereInput): Promise<number> {
-    return prisma.projTipoEstrutura.count({ where });
+    return prisma.projEstrutura.count({ where });
   }
 
   protected getDefaultInclude(): GenericPrismaIncludeInput {
-    return {
-      contrato: true,
-    };
+    return undefined;
   }
 }

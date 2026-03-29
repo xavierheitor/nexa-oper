@@ -17,5 +17,5 @@ export const createProjTipoEstrutura = async (rawData: unknown) =>
       return service.create(data, session.user.id);
     },
     rawData,
-    { entityName: 'ProjTipoEstrutura', actionType: 'create' }
+    { entityName: 'ProjEstrutura', actionType: 'create' }
   );

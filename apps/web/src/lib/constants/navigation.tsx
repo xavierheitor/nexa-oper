@@ -223,12 +223,6 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             path: '/dashboard/cadastro/projetos/tipo-ramal',
             requiredPermission: PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW,
           },
-          {
-            key: '/dashboard/cadastro/projetos/motivo-ocorrencia',
-            label: 'Motivos de Ocorrência',
-            path: '/dashboard/cadastro/projetos/motivo-ocorrencia',
-            requiredPermission: PERMISSIONS.PROJETOS_MOTIVOS_OCORRENCIA_VIEW,
-          },
         ],
       },
       {
@@ -477,9 +471,6 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
       PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
       PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
       PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW,
-      PERMISSIONS.PROJETOS_MOTIVOS_OCORRENCIA_VIEW,
-      PERMISSIONS.PROJETOS_MATERIAIS_ESTRUTURA_VIEW,
-      PERMISSIONS.PROJETOS_MATERIAIS_RAMAL_VIEW,
     ],
     children: [
       {

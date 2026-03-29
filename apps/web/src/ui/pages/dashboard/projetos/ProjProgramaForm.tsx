@@ -3,7 +3,7 @@
 import { Button, Form, Input, Select, Spin } from 'antd';
 import { useEffect } from 'react';
 
-export interface ProjTipoEstruturaFormData {
+export interface ProjProgramaFormData {
   contratoId: number;
   nome: string;
 }
@@ -15,19 +15,19 @@ interface ContratoOption {
 }
 
 interface Props {
-  onSubmit: (values: ProjTipoEstruturaFormData) => void | Promise<void>;
-  initialValues?: Partial<ProjTipoEstruturaFormData>;
+  onSubmit: (values: ProjProgramaFormData) => void | Promise<void>;
+  initialValues?: Partial<ProjProgramaFormData>;
   loading?: boolean;
   contratos: ContratoOption[];
 }
 
-export default function ProjTipoEstruturaForm({
+export default function ProjProgramaForm({
   onSubmit,
   initialValues,
   loading = false,
   contratos,
 }: Props) {
-  const [form] = Form.useForm<ProjTipoEstruturaFormData>();
+  const [form] = Form.useForm<ProjProgramaFormData>();
 
   useEffect(() => {
     if (initialValues) {
@@ -69,16 +69,13 @@ export default function ProjTipoEstruturaForm({
 
         <Form.Item
           name='nome'
-          label='Nome do Tipo de Estrutura'
+          label='Nome do Programa'
           rules={[
             { required: true, message: 'Nome é obrigatório' },
             { min: 1, max: 255, message: 'Nome deve ter entre 1 e 255 caracteres' },
           ]}
         >
-          <Input
-            autoFocus
-            placeholder='Digite o nome do tipo de estrutura (ex: N4, N1+S1)'
-          />
+          <Input autoFocus placeholder='Digite o nome do programa' />
         </Form.Item>
 
         <Form.Item>

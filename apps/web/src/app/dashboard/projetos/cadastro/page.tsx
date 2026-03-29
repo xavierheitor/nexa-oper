@@ -1,13 +1,12 @@
-import { Contrato, ProjetoProgramacao } from '@nexa-oper/db';
 import { redirect } from 'next/navigation';
 import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
-import { listProjetoProgramacoes } from '@/lib/actions/projetoProgramacao/list';
+import { listProjProgramas } from '@/lib/actions/projPrograma/list';
+import { listProjProjetos } from '@/lib/actions/projProjeto/list';
+import type { ProjProgramaListItem } from '@/lib/repositories/projetos/ProjProgramaRepository';
+import type { ProjProjetoListItem } from '@/lib/repositories/projetos/ProjProjetoRepository';
 import type { PaginatedResult } from '@/lib/types/common';
-import ProjetoProgramacaoPageClient from '@/ui/pages/dashboard/projetos/ProjetoProgramacaoPageClient';
-
-type ProjetoProgramacaoListItem = ProjetoProgramacao & {
-  contrato: Contrato;
-};
+import ProjetoCadastroPageClient from '@/ui/pages/dashboard/projetos/ProjetoCadastroPageClient';
+import type { Contrato } from '@nexa-oper/db';
 
 interface ContratoOption {
   id: number;
@@ -41,12 +40,29 @@ function mapContratos(input: unknown): ContratoOption[] {
 }
 
 export default async function ProjetoCadastroPage() {
-  const [projetosResult, contratosResult] = await Promise.all([
-    listProjetoProgramacoes({
+  const [
+    projetosResult,
+    programasResult,
+    programasLookupResult,
+    contratosResult,
+  ] = await Promise.all([
+    listProjProjetos({
       page: 1,
       pageSize: 10,
       orderBy: 'id',
       orderDir: 'desc',
+    }),
+    listProjProgramas({
+      page: 1,
+      pageSize: 10,
+      orderBy: 'id',
+      orderDir: 'desc',
+    }),
+    listProjProgramas({
+      page: 1,
+      pageSize: 1000,
+      orderBy: 'nome',
+      orderDir: 'asc',
     }),
     listContratosLookup({
       page: 1,
@@ -56,23 +72,38 @@ export default async function ProjetoCadastroPage() {
     }),
   ]);
 
-  if (projetosResult.redirectToLogin || contratosResult.redirectToLogin) {
+  if (
+    projetosResult.redirectToLogin ||
+    programasResult.redirectToLogin ||
+    programasLookupResult.redirectToLogin ||
+    contratosResult.redirectToLogin
+  ) {
     redirect('/login');
   }
 
-  const initialData: PaginatedResult<ProjetoProgramacaoListItem> | undefined =
+  const initialProjetos: PaginatedResult<ProjProjetoListItem> | undefined =
     projetosResult.success && projetosResult.data
       ? projetosResult.data
       : undefined;
+  const initialProgramas: PaginatedResult<ProjProgramaListItem> | undefined =
+    programasResult.success && programasResult.data
+      ? programasResult.data
+      : undefined;
+  const initialProgramasLookup =
+    programasLookupResult.success && programasLookupResult.data
+      ? (programasLookupResult.data.data as ProjProgramaListItem[])
+      : [];
 
   const contratos = mapContratos(
     contratosResult.success ? contratosResult.data?.data : []
   );
 
   return (
-    <ProjetoProgramacaoPageClient
-      contratos={contratos}
-      initialData={initialData}
+    <ProjetoCadastroPageClient
+      initialContratos={contratos}
+      initialProgramas={initialProgramas}
+      initialProgramasLookup={initialProgramasLookup}
+      initialProjetos={initialProjetos}
     />
   );
 }
