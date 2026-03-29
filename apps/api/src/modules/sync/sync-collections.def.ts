@@ -25,11 +25,11 @@ export const SYNC_DEFINITIONS: SyncCollectionDefInput[] = [
 
   defTable({
     name: 'projeto-tipo-estrutura',
-    model: 'projTipoEstrutura',
+    model: 'projEstrutura',
     mode: 'snapshot',
+    contractField: false,
     select: {
       id: true,
-      contratoId: true,
       nome: true,
       createdAt: true,
       updatedAt: true,

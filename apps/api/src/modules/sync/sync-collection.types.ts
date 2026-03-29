@@ -35,7 +35,7 @@ export type SyncModelName =
   | 'causaImprodutiva'
   | 'veiculo'
   | 'projTipoPoste'
-  | 'projTipoEstrutura'
+  | 'projEstrutura'
   | 'projTipoRamal'
   | 'tipoAtividade'
   | 'tipoAtividadeServico'
@@ -68,7 +68,7 @@ export interface SyncModelSelectMap {
   causaImprodutiva: Prisma.CausaImprodutivaSelect;
   veiculo: Prisma.VeiculoSelect;
   projTipoPoste: Prisma.ProjTipoPosteSelect;
-  projTipoEstrutura: Prisma.ProjTipoEstruturaSelect;
+  projEstrutura: Prisma.ProjEstruturaSelect;
   projTipoRamal: Prisma.ProjTipoRamalSelect;
   tipoAtividade: Prisma.TipoAtividadeSelect;
   tipoAtividadeServico: Prisma.TipoAtividadeServicoSelect;
@@ -102,7 +102,7 @@ export interface SyncModelIncludeMap {
   causaImprodutiva: never;
   veiculo: Prisma.VeiculoInclude;
   projTipoPoste: Prisma.ProjTipoPosteInclude;
-  projTipoEstrutura: Prisma.ProjTipoEstruturaInclude;
+  projEstrutura: Prisma.ProjEstruturaInclude;
   projTipoRamal: Prisma.ProjTipoRamalInclude;
   tipoAtividade: Prisma.TipoAtividadeInclude;
   tipoAtividadeServico: Prisma.TipoAtividadeServicoInclude;

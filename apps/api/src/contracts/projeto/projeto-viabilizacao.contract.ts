@@ -1,8 +1,10 @@
 export type ProjetoViabilizacaoStatusContract =
   | 'PENDENTE'
   | 'EM_VIABILIZACAO'
+  | 'AGUARDANDO_VALIDACAO'
   | 'EM_CORRECAO'
-  | 'VIABILIZADO_PARCIAL';
+  | 'VIABILIZADO_PARCIAL'
+  | 'VIABILIZADO_TOTAL';
 
 export type ProjetoTipoViabilizacaoPendenteContract = 'TOTAL' | 'PARCIAL';
 
@@ -12,63 +14,65 @@ export interface ProjetoContratoResumoContract {
   numero: string;
 }
 
+export interface ProjetoProgramaResumoContract {
+  id: number;
+  nome: string;
+}
+
 export interface ProjetoUltimaViabilizacaoContract {
   id: number;
-  resultado: 'PARCIAL' | 'TOTAL';
-  dataViabilizacao: Date | null;
-  enviadaEm: Date | null;
-  observacao: string | null;
+  data: string;
+  observacao: string;
+  createdAt: Date;
+  updatedAt: Date | null;
 }
 
 export interface ProjetoUltimaValidacaoViabilizacaoContract {
   id: number;
-  resultado: 'APROVADA' | 'CORRIGIDA' | 'REJEITADA';
-  validadaEm: Date;
+  posteId: number;
+  data: Date;
   observacao: string | null;
-}
-
-export interface ProjetoEscopoPosteCadastroContract {
-  id: number;
-  identificador: string;
-  numeroPoste: string;
+  createdAt: Date;
+  updatedAt: Date | null;
 }
 
 export interface ProjetoEscopoPosteEstruturaContract {
   id: number;
-  tipoEstruturaId: number;
+  estruturaId: number;
 }
 
 export interface ProjetoEscopoPosteRamalContract {
   id: number;
   tipoRamalId: number;
-  quantidadePrevista: number;
 }
 
 export interface ProjetoEscopoPosteContract {
   id: number;
-  cadastroPoste: ProjetoEscopoPosteCadastroContract;
-  viabilizacaoId: number | null;
-  validacaoId: number | null;
-  tipoPosteId: number | null;
+  viabilizacaoId: number;
+  tipoPosteId: number;
+  cadastro: string;
+  uuid: string;
   latitude: string | null;
   longitude: string | null;
-  ordem: number | null;
-  observacao: string | null;
   estruturas: ProjetoEscopoPosteEstruturaContract[];
-  ramaisPrevistos: ProjetoEscopoPosteRamalContract[];
+  ramais: ProjetoEscopoPosteRamalContract[];
+  ultimaValidacao: ProjetoUltimaValidacaoViabilizacaoContract | null;
+  createdAt: Date;
+  updatedAt: Date | null;
 }
 
 export interface ProjetoEscopoVaoContract {
   id: number;
-  viabilizacaoId: number | null;
-  validacaoId: number | null;
-  posteOrigemId: number;
-  posteDestinoId: number;
+  viabilizacaoId: number;
+  posteInicioId: number;
+  posteFimId: number;
   materialCondutorId: number;
-  observacao: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
 }
 
 export interface ProjetoEscopoAtualContract {
+  viabilizacaoId: number | null;
   postes: ProjetoEscopoPosteContract[];
   vaos: ProjetoEscopoVaoContract[];
 }
@@ -76,11 +80,11 @@ export interface ProjetoEscopoAtualContract {
 export interface ProjetoParaViabilizacaoContract {
   id: number;
   contrato: ProjetoContratoResumoContract;
+  programa: ProjetoProgramaResumoContract;
   numeroProjeto: string;
   descricao: string;
   equipamento: string;
   municipio: string;
-  observacao: string | null;
   status: ProjetoViabilizacaoStatusContract;
   tipoViabilizacaoPendente: ProjetoTipoViabilizacaoPendenteContract;
   ultimaViabilizacao: ProjetoUltimaViabilizacaoContract | null;

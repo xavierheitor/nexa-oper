@@ -1,13 +1,13 @@
-import {
-  ProjStatusProjeto,
-  type ProjResultadoViabilizacao,
-  type ProjResultadoValidacaoViabilizacao,
-} from '@nexa-oper/db';
+import { ProjStatusProjeto } from '@nexa-oper/db';
 
 import type {
+  ProjetoEscopoAtualContract,
+  ProjetoEscopoPosteContract,
+  ProjetoEscopoVaoContract,
   ListProjetosParaViabilizacaoResponseContract,
   ProjetoParaViabilizacaoContract,
   ProjetoTipoViabilizacaoPendenteContract,
+  ProjetoUltimaValidacaoViabilizacaoContract,
   ProjetoViabilizacaoStatusContract,
 } from '../../contracts/projeto/projeto-viabilizacao.contract';
 import type { PrismaService } from '../../database/prisma.service';
@@ -15,19 +15,24 @@ import type { PrismaService } from '../../database/prisma.service';
 export const MOBILE_VIABILIZACAO_STATUSES = [
   ProjStatusProjeto.PENDENTE,
   ProjStatusProjeto.EM_VIABILIZACAO,
+  ProjStatusProjeto.AGUARDANDO_VALIDACAO,
   ProjStatusProjeto.EM_CORRECAO,
   ProjStatusProjeto.VIABILIZADO_PARCIAL,
+  ProjStatusProjeto.VIABILIZADO_TOTAL,
 ] as const;
 
 const EMPTY_PROJETOS_VIABILIZACAO_ETAG =
-  'p=0|pu=|pd=|v=0|vu=|vd=|vc=|vv=0|vvu=|vvd=|vvc=|vva=|pp=0|ppu=|ppd=|ppc=|pe=0|peu=|ped=|pec=|pr=0|pru=|prd=|prc=|va=0|vau=|vad=|vac=|cp=0|cpu=|cpd=|cpc=';
+  'p=0|pu=|pd=|v=0|vu=|vd=|vc=|vv=0|vvu=|vvd=|vvc=|pp=0|ppu=|ppd=|ppc=|pe=0|peu=|ped=|pec=|pr=0|pru=|prd=|prc=|va=0|vau=|vad=|vac=';
 
 function buildProjetoSyncWhere(contractIds: number[]) {
   return {
     deletedAt: null,
-    contratoId: { in: contractIds },
     status: { in: [...MOBILE_VIABILIZACAO_STATUSES] },
-    contrato: { deletedAt: null },
+    programa: {
+      deletedAt: null,
+      contratoId: { in: contractIds },
+      contrato: { deletedAt: null },
+    },
   };
 }
 
@@ -39,7 +44,7 @@ export async function listProjetosParaViabilizacao(
     return { items: [], total: 0 };
   }
 
-  const projetos = await prisma.projetoProgramacao.findMany({
+  const projetos = await prisma.projProjeto.findMany({
     where: buildProjetoSyncWhere(contractIds),
     select: {
       id: true,
@@ -47,89 +52,91 @@ export async function listProjetosParaViabilizacao(
       descricao: true,
       equipamento: true,
       municipio: true,
-      observacao: true,
       status: true,
       createdAt: true,
       updatedAt: true,
-      contrato: {
+      programa: {
         select: {
           id: true,
           nome: true,
-          numero: true,
+          contrato: {
+            select: {
+              id: true,
+              nome: true,
+              numero: true,
+            },
+          },
         },
       },
       viabilizacoes: {
         where: { deletedAt: null },
-        orderBy: [{ dataViabilizacao: 'desc' }, { createdAt: 'desc' }],
-        take: 1,
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
         select: {
           id: true,
-          resultado: true,
-          dataViabilizacao: true,
-          enviadaEm: true,
+          data: true,
           observacao: true,
-        },
-      },
-      validacoes: {
-        where: { deletedAt: null },
-        orderBy: [{ validadaEm: 'desc' }, { createdAt: 'desc' }],
-        take: 1,
-        select: {
-          id: true,
-          resultado: true,
-          validadaEm: true,
-          observacao: true,
-        },
-      },
-      postes: {
-        where: { deletedAt: null },
-        orderBy: [{ ordem: 'asc' }, { id: 'asc' }],
-        select: {
-          id: true,
-          viabilizacaoId: true,
-          validacaoId: true,
-          tipoPosteId: true,
-          latitude: true,
-          longitude: true,
-          ordem: true,
-          observacao: true,
-          cadastroPoste: {
-            select: {
-              id: true,
-              identificador: true,
-              numeroPoste: true,
-            },
-          },
-          estruturas: {
+          createdAt: true,
+          updatedAt: true,
+          postes: {
             where: { deletedAt: null },
             orderBy: [{ id: 'asc' }],
             select: {
               id: true,
-              tipoEstruturaId: true,
+              viabilizacaoId: true,
+              tipoPosteId: true,
+              cadastro: true,
+              uuid: true,
+              latitude: true,
+              longitude: true,
+              createdAt: true,
+              updatedAt: true,
+              estruturas: {
+                where: { deletedAt: null },
+                orderBy: [{ id: 'asc' }],
+                select: {
+                  id: true,
+                  estruturaId: true,
+                },
+              },
+              ramais: {
+                where: { deletedAt: null },
+                orderBy: [{ id: 'asc' }],
+                select: {
+                  id: true,
+                  tipoRamalId: true,
+                },
+              },
+              projValidacaoViabilizacaos: {
+                where: { deletedAt: null },
+                orderBy: [
+                  { data: 'desc' },
+                  { createdAt: 'desc' },
+                  { id: 'desc' },
+                ],
+                take: 1,
+                select: {
+                  id: true,
+                  data: true,
+                  observacao: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
+              },
             },
           },
-          ramaisPrevistos: {
+          vaos: {
             where: { deletedAt: null },
             orderBy: [{ id: 'asc' }],
             select: {
               id: true,
-              tipoRamalId: true,
-              quantidadePrevista: true,
+              viabilizacaoId: true,
+              posteInicioId: true,
+              posteFimId: true,
+              materialCondutorId: true,
+              createdAt: true,
+              updatedAt: true,
             },
           },
-        },
-      },
-      vaos: {
-        where: { deletedAt: null },
-        orderBy: [{ id: 'asc' }],
-        select: {
-          id: true,
-          viabilizacaoId: true,
-          validacaoId: true,
-          posteOrigemId: true,
-          posteDestinoId: true,
-          materialCondutorId: true,
-          observacao: true,
         },
       },
     },
@@ -137,39 +144,9 @@ export async function listProjetosParaViabilizacao(
   });
 
   const items: ProjetoParaViabilizacaoContract[] = projetos.map((projeto) => {
-    const ultimaViabilizacao = projeto.viabilizacoes[0] ?? null;
-    const ultimaValidacao = projeto.validacoes[0] ?? null;
-    const escopoAtual = {
-      postes: projeto.postes.map((poste) => ({
-        id: poste.id,
-        cadastroPoste: poste.cadastroPoste,
-        viabilizacaoId: poste.viabilizacaoId,
-        validacaoId: poste.validacaoId,
-        tipoPosteId: poste.tipoPosteId,
-        latitude: poste.latitude?.toString() ?? null,
-        longitude: poste.longitude?.toString() ?? null,
-        ordem: poste.ordem,
-        observacao: poste.observacao,
-        estruturas: poste.estruturas.map((estrutura) => ({
-          id: estrutura.id,
-          tipoEstruturaId: estrutura.tipoEstruturaId,
-        })),
-        ramaisPrevistos: poste.ramaisPrevistos.map((ramal) => ({
-          id: ramal.id,
-          tipoRamalId: ramal.tipoRamalId,
-          quantidadePrevista: ramal.quantidadePrevista,
-        })),
-      })),
-      vaos: projeto.vaos.map((vao) => ({
-        id: vao.id,
-        viabilizacaoId: vao.viabilizacaoId,
-        validacaoId: vao.validacaoId,
-        posteOrigemId: vao.posteOrigemId,
-        posteDestinoId: vao.posteDestinoId,
-        materialCondutorId: vao.materialCondutorId,
-        observacao: vao.observacao,
-      })),
-    };
+    const ultimaViabilizacao = projeto.viabilizacoes.at(-1) ?? null;
+    const escopoAtual = buildEscopoAtual(projeto.viabilizacoes);
+    const ultimaValidacao = resolveLatestValidation(escopoAtual.postes);
     const hasEscopoAtual =
       escopoAtual.postes.length > 0 ||
       escopoAtual.vaos.length > 0 ||
@@ -177,34 +154,27 @@ export async function listProjetosParaViabilizacao(
 
     return {
       id: projeto.id,
-      contrato: projeto.contrato,
+      contrato: projeto.programa.contrato,
+      programa: {
+        id: projeto.programa.id,
+        nome: projeto.programa.nome,
+      },
       numeroProjeto: projeto.numeroProjeto,
       descricao: projeto.descricao,
       equipamento: projeto.equipamento,
       municipio: projeto.municipio,
-      observacao: projeto.observacao,
       status: toContractStatus(projeto.status),
-      tipoViabilizacaoPendente: toTipoViabilizacaoPendente(
-        projeto.status,
-        hasEscopoAtual,
-      ),
+      tipoViabilizacaoPendente: toTipoViabilizacaoPendente(hasEscopoAtual),
       ultimaViabilizacao: ultimaViabilizacao
         ? {
             id: ultimaViabilizacao.id,
-            resultado: toResultadoViabilizacao(ultimaViabilizacao.resultado),
-            dataViabilizacao: ultimaViabilizacao.dataViabilizacao,
-            enviadaEm: ultimaViabilizacao.enviadaEm,
+            data: ultimaViabilizacao.data,
             observacao: ultimaViabilizacao.observacao,
+            createdAt: ultimaViabilizacao.createdAt,
+            updatedAt: ultimaViabilizacao.updatedAt,
           }
         : null,
-      ultimaValidacao: ultimaValidacao
-        ? {
-            id: ultimaValidacao.id,
-            resultado: toResultadoValidacao(ultimaValidacao.resultado),
-            validadaEm: ultimaValidacao.validadaEm,
-            observacao: ultimaValidacao.observacao,
-          }
-        : null,
+      ultimaValidacao,
       escopoAtual,
       createdAt: projeto.createdAt,
       updatedAt: projeto.updatedAt,
@@ -244,9 +214,8 @@ async function getProjetosParaViabilizacaoAggregates(
     postesEstruturasAgg,
     postesRamaisAgg,
     vaosAgg,
-    cadastroPostesAgg,
   ] = await Promise.all([
-    prisma.projetoProgramacao.aggregate({
+    prisma.projProjeto.aggregate({
       where: projetoWhere,
       _count: { id: true },
       _max: { updatedAt: true, deletedAt: true },
@@ -262,28 +231,21 @@ async function getProjetosParaViabilizacaoAggregates(
     prisma.projValidacaoViabilizacao.aggregate({
       where: {
         deletedAt: null,
-        projeto: projetoWhere,
-      },
-      _count: { id: true },
-      _max: {
-        createdAt: true,
-        updatedAt: true,
-        deletedAt: true,
-        validadaEm: true,
-      },
-    }),
-    prisma.projPoste.aggregate({
-      where: {
-        deletedAt: null,
-        projeto: projetoWhere,
+        poste: {
+          deletedAt: null,
+          viabilizacao: {
+            deletedAt: null,
+            projeto: projetoWhere,
+          },
+        },
       },
       _count: { id: true },
       _max: { createdAt: true, updatedAt: true, deletedAt: true },
     }),
-    prisma.projPosteEstrutura.aggregate({
+    prisma.projPoste.aggregate({
       where: {
         deletedAt: null,
-        poste: {
+        viabilizacao: {
           deletedAt: null,
           projeto: projetoWhere,
         },
@@ -291,12 +253,29 @@ async function getProjetosParaViabilizacaoAggregates(
       _count: { id: true },
       _max: { createdAt: true, updatedAt: true, deletedAt: true },
     }),
-    prisma.projPosteRamal.aggregate({
+    prisma.projPosteEstruturas.aggregate({
       where: {
         deletedAt: null,
         poste: {
           deletedAt: null,
-          projeto: projetoWhere,
+          viabilizacao: {
+            deletedAt: null,
+            projeto: projetoWhere,
+          },
+        },
+      },
+      _count: { id: true },
+      _max: { createdAt: true, updatedAt: true, deletedAt: true },
+    }),
+    prisma.projPosteRamais.aggregate({
+      where: {
+        deletedAt: null,
+        poste: {
+          deletedAt: null,
+          viabilizacao: {
+            deletedAt: null,
+            projeto: projetoWhere,
+          },
         },
       },
       _count: { id: true },
@@ -305,19 +284,9 @@ async function getProjetosParaViabilizacaoAggregates(
     prisma.projVao.aggregate({
       where: {
         deletedAt: null,
-        projeto: projetoWhere,
-      },
-      _count: { id: true },
-      _max: { createdAt: true, updatedAt: true, deletedAt: true },
-    }),
-    prisma.projCadastroPoste.aggregate({
-      where: {
-        deletedAt: null,
-        projetoPostes: {
-          some: {
-            deletedAt: null,
-            projeto: projetoWhere,
-          },
+        viabilizacao: {
+          deletedAt: null,
+          projeto: projetoWhere,
         },
       },
       _count: { id: true },
@@ -333,7 +302,6 @@ async function getProjetosParaViabilizacaoAggregates(
     postesEstruturasAgg,
     postesRamaisAgg,
     vaosAgg,
-    cadastroPostesAgg,
   };
 }
 
@@ -345,7 +313,6 @@ function formatProjetosParaViabilizacaoEtag(aggregates: {
   postesEstruturasAgg: AggregateWithIdCount;
   postesRamaisAgg: AggregateWithIdCount;
   vaosAgg: AggregateWithIdCount;
-  cadastroPostesAgg: AggregateWithIdCount;
 }): string {
   const {
     projetosAgg,
@@ -355,7 +322,6 @@ function formatProjetosParaViabilizacaoEtag(aggregates: {
     postesEstruturasAgg,
     postesRamaisAgg,
     vaosAgg,
-    cadastroPostesAgg,
   } = aggregates;
 
   return [
@@ -370,7 +336,6 @@ function formatProjetosParaViabilizacaoEtag(aggregates: {
     `vvu=${readAggMaxIso(validacoesAgg, 'updatedAt')}`,
     `vvd=${readAggMaxIso(validacoesAgg, 'deletedAt')}`,
     `vvc=${readAggMaxIso(validacoesAgg, 'createdAt')}`,
-    `vva=${readAggMaxIso(validacoesAgg, 'validadaEm')}`,
     `pp=${readAggIdCount(postesAgg)}`,
     `ppu=${readAggMaxIso(postesAgg, 'updatedAt')}`,
     `ppd=${readAggMaxIso(postesAgg, 'deletedAt')}`,
@@ -387,10 +352,6 @@ function formatProjetosParaViabilizacaoEtag(aggregates: {
     `vau=${readAggMaxIso(vaosAgg, 'updatedAt')}`,
     `vad=${readAggMaxIso(vaosAgg, 'deletedAt')}`,
     `vac=${readAggMaxIso(vaosAgg, 'createdAt')}`,
-    `cp=${readAggIdCount(cadastroPostesAgg)}`,
-    `cpu=${readAggMaxIso(cadastroPostesAgg, 'updatedAt')}`,
-    `cpd=${readAggMaxIso(cadastroPostesAgg, 'deletedAt')}`,
-    `cpc=${readAggMaxIso(cadastroPostesAgg, 'createdAt')}`,
   ].join('|');
 }
 
@@ -405,26 +366,273 @@ function readAggIdCount(agg: AggregateWithIdCount): number {
   return agg._count?.id ?? 0;
 }
 
-function readAggMaxIso(
-  agg: AggregateWithIdCount,
-  key: string,
-): string {
+function readAggMaxIso(agg: AggregateWithIdCount, key: string): string {
   return agg._max?.[key]?.toISOString() ?? '';
 }
 
-function toTipoViabilizacaoPendente(
-  status: ProjStatusProjeto,
-  hasEscopoAtual: boolean,
-): ProjetoTipoViabilizacaoPendenteContract {
-  if (
-    status === ProjStatusProjeto.VIABILIZADO_PARCIAL ||
-    status === ProjStatusProjeto.EM_CORRECAO ||
-    hasEscopoAtual
-  ) {
-    return 'PARCIAL';
+function resolveLatestValidation(
+  postes: ProjetoEscopoPosteContract[],
+): ProjetoUltimaValidacaoViabilizacaoContract | null {
+  const latest = postes
+    .flatMap((poste) => (poste.ultimaValidacao ? [poste.ultimaValidacao] : []))
+    .sort((left, right) => {
+      const byData = right.data.getTime() - left.data.getTime();
+      if (byData !== 0) {
+        return byData;
+      }
+
+      const byCreatedAt = right.createdAt.getTime() - left.createdAt.getTime();
+      if (byCreatedAt !== 0) {
+        return byCreatedAt;
+      }
+
+      return right.id - left.id;
+    })[0];
+
+  if (!latest) {
+    return null;
   }
 
-  return 'TOTAL';
+  return {
+    id: latest.id,
+    posteId: latest.posteId,
+    data: latest.data,
+    observacao: latest.observacao,
+    createdAt: latest.createdAt,
+    updatedAt: latest.updatedAt,
+  };
+}
+
+type RawProjetoViabilizacao = {
+  id: number;
+  data: string;
+  observacao: string;
+  createdAt: Date;
+  updatedAt: Date | null;
+  postes: RawProjetoPoste[];
+  vaos: RawProjetoVao[];
+};
+
+type RawProjetoPoste = {
+  id: number;
+  viabilizacaoId: number;
+  tipoPosteId: number;
+  cadastro: string;
+  uuid: string;
+  latitude: { toString(): string } | null;
+  longitude: { toString(): string } | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+  estruturas: Array<{
+    id: number;
+    estruturaId: number;
+  }>;
+  ramais: Array<{
+    id: number;
+    tipoRamalId: number;
+  }>;
+  projValidacaoViabilizacaos: Array<{
+    id: number;
+    data: Date;
+    observacao: string | null;
+    createdAt: Date;
+    updatedAt: Date | null;
+  }>;
+};
+
+type RawProjetoVao = {
+  id: number;
+  viabilizacaoId: number;
+  posteInicioId: number;
+  posteFimId: number;
+  materialCondutorId: number;
+  createdAt: Date;
+  updatedAt: Date | null;
+};
+
+function buildEscopoAtual(
+  viabilizacoes: RawProjetoViabilizacao[],
+): ProjetoEscopoAtualContract {
+  if (viabilizacoes.length === 0) {
+    return {
+      viabilizacaoId: null,
+      postes: [],
+      vaos: [],
+    };
+  }
+
+  const canonicalPosteByLookupKey = new Map<string, string>();
+  const canonicalPosteByRawId = new Map<number, string>();
+  const postesByCanonicalKey = new Map<string, ProjetoEscopoPosteContract>();
+
+  for (const viabilizacao of viabilizacoes) {
+    for (const poste of viabilizacao.postes) {
+      const canonicalKey = resolveCanonicalPosteKey(
+        poste,
+        canonicalPosteByLookupKey,
+      );
+
+      canonicalPosteByRawId.set(poste.id, canonicalKey);
+      postesByCanonicalKey.set(canonicalKey, mapPosteToEscopo(poste));
+    }
+  }
+
+  const vaosByCanonicalKey = new Map<string, ProjetoEscopoVaoContract>();
+
+  for (const viabilizacao of viabilizacoes) {
+    for (const vao of viabilizacao.vaos) {
+      const posteInicioCanonical =
+        canonicalPosteByRawId.get(vao.posteInicioId) ??
+        buildPosteIdFallbackKey(vao.posteInicioId);
+      const posteFimCanonical =
+        canonicalPosteByRawId.get(vao.posteFimId) ??
+        buildPosteIdFallbackKey(vao.posteFimId);
+
+      const posteInicioAtualId =
+        postesByCanonicalKey.get(posteInicioCanonical)?.id ?? vao.posteInicioId;
+      const posteFimAtualId =
+        postesByCanonicalKey.get(posteFimCanonical)?.id ?? vao.posteFimId;
+
+      vaosByCanonicalKey.set(
+        buildCanonicalVaoKey(posteInicioCanonical, posteFimCanonical),
+        mapVaoToEscopo(vao, posteInicioAtualId, posteFimAtualId),
+      );
+    }
+  }
+
+  return {
+    viabilizacaoId: viabilizacoes.at(-1)?.id ?? null,
+    postes: [...postesByCanonicalKey.values()].sort(sortEscopoPostes),
+    vaos: [...vaosByCanonicalKey.values()].sort(sortEscopoVaos),
+  };
+}
+
+function resolveCanonicalPosteKey(
+  poste: RawProjetoPoste,
+  canonicalPosteByLookupKey: Map<string, string>,
+): string {
+  const candidateKeys = buildPosteLookupKeys(poste);
+  const existingCanonical = candidateKeys
+    .map((key) => canonicalPosteByLookupKey.get(key))
+    .find((value): value is string => value !== undefined);
+  const canonicalKey =
+    existingCanonical ?? candidateKeys[0] ?? buildPosteIdFallbackKey(poste.id);
+
+  for (const key of candidateKeys) {
+    canonicalPosteByLookupKey.set(key, canonicalKey);
+  }
+
+  return canonicalKey;
+}
+
+function buildPosteLookupKeys(poste: RawProjetoPoste): string[] {
+  const uuidKey = normalizeText(poste.uuid);
+  const cadastroKey = normalizeText(poste.cadastro);
+  const keys = [
+    uuidKey ? `uuid:${uuidKey}` : null,
+    cadastroKey ? `cadastro:${cadastroKey}` : null,
+    buildPosteIdFallbackKey(poste.id),
+  ].filter((value): value is string => value !== null);
+
+  return [...new Set(keys)];
+}
+
+function buildPosteIdFallbackKey(posteId: number): string {
+  return `poste-id:${posteId}`;
+}
+
+function buildCanonicalVaoKey(
+  posteInicioCanonical: string,
+  posteFimCanonical: string,
+): string {
+  return [posteInicioCanonical, posteFimCanonical].sort().join('|');
+}
+
+function mapPosteToEscopo(poste: RawProjetoPoste): ProjetoEscopoPosteContract {
+  const ultimaValidacao = poste.projValidacaoViabilizacaos[0] ?? null;
+
+  return {
+    id: poste.id,
+    viabilizacaoId: poste.viabilizacaoId,
+    tipoPosteId: poste.tipoPosteId,
+    cadastro: poste.cadastro,
+    uuid: poste.uuid,
+    latitude: poste.latitude?.toString() ?? null,
+    longitude: poste.longitude?.toString() ?? null,
+    estruturas: poste.estruturas.map((estrutura) => ({
+      id: estrutura.id,
+      estruturaId: estrutura.estruturaId,
+    })),
+    ramais: poste.ramais.map((ramal) => ({
+      id: ramal.id,
+      tipoRamalId: ramal.tipoRamalId,
+    })),
+    ultimaValidacao: ultimaValidacao
+      ? {
+          id: ultimaValidacao.id,
+          posteId: poste.id,
+          data: ultimaValidacao.data,
+          observacao: ultimaValidacao.observacao,
+          createdAt: ultimaValidacao.createdAt,
+          updatedAt: ultimaValidacao.updatedAt,
+        }
+      : null,
+    createdAt: poste.createdAt,
+    updatedAt: poste.updatedAt,
+  };
+}
+
+function mapVaoToEscopo(
+  vao: RawProjetoVao,
+  posteInicioId: number,
+  posteFimId: number,
+): ProjetoEscopoVaoContract {
+  return {
+    id: vao.id,
+    viabilizacaoId: vao.viabilizacaoId,
+    posteInicioId,
+    posteFimId,
+    materialCondutorId: vao.materialCondutorId,
+    createdAt: vao.createdAt,
+    updatedAt: vao.updatedAt,
+  };
+}
+
+function normalizeText(value: string): string | null {
+  const normalized = value.trim();
+  if (normalized.length === 0) {
+    return null;
+  }
+
+  return normalized.toUpperCase();
+}
+
+function sortEscopoPostes(
+  left: ProjetoEscopoPosteContract,
+  right: ProjetoEscopoPosteContract,
+): number {
+  return (
+    left.cadastro.localeCompare(right.cadastro) ||
+    left.uuid.localeCompare(right.uuid) ||
+    left.id - right.id
+  );
+}
+
+function sortEscopoVaos(
+  left: ProjetoEscopoVaoContract,
+  right: ProjetoEscopoVaoContract,
+): number {
+  return (
+    left.posteInicioId - right.posteInicioId ||
+    left.posteFimId - right.posteFimId ||
+    left.id - right.id
+  );
+}
+
+function toTipoViabilizacaoPendente(
+  hasEscopoAtual: boolean,
+): ProjetoTipoViabilizacaoPendenteContract {
+  return hasEscopoAtual ? 'PARCIAL' : 'TOTAL';
 }
 
 function toContractStatus(
@@ -435,23 +643,15 @@ function toContractStatus(
       return 'PENDENTE';
     case ProjStatusProjeto.EM_VIABILIZACAO:
       return 'EM_VIABILIZACAO';
+    case ProjStatusProjeto.AGUARDANDO_VALIDACAO:
+      return 'AGUARDANDO_VALIDACAO';
     case ProjStatusProjeto.EM_CORRECAO:
       return 'EM_CORRECAO';
     case ProjStatusProjeto.VIABILIZADO_PARCIAL:
       return 'VIABILIZADO_PARCIAL';
+    case ProjStatusProjeto.VIABILIZADO_TOTAL:
+      return 'VIABILIZADO_TOTAL';
     default:
       return 'PENDENTE';
   }
-}
-
-function toResultadoViabilizacao(
-  resultado: ProjResultadoViabilizacao,
-): 'PARCIAL' | 'TOTAL' {
-  return resultado === 'PARCIAL' ? 'PARCIAL' : 'TOTAL';
-}
-
-function toResultadoValidacao(
-  resultado: ProjResultadoValidacaoViabilizacao,
-): 'APROVADA' | 'CORRIGIDA' | 'REJEITADA' {
-  return resultado;
 }

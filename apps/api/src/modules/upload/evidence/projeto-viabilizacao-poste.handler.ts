@@ -1,8 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import {
-  ProjAlvoEvidencia,
-  ProjTipoEvidencia,
-} from '@nexa-oper/db';
 
 import { AppError } from '../../../core/errors/app-error';
 import { PrismaService } from '../../../database/prisma.service';
@@ -72,7 +68,9 @@ export class ProjetoViabilizacaoPosteEvidenceHandler
       },
     });
 
-    if (!existing) {return null;}
+    if (!existing) {
+      return null;
+    }
 
     return normalizeStoredUploadResult({
       url: existing.url,
@@ -152,16 +150,15 @@ export class ProjetoViabilizacaoPosteEvidenceHandler
 
     await this.linkService.upsertFromEvidence({
       uploadEvidenceId: evidence.id,
-      ctx,
+      ctx: {
+        ...ctx,
+        metadata: {
+          ...ctx.metadata,
+          projetoId: String(target.projetoId),
+          viabilizacaoId: String(target.viabilizacaoId),
+        },
+      },
       createdBy: 'system',
-    });
-
-    await this.ensureProjEvidencia({
-      target,
-      uploadPath: evidence.path,
-      latitude: this.parseOptionalDecimal(ctx.metadata?.['latitude']),
-      longitude: this.parseOptionalDecimal(ctx.metadata?.['longitude']),
-      observacao: this.readString(ctx.metadata?.['observacao']),
     });
 
     return normalizeStoredUploadResult({
@@ -181,23 +178,24 @@ export class ProjetoViabilizacaoPosteEvidenceHandler
       where: {
         id: posteId,
         deletedAt: null,
-        projeto: { deletedAt: null },
+        viabilizacao: {
+          deletedAt: null,
+          projeto: { deletedAt: null },
+        },
       },
       select: {
         id: true,
-        projetoId: true,
         viabilizacaoId: true,
+        viabilizacao: {
+          select: {
+            projetoId: true,
+          },
+        },
       },
     });
 
     if (!poste) {
       throw AppError.notFound('Poste do projeto não encontrado para upload');
-    }
-
-    if (poste.viabilizacaoId === null) {
-      throw AppError.validation(
-        'Poste informado ainda não está vinculado a uma viabilização',
-      );
     }
 
     const metadataViabilizacaoId = this.parseOptionalInt(
@@ -214,49 +212,9 @@ export class ProjetoViabilizacaoPosteEvidenceHandler
 
     return {
       posteId: poste.id,
-      projetoId: poste.projetoId,
+      projetoId: poste.viabilizacao.projetoId,
       viabilizacaoId: poste.viabilizacaoId,
     };
-  }
-
-  private async ensureProjEvidencia(params: {
-    target: PosteViabilizacaoTarget;
-    uploadPath: string;
-    latitude: string | null;
-    longitude: string | null;
-    observacao: string | null;
-  }): Promise<void> {
-    const existing = await this.prisma.projEvidencia.findFirst({
-      where: {
-        projetoId: params.target.projetoId,
-        viabilizacaoId: params.target.viabilizacaoId,
-        posteId: params.target.posteId,
-        alvoTipo: ProjAlvoEvidencia.POSTE,
-        tipo: ProjTipoEvidencia.FOTO,
-        arquivo: params.uploadPath,
-        deletedAt: null,
-      },
-      select: { id: true },
-    });
-
-    if (existing) {
-      return;
-    }
-
-    await this.prisma.projEvidencia.create({
-      data: {
-        projetoId: params.target.projetoId,
-        viabilizacaoId: params.target.viabilizacaoId,
-        posteId: params.target.posteId,
-        alvoTipo: ProjAlvoEvidencia.POSTE,
-        tipo: ProjTipoEvidencia.FOTO,
-        arquivo: params.uploadPath,
-        latitude: params.latitude,
-        longitude: params.longitude,
-        observacao: params.observacao,
-        createdBy: 'system',
-      },
-    });
   }
 
   private buildIdempotencyKey(
@@ -282,32 +240,13 @@ export class ProjetoViabilizacaoPosteEvidenceHandler
 
     if (typeof value === 'string') {
       const trimmed = value.trim();
-      if (!/^\d+$/.test(trimmed)) {return null;}
+      if (!/^\d+$/.test(trimmed)) {
+        return null;
+      }
       const parsed = Number.parseInt(trimmed, 10);
       return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null;
     }
 
     return null;
-  }
-
-  private parseOptionalDecimal(value: unknown): string | null {
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      return value.toString();
-    }
-
-    if (typeof value === 'string') {
-      const trimmed = value.trim();
-      if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
-        return trimmed;
-      }
-    }
-
-    return null;
-  }
-
-  private readString(value: unknown): string | null {
-    if (typeof value !== 'string') {return null;}
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : null;
   }
 }

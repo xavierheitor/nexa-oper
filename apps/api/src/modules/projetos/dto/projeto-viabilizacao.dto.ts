@@ -16,33 +16,36 @@ export class ProjetoContratoResumoDto {
   numero!: string;
 }
 
+export class ProjetoProgramaResumoDto {
+  @ApiProperty({ description: 'ID do programa do projeto' })
+  id!: number;
+
+  @ApiProperty({ description: 'Nome do programa do projeto' })
+  nome!: string;
+}
+
 export class ProjetoUltimaViabilizacaoDto {
   @ApiProperty({ description: 'ID da viabilização' })
   id!: number;
 
   @ApiProperty({
-    description: 'Resultado da última viabilização registrada',
-    enum: ['PARCIAL', 'TOTAL'],
+    description: 'Data informada para a viabilização mais recente',
   })
-  resultado!: 'PARCIAL' | 'TOTAL';
+  data!: string;
 
   @ApiProperty({
-    description: 'Data da coleta em campo',
-    nullable: true,
+    description: 'Observação registrada na viabilização mais recente',
   })
-  dataViabilizacao!: Date | null;
+  observacao!: string;
+
+  @ApiProperty({ description: 'Data de criação da viabilização' })
+  createdAt!: Date;
 
   @ApiProperty({
-    description: 'Data em que a viabilização foi enviada pelo app',
+    description: 'Data da última atualização da viabilização',
     nullable: true,
   })
-  enviadaEm!: Date | null;
-
-  @ApiProperty({
-    description: 'Observação registrada na última viabilização',
-    nullable: true,
-  })
-  observacao!: string | null;
+  updatedAt!: Date | null;
 }
 
 export class ProjetoUltimaValidacaoViabilizacaoDto {
@@ -50,51 +53,45 @@ export class ProjetoUltimaValidacaoViabilizacaoDto {
   id!: number;
 
   @ApiProperty({
-    description: 'Resultado da última validação registrada',
-    enum: ['APROVADA', 'CORRIGIDA', 'REJEITADA'],
+    description: 'Poste ao qual a validação está vinculada',
   })
-  resultado!: 'APROVADA' | 'CORRIGIDA' | 'REJEITADA';
+  posteId!: number;
 
   @ApiProperty({
-    description: 'Data em que a validação foi concluída',
+    description: 'Data registrada para a validação',
   })
-  validadaEm!: Date;
+  data!: Date;
 
   @ApiProperty({
     description: 'Observação registrada na validação',
     nullable: true,
   })
   observacao!: string | null;
-}
 
-export class ProjetoEscopoPosteCadastroDto {
-  @ApiProperty({ description: 'ID do cadastro mestre do poste' })
-  id!: number;
+  @ApiProperty({ description: 'Data de criação da validação' })
+  createdAt!: Date;
 
-  @ApiProperty({ description: 'Identificador estável do poste' })
-  identificador!: string;
-
-  @ApiProperty({ description: 'Número atual do poste na distribuidora' })
-  numeroPoste!: string;
+  @ApiProperty({
+    description: 'Data da última atualização da validação',
+    nullable: true,
+  })
+  updatedAt!: Date | null;
 }
 
 export class ProjetoEscopoPosteEstruturaDto {
   @ApiProperty({ description: 'ID da relação poste x estrutura' })
   id!: number;
 
-  @ApiProperty({ description: 'Tipo de estrutura do poste' })
-  tipoEstruturaId!: number;
+  @ApiProperty({ description: 'ID da estrutura vinculada ao poste' })
+  estruturaId!: number;
 }
 
 export class ProjetoEscopoPosteRamalDto {
   @ApiProperty({ description: 'ID da relação poste x ramal' })
   id!: number;
 
-  @ApiProperty({ description: 'Tipo de ramal previsto no poste' })
+  @ApiProperty({ description: 'ID do tipo de ramal vinculado ao poste' })
   tipoRamalId!: number;
-
-  @ApiProperty({ description: 'Quantidade prevista desse tipo de ramal' })
-  quantidadePrevista!: number;
 }
 
 export class ProjetoEscopoPosteDto {
@@ -102,28 +99,24 @@ export class ProjetoEscopoPosteDto {
   id!: number;
 
   @ApiProperty({
-    description: 'Cadastro mestre associado ao poste',
-    type: ProjetoEscopoPosteCadastroDto,
+    description: 'Viabilização que gerou a versão atual do poste',
   })
-  cadastroPoste!: ProjetoEscopoPosteCadastroDto;
-
-  @ApiProperty({
-    description: 'Viabilização que levantou a versão atual do poste',
-    nullable: true,
-  })
-  viabilizacaoId!: number | null;
-
-  @ApiProperty({
-    description: 'Validação que aprovou a versão atual do poste',
-    nullable: true,
-  })
-  validacaoId!: number | null;
+  viabilizacaoId!: number;
 
   @ApiProperty({
     description: 'Tipo de poste levantado',
-    nullable: true,
   })
-  tipoPosteId!: number | null;
+  tipoPosteId!: number;
+
+  @ApiProperty({
+    description: 'Cadastro informado para o poste',
+  })
+  cadastro!: string;
+
+  @ApiProperty({
+    description: 'UUID estável do poste para continuidade do levantamento',
+  })
+  uuid!: string;
 
   @ApiProperty({
     description: 'Latitude do poste no projeto',
@@ -138,28 +131,32 @@ export class ProjetoEscopoPosteDto {
   longitude!: string | null;
 
   @ApiProperty({
-    description: 'Ordem lógica do poste no levantamento',
-    nullable: true,
-  })
-  ordem!: number | null;
-
-  @ApiProperty({
-    description: 'Observação técnica do poste',
-    nullable: true,
-  })
-  observacao!: string | null;
-
-  @ApiProperty({
     description: 'Estruturas levantadas no poste',
     type: [ProjetoEscopoPosteEstruturaDto],
   })
   estruturas!: ProjetoEscopoPosteEstruturaDto[];
 
   @ApiProperty({
-    description: 'Quantidades de ramais previstas no poste',
+    description: 'Ramais levantados no poste',
     type: [ProjetoEscopoPosteRamalDto],
   })
-  ramaisPrevistos!: ProjetoEscopoPosteRamalDto[];
+  ramais!: ProjetoEscopoPosteRamalDto[];
+
+  @ApiProperty({
+    description: 'Última validação associada ao poste',
+    type: ProjetoUltimaValidacaoViabilizacaoDto,
+    nullable: true,
+  })
+  ultimaValidacao!: ProjetoUltimaValidacaoViabilizacaoDto | null;
+
+  @ApiProperty({ description: 'Data de criação do poste' })
+  createdAt!: Date;
+
+  @ApiProperty({
+    description: 'Data da última atualização do poste',
+    nullable: true,
+  })
+  updatedAt!: Date | null;
 }
 
 export class ProjetoEscopoVaoDto {
@@ -167,34 +164,37 @@ export class ProjetoEscopoVaoDto {
   id!: number;
 
   @ApiProperty({
-    description: 'Viabilização que levantou a versão atual do vão',
-    nullable: true,
+    description: 'Viabilização que gerou a versão atual do vão',
   })
-  viabilizacaoId!: number | null;
+  viabilizacaoId!: number;
 
-  @ApiProperty({
-    description: 'Validação que aprovou a versão atual do vão',
-    nullable: true,
-  })
-  validacaoId!: number | null;
+  @ApiProperty({ description: 'Poste inicial do vão' })
+  posteInicioId!: number;
 
-  @ApiProperty({ description: 'Poste de origem do vão' })
-  posteOrigemId!: number;
-
-  @ApiProperty({ description: 'Poste de destino do vão' })
-  posteDestinoId!: number;
+  @ApiProperty({ description: 'Poste final do vão' })
+  posteFimId!: number;
 
   @ApiProperty({ description: 'Material condutor informado para o vão' })
   materialCondutorId!: number;
 
+  @ApiProperty({ description: 'Data de criação do vão' })
+  createdAt!: Date;
+
   @ApiProperty({
-    description: 'Observação técnica do vão',
+    description: 'Data da última atualização do vão',
     nullable: true,
   })
-  observacao!: string | null;
+  updatedAt!: Date | null;
 }
 
 export class ProjetoEscopoAtualDto {
+  @ApiProperty({
+    description:
+      'Viabilização que representa o escopo técnico atual do projeto',
+    nullable: true,
+  })
+  viabilizacaoId!: number | null;
+
   @ApiProperty({
     description: 'Postes já persistidos no escopo técnico atual do projeto',
     type: [ProjetoEscopoPosteDto],
@@ -218,6 +218,12 @@ export class ProjetoParaViabilizacaoDto {
   })
   contrato!: ProjetoContratoResumoDto;
 
+  @ApiProperty({
+    description: 'Programa ao qual o projeto pertence',
+    type: ProjetoProgramaResumoDto,
+  })
+  programa!: ProjetoProgramaResumoDto;
+
   @ApiProperty({ description: 'Número do projeto' })
   numeroProjeto!: string;
 
@@ -231,20 +237,21 @@ export class ProjetoParaViabilizacaoDto {
   municipio!: string;
 
   @ApiProperty({
-    description: 'Observações administrativas do projeto',
-    nullable: true,
-  })
-  observacao!: string | null;
-
-  @ApiProperty({
     description: 'Status macro atual do projeto',
-    enum: ['PENDENTE', 'EM_VIABILIZACAO', 'EM_CORRECAO', 'VIABILIZADO_PARCIAL'],
+    enum: [
+      'PENDENTE',
+      'EM_VIABILIZACAO',
+      'AGUARDANDO_VALIDACAO',
+      'EM_CORRECAO',
+      'VIABILIZADO_PARCIAL',
+      'VIABILIZADO_TOTAL',
+    ],
   })
   status!: ProjetoViabilizacaoStatusContract;
 
   @ApiProperty({
     description:
-      'Tipo de viabilização ainda necessária no mobile: TOTAL para projeto ainda sem escopo persistido, PARCIAL para continuidade ou correção do levantamento já iniciado',
+      'TOTAL quando o projeto ainda não tem escopo persistido; PARCIAL quando já existe viabilização cadastrada para continuidade ou correção',
     enum: ['TOTAL', 'PARCIAL'],
   })
   tipoViabilizacaoPendente!: ProjetoTipoViabilizacaoPendenteContract;
@@ -257,7 +264,7 @@ export class ProjetoParaViabilizacaoDto {
   ultimaViabilizacao!: ProjetoUltimaViabilizacaoDto | null;
 
   @ApiProperty({
-    description: 'Última validação/correção registrada para o projeto',
+    description: 'Última validação encontrada no escopo atual do projeto',
     type: ProjetoUltimaValidacaoViabilizacaoDto,
     nullable: true,
   })
@@ -265,7 +272,7 @@ export class ProjetoParaViabilizacaoDto {
 
   @ApiProperty({
     description:
-      'Escopo técnico atual já persistido para permitir continuidade da viabilização parcial ou correção em campo',
+      'Escopo técnico atual persistido para permitir continuidade da viabilização, correção ou simples reabertura do projeto no app',
     type: ProjetoEscopoAtualDto,
   })
   escopoAtual!: ProjetoEscopoAtualDto;
@@ -282,7 +289,7 @@ export class ProjetoParaViabilizacaoDto {
 
 export class ListProjetosParaViabilizacaoResponseDto {
   @ApiProperty({
-    description: 'Projetos ainda elegíveis para viabilização no mobile',
+    description: 'Projetos sincronizados para o mobile',
     type: [ProjetoParaViabilizacaoDto],
   })
   items!: ProjetoParaViabilizacaoDto[];
