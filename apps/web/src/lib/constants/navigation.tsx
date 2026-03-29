@@ -206,6 +206,12 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
         icon: <AppstoreOutlined />,
         children: [
           {
+            key: '/dashboard/cadastro/projetos/programas',
+            label: 'Programas',
+            path: '/dashboard/cadastro/projetos/programas',
+            requiredPermission: PERMISSIONS.PROJECTS_VIEW,
+          },
+          {
             key: '/dashboard/cadastro/projetos/tipo-poste',
             label: 'Tipos de Poste',
             path: '/dashboard/cadastro/projetos/tipo-poste',

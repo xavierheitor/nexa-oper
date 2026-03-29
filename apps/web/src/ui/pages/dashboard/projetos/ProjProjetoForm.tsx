@@ -18,15 +18,12 @@ export const PROJECT_STATUS_OPTIONS = [
   { value: 'CANCELADO', label: 'Cancelado' },
 ] as const;
 
-export type ProjectStatusValue = (typeof PROJECT_STATUS_OPTIONS)[number]['value'];
-
 export interface ProjProjetoFormData {
   programaId: number;
   numeroProjeto: string;
   descricao: string;
   equipamento: string;
   municipio: string;
-  status: ProjectStatusValue;
 }
 
 interface ProgramaOption {
@@ -60,9 +57,6 @@ export default function ProjProjetoForm({
     }
 
     form.resetFields();
-    form.setFieldsValue({
-      status: 'PENDENTE',
-    });
   }, [initialValues, form]);
 
   return (
@@ -157,14 +151,6 @@ export default function ProjProjetoForm({
           ]}
         >
           <Input placeholder='Digite o equipamento' />
-        </Form.Item>
-
-        <Form.Item
-          name='status'
-          label='Status'
-          rules={[{ required: true, message: 'Status é obrigatório' }]}
-        >
-          <Select options={PROJECT_STATUS_OPTIONS.map((option) => ({ ...option }))} />
         </Form.Item>
 
         <Form.Item>

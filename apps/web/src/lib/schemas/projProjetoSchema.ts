@@ -8,9 +8,6 @@ export const projProjetoCreateSchema = z.object({
   descricao: z.string().trim().min(1).max(5000),
   equipamento: z.string().trim().min(1).max(255),
   municipio: z.string().trim().min(1).max(255),
-  status: z
-    .nativeEnum(ProjStatusProjeto)
-    .default(ProjStatusProjeto.PENDENTE),
 });
 
 export const projProjetoUpdateSchema = projProjetoCreateSchema.extend({

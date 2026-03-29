@@ -1,3 +1,4 @@
+import { ProjStatusProjeto } from '@nexa-oper/db';
 import { z } from 'zod';
 import { AbstractCrudService } from '../../abstracts/AbstractCrudService';
 import {
@@ -32,7 +33,7 @@ export class ProjProjetoService extends AbstractCrudService<
         descricao: data.descricao,
         equipamento: data.equipamento,
         municipio: data.municipio,
-        status: data.status,
+        status: ProjStatusProjeto.PENDENTE,
         createdBy: userId,
         programa: {
           connect: {
@@ -45,12 +46,16 @@ export class ProjProjetoService extends AbstractCrudService<
   }
 
   async update(data: Update, userId: string): Promise<ProjProjetoListItem> {
-    const { id, programaId, ...rest } = data;
+    const { id, programaId, numeroProjeto, descricao, equipamento, municipio } =
+      data;
 
     return this.repo.update(
       id,
       {
-        ...rest,
+        numeroProjeto,
+        descricao,
+        equipamento,
+        municipio,
         updatedBy: userId,
         programa: {
           connect: {
