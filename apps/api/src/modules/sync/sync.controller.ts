@@ -120,6 +120,7 @@ export class SyncController {
     enum: [
       'projeto-tipo-poste',
       'projeto-tipo-estrutura',
+      'projeto-estrutura',
       'projeto-tipo-ramal',
       'projeto-viabilizacao',
       'eletricista',
