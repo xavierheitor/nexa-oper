@@ -137,6 +137,17 @@ export const getAtividadeExecucaoDetalhe = async (rawData: unknown) =>
                 },
               },
               respostas: {
+                include: {
+                  AtividadeAprRespostaMedidaControle: {
+                    orderBy: { id: 'asc' },
+                    select: {
+                      id: true,
+                      aprMedidaControleId: true,
+                      medidaControleNomeSnapshot: true,
+                      textoLivre: true,
+                    },
+                  },
+                },
                 orderBy: [{ ordemGrupo: 'asc' }, { ordemPergunta: 'asc' }],
               },
               assinaturas: {

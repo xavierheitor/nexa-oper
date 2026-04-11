@@ -146,6 +146,14 @@ export interface AtividadeAprRespostaDetalhe {
   ordemGrupo: number;
   ordemPergunta: number;
   dataResposta: Date | string;
+  AtividadeAprRespostaMedidaControle: AtividadeAprRespostaMedidaControleDetalhe[];
+}
+
+export interface AtividadeAprRespostaMedidaControleDetalhe {
+  id: number;
+  aprMedidaControleId?: number | null;
+  medidaControleNomeSnapshot: string;
+  textoLivre?: string | null;
 }
 
 export interface AtividadeAprAssinaturaDetalhe {
