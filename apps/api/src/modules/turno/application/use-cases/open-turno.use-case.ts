@@ -4,6 +4,7 @@ import type {
   AbrirTurnoRequestContract,
   AbrirTurnoResponseContract,
 } from '../../../../contracts/turno/abrir-turno.contract';
+import { MobileAppVersionGateService } from '../../../../core/mobile-app-version/mobile-app-version-gate.service';
 import { AppLogger } from '../../../../core/logger/app-logger';
 import { PrismaService } from '../../../../database/prisma.service';
 import { ChecklistPreenchidoService } from '../../checklist-preenchido/checklist-preenchido.service';
@@ -23,12 +24,19 @@ export class OpenTurnoUseCase {
     private readonly logger: AppLogger,
     private readonly checklistPreenchidoService: ChecklistPreenchidoService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly mobileAppVersionGate: MobileAppVersionGateService,
   ) {}
 
   async execute(
     input: AbrirTurnoRequestContract,
   ): Promise<AbrirTurnoResponseContract> {
     const dto: AbrirTurnoDto = input;
+
+    this.mobileAppVersionGate.assertSupportedVersion({
+      action: 'open-turno',
+      versaoApp: dto.versaoApp,
+      plataformaApp: dto.plataformaApp,
+    });
 
     let checklistPreenchidoIds: number[] = [];
     let respostasAguardandoFoto: number[] = [];

@@ -39,6 +39,14 @@ const csvOrJsonArray = z
       .filter(Boolean);
   });
 
+const trimmedOptional = z
+  .string()
+  .optional()
+  .transform((v) => {
+    const trimmed = v?.trim();
+    return trimmed && trimmed.length > 0 ? trimmed : undefined;
+  });
+
 export const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
@@ -76,6 +84,14 @@ export const envSchema = z.object({
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60_000),
   RATE_LIMIT_MAX_PER_IP: z.coerce.number().default(20),
   RATE_LIMIT_MAX_PER_USER: z.coerce.number().default(5),
+
+  // Bloqueio opcional por versão mínima do app mobile
+  MOBILE_MIN_VERSION_ANDROID: trimmedOptional,
+  MOBILE_MIN_VERSION_ANDROID_LOGIN: trimmedOptional,
+  MOBILE_MIN_VERSION_ANDROID_OPEN_TURNO: trimmedOptional,
+  MOBILE_MIN_VERSION_IOS: trimmedOptional,
+  MOBILE_MIN_VERSION_IOS_LOGIN: trimmedOptional,
+  MOBILE_MIN_VERSION_IOS_OPEN_TURNO: trimmedOptional,
 
   // Upload storage: local | s3
   UPLOAD_STORAGE: z.enum(['local', 's3']).default('local'),

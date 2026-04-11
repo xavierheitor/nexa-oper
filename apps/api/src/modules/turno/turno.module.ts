@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { MobileAppVersionGateService } from '../../core/mobile-app-version/mobile-app-version-gate.service';
 import { DatabaseModule } from '../../database';
 import { LoggerModule } from '../../core/logger/logger.module';
 import { UploadModule } from '../upload/upload.module';
@@ -20,6 +21,7 @@ import { TURNO_REPOSITORY } from './domain/repositories/turno-repository.port';
   controllers: [TurnoController],
   providers: [
     TurnoRepository,
+    MobileAppVersionGateService,
     OpenTurnoUseCase,
     CloseTurnoUseCase,
     ListTurnosUseCase,
