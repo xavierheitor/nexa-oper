@@ -62,6 +62,7 @@ interface PreparedAprResposta {
   medidasControle: Array<{
     aprMedidaControleId: number | null;
     medidaControleNomeSnapshot: string;
+    textoLivre: string | null;
     createdBy: string;
   }>;
 }
@@ -81,6 +82,20 @@ function normalizeString(value?: string | null): string | null {
   if (value == null) return null;
   const trimmed = value.trim();
   return trimmed.length ? trimmed : null;
+}
+
+function normalizeComparableText(value?: string | null): string {
+  return (
+    normalizeString(value)
+      ?.normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase() ?? ''
+  );
+}
+
+function isOutrasMedidaControle(value?: string | null): boolean {
+  const normalized = normalizeComparableText(value);
+  return normalized === 'outras' || normalized === 'outra';
 }
 
 function parseDateOrNull(value?: string | null): Date | null {
@@ -845,10 +860,18 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
       const medidaControleNomeSnapshot =
         normalizeString(medidaSelecionada.aprMedidaControleNomeSnapshot) ??
         medida.nome;
+      const textoLivre = normalizeString(medidaSelecionada.textoLivre);
+
+      if (isOutrasMedidaControle(medidaControleNomeSnapshot) && !textoLivre) {
+        throw AppError.validation(
+          `APR ${apr.aprUuid} exige textoLivre para a medida de controle "Outras" na resposta ${idx}`,
+        );
+      }
 
       return {
         aprMedidaControleId: medida.id,
         medidaControleNomeSnapshot,
+        textoLivre,
         createdBy,
       };
     });
@@ -876,6 +899,7 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
       unique.set(key, {
         ...medida,
         aprMedidaControleNomeSnapshot: normalizedName ?? '',
+        textoLivre: normalizeString(medida.textoLivre),
       });
     }
 

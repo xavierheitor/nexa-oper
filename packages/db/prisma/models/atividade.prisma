@@ -474,6 +474,7 @@ model AtividadeAprRespostaMedidaControle {
   aprMedidaControle   AprMedidaControle? @relation(fields: [aprMedidaControleId], references: [id], onDelete: SetNull)
 
   medidaControleNomeSnapshot String @db.VarChar(255)
+  textoLivre                 String? @db.Text
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)

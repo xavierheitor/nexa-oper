@@ -245,4 +245,146 @@ describe('AtividadeUploadService', () => {
       ),
     ).rejects.toThrow('exige ao menos uma medida de controle');
   });
+
+  it('persists textoLivre when medida de controle "Outras" is selected', async () => {
+    const { service, tx } = makeSut();
+
+    tx.atividadeAprPreenchida.upsert.mockResolvedValue({ id: 901 });
+    tx.aprOpcaoResposta.findMany.mockResolvedValue([
+      {
+        id: 12,
+        nome: 'Não conforme',
+        geraPendencia: true,
+      },
+    ]);
+    tx.aprMedidaControle.findMany.mockResolvedValue([
+      {
+        id: 99,
+        nome: 'Outras',
+      },
+    ]);
+    tx.aprGrupoPerguntaMedidaControleRelacao.findMany.mockResolvedValue([
+      {
+        aprGrupoPerguntaId: 7,
+        aprPerguntaId: 14,
+        aprMedidaControleId: 99,
+      },
+    ]);
+    tx.atividadeAprResposta.create.mockResolvedValue({ id: 3001 });
+
+    await expect(
+      service.persistUpload(
+        {
+          ...payload,
+          aprs: [
+            {
+              aprUuid: 'apr-uuid-2',
+              respostas: [
+                {
+                  aprGrupoPerguntaId: 7,
+                  aprPerguntaId: 14,
+                  aprPerguntaNomeSnapshot: 'Isolamento da área',
+                  tipoRespostaSnapshot: 'opcao',
+                  aprOpcaoRespostaId: 12,
+                  aprOpcaoRespostaNomeSnapshot: 'Não conforme',
+                  medidasControle: [
+                    {
+                      aprMedidaControleId: 99,
+                      aprMedidaControleNomeSnapshot: 'Outras',
+                      textoLivre: 'Sinalizar a área com cones adicionais',
+                    },
+                  ],
+                },
+              ],
+              assinaturas: [
+                {
+                  nomeAssinante: 'Eletricista 1',
+                },
+              ],
+            },
+          ],
+        },
+        55,
+      ),
+    ).resolves.toMatchObject({
+      status: 'ok',
+      atividadeExecucaoId: 77,
+    });
+
+    expect(tx.atividadeAprResposta.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        AtividadeAprRespostaMedidaControle: {
+          create: [
+            expect.objectContaining({
+              aprMedidaControleId: 99,
+              medidaControleNomeSnapshot: 'Outras',
+              textoLivre: 'Sinalizar a área com cones adicionais',
+              createdBy: '55',
+            }),
+          ],
+        },
+      }),
+    });
+  });
+
+  it('rejects medida de controle "Outras" without textoLivre', async () => {
+    const { service, tx } = makeSut();
+
+    tx.atividadeAprPreenchida.upsert.mockResolvedValue({ id: 901 });
+    tx.aprOpcaoResposta.findMany.mockResolvedValue([
+      {
+        id: 12,
+        nome: 'Não conforme',
+        geraPendencia: true,
+      },
+    ]);
+    tx.aprMedidaControle.findMany.mockResolvedValue([
+      {
+        id: 99,
+        nome: 'Outras',
+      },
+    ]);
+    tx.aprGrupoPerguntaMedidaControleRelacao.findMany.mockResolvedValue([
+      {
+        aprGrupoPerguntaId: 7,
+        aprPerguntaId: 14,
+        aprMedidaControleId: 99,
+      },
+    ]);
+
+    await expect(
+      service.persistUpload(
+        {
+          ...payload,
+          aprs: [
+            {
+              aprUuid: 'apr-uuid-3',
+              respostas: [
+                {
+                  aprGrupoPerguntaId: 7,
+                  aprPerguntaId: 14,
+                  aprPerguntaNomeSnapshot: 'Isolamento da área',
+                  tipoRespostaSnapshot: 'opcao',
+                  aprOpcaoRespostaId: 12,
+                  aprOpcaoRespostaNomeSnapshot: 'Não conforme',
+                  medidasControle: [
+                    {
+                      aprMedidaControleId: 99,
+                      aprMedidaControleNomeSnapshot: 'Outras',
+                    },
+                  ],
+                },
+              ],
+              assinaturas: [
+                {
+                  nomeAssinante: 'Eletricista 1',
+                },
+              ],
+            },
+          ],
+        },
+        55,
+      ),
+    ).rejects.toThrow('exige textoLivre para a medida de controle "Outras"');
+  });
 });

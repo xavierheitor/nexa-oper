@@ -245,6 +245,11 @@ export class AtividadeUploadAprRespostaMedidaControleDto {
   @IsString()
   @IsNotEmpty()
   aprMedidaControleNomeSnapshot!: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  textoLivre?: string | null;
 }
 
 export class AtividadeUploadAprRespostaDto {

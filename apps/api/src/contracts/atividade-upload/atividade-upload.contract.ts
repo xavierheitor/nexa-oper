@@ -71,6 +71,7 @@ export interface AtividadeUploadAprRespostaContract {
 export interface AtividadeUploadAprRespostaMedidaControleContract {
   aprMedidaControleId?: number | null;
   aprMedidaControleNomeSnapshot: string;
+  textoLivre?: string | null;
 }
 
 export interface AtividadeUploadAprAssinaturaContract {
