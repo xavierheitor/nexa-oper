@@ -51,7 +51,7 @@ const EVIDENCE_HANDLERS = [
       inject: [...EVIDENCE_HANDLERS],
     },
   ],
-  exports: [UploadService],
+  exports: [UploadService, 'STORAGE_ADAPTER'],
 })
 export class UploadModule {
   constructor(

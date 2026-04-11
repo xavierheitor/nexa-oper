@@ -364,6 +364,13 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
           },
         ],
       },
+      {
+        key: '/dashboard/cadastro/mobile-app-version',
+        label: 'Versões do App',
+        icon: <AppstoreOutlined />,
+        path: '/dashboard/cadastro/mobile-app-version',
+        requiredPermission: undefined, // Ajuste para a permissão correta depois se houver (ex: ADMIN)
+      },
     ],
   },
   {
