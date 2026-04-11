@@ -46,12 +46,22 @@ describe('AtividadeUploadService', () => {
       turnoEletricista: {
         findMany: jest.fn().mockResolvedValue([]),
       },
+      aprOpcaoResposta: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      aprMedidaControle: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      aprGrupoPerguntaMedidaControleRelacao: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
       atividadeAprPreenchida: {
         upsert: jest.fn(),
       },
       atividadeAprResposta: {
         deleteMany: jest.fn(),
         createMany: jest.fn(),
+        create: jest.fn(),
       },
       atividadeAprAssinatura: {
         deleteMany: jest.fn(),
@@ -185,5 +195,54 @@ describe('AtividadeUploadService', () => {
     expect(storage.delete).toHaveBeenCalledWith(
       'atividades/550e8400-e29b-41d4-a716-446655440000/fotos/1-foto.jpg',
     );
+  });
+
+  it('rejects APR resposta that generates pendencia without medidas de controle', async () => {
+    const { service, tx } = makeSut();
+
+    tx.atividadeAprPreenchida.upsert.mockResolvedValue({ id: 901 });
+    tx.aprOpcaoResposta.findMany.mockResolvedValue([
+      {
+        id: 12,
+        nome: 'Não conforme',
+        geraPendencia: true,
+      },
+    ]);
+    tx.aprGrupoPerguntaMedidaControleRelacao.findMany.mockResolvedValue([
+      {
+        aprGrupoPerguntaId: 7,
+        aprPerguntaId: 14,
+        aprMedidaControleId: 88,
+      },
+    ]);
+
+    await expect(
+      service.persistUpload(
+        {
+          ...payload,
+          aprs: [
+            {
+              aprUuid: 'apr-uuid-1',
+              respostas: [
+                {
+                  aprGrupoPerguntaId: 7,
+                  aprPerguntaId: 14,
+                  aprPerguntaNomeSnapshot: 'Isolamento da área',
+                  tipoRespostaSnapshot: 'opcao',
+                  aprOpcaoRespostaId: 12,
+                  aprOpcaoRespostaNomeSnapshot: 'Não conforme',
+                },
+              ],
+              assinaturas: [
+                {
+                  nomeAssinante: 'Eletricista 1',
+                },
+              ],
+            },
+          ],
+        },
+        55,
+      ),
+    ).rejects.toThrow('exige ao menos uma medida de controle');
   });
 });

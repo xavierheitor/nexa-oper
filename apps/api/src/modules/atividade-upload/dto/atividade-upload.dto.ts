@@ -234,6 +234,19 @@ export class AtividadeUploadEventoDto {
   capturadoEm?: string;
 }
 
+export class AtividadeUploadAprRespostaMedidaControleDto {
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsInt()
+  aprMedidaControleId?: number | null;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  aprMedidaControleNomeSnapshot!: string;
+}
+
 export class AtividadeUploadAprRespostaDto {
   @ApiPropertyOptional()
   @Type(() => Number)
@@ -299,6 +312,13 @@ export class AtividadeUploadAprRespostaDto {
   @IsOptional()
   @IsString()
   dataResposta?: string;
+
+  @ApiPropertyOptional({ type: [AtividadeUploadAprRespostaMedidaControleDto] })
+  @Type(() => AtividadeUploadAprRespostaMedidaControleDto)
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  medidasControle?: AtividadeUploadAprRespostaMedidaControleDto[];
 }
 
 export class AtividadeUploadAprAssinaturaDto {

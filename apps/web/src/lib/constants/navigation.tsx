@@ -288,6 +288,12 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             requiredPermission: PERMISSIONS.APR_OPCOES_VIEW,
           },
           {
+            key: '/dashboard/cadastro/apr-medida-controle',
+            label: 'Medidas de Controle',
+            path: '/dashboard/cadastro/apr-medida-controle',
+            requiredPermission: PERMISSIONS.APR_GRUPOS_VIEW,
+          },
+          {
             key: '/dashboard/cadastro/apr-grupo-pergunta',
             label: 'Grupos de Perguntas',
             path: '/dashboard/cadastro/apr-grupo-pergunta',

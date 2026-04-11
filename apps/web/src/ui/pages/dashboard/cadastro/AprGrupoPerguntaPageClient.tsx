@@ -37,6 +37,7 @@ export default function AprGrupoPerguntaPageClient({
       orderDir: 'desc',
       include: {
         AprGrupoPerguntaRelacao: true,
+        AprGrupoPerguntaMedidaControleRelacao: true,
         AprGrupoOpcaoRespostaRelacao: true,
       },
     },
@@ -90,6 +91,18 @@ export default function AprGrupoPerguntaPageClient({
         align: 'center' as const,
         render: (_, record: AprGrupoPergunta & { AprGrupoOpcaoRespostaRelacao?: unknown[] }) =>
           record.AprGrupoOpcaoRespostaRelacao?.length || 0,
+      },
+      {
+        title: 'Medidas',
+        key: 'medidas',
+        width: 110,
+        align: 'center' as const,
+        render: (
+          _,
+          record: AprGrupoPergunta & {
+            AprGrupoPerguntaMedidaControleRelacao?: unknown[];
+          }
+        ) => record.AprGrupoPerguntaMedidaControleRelacao?.length || 0,
       },
     ],
     {

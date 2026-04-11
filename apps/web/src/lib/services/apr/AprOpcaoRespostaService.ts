@@ -120,6 +120,7 @@ export class AprOpcaoRespostaService extends AbstractCrudService<
     return this.repoConcrete.create(
       {
         ...businessData,
+        geraPendencia: businessData.geraPendencia ?? false,
         ...(createdBy && { createdBy }),
         ...(createdAt && { createdAt }),
       },
