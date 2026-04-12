@@ -4,6 +4,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as path from 'node:path';
 import type {
   AtividadeUploadAprContract,
+  AtividadeUploadAprRespostaContract,
+  AtividadeUploadAprRespostaMedidaControleContract,
   AtividadeUploadEventoContract,
   AtividadeUploadPhotoContract,
   AtividadeUploadRequestContract,
@@ -42,6 +44,29 @@ interface TurnoEletricistaSnapshot {
   };
 }
 
+interface PreparedAprResposta {
+  atividadeAprPreenchidaId: number;
+  aprGrupoPerguntaId: number | null;
+  aprPerguntaId: number | null;
+  aprOpcaoRespostaId: number | null;
+  grupoNomeSnapshot: string | null;
+  perguntaNomeSnapshot: string;
+  tipoRespostaSnapshot: string;
+  opcaoNomeSnapshot: string | null;
+  respostaTexto: string | null;
+  marcado: boolean | null;
+  ordemGrupo: number;
+  ordemPergunta: number;
+  dataResposta: Date;
+  createdBy: string;
+  medidasControle: Array<{
+    aprMedidaControleId: number | null;
+    medidaControleNomeSnapshot: string;
+    textoLivre: string | null;
+    createdBy: string;
+  }>;
+}
+
 function sanitizeFilename(filename: string): string {
   const base = path.basename(filename);
   const ascii = base.replace(/[^\x20-\x7E]/g, '');
@@ -57,6 +82,20 @@ function normalizeString(value?: string | null): string | null {
   if (value == null) return null;
   const trimmed = value.trim();
   return trimmed.length ? trimmed : null;
+}
+
+function normalizeComparableText(value?: string | null): string {
+  return (
+    normalizeString(value)
+      ?.normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase() ?? ''
+  );
+}
+
+function isOutrasMedidaControle(value?: string | null): boolean {
+  const normalized = normalizeComparableText(value);
+  return normalized === 'outras' || normalized === 'outra';
 }
 
 function parseDateOrNull(value?: string | null): Date | null {
@@ -533,52 +572,29 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
       });
 
       if (apr.respostas.length) {
-        const respostasData = apr.respostas.map((resposta, idx) => {
-          const perguntaNomeSnapshot = normalizeString(
-            resposta.aprPerguntaNomeSnapshot,
-          );
-          if (!perguntaNomeSnapshot) {
-            throw AppError.validation(
-              `APR ${apr.aprUuid} com resposta sem nome da pergunta (índice ${idx})`,
-            );
-          }
+        const respostasData = await this.prepareAprRespostas(
+          tx,
+          apr,
+          aprPreenchida.id,
+          preenchidaEm,
+          createdBy,
+        );
 
-          const tipoRespostaSnapshot = normalizeString(
-            resposta.tipoRespostaSnapshot,
-          );
-          if (!tipoRespostaSnapshot) {
-            throw AppError.validation(
-              `APR ${apr.aprUuid} com resposta sem tipoRespostaSnapshot (índice ${idx})`,
-            );
-          }
-
-          return {
-            atividadeAprPreenchidaId: aprPreenchida.id,
-            aprGrupoPerguntaId: resposta.aprGrupoPerguntaId ?? null,
-            aprPerguntaId: resposta.aprPerguntaId ?? null,
-            aprOpcaoRespostaId: resposta.aprOpcaoRespostaId ?? null,
-            grupoNomeSnapshot: normalizeString(
-              resposta.aprGrupoPerguntaNomeSnapshot,
-            ),
-            perguntaNomeSnapshot,
-            tipoRespostaSnapshot,
-            opcaoNomeSnapshot: normalizeString(
-              resposta.aprOpcaoRespostaNomeSnapshot,
-            ),
-            respostaTexto: normalizeString(resposta.respostaTexto),
-            marcado:
-              typeof resposta.marcado === 'boolean' ? resposta.marcado : null,
-            ordemGrupo: resposta.ordemGrupo ?? 0,
-            ordemPergunta: resposta.ordemPergunta ?? 0,
-            dataResposta:
-              parseDateOrNull(resposta.dataResposta) ?? preenchidaEm,
-            createdBy,
-          };
-        });
-
-        await tx.atividadeAprResposta.createMany({
-          data: respostasData,
-        });
+        for (const respostaData of respostasData) {
+          const { medidasControle, ...respostaBase } = respostaData;
+          await tx.atividadeAprResposta.create({
+            data: {
+              ...respostaBase,
+              ...(medidasControle.length
+                ? {
+                    AtividadeAprRespostaMedidaControle: {
+                      create: medidasControle,
+                    },
+                  }
+                : {}),
+            },
+          });
+        }
       }
 
       await tx.atividadeAprAssinatura.createMany({
@@ -595,6 +611,299 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
         })),
       });
     }
+  }
+
+  private async prepareAprRespostas(
+    tx: PrismaService,
+    apr: AtividadeUploadAprContract,
+    atividadeAprPreenchidaId: number,
+    preenchidaEm: Date,
+    createdBy: string,
+  ): Promise<PreparedAprResposta[]> {
+    const opcaoIds = Array.from(
+      new Set(
+        apr.respostas
+          .map((resposta) => resposta.aprOpcaoRespostaId)
+          .filter((value): value is number => value != null)
+      )
+    );
+
+    const opcoes = opcaoIds.length
+      ? await tx.aprOpcaoResposta.findMany({
+          where: {
+            id: { in: opcaoIds },
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            nome: true,
+            geraPendencia: true,
+          },
+        })
+      : [];
+
+    const opcoesById = new Map(opcoes.map((opcao) => [opcao.id, opcao]));
+
+    const pairKeys = new Set<string>();
+    const grupoIds = new Set<number>();
+    const perguntaIds = new Set<number>();
+    const medidaIds = new Set<number>();
+
+    for (const resposta of apr.respostas) {
+      if (
+        resposta.aprGrupoPerguntaId != null &&
+        resposta.aprPerguntaId != null
+      ) {
+        pairKeys.add(
+          `${resposta.aprGrupoPerguntaId}:${resposta.aprPerguntaId}`,
+        );
+        grupoIds.add(resposta.aprGrupoPerguntaId);
+        perguntaIds.add(resposta.aprPerguntaId);
+      }
+
+      for (const medida of resposta.medidasControle ?? []) {
+        if (medida.aprMedidaControleId != null) {
+          medidaIds.add(medida.aprMedidaControleId);
+        }
+      }
+    }
+
+    const medidas = medidaIds.size
+      ? await tx.aprMedidaControle.findMany({
+          where: {
+            id: { in: Array.from(medidaIds) },
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            nome: true,
+          },
+        })
+      : [];
+    const medidasById = new Map(medidas.map((medida) => [medida.id, medida]));
+
+    const medidasPermitidas = pairKeys.size
+      ? await tx.aprGrupoPerguntaMedidaControleRelacao.findMany({
+          where: {
+            deletedAt: null,
+            aprGrupoPerguntaId: { in: Array.from(grupoIds) },
+            aprPerguntaId: { in: Array.from(perguntaIds) },
+          },
+          select: {
+            aprGrupoPerguntaId: true,
+            aprPerguntaId: true,
+            aprMedidaControleId: true,
+          },
+        })
+      : [];
+
+    const medidasPermitidasPorPergunta = new Map<string, Set<number>>();
+    for (const relacao of medidasPermitidas) {
+      const key = `${relacao.aprGrupoPerguntaId}:${relacao.aprPerguntaId}`;
+      if (!pairKeys.has(key)) continue;
+
+      if (!medidasPermitidasPorPergunta.has(key)) {
+        medidasPermitidasPorPergunta.set(key, new Set<number>());
+      }
+
+      medidasPermitidasPorPergunta.get(key)?.add(relacao.aprMedidaControleId);
+    }
+
+    return apr.respostas.map((resposta, idx) =>
+      this.prepareAprResposta(
+        apr,
+        resposta,
+        idx,
+        atividadeAprPreenchidaId,
+        preenchidaEm,
+        createdBy,
+        opcoesById,
+        medidasById,
+        medidasPermitidasPorPergunta,
+      )
+    );
+  }
+
+  private prepareAprResposta(
+    apr: AtividadeUploadAprContract,
+    resposta: AtividadeUploadAprRespostaContract,
+    idx: number,
+    atividadeAprPreenchidaId: number,
+    preenchidaEm: Date,
+    createdBy: string,
+    opcoesById: Map<number, { id: number; nome: string; geraPendencia: boolean }>,
+    medidasById: Map<number, { id: number; nome: string }>,
+    medidasPermitidasPorPergunta: Map<string, Set<number>>,
+  ): PreparedAprResposta {
+    const perguntaNomeSnapshot = normalizeString(
+      resposta.aprPerguntaNomeSnapshot,
+    );
+    if (!perguntaNomeSnapshot) {
+      throw AppError.validation(
+        `APR ${apr.aprUuid} com resposta sem nome da pergunta (índice ${idx})`,
+      );
+    }
+
+    const tipoRespostaSnapshot = normalizeString(resposta.tipoRespostaSnapshot);
+    if (!tipoRespostaSnapshot) {
+      throw AppError.validation(
+        `APR ${apr.aprUuid} com resposta sem tipoRespostaSnapshot (índice ${idx})`,
+      );
+    }
+
+    const opcaoId = resposta.aprOpcaoRespostaId ?? null;
+    const opcao =
+      opcaoId != null ? opcoesById.get(opcaoId) ?? null : null;
+
+    if (opcaoId != null && !opcao) {
+      throw AppError.validation(
+        `APR ${apr.aprUuid} com opção de resposta inválida (${opcaoId}) na resposta ${idx}`,
+      );
+    }
+
+    const medidasControle = this.prepareAprRespostaMedidasControle(
+      apr,
+      resposta,
+      idx,
+      createdBy,
+      opcao?.geraPendencia ?? false,
+      medidasById,
+      medidasPermitidasPorPergunta,
+    );
+
+    return {
+      atividadeAprPreenchidaId,
+      aprGrupoPerguntaId: resposta.aprGrupoPerguntaId ?? null,
+      aprPerguntaId: resposta.aprPerguntaId ?? null,
+      aprOpcaoRespostaId: opcaoId,
+      grupoNomeSnapshot: normalizeString(resposta.aprGrupoPerguntaNomeSnapshot),
+      perguntaNomeSnapshot,
+      tipoRespostaSnapshot,
+      opcaoNomeSnapshot:
+        normalizeString(resposta.aprOpcaoRespostaNomeSnapshot) ?? opcao?.nome ?? null,
+      respostaTexto: normalizeString(resposta.respostaTexto),
+      marcado: typeof resposta.marcado === 'boolean' ? resposta.marcado : null,
+      ordemGrupo: resposta.ordemGrupo ?? 0,
+      ordemPergunta: resposta.ordemPergunta ?? 0,
+      dataResposta: parseDateOrNull(resposta.dataResposta) ?? preenchidaEm,
+      createdBy,
+      medidasControle,
+    };
+  }
+
+  private prepareAprRespostaMedidasControle(
+    apr: AtividadeUploadAprContract,
+    resposta: AtividadeUploadAprRespostaContract,
+    idx: number,
+    createdBy: string,
+    exigeMedidaControle: boolean,
+    medidasById: Map<number, { id: number; nome: string }>,
+    medidasPermitidasPorPergunta: Map<string, Set<number>>,
+  ) {
+    const medidasSelecionadas = this.normalizeMedidasControleSelecionadas(
+      resposta.medidasControle,
+    );
+
+    if (!exigeMedidaControle) {
+      if (medidasSelecionadas.length > 0) {
+        throw AppError.validation(
+          `APR ${apr.aprUuid} com medidas de controle informadas para uma resposta que não gera pendência (índice ${idx})`,
+        );
+      }
+      return [];
+    }
+
+    if (
+      resposta.aprGrupoPerguntaId == null ||
+      resposta.aprPerguntaId == null
+    ) {
+      throw AppError.validation(
+        `APR ${apr.aprUuid} exige grupo e pergunta para validar medidas de controle (índice ${idx})`,
+      );
+    }
+
+    const pairKey = `${resposta.aprGrupoPerguntaId}:${resposta.aprPerguntaId}`;
+    const medidasPermitidas = medidasPermitidasPorPergunta.get(pairKey);
+
+    if (!medidasPermitidas?.size) {
+      throw AppError.validation(
+        `APR ${apr.aprUuid} sem medidas de controle configuradas para a pergunta ${resposta.aprPerguntaId} no grupo ${resposta.aprGrupoPerguntaId}`,
+      );
+    }
+
+    if (medidasSelecionadas.length === 0) {
+      throw AppError.validation(
+        `APR ${apr.aprUuid} exige ao menos uma medida de controle na resposta ${idx}`,
+      );
+    }
+
+    return medidasSelecionadas.map((medidaSelecionada) => {
+      if (medidaSelecionada.aprMedidaControleId == null) {
+        throw AppError.validation(
+          `APR ${apr.aprUuid} com medida de controle sem ID na resposta ${idx}`,
+        );
+      }
+
+      if (!medidasPermitidas.has(medidaSelecionada.aprMedidaControleId)) {
+        throw AppError.validation(
+          `APR ${apr.aprUuid} com medida de controle inválida para a pergunta ${resposta.aprPerguntaId} na resposta ${idx}`,
+        );
+      }
+
+      const medida = medidasById.get(medidaSelecionada.aprMedidaControleId);
+      if (!medida) {
+        throw AppError.validation(
+          `APR ${apr.aprUuid} com medida de controle inexistente (${medidaSelecionada.aprMedidaControleId}) na resposta ${idx}`,
+        );
+      }
+
+      const medidaControleNomeSnapshot =
+        normalizeString(medidaSelecionada.aprMedidaControleNomeSnapshot) ??
+        medida.nome;
+      const textoLivre = normalizeString(medidaSelecionada.textoLivre);
+
+      if (isOutrasMedidaControle(medidaControleNomeSnapshot) && !textoLivre) {
+        throw AppError.validation(
+          `APR ${apr.aprUuid} exige textoLivre para a medida de controle "Outras" na resposta ${idx}`,
+        );
+      }
+
+      return {
+        aprMedidaControleId: medida.id,
+        medidaControleNomeSnapshot,
+        textoLivre,
+        createdBy,
+      };
+    });
+  }
+
+  private normalizeMedidasControleSelecionadas(
+    medidasControle?: AtividadeUploadAprRespostaMedidaControleContract[],
+  ) {
+    if (!medidasControle?.length) return [];
+
+    const unique = new Map<
+      string,
+      AtividadeUploadAprRespostaMedidaControleContract
+    >();
+
+    for (const medida of medidasControle) {
+      const normalizedName = normalizeString(medida.aprMedidaControleNomeSnapshot);
+      const key =
+        medida.aprMedidaControleId != null
+          ? String(medida.aprMedidaControleId)
+          : normalizedName;
+
+      if (!key || unique.has(key)) continue;
+
+      unique.set(key, {
+        ...medida,
+        aprMedidaControleNomeSnapshot: normalizedName ?? '',
+        textoLivre: normalizeString(medida.textoLivre),
+      });
+    }
+
+    return Array.from(unique.values());
   }
 
   private resolveAprAssinaturas(

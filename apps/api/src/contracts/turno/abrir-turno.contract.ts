@@ -25,6 +25,7 @@ export interface AbrirTurnoRequestContract {
   equipeId: number;
   dispositivo?: string;
   versaoApp?: string;
+  plataformaApp?: string;
   kmInicio: number;
   dataInicio?: Date;
   eletricistas: AbrirTurnoEletricistaContract[];

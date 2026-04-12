@@ -22,6 +22,7 @@
  */
 
 import { AprOpcaoRespostaService } from '../apr/AprOpcaoRespostaService';
+import { AprMedidaControleService } from '../apr/AprMedidaControleService';
 import { AprPerguntaService } from '../apr/AprPerguntaService';
 import { AprGrupoPerguntaService } from '../apr/AprGrupoPerguntaService';
 import { AprService } from '../apr/AprService';
@@ -102,6 +103,10 @@ export function registerServices(): void {
   container.register(
     'aprOpcaoRespostaService',
     () => new AprOpcaoRespostaService()
+  );
+  container.register(
+    'aprMedidaControleService',
+    () => new AprMedidaControleService()
   );
   container.register('aprPerguntaService', () => new AprPerguntaService());
   container.register(

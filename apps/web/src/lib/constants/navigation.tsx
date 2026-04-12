@@ -322,6 +322,12 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             requiredPermission: PERMISSIONS.APR_OPCOES_VIEW,
           },
           {
+            key: '/dashboard/cadastro/apr-medida-controle',
+            label: 'Medidas de Controle',
+            path: '/dashboard/cadastro/apr-medida-controle',
+            requiredPermission: PERMISSIONS.APR_GRUPOS_VIEW,
+          },
+          {
             key: '/dashboard/cadastro/apr-grupo-pergunta',
             label: 'Grupos de Perguntas',
             path: '/dashboard/cadastro/apr-grupo-pergunta',
@@ -391,6 +397,13 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             requiredPermission: PERMISSIONS.USERS_UPDATE,
           },
         ],
+      },
+      {
+        key: '/dashboard/cadastro/mobile-app-version',
+        label: 'Versões do App',
+        icon: <AppstoreOutlined />,
+        path: '/dashboard/cadastro/mobile-app-version',
+        requiredPermission: undefined, // Ajuste para a permissão correta depois se houver (ex: ADMIN)
       },
     ],
   },

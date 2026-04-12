@@ -49,7 +49,7 @@
 
 'use client';
 
-import { Button, Form, Input, Spin } from 'antd';
+import { Button, Form, Input, Spin, Switch } from 'antd';
 import { useEffect } from 'react';
 
 /**
@@ -61,6 +61,8 @@ import { useEffect } from 'react';
 export interface AprOpcaoRespostaFormData {
   /** Texto da opção de resposta APR */
   nome: string;
+  /** Define se a opção gera pendência e exige medida de controle */
+  geraPendencia?: boolean;
 }
 
 /**
@@ -168,6 +170,7 @@ export default function AprOpcaoRespostaForm({
     } else {
       // Modo criação: limpa todos os campos
       form.resetFields();
+      form.setFieldsValue({ geraPendencia: false });
     }
   }, [initialValues, form]);
 
@@ -204,6 +207,14 @@ export default function AprOpcaoRespostaForm({
           showCount
           maxLength={255}
         />
+      </Form.Item>
+
+      <Form.Item
+        name="geraPendencia"
+        label="Gera Pendência"
+        valuePropName="checked"
+      >
+        <Switch />
       </Form.Item>
 
 

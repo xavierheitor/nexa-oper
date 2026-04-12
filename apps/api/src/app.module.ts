@@ -15,6 +15,7 @@ import { ProjetosModule } from './modules/projetos/projetos.module';
 import { SyncModule } from './modules/sync/sync.module';
 import { TurnoModule } from './modules/turno/turno.module';
 import { UploadModule } from './modules/upload/upload.module';
+import { MobileAppVersionModule } from './modules/mobile-app-version/mobile-app-version.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { UploadModule } from './modules/upload/upload.module';
     LocalizacaoModule,
     AtividadeUploadModule,
     ProjetosModule,
+    MobileAppVersionModule,
   ],
   controllers: [],
   providers: [

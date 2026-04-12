@@ -12,11 +12,13 @@ export interface SyncScope {
 /** Models Prisma usados em sync (camelCase, como no client) */
 export type SyncModelName =
   | 'apr'
+  | 'aprMedidaControle'
   | 'aprPergunta'
   | 'aprOpcaoResposta'
   | 'aprGrupoPergunta'
   | 'aprGrupoRelacao'
   | 'aprGrupoPerguntaRelacao'
+  | 'aprGrupoPerguntaMedidaControleRelacao'
   | 'aprGrupoOpcaoRespostaRelacao'
   | 'aprTipoAtividadeRelacao'
   | 'atividadeFormPergunta'
@@ -45,11 +47,13 @@ export type SyncModelName =
 /** Mapeia model → Prisma Select. Adicione aqui ao incluir novo model em sync. */
 export interface SyncModelSelectMap {
   apr: Prisma.AprSelect;
+  aprMedidaControle: Prisma.AprMedidaControleSelect;
   aprPergunta: Prisma.AprPerguntaSelect;
   aprOpcaoResposta: Prisma.AprOpcaoRespostaSelect;
   aprGrupoPergunta: Prisma.AprGrupoPerguntaSelect;
   aprGrupoRelacao: Prisma.AprGrupoRelacaoSelect;
   aprGrupoPerguntaRelacao: Prisma.AprGrupoPerguntaRelacaoSelect;
+  aprGrupoPerguntaMedidaControleRelacao: Prisma.AprGrupoPerguntaMedidaControleRelacaoSelect;
   aprGrupoOpcaoRespostaRelacao: Prisma.AprGrupoOpcaoRespostaRelacaoSelect;
   aprTipoAtividadeRelacao: Prisma.AprTipoAtividadeRelacaoSelect;
   atividadeFormPergunta: Prisma.AtividadeFormPerguntaSelect;
@@ -79,11 +83,13 @@ export interface SyncModelSelectMap {
 /** Mapeia model → Prisma Include. Adicione aqui ao incluir novo model em sync. */
 export interface SyncModelIncludeMap {
   apr: Prisma.AprInclude;
+  aprMedidaControle: Prisma.AprMedidaControleInclude;
   aprPergunta: Prisma.AprPerguntaInclude;
   aprOpcaoResposta: Prisma.AprOpcaoRespostaInclude;
   aprGrupoPergunta: Prisma.AprGrupoPerguntaInclude;
   aprGrupoRelacao: Prisma.AprGrupoRelacaoInclude;
   aprGrupoPerguntaRelacao: Prisma.AprGrupoPerguntaRelacaoInclude;
+  aprGrupoPerguntaMedidaControleRelacao: Prisma.AprGrupoPerguntaMedidaControleRelacaoInclude;
   aprGrupoOpcaoRespostaRelacao: Prisma.AprGrupoOpcaoRespostaRelacaoInclude;
   aprTipoAtividadeRelacao: Prisma.AprTipoAtividadeRelacaoInclude;
   atividadeFormPergunta: Prisma.AtividadeFormPerguntaInclude;

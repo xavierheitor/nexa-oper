@@ -1,0 +1,11 @@
+model MobileAppVersion {
+  id         Int      @id @default(autoincrement())
+  versao     String   @db.VarChar(50)
+  plataforma String   @default("android") @db.VarChar(20) // 'android' ou 'ios'
+  notas      String?  @db.Text
+  arquivoUrl String   @db.VarChar(1024)
+  ativo      Boolean  @default(false)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

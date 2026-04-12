@@ -17,6 +17,12 @@ export const aprGrupoPerguntaCreateSchema = z
     opcaoRespostaIds: z
       .array(z.number().int().positive('ID da opção deve ser positivo'))
       .default([]),
+    medidasControlePorPergunta: z
+      .record(
+        z.string(),
+        z.array(z.number().int().positive('ID da medida deve ser positivo')).default([])
+      )
+      .default({}),
   })
   .superRefine((data, ctx) => {
     if (data.tipoResposta === 'opcao' && data.opcaoRespostaIds.length === 0) {

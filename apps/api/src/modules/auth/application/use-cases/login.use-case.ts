@@ -5,6 +5,7 @@ import type {
   TokenPairContract,
 } from '../../../../contracts/auth/auth.contract';
 import { AppError } from '../../../../core/errors/app-error';
+import { MobileAppVersionGateService } from '../../../../core/mobile-app-version/mobile-app-version-gate.service';
 import {
   AUTH_SESSION_REPOSITORY,
   type AuthSessionRepositoryPort,
@@ -17,9 +18,16 @@ export class LoginUseCase {
     @Inject(AUTH_SESSION_REPOSITORY)
     private readonly sessions: AuthSessionRepositoryPort,
     private readonly tokenPairFactory: TokenPairFactory,
+    private readonly mobileAppVersionGate: MobileAppVersionGateService,
   ) {}
 
   async execute(input: LoginRequestContract): Promise<TokenPairContract> {
+    this.mobileAppVersionGate.assertSupportedVersion({
+      action: 'login',
+      versaoApp: input.versaoApp,
+      plataformaApp: input.plataformaApp,
+    });
+
     const user = await this.sessions.findActiveUserByMatricula(input.matricula);
     if (!user) {
       throw AppError.unauthorized('Matrícula ou senha inválidos');

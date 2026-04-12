@@ -277,6 +277,37 @@ export const SYNC_DEFINITIONS: SyncCollectionDefInput[] = [
     select: {
       id: true,
       nome: true,
+      geraPendencia: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'apr-medida-controle',
+    model: 'aprMedidaControle',
+    mode: 'snapshot',
+    contractField:
+      'AprGrupoPerguntaMedidaControleRelacao.some.aprGrupoPergunta.AprGrupoRelacao.some.apr.AprTipoAtividadeRelacao.some.tipoAtividade.contratoId',
+    select: {
+      id: true,
+      nome: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'apr-grupo-pergunta-medida-controle-relacao',
+    model: 'aprGrupoPerguntaMedidaControleRelacao',
+    mode: 'snapshot',
+    contractField:
+      'aprGrupoPergunta.AprGrupoRelacao.some.apr.AprTipoAtividadeRelacao.some.tipoAtividade.contratoId',
+    select: {
+      id: true,
+      aprGrupoPerguntaId: true,
+      aprPerguntaId: true,
+      aprMedidaControleId: true,
       createdAt: true,
       updatedAt: true,
     },

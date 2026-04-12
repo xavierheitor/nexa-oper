@@ -1,6 +1,8 @@
 export interface LoginRequestContract {
   matricula: string;
   senha: string;
+  versaoApp?: string;
+  plataformaApp?: string;
 }
 
 export interface RefreshTokenRequestContract {

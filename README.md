@@ -43,6 +43,7 @@ Ambiente local padrão:
 - Web: `http://localhost:3000`
 - API: `http://localhost:3001`
 - Health API: `http://localhost:3001/__ping`
+- Mobile Dist (APK Releases): `http://localhost:3001/api/public/mobile-app-version/releases`
 
 ## Fluxos principais
 

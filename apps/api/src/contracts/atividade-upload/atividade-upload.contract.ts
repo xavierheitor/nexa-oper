@@ -65,6 +65,13 @@ export interface AtividadeUploadAprRespostaContract {
   ordemGrupo?: number;
   ordemPergunta?: number;
   dataResposta?: string;
+  medidasControle?: AtividadeUploadAprRespostaMedidaControleContract[];
+}
+
+export interface AtividadeUploadAprRespostaMedidaControleContract {
+  aprMedidaControleId?: number | null;
+  aprMedidaControleNomeSnapshot: string;
+  textoLivre?: string | null;
 }
 
 export interface AtividadeUploadAprAssinaturaContract {

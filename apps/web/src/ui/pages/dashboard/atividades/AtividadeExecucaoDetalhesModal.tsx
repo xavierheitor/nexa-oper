@@ -6,6 +6,7 @@ import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import type {
   AtividadeAprAssinaturaDetalhe,
   AtividadeAprPreenchidaDetalhe,
+  AtividadeAprRespostaMedidaControleDetalhe,
   AtividadeAprRespostaDetalhe,
   AtividadeEventoDetalhe,
   AtividadeExecucaoDetalhe,
@@ -189,6 +190,30 @@ function mapRespostaTexto(aprResposta: AtividadeAprRespostaDetalhe) {
   }
   if (aprResposta.opcaoNomeSnapshot) return aprResposta.opcaoNomeSnapshot;
   return '-';
+}
+
+function formatMedidaControleLabel(
+  medida: AtividadeAprRespostaMedidaControleDetalhe
+) {
+  return medida.textoLivre
+    ? `${medida.medidaControleNomeSnapshot}: ${medida.textoLivre}`
+    : medida.medidaControleNomeSnapshot;
+}
+
+function renderMedidasControle(
+  medidas: AtividadeAprRespostaMedidaControleDetalhe[]
+) {
+  if (!medidas.length) return '-';
+
+  return (
+    <Space size={[4, 4]} wrap>
+      {medidas.map(medida => (
+        <Tag key={medida.id} color={medida.textoLivre ? 'gold' : 'default'}>
+          {formatMedidaControleLabel(medida)}
+        </Tag>
+      ))}
+    </Space>
+  );
 }
 
 export default function AtividadeExecucaoDetalhesModal({
@@ -469,6 +494,13 @@ export default function AtividadeExecucaoDetalhesModal({
       title: 'Resposta',
       key: 'resposta',
       render: (_, record) => mapRespostaTexto(record),
+    },
+    {
+      title: 'Medidas de Controle',
+      key: 'medidasControle',
+      width: 320,
+      render: (_, record) =>
+        renderMedidasControle(record.AtividadeAprRespostaMedidaControle || []),
     },
     {
       title: 'Tipo',
