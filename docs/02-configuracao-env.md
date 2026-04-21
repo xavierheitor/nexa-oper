@@ -63,6 +63,13 @@ cp .env.example .env
 - `UPLOAD_PROXY_TARGET` (web rewrite `/uploads/*`)
 - `NEXT_PUBLIC_PHOTOS_BASE_URL` (quando frontend precisa base explícita)
 
+### Jobs e Reconciliação (Background)
+
+- `TURNO_RECONCILE_ENABLED=true|false` (Liga o cruzamento diário entre Escalas e Turnos)
+- `TURNO_RECONCILE_CRON` (Ex: `0 2 * * *` - Expressão cron para execução)
+- `TURNO_RECONCILE_LOCK_TTL_MS` (Prazo do Lock de execução em MS)
+- `CHECKLIST_PHOTO_RECONCILE_ENABLED=true|false` (Para validação retroativa de imagens)
+
 ## Perfis por ambiente
 
 ### Desenvolvimento

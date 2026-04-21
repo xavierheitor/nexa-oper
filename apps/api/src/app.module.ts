@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import { CircuitBreakerModule } from './core/circuit-breaker/circuit-breaker.module';
 import { ResponseEnvelopeInterceptor } from './core/http/interceptors';
@@ -20,6 +21,7 @@ import { MobileAppVersionModule } from './modules/mobile-app-version/mobile-app-
 @Module({
   imports: [
     EventEmitterModule.forRoot({ wildcard: true }),
+    ScheduleModule.forRoot(),
     LoggerModule,
     DatabaseModule,
     AuthModule,

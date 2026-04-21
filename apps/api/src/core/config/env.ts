@@ -145,6 +145,15 @@ export const envSchema = z.object({
     .default(500),
   // Opcional: roots customizados (CSV/JSON). Cada root deve apontar para a pasta base de uploads.
   CHECKLIST_PHOTO_RECONCILE_SCAN_ROOTS: csvOrJsonArray,
+
+  // Reconciliação automática de escala vs turnos realizados
+  TURNO_RECONCILE_ENABLED: bool.default(false),
+  TURNO_RECONCILE_CRON: z.string().default('0 2 * * *'), // Default: 2 AM
+  TURNO_RECONCILE_LOCK_TTL_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(600_000), // 10 minutes
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -95,6 +95,7 @@ Comece por `docs/README.md`.
 - upload/fotos: `docs/05-upload-fotos-e-arquivos.md`
 - build/release: `docs/06-build-release.md`
 - deploy PM2: `docs/07-deploy-producao-pm2.md`
+- reconciliação de turnos: `docs/08-reconciliacao-turnos-escala.md`
 
 ## Histórico
 

@@ -15,6 +15,7 @@ import { ListTurnosUseCase } from './application/use-cases/list-turnos.use-case'
 import { GetTurnoUseCase } from './application/use-cases/get-turno.use-case';
 import { SyncTurnosUseCase } from './application/use-cases/sync-turnos.use-case';
 import { TURNO_REPOSITORY } from './domain/repositories/turno-repository.port';
+import { TurnoEscalaReconcileJob } from './jobs/turno-escala-reconcile.job';
 
 @Module({
   imports: [DatabaseModule, LoggerModule, UploadModule],
@@ -32,6 +33,7 @@ import { TURNO_REPOSITORY } from './domain/repositories/turno-repository.port';
     ChecklistPreenchidoService,
     AbrirTurnoRealizadoListener,
     ProcessarChecklistListener,
+    TurnoEscalaReconcileJob,
   ],
   exports: [TurnoRealizadoService, ChecklistPreenchidoService],
 })
