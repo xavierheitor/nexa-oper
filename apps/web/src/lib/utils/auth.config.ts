@@ -161,50 +161,61 @@ export const authOptions: NextAuthOptions = {
           password: string;
         };
 
-        // Busca o usuário no banco de dados pelo username, incluindo seus roles
-        const user = await prisma.user.findUnique({
-          where: { username },
-          include: {
-            UserPermissionGrant: {
-              select: {
-                permission: true,
+        try {
+          // Busca o usuário no banco de dados pelo username, incluindo seus roles
+          const user = await prisma.user.findUnique({
+            where: { username },
+            include: {
+              UserPermissionGrant: {
+                select: {
+                  permission: true,
+                },
               },
-            },
-            permissionProfile: {
-              select: {
-                id: true,
-                key: true,
-                nome: true,
-                PermissionProfileGrant: {
-                  select: {
-                    permission: true,
+              permissionProfile: {
+                select: {
+                  id: true,
+                  key: true,
+                  nome: true,
+                  PermissionProfileGrant: {
+                    select: {
+                      permission: true,
+                    },
                   },
                 },
               },
             },
-          },
-        });
+          });
 
-        // Se usuário não encontrado, lança erro
-        if (!user) throw new Error('Usuário não encontrado!');
+          // Se usuário não encontrado, lança erro
+          if (!user) throw new Error('Usuário não encontrado!');
 
-        // Compara a senha fornecida com o hash armazenado no banco
-        const isValid = await bcrypt.compare(password, user.password);
+          // Compara a senha fornecida com o hash armazenado no banco
+          const isValid = await bcrypt.compare(password, user.password);
 
-        // Se senha inválida, lança erro
-        if (!isValid) throw new Error('Usuário ou senha inválidos!');
+          // Se senha inválida, lança erro
+          if (!isValid) throw new Error('Usuário ou senha inválidos!');
 
-        const authorization = buildAuthorizationSnapshot(user);
+          const authorization = buildAuthorizationSnapshot(user);
 
-        // Retorna dados do usuário para o NextAuth, incluindo roles e permissões
-        return {
-          id: user.id.toString(), // ID do usuário (convertido para string)
-          username: user.username, // Nome de usuário
-          email: user.email ?? '', // Email (com fallback para string vazia)
-          permissions: authorization.permissions, // Lista de permissões efetivas
-          roles: authorization.roles, // Lista de roles do usuário
-          permissionProfile: authorization.permissionProfile,
-        };
+          // Retorna dados do usuário para o NextAuth, incluindo roles e permissões
+          return {
+            id: user.id.toString(), // ID do usuário (convertido para string)
+            username: user.username, // Nome de usuário
+            email: user.email ?? '', // Email (com fallback para string vazia)
+            permissions: authorization.permissions, // Lista de permissões efetivas
+            roles: authorization.roles, // Lista de roles do usuário
+            permissionProfile: authorization.permissionProfile,
+          };
+        } catch (error: any) {
+          if (
+            error.message === 'Usuário não encontrado!' ||
+            error.message === 'Usuário ou senha inválidos!'
+          ) {
+            throw error;
+          }
+          console.error('Erro na autenticação (authorize):', error);
+          throw new Error('Erro interno ao tentar autenticar. Verifique a conexão com o servidor.');
+        }
       },
     }),
   ],

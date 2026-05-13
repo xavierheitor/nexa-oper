@@ -31,8 +31,14 @@ const LoginPage: React.FC = () => {
         message.success('Login realizado com sucesso!');
         router.push('/dashboard');
       } else {
-        // Caso de erro conhecido (401 Unauthorized)
-        setFormError('Usuário ou senha inválidos!');
+        const errorMessage = res?.error || 'Usuário ou senha inválidos!';
+        
+        if (errorMessage.includes('Erro interno') || errorMessage.includes('servidor')) {
+          setFormError('Erro de conexão com o servidor. Tente novamente mais tarde.');
+          errorHandler.log(new Error(errorMessage), 'LoginPage');
+        } else {
+          setFormError(errorMessage);
+        }
       }
     } catch (err) {
       // Usa errorHandler padronizado
