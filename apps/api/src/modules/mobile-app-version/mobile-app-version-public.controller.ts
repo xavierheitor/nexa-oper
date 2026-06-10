@@ -35,6 +35,24 @@ export class MobileAppVersionPublicController {
   }
 
   @Public()
+  @Get('manifest')
+  @BypassEnvelope()
+  @ApiOperation({
+    summary: 'Manifesto JSON para auto-update do app mobile',
+    description:
+      'Retorna a versão ativa e a política de atualização no contrato consumido pelo app.',
+  })
+  @ApiQuery({
+    name: 'plataforma',
+    required: false,
+    example: 'android',
+    description: 'Padrão: android',
+  })
+  async manifest(@Query('plataforma') plataforma?: string) {
+    return this.service.getManifest(plataforma || 'android');
+  }
+
+  @Public()
   @Get('releases')
   @BypassEnvelope()
   @Header('Content-Type', 'text/html')

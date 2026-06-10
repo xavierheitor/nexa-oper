@@ -6,6 +6,22 @@ import { CreateMobileAppVersionDto } from './dto/mobile-app-version.dto';
 import * as path from 'node:path';
 import { createHash } from 'node:crypto';
 
+export interface MobileAppVersionManifest {
+  latest: string;
+  build: number;
+  apkUrl: string;
+  minSupported?: number;
+  wipeRequired: boolean;
+  notes?: string;
+  apkSizeBytes?: number;
+  sha256?: string;
+  policy: {
+    minLoginBuild?: number;
+    minOpenTurnoBuild?: number;
+    minUploadBuild?: number;
+  };
+}
+
 @Injectable()
 export class MobileAppVersionService {
   constructor(
@@ -138,5 +154,49 @@ export class MobileAppVersionService {
     }
 
     return version.arquivoUrl;
+  }
+
+  async getManifest(plataforma: string): Promise<MobileAppVersionManifest> {
+    const normalizedPlatform = this.normalizePlatform(plataforma);
+    const version = await this.prisma.mobileAppVersion.findFirst({
+      where: { plataforma: normalizedPlatform, ativo: true },
+      orderBy: { build: 'desc' },
+    });
+
+    if (!version) {
+      throw AppError.notFound(
+        `Nenhuma versão ativa encontrada para a plataforma: ${normalizedPlatform}`,
+      );
+    }
+
+    return {
+      latest: version.versao,
+      build: version.build,
+      apkUrl: version.arquivoUrl,
+      ...(version.minSupportedBuild != null && {
+        minSupported: version.minSupportedBuild,
+      }),
+      wipeRequired: version.wipeRequired,
+      ...(version.notas && { notes: version.notas }),
+      ...(version.apkSizeBytes != null && {
+        apkSizeBytes: version.apkSizeBytes,
+      }),
+      ...(version.sha256 && { sha256: version.sha256 }),
+      policy: {
+        ...(version.minLoginBuild != null && {
+          minLoginBuild: version.minLoginBuild,
+        }),
+        ...(version.minOpenTurnoBuild != null && {
+          minOpenTurnoBuild: version.minOpenTurnoBuild,
+        }),
+        ...(version.minUploadBuild != null && {
+          minUploadBuild: version.minUploadBuild,
+        }),
+      },
+    };
+  }
+
+  private normalizePlatform(plataforma?: string | null): string {
+    return plataforma?.trim().toLowerCase() === 'ios' ? 'ios' : 'android';
   }
 }
