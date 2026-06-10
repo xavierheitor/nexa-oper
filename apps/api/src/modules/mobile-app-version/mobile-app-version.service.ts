@@ -4,6 +4,7 @@ import type { StorageAdapter } from '../upload/storage/storage.adapter';
 import { AppError } from '../../core/errors/app-error';
 import { CreateMobileAppVersionDto } from './dto/mobile-app-version.dto';
 import * as path from 'node:path';
+import { createHash } from 'node:crypto';
 
 @Injectable()
 export class MobileAppVersionService {
@@ -37,6 +38,7 @@ export class MobileAppVersionService {
 
     const safeFilename = this.sanitizeFilename(file.originalname);
     const storagePath = `apk/${Date.now()}-${safeFilename}`;
+    const sha256 = createHash('sha256').update(file.buffer).digest('hex');
 
     // Faz upload pro storage (Bucket S3 ou Local)
     const uploadResult = await this.storage.upload({
@@ -60,10 +62,19 @@ export class MobileAppVersionService {
       return tx.mobileAppVersion.create({
         data: {
           versao: dto.versao,
+          build: dto.build,
           plataforma: dto.plataforma ?? 'android',
           notas: dto.notas,
           arquivoUrl: uploadResult.url,
+          arquivoPath: uploadResult.path,
+          apkSizeBytes: uploadResult.size,
+          sha256,
           ativo: isAtivo,
+          wipeRequired: dto.wipeRequired ?? false,
+          minSupportedBuild: dto.minSupportedBuild,
+          minLoginBuild: dto.minLoginBuild,
+          minOpenTurnoBuild: dto.minOpenTurnoBuild,
+          minUploadBuild: dto.minUploadBuild,
         },
       });
     });
@@ -117,7 +128,7 @@ export class MobileAppVersionService {
   async getLatestReleaseUrl(plataforma: string): Promise<string> {
     const version = await this.prisma.mobileAppVersion.findFirst({
       where: { plataforma, ativo: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { build: 'desc' },
     });
 
     if (!version) {

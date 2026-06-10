@@ -17,6 +17,14 @@ export class CreateMobileAppVersionDto {
   @MaxLength(50)
   versao!: string;
 
+  @ApiProperty({
+    description: 'Número de build incremental do aplicativo',
+    example: 120,
+  })
+  @IsInt()
+  @Type(() => Number)
+  build!: number;
+
   @ApiPropertyOptional({
     description: 'Plataforma',
     example: 'android',
@@ -40,6 +48,51 @@ export class CreateMobileAppVersionDto {
   @IsBoolean()
   @Type(() => Boolean)
   ativo?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Executa wipe local controlado no primeiro launch deste build',
+    example: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  wipeRequired?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Build mínimo suportado para uso geral do aplicativo',
+    example: 112,
+  })
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  minSupportedBuild?: number;
+
+  @ApiPropertyOptional({
+    description: 'Build mínimo permitido para login',
+    example: 112,
+  })
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  minLoginBuild?: number;
+
+  @ApiPropertyOptional({
+    description: 'Build mínimo permitido para abertura de turno',
+    example: 112,
+  })
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  minOpenTurnoBuild?: number;
+
+  @ApiPropertyOptional({
+    description: 'Build mínimo permitido para uploads mobile',
+    example: 112,
+  })
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  minUploadBuild?: number;
 }
 
 export class UpdateMobileAppVersionDto {
@@ -68,6 +121,10 @@ export class MobileAppVersionResponseDto {
   versao!: string;
 
   @ApiProperty()
+  @IsInt()
+  build!: number;
+
+  @ApiProperty()
   @IsString()
   plataforma!: string;
 
@@ -80,9 +137,48 @@ export class MobileAppVersionResponseDto {
   @IsString()
   arquivoUrl!: string;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  arquivoPath?: string | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  apkSizeBytes?: number | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  sha256?: string | null;
+
   @ApiProperty()
   @IsBoolean()
   ativo!: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  wipeRequired!: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  minSupportedBuild?: number | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  minLoginBuild?: number | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  minOpenTurnoBuild?: number | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  minUploadBuild?: number | null;
 
   @ApiProperty()
   createdAt!: Date;
