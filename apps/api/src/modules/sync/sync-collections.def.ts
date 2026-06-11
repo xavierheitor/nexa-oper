@@ -24,19 +24,6 @@ export const SYNC_DEFINITIONS: SyncCollectionDefInput[] = [
   }),
 
   defTable({
-    name: 'projeto-tipo-estrutura',
-    model: 'projEstrutura',
-    mode: 'snapshot',
-    contractField: false,
-    select: {
-      id: true,
-      nome: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  }),
-
-  defTable({
     name: 'projeto-estrutura',
     model: 'projEstrutura',
     mode: 'snapshot',

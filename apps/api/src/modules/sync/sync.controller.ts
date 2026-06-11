@@ -119,7 +119,6 @@ export class SyncController {
     description: 'Nome da coleção',
     enum: [
       'projeto-tipo-poste',
-      'projeto-tipo-estrutura',
       'projeto-estrutura',
       'projeto-tipo-ramal',
       'projeto-viabilizacao',

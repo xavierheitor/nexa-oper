@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class LoginDto {
   @ApiProperty({
@@ -31,10 +31,24 @@ export class LoginDto {
   @ApiPropertyOptional({
     description: 'Plataforma do aplicativo móvel',
     example: 'android',
-    enum: ['android', 'ios'],
   })
   @IsOptional()
   @IsString()
-  @IsIn(['android', 'ios'])
   plataformaApp?: string;
+
+  @ApiPropertyOptional({
+    description: 'Número de build do aplicativo móvel',
+    example: '120',
+  })
+  @IsOptional()
+  @IsString()
+  buildApp?: string;
+
+  @ApiPropertyOptional({
+    description: 'Identificador do dispositivo informado pelo aplicativo',
+    example: 'android-device-id',
+  })
+  @IsOptional()
+  @IsString()
+  dispositivo?: string;
 }

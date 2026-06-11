@@ -3,6 +3,8 @@ export interface LoginRequestContract {
   senha: string;
   versaoApp?: string;
   plataformaApp?: string;
+  buildApp?: string;
+  dispositivo?: string;
 }
 
 export interface RefreshTokenRequestContract {

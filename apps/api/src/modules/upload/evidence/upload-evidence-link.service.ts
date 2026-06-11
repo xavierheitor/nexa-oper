@@ -34,6 +34,7 @@ const LINK_OWNER_TYPE_BY_UPLOAD_TYPE: Record<string, string> = {
   'apr-evidence': 'apr',
   'projeto-viabilizacao-poste': 'projeto-poste',
   medidor: 'atividadeMedidor',
+  // Legado: fotos antes enviadas como `servico` agora devem usar `atividade-turno`.
   servico: 'servico',
 };
 
@@ -176,9 +177,12 @@ export class UploadEvidenceLinkService {
       case 'apr-evidence':
         return 'APR_EVIDENCIA';
       case 'medidor':
-        if (atividadeContexto === 'medidor:instalado')
-          {return 'MEDIDOR_INSTALADO';}
-        if (atividadeContexto === 'medidor:retirado') {return 'MEDIDOR_RETIRADO';}
+        if (atividadeContexto === 'medidor:instalado') {
+          return 'MEDIDOR_INSTALADO';
+        }
+        if (atividadeContexto === 'medidor:retirado') {
+          return 'MEDIDOR_RETIRADO';
+        }
         return 'MEDIDOR';
       case 'atividade-turno':
         if (atividadeContexto?.startsWith('form:') === true) {
@@ -202,7 +206,9 @@ export class UploadEvidenceLinkService {
   }
 
   private readString(value: unknown): string | null {
-    if (typeof value !== 'string') {return null;}
+    if (typeof value !== 'string') {
+      return null;
+    }
     const trimmed = value.trim();
     return trimmed.length > 0 ? trimmed : null;
   }
@@ -220,13 +226,19 @@ export class UploadEvidenceLinkService {
 
   private toSafeJson(value: unknown): Prisma.InputJsonValue | undefined {
     const encoded = this.encodeJson(value);
-    if (encoded === undefined) {return undefined;}
+    if (encoded === undefined) {
+      return undefined;
+    }
     return encoded as Prisma.InputJsonValue;
   }
 
   private encodeJson(value: unknown): unknown {
-    if (value === null) {return null;}
-    if (value === undefined) {return undefined;}
+    if (value === null) {
+      return null;
+    }
+    if (value === undefined) {
+      return undefined;
+    }
     if (
       typeof value === 'string' ||
       typeof value === 'number' ||
