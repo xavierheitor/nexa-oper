@@ -831,16 +831,8 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
     const pairKey = `${resposta.aprGrupoPerguntaId}:${resposta.aprPerguntaId}`;
     const medidasPermitidas = medidasPermitidasPorPergunta.get(pairKey);
 
-    if (!medidasPermitidas?.size) {
-      throw AppError.validation(
-        `APR ${apr.aprUuid} sem medidas de controle configuradas para a pergunta ${resposta.aprPerguntaId} no grupo ${resposta.aprGrupoPerguntaId}`,
-      );
-    }
-
     if (medidasSelecionadas.length === 0) {
-      throw AppError.validation(
-        `APR ${apr.aprUuid} exige ao menos uma medida de controle na resposta ${idx}`,
-      );
+      return [];
     }
 
     return medidasSelecionadas.map((medidaSelecionada) => {
@@ -870,7 +862,10 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
         );
       }
 
-      if (!medidasPermitidas.has(medidaSelecionada.aprMedidaControleId)) {
+      if (
+        medidasPermitidas?.size &&
+        !medidasPermitidas.has(medidaSelecionada.aprMedidaControleId)
+      ) {
         throw AppError.validation(
           `APR ${apr.aprUuid} com medida de controle inválida para a pergunta ${resposta.aprPerguntaId} na resposta ${idx}`,
         );

@@ -197,7 +197,7 @@ describe('AtividadeUploadService', () => {
     );
   });
 
-  it('rejects APR resposta that generates pendencia without medidas de controle', async () => {
+  it('persists APR resposta that generates pendencia without selected medidas de controle', async () => {
     const { service, tx } = makeSut();
 
     tx.atividadeAprPreenchida.upsert.mockResolvedValue({ id: 901 });
@@ -215,6 +215,7 @@ describe('AtividadeUploadService', () => {
         aprMedidaControleId: 88,
       },
     ]);
+    tx.atividadeAprResposta.create.mockResolvedValue({ id: 3001 });
 
     await expect(
       service.persistUpload(
@@ -243,7 +244,16 @@ describe('AtividadeUploadService', () => {
         },
         55,
       ),
-    ).rejects.toThrow('exige ao menos uma medida de controle');
+    ).resolves.toMatchObject({
+      status: 'ok',
+      atividadeExecucaoId: 77,
+    });
+
+    expect(tx.atividadeAprResposta.create).toHaveBeenCalledWith({
+      data: expect.not.objectContaining({
+        AtividadeAprRespostaMedidaControle: expect.anything(),
+      }),
+    });
   });
 
   it('persists textoLivre when medida de controle "Outras" is selected', async () => {
@@ -455,6 +465,79 @@ describe('AtividadeUploadService', () => {
               aprMedidaControleId: null,
               medidaControleNomeSnapshot: 'Outros',
               textoLivre: 'Sinalizar com cones adicionais',
+              createdBy: '55',
+            }),
+          ],
+        },
+      }),
+    });
+  });
+
+  it('persists selected medida de controle even when pergunta relation is missing', async () => {
+    const { service, tx } = makeSut();
+
+    tx.atividadeAprPreenchida.upsert.mockResolvedValue({ id: 901 });
+    tx.aprOpcaoResposta.findMany.mockResolvedValue([
+      {
+        id: 12,
+        nome: 'Não conforme',
+        geraPendencia: true,
+      },
+    ]);
+    tx.aprMedidaControle.findMany.mockResolvedValue([
+      {
+        id: 88,
+        nome: 'Isolar área',
+      },
+    ]);
+    tx.aprGrupoPerguntaMedidaControleRelacao.findMany.mockResolvedValue([]);
+    tx.atividadeAprResposta.create.mockResolvedValue({ id: 3001 });
+
+    await expect(
+      service.persistUpload(
+        {
+          ...payload,
+          aprs: [
+            {
+              aprUuid: 'apr-uuid-5',
+              respostas: [
+                {
+                  aprGrupoPerguntaId: 1,
+                  aprPerguntaId: 7,
+                  aprPerguntaNomeSnapshot: 'Isolamento da área',
+                  tipoRespostaSnapshot: 'opcao',
+                  aprOpcaoRespostaId: 12,
+                  aprOpcaoRespostaNomeSnapshot: 'Não conforme',
+                  medidasControle: [
+                    {
+                      aprMedidaControleId: 88,
+                      aprMedidaControleNomeSnapshot: 'Isolar área',
+                    },
+                  ],
+                },
+              ],
+              assinaturas: [
+                {
+                  nomeAssinante: 'Eletricista 1',
+                },
+              ],
+            },
+          ],
+        },
+        55,
+      ),
+    ).resolves.toMatchObject({
+      status: 'ok',
+      atividadeExecucaoId: 77,
+    });
+
+    expect(tx.atividadeAprResposta.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        AtividadeAprRespostaMedidaControle: {
+          create: [
+            expect.objectContaining({
+              aprMedidaControleId: 88,
+              medidaControleNomeSnapshot: 'Isolar área',
               createdBy: '55',
             }),
           ],
