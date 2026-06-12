@@ -387,4 +387,79 @@ describe('AtividadeUploadService', () => {
       ),
     ).rejects.toThrow('exige textoLivre para a medida de controle "Outras"');
   });
+
+  it('persists medida de controle "Outros" without remote id when textoLivre is provided', async () => {
+    const { service, tx } = makeSut();
+
+    tx.atividadeAprPreenchida.upsert.mockResolvedValue({ id: 901 });
+    tx.aprOpcaoResposta.findMany.mockResolvedValue([
+      {
+        id: 12,
+        nome: 'Não conforme',
+        geraPendencia: true,
+      },
+    ]);
+    tx.aprGrupoPerguntaMedidaControleRelacao.findMany.mockResolvedValue([
+      {
+        aprGrupoPerguntaId: 7,
+        aprPerguntaId: 14,
+        aprMedidaControleId: 99,
+      },
+    ]);
+    tx.atividadeAprResposta.create.mockResolvedValue({ id: 3001 });
+
+    await expect(
+      service.persistUpload(
+        {
+          ...payload,
+          aprs: [
+            {
+              aprUuid: 'apr-uuid-4',
+              respostas: [
+                {
+                  aprGrupoPerguntaId: 7,
+                  aprPerguntaId: 14,
+                  aprPerguntaNomeSnapshot: 'Isolamento da área',
+                  tipoRespostaSnapshot: 'opcao',
+                  aprOpcaoRespostaId: 12,
+                  aprOpcaoRespostaNomeSnapshot: 'Não conforme',
+                  medidasControle: [
+                    {
+                      aprMedidaControleId: null,
+                      aprMedidaControleNomeSnapshot: 'Outros',
+                      textoLivre: 'Sinalizar com cones adicionais',
+                    },
+                  ],
+                },
+              ],
+              assinaturas: [
+                {
+                  nomeAssinante: 'Eletricista 1',
+                },
+              ],
+            },
+          ],
+        },
+        55,
+      ),
+    ).resolves.toMatchObject({
+      status: 'ok',
+      atividadeExecucaoId: 77,
+    });
+
+    expect(tx.atividadeAprResposta.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        AtividadeAprRespostaMedidaControle: {
+          create: [
+            expect.objectContaining({
+              aprMedidaControleId: null,
+              medidaControleNomeSnapshot: 'Outros',
+              textoLivre: 'Sinalizar com cones adicionais',
+              createdBy: '55',
+            }),
+          ],
+        },
+      }),
+    });
+  });
 });

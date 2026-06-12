@@ -13,6 +13,14 @@ import type {
 } from './evidence.handler';
 import { UploadEvidenceLinkService } from './upload-evidence-link.service';
 
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { code?: string }).code === 'P2002'
+  );
+}
+
 type PosteViabilizacaoTarget = {
   posteId: number;
   projetoId: number;
@@ -93,37 +101,12 @@ export class ProjetoViabilizacaoPosteEvidenceHandler
       : null;
 
     const evidence = idempotencyKey
-      ? await this.prisma.uploadEvidence.upsert({
-          where: { idempotencyKey },
-          create: {
-            tipo: this.type,
-            entityType: ctx.entityType ?? 'projPoste',
-            entityId: String(target.posteId),
-            url: normalizedUpload.url,
-            path: normalizedUpload.path,
-            tamanho: normalizedUpload.size,
-            mimeType: normalizedUpload.mimeType,
-            nomeArquivo: normalizedUpload.filename,
-            checksum: fingerprint?.checksum,
-            idempotencyKey,
-            createdBy: 'system',
-          },
-          update: {
-            url: normalizedUpload.url,
-            path: normalizedUpload.path,
-            tamanho: normalizedUpload.size,
-            mimeType: normalizedUpload.mimeType,
-            nomeArquivo: normalizedUpload.filename,
-            checksum: fingerprint?.checksum,
-          },
-          select: {
-            id: true,
-            url: true,
-            path: true,
-            tamanho: true,
-            mimeType: true,
-            nomeArquivo: true,
-          },
+      ? await this.upsertEvidenceByIdempotencyKey({
+          ctx,
+          target,
+          upload: normalizedUpload,
+          fingerprint: fingerprint!,
+          idempotencyKey,
         })
       : await this.prisma.uploadEvidence.create({
           data: {
@@ -168,6 +151,66 @@ export class ProjetoViabilizacaoPosteEvidenceHandler
       mimeType: evidence.mimeType ?? undefined,
       filename: evidence.nomeArquivo ?? undefined,
     });
+  }
+
+  private async upsertEvidenceByIdempotencyKey(params: {
+    ctx: EvidenceContext;
+    target: PosteViabilizacaoTarget;
+    upload: UploadResult;
+    fingerprint: UploadFingerprint;
+    idempotencyKey: string;
+  }) {
+    const select = {
+      id: true,
+      url: true,
+      path: true,
+      tamanho: true,
+      mimeType: true,
+      nomeArquivo: true,
+    } as const;
+
+    try {
+      return await this.prisma.uploadEvidence.upsert({
+        where: { idempotencyKey: params.idempotencyKey },
+        create: {
+          tipo: this.type,
+          entityType: params.ctx.entityType ?? 'projPoste',
+          entityId: String(params.target.posteId),
+          url: params.upload.url,
+          path: params.upload.path,
+          tamanho: params.upload.size,
+          mimeType: params.upload.mimeType,
+          nomeArquivo: params.upload.filename,
+          checksum: params.fingerprint.checksum,
+          idempotencyKey: params.idempotencyKey,
+          createdBy: 'system',
+        },
+        update: {
+          url: params.upload.url,
+          path: params.upload.path,
+          tamanho: params.upload.size,
+          mimeType: params.upload.mimeType,
+          nomeArquivo: params.upload.filename,
+          checksum: params.fingerprint.checksum,
+        },
+        select,
+      });
+    } catch (error) {
+      if (!isUniqueConstraintError(error)) {
+        throw error;
+      }
+
+      const existing = await this.prisma.uploadEvidence.findUnique({
+        where: { idempotencyKey: params.idempotencyKey },
+        select,
+      });
+
+      if (!existing) {
+        throw error;
+      }
+
+      return existing;
+    }
   }
 
   private async resolveTarget(

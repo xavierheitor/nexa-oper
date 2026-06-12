@@ -6,6 +6,14 @@ import { PrismaService } from '../../../database/prisma.service';
 
 import type { EvidenceContext } from './evidence.handler';
 
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { code?: string }).code === 'P2002'
+  );
+}
+
 type CanonicalLinkData = {
   ownerType: string;
   ownerRef: string;
@@ -62,24 +70,52 @@ export class UploadEvidenceLinkService {
   }): Promise<void> {
     const canonical = this.resolveCanonicalData(params.ctx);
 
-    await this.prisma.uploadEvidenceLink.upsert({
-      where: {
-        uploadEvidenceId_ownerType_ownerRef_photoCategory: {
+    try {
+      await this.prisma.uploadEvidenceLink.upsert({
+        where: {
+          uploadEvidenceId_ownerType_ownerRef_photoCategory: {
+            uploadEvidenceId: params.uploadEvidenceId,
+            ownerType: canonical.ownerType,
+            ownerRef: canonical.ownerRef,
+            photoCategory: canonical.photoCategory,
+          },
+        },
+        create: {
+          uploadEvidenceId: params.uploadEvidenceId,
+          ...canonical,
+          createdBy: params.createdBy ?? 'system',
+        },
+        update: {
+          ...canonical,
+        },
+      });
+      return;
+    } catch (error) {
+      if (!isUniqueConstraintError(error)) {
+        throw error;
+      }
+
+      const existing = await this.prisma.uploadEvidenceLink.findFirst({
+        where: {
           uploadEvidenceId: params.uploadEvidenceId,
           ownerType: canonical.ownerType,
           ownerRef: canonical.ownerRef,
           photoCategory: canonical.photoCategory,
         },
-      },
-      create: {
-        uploadEvidenceId: params.uploadEvidenceId,
-        ...canonical,
-        createdBy: params.createdBy ?? 'system',
-      },
-      update: {
-        ...canonical,
-      },
-    });
+        select: { id: true },
+      });
+
+      if (!existing) {
+        throw error;
+      }
+
+      await this.prisma.uploadEvidenceLink.update({
+        where: { id: existing.id },
+        data: {
+          ...canonical,
+        },
+      });
+    }
   }
 
   private resolveCanonicalData(ctx: EvidenceContext): CanonicalLinkData {

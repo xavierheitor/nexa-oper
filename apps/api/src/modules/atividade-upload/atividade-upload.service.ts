@@ -95,7 +95,12 @@ function normalizeComparableText(value?: string | null): string {
 
 function isOutrasMedidaControle(value?: string | null): boolean {
   const normalized = normalizeComparableText(value);
-  return normalized === 'outras' || normalized === 'outra';
+  return (
+    normalized === 'outras' ||
+    normalized === 'outra' ||
+    normalized === 'outros' ||
+    normalized === 'outro'
+  );
 }
 
 function parseDateOrNull(value?: string | null): Date | null {
@@ -624,8 +629,8 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
       new Set(
         apr.respostas
           .map((resposta) => resposta.aprOpcaoRespostaId)
-          .filter((value): value is number => value != null)
-      )
+          .filter((value): value is number => value != null),
+      ),
     );
 
     const opcoes = opcaoIds.length
@@ -720,7 +725,7 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
         opcoesById,
         medidasById,
         medidasPermitidasPorPergunta,
-      )
+      ),
     );
   }
 
@@ -731,7 +736,10 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
     atividadeAprPreenchidaId: number,
     preenchidaEm: Date,
     createdBy: string,
-    opcoesById: Map<number, { id: number; nome: string; geraPendencia: boolean }>,
+    opcoesById: Map<
+      number,
+      { id: number; nome: string; geraPendencia: boolean }
+    >,
     medidasById: Map<number, { id: number; nome: string }>,
     medidasPermitidasPorPergunta: Map<string, Set<number>>,
   ): PreparedAprResposta {
@@ -752,8 +760,7 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
     }
 
     const opcaoId = resposta.aprOpcaoRespostaId ?? null;
-    const opcao =
-      opcaoId != null ? opcoesById.get(opcaoId) ?? null : null;
+    const opcao = opcaoId != null ? (opcoesById.get(opcaoId) ?? null) : null;
 
     if (opcaoId != null && !opcao) {
       throw AppError.validation(
@@ -780,7 +787,9 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
       perguntaNomeSnapshot,
       tipoRespostaSnapshot,
       opcaoNomeSnapshot:
-        normalizeString(resposta.aprOpcaoRespostaNomeSnapshot) ?? opcao?.nome ?? null,
+        normalizeString(resposta.aprOpcaoRespostaNomeSnapshot) ??
+        opcao?.nome ??
+        null,
       respostaTexto: normalizeString(resposta.respostaTexto),
       marcado: typeof resposta.marcado === 'boolean' ? resposta.marcado : null,
       ordemGrupo: resposta.ordemGrupo ?? 0,
@@ -813,10 +822,7 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
       return [];
     }
 
-    if (
-      resposta.aprGrupoPerguntaId == null ||
-      resposta.aprPerguntaId == null
-    ) {
+    if (resposta.aprGrupoPerguntaId == null || resposta.aprPerguntaId == null) {
       throw AppError.validation(
         `APR ${apr.aprUuid} exige grupo e pergunta para validar medidas de controle (índice ${idx})`,
       );
@@ -838,7 +844,27 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
     }
 
     return medidasSelecionadas.map((medidaSelecionada) => {
+      const medidaControleNomeInformado = normalizeString(
+        medidaSelecionada.aprMedidaControleNomeSnapshot,
+      );
+      const textoLivre = normalizeString(medidaSelecionada.textoLivre);
+
       if (medidaSelecionada.aprMedidaControleId == null) {
+        if (isOutrasMedidaControle(medidaControleNomeInformado)) {
+          if (!textoLivre) {
+            throw AppError.validation(
+              `APR ${apr.aprUuid} exige textoLivre para a medida de controle "Outras" na resposta ${idx}`,
+            );
+          }
+
+          return {
+            aprMedidaControleId: null,
+            medidaControleNomeSnapshot: medidaControleNomeInformado ?? 'Outras',
+            textoLivre,
+            createdBy,
+          };
+        }
+
         throw AppError.validation(
           `APR ${apr.aprUuid} com medida de controle sem ID na resposta ${idx}`,
         );
@@ -858,9 +884,7 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
       }
 
       const medidaControleNomeSnapshot =
-        normalizeString(medidaSelecionada.aprMedidaControleNomeSnapshot) ??
-        medida.nome;
-      const textoLivre = normalizeString(medidaSelecionada.textoLivre);
+        medidaControleNomeInformado ?? medida.nome;
 
       if (isOutrasMedidaControle(medidaControleNomeSnapshot) && !textoLivre) {
         throw AppError.validation(
@@ -888,7 +912,9 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
     >();
 
     for (const medida of medidasControle) {
-      const normalizedName = normalizeString(medida.aprMedidaControleNomeSnapshot);
+      const normalizedName = normalizeString(
+        medida.aprMedidaControleNomeSnapshot,
+      );
       const key =
         medida.aprMedidaControleId != null
           ? String(medida.aprMedidaControleId)

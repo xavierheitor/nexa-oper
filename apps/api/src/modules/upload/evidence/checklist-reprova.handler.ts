@@ -13,6 +13,14 @@ import { CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS } from './common-metadata-spec
 import { normalizeStoredUploadResult } from '../storage/upload-url';
 import { UploadEvidenceLinkService } from './upload-evidence-link.service';
 
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { code?: string }).code === 'P2002'
+  );
+}
+
 @Injectable()
 export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
   readonly type = 'checklist-reprova';
@@ -173,30 +181,11 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
 
     let evidenceId: number;
     if (fingerprint && idempotencyKey) {
-      const evidence = await this.prisma.uploadEvidence.upsert({
-        where: { idempotencyKey },
-        create: {
-          tipo: this.type,
-          entityType: ctx.entityType || 'checklistPreenchido',
-          entityId: String(ctx.entityId),
-          url: result.url,
-          path: result.path,
-          tamanho: result.size,
-          mimeType: result.mimeType,
-          nomeArquivo: result.filename,
-          checksum: fingerprint.checksum,
-          idempotencyKey,
-          createdBy: 'system',
-        },
-        update: {
-          url: result.url,
-          path: result.path,
-          tamanho: result.size,
-          mimeType: result.mimeType,
-          nomeArquivo: result.filename,
-          checksum: fingerprint.checksum,
-        },
-        select: { id: true },
+      const evidence = await this.upsertEvidenceByIdempotencyKey({
+        ctx,
+        result,
+        fingerprint,
+        idempotencyKey,
       });
       evidenceId = evidence.id;
     } else {
@@ -223,6 +212,56 @@ export class ChecklistReprovaEvidenceHandler implements EvidenceHandler {
       ctx,
       createdBy: 'system',
     });
+  }
+
+  private async upsertEvidenceByIdempotencyKey(params: {
+    ctx: EvidenceContext;
+    result: UploadResult;
+    fingerprint: UploadFingerprint;
+    idempotencyKey: string;
+  }): Promise<{ id: number }> {
+    try {
+      return await this.prisma.uploadEvidence.upsert({
+        where: { idempotencyKey: params.idempotencyKey },
+        create: {
+          tipo: this.type,
+          entityType: params.ctx.entityType || 'checklistPreenchido',
+          entityId: String(params.ctx.entityId),
+          url: params.result.url,
+          path: params.result.path,
+          tamanho: params.result.size,
+          mimeType: params.result.mimeType,
+          nomeArquivo: params.result.filename,
+          checksum: params.fingerprint.checksum,
+          idempotencyKey: params.idempotencyKey,
+          createdBy: 'system',
+        },
+        update: {
+          url: params.result.url,
+          path: params.result.path,
+          tamanho: params.result.size,
+          mimeType: params.result.mimeType,
+          nomeArquivo: params.result.filename,
+          checksum: params.fingerprint.checksum,
+        },
+        select: { id: true },
+      });
+    } catch (error) {
+      if (!isUniqueConstraintError(error)) {
+        throw error;
+      }
+
+      const existing = await this.prisma.uploadEvidence.findUnique({
+        where: { idempotencyKey: params.idempotencyKey },
+        select: { id: true },
+      });
+
+      if (!existing) {
+        throw error;
+      }
+
+      return existing;
+    }
   }
 
   private async marcarRespostaComoSincronizada(
