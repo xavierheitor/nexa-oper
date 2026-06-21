@@ -68,6 +68,11 @@ export const envSchema = z.object({
   REQUEST_TIMEOUT_MS: z.coerce.number().default(60_000),
   JSON_LIMIT: z.string().default('2mb'),
   ATIVIDADE_UPLOAD_JSON_LIMIT: z.string().default('12mb'),
+  ATIVIDADE_UPLOAD_TX_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(60_000),
   URLENCODED_LIMIT: z.string().default('2mb'),
 
   // CORS (CSV ou JSON array)
@@ -154,6 +159,15 @@ export const envSchema = z.object({
     .int()
     .positive()
     .default(600_000), // 10 minutes
+
+  // Fila de checklists enviados na abertura de turno
+  TURNO_CHECKLIST_SYNC_ENABLED: bool.default(true),
+  TURNO_CHECKLIST_SYNC_CRON: z.string().default('*/1 * * * *'),
+  TURNO_CHECKLIST_SYNC_LOCK_TTL_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(120_000),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -161,6 +161,45 @@ model ChecklistRespostaFoto {
   @@map("ChecklistRespostaFotos")
 }
 
+enum TurnoChecklistSyncStatus {
+  pending
+  processing
+  completed
+  failed
+  dead_letter
+}
+
+/**
+ * Fila durável de checklists enviados na abertura de turno.
+ * Garante que o payload não se perde se o processamento falhar ou demorar.
+ */
+model TurnoChecklistSyncQueue {
+  id Int @id @default(autoincrement())
+
+  turnoId Int
+  turno   Turno @relation(fields: [turnoId], references: [id], onDelete: Cascade)
+
+  payload Json
+
+  status        TurnoChecklistSyncStatus @default(pending)
+  attemptCount  Int                      @default(0)
+  maxAttempts   Int                      @default(10)
+  nextAttemptAt DateTime                 @default(now())
+  lastError     String?                  @db.Text
+  processedAt   DateTime?
+
+  checklistPreenchidoIds Json?
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+
+  @@index([turnoId])
+  @@index([status, nextAttemptAt])
+  @@map("TurnoChecklistSyncQueue")
+}
+
 /**
  * Enum para status das pendências
  */

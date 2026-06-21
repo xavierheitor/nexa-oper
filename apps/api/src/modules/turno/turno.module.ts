@@ -7,6 +7,7 @@ import { TurnoController } from './turno.controller';
 import { TurnoRepository } from './turno.repository';
 import { TurnoRealizadoService } from './turno-realizado/turno-realizado.service';
 import { ChecklistPreenchidoService } from './checklist-preenchido/checklist-preenchido.service';
+import { TurnoChecklistSyncQueueService } from './checklist-preenchido/turno-checklist-sync-queue.service';
 import { AbrirTurnoRealizadoListener } from './listeners/abrir-turno-realizado.listener';
 import { ProcessarChecklistListener } from './listeners/processar-checklist.listener';
 import { OpenTurnoUseCase } from './application/use-cases/open-turno.use-case';
@@ -16,6 +17,7 @@ import { GetTurnoUseCase } from './application/use-cases/get-turno.use-case';
 import { SyncTurnosUseCase } from './application/use-cases/sync-turnos.use-case';
 import { TURNO_REPOSITORY } from './domain/repositories/turno-repository.port';
 import { TurnoEscalaReconcileJob } from './jobs/turno-escala-reconcile.job';
+import { TurnoChecklistSyncJob } from './jobs/turno-checklist-sync.job';
 
 @Module({
   imports: [DatabaseModule, LoggerModule, UploadModule],
@@ -31,10 +33,16 @@ import { TurnoEscalaReconcileJob } from './jobs/turno-escala-reconcile.job';
     { provide: TURNO_REPOSITORY, useExisting: TurnoRepository },
     TurnoRealizadoService,
     ChecklistPreenchidoService,
+    TurnoChecklistSyncQueueService,
     AbrirTurnoRealizadoListener,
     ProcessarChecklistListener,
     TurnoEscalaReconcileJob,
+    TurnoChecklistSyncJob,
   ],
-  exports: [TurnoRealizadoService, ChecklistPreenchidoService],
+  exports: [
+    TurnoRealizadoService,
+    ChecklistPreenchidoService,
+    TurnoChecklistSyncQueueService,
+  ],
 })
 export class TurnoModule {}

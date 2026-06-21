@@ -45,7 +45,7 @@ export class UploadLocationUseCase {
         });
       }
 
-      await this.repository.createLocation({
+      const createResult = await this.repository.createLocation({
         turnoId: payload.turnoId,
         veiculoRemoteId: payload.veiculoRemoteId ?? null,
         equipeRemoteId: payload.equipeRemoteId ?? null,
@@ -61,6 +61,14 @@ export class UploadLocationUseCase {
         signature,
         createdBy: userId != null ? String(userId) : 'system',
       });
+
+      if (createResult === 'already_existed') {
+        this.logger.warn(
+          'Localização já existia (retry/idempotência); reenvio ignorado.',
+          { turnoId: payload.turnoId, signature },
+        );
+        return { status: 'ok', alreadyExisted: true };
+      }
 
       this.logger.info('Localização armazenada com sucesso', {
         turnoId: payload.turnoId,
@@ -80,9 +88,9 @@ export class UploadLocationUseCase {
     const knownError = this.extractKnownPrismaError(error);
 
     if (this.isDuplicateSignatureError(knownError)) {
-      this.logger.debug(
-        'Localização duplicada detectada (signature), ignorando.',
-        { signature },
+      this.logger.warn(
+        'Localização duplicada detectada (signature); reenvio ignorado.',
+        { signature, turnoId },
       );
       return { status: 'ok', alreadyExisted: true };
     }

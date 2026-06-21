@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import type {
   CreateLocationRecordPort,
+  CreateLocationResult,
   LocationTurnoSnapshotPort,
   LocationUploadRepositoryPort,
 } from './domain/ports/location-upload-repository.port';
@@ -21,7 +22,16 @@ export class LocalizacaoService implements LocationUploadRepositoryPort {
     });
   }
 
-  async createLocation(data: CreateLocationRecordPort): Promise<void> {
+  async createLocation(data: CreateLocationRecordPort): Promise<CreateLocationResult> {
+    const existing = await this.prisma.mobileLocation.findUnique({
+      where: { signature: data.signature },
+      select: { id: true },
+    });
+
+    if (existing) {
+      return 'already_existed';
+    }
+
     await this.prisma.mobileLocation.create({
       data: {
         turnoId: data.turnoId,
@@ -40,5 +50,7 @@ export class LocalizacaoService implements LocationUploadRepositoryPort {
         createdBy: data.createdBy,
       },
     });
+
+    return 'created';
   }
 }

@@ -22,7 +22,9 @@ export interface CreateLocationRecordPort {
   createdBy: string;
 }
 
+export type CreateLocationResult = 'created' | 'already_existed';
+
 export interface LocationUploadRepositoryPort {
   findTurnoById(turnoId: number): Promise<LocationTurnoSnapshotPort | null>;
-  createLocation(data: CreateLocationRecordPort): Promise<void>;
+  createLocation(data: CreateLocationRecordPort): Promise<CreateLocationResult>;
 }

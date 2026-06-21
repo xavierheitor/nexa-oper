@@ -290,32 +290,30 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
         createdPhotos,
       );
 
-      await this.prisma.$transaction(async (tx) => {
-        await this.lockAtividadeExecucaoForUpdate(tx, execucao.id);
+      await this.prisma.$transaction(
+        async (tx) => {
+          await this.lockAtividadeExecucaoForUpdate(tx, execucao.id);
 
-        await this.persistMedidor(
-          tx,
-          execucao.id,
-          payload,
-          photoRefMap,
-          createdBy,
-        );
-        await this.persistMateriais(tx, execucao.id, payload, createdBy);
-        await this.persistRespostas(
-          tx,
-          execucao.id,
-          payload,
-          photoRefMap,
-          createdBy,
-        );
-        await this.persistEventos(tx, execucao.id, payload, createdBy);
-        await this.persistAprs(
-          tx as PrismaService,
-          execucao.id,
-          payload,
-          createdBy,
-        );
-      });
+          await this.persistMedidor(
+            tx,
+            execucao.id,
+            payload,
+            photoRefMap,
+            createdBy,
+          );
+          await this.persistMateriais(tx, execucao.id, payload, createdBy);
+          await this.persistRespostas(
+            tx,
+            execucao.id,
+            payload,
+            photoRefMap,
+            createdBy,
+          );
+          await this.persistEventos(tx, execucao.id, payload, createdBy);
+          await this.persistAprs(tx, execucao.id, payload, createdBy);
+        },
+        { timeout: env.ATIVIDADE_UPLOAD_TX_TIMEOUT_MS },
+      );
     } catch (error: unknown) {
       await this.cleanupCreatedPhotos(createdPhotos);
       throw error;
@@ -504,7 +502,7 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
   }
 
   private async persistAprs(
-    tx: PrismaService,
+    tx: Prisma.TransactionClient,
     atividadeExecucaoId: number,
     payload: AtividadeUploadRequestContract,
     createdBy: string,
@@ -629,21 +627,7 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
           createdBy,
         );
 
-        for (const respostaData of respostasData) {
-          const { medidasControle, ...respostaBase } = respostaData;
-          await tx.atividadeAprResposta.create({
-            data: {
-              ...respostaBase,
-              ...(medidasControle.length
-                ? {
-                    AtividadeAprRespostaMedidaControle: {
-                      create: medidasControle,
-                    },
-                  }
-                : {}),
-            },
-          });
-        }
+        await this.persistAprRespostas(tx, respostasData);
       }
 
       await tx.atividadeAprAssinatura.createMany({
@@ -662,8 +646,45 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
     }
   }
 
+  private async persistAprRespostas(
+    tx: Prisma.TransactionClient,
+    respostasData: PreparedAprResposta[],
+  ) {
+    if (!respostasData.length) return;
+
+    const semMedidas: Array<Omit<PreparedAprResposta, 'medidasControle'>> = [];
+    const comMedidas: PreparedAprResposta[] = [];
+
+    for (const respostaData of respostasData) {
+      const { medidasControle, ...respostaBase } = respostaData;
+      if (medidasControle.length === 0) {
+        semMedidas.push(respostaBase);
+        continue;
+      }
+      comMedidas.push(respostaData);
+    }
+
+    if (semMedidas.length > 0) {
+      await tx.atividadeAprResposta.createMany({
+        data: semMedidas,
+      });
+    }
+
+    for (const respostaData of comMedidas) {
+      const { medidasControle, ...respostaBase } = respostaData;
+      await tx.atividadeAprResposta.create({
+        data: {
+          ...respostaBase,
+          AtividadeAprRespostaMedidaControle: {
+            create: medidasControle,
+          },
+        },
+      });
+    }
+  }
+
   private async prepareAprRespostas(
-    tx: PrismaService,
+    tx: Prisma.TransactionClient,
     apr: AtividadeUploadAprContract,
     atividadeAprPreenchidaId: number,
     preenchidaEm: Date,

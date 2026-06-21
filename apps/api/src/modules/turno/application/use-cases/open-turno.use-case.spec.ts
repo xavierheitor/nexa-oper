@@ -3,7 +3,7 @@ import type { PrismaService } from '../../../../database/prisma.service';
 import type { AppLogger } from '../../../../core/logger/app-logger';
 import type { AbrirTurnoRequestContract } from '../../../../contracts/turno/abrir-turno.contract';
 import type { MobileAppVersionGateService } from '../../../../core/mobile-app-version/mobile-app-version-gate.service';
-import type { ChecklistPreenchidoService } from '../../checklist-preenchido/checklist-preenchido.service';
+import type { TurnoChecklistSyncQueueService } from '../../checklist-preenchido/turno-checklist-sync-queue.service';
 import type { TurnoRepositoryPort } from '../../domain/repositories/turno-repository.port';
 import { OpenTurnoUseCase } from './open-turno.use-case';
 
@@ -240,11 +240,12 @@ describe('OpenTurnoUseCase (concurrency)', () => {
       operation: jest.fn(),
     };
 
-    const checklistPreenchidoService: Pick<
-      ChecklistPreenchidoService,
-      'salvarChecklistsDoTurno'
+    const checklistSyncQueue: Pick<
+      TurnoChecklistSyncQueueService,
+      'enqueueInTransaction' | 'processPendingForTurno'
     > = {
-      salvarChecklistsDoTurno: jest.fn(),
+      enqueueInTransaction: jest.fn(),
+      processPendingForTurno: jest.fn(),
     };
 
     const eventEmitter: Pick<EventEmitter2, 'emit'> = {
@@ -261,7 +262,7 @@ describe('OpenTurnoUseCase (concurrency)', () => {
       repo as TurnoRepositoryPort,
       prisma as unknown as PrismaService,
       logger as AppLogger,
-      checklistPreenchidoService as ChecklistPreenchidoService,
+      checklistSyncQueue as TurnoChecklistSyncQueueService,
       eventEmitter as EventEmitter2,
       mobileAppVersionGate as MobileAppVersionGateService,
     );
@@ -315,11 +316,12 @@ describe('OpenTurnoUseCase (concurrency)', () => {
       operation: jest.fn(),
     };
 
-    const checklistPreenchidoService: Pick<
-      ChecklistPreenchidoService,
-      'salvarChecklistsDoTurno'
+    const checklistSyncQueue: Pick<
+      TurnoChecklistSyncQueueService,
+      'enqueueInTransaction' | 'processPendingForTurno'
     > = {
-      salvarChecklistsDoTurno: jest.fn(),
+      enqueueInTransaction: jest.fn(),
+      processPendingForTurno: jest.fn(),
     };
 
     const eventEmitter: Pick<EventEmitter2, 'emit'> = {
@@ -336,7 +338,7 @@ describe('OpenTurnoUseCase (concurrency)', () => {
       repo as TurnoRepositoryPort,
       prisma as unknown as PrismaService,
       logger as AppLogger,
-      checklistPreenchidoService as ChecklistPreenchidoService,
+      checklistSyncQueue as TurnoChecklistSyncQueueService,
       eventEmitter as EventEmitter2,
       mobileAppVersionGate as MobileAppVersionGateService,
     );
@@ -371,11 +373,12 @@ describe('OpenTurnoUseCase (concurrency)', () => {
       operation: jest.fn(),
     };
 
-    const checklistPreenchidoService: Pick<
-      ChecklistPreenchidoService,
-      'salvarChecklistsDoTurno'
+    const checklistSyncQueue: Pick<
+      TurnoChecklistSyncQueueService,
+      'enqueueInTransaction' | 'processPendingForTurno'
     > = {
-      salvarChecklistsDoTurno: jest.fn(),
+      enqueueInTransaction: jest.fn(),
+      processPendingForTurno: jest.fn(),
     };
 
     const eventEmitter: Pick<EventEmitter2, 'emit'> = {
@@ -399,7 +402,7 @@ describe('OpenTurnoUseCase (concurrency)', () => {
       repo as TurnoRepositoryPort,
       prisma as unknown as PrismaService,
       logger as AppLogger,
-      checklistPreenchidoService as ChecklistPreenchidoService,
+      checklistSyncQueue as TurnoChecklistSyncQueueService,
       eventEmitter as EventEmitter2,
       mobileAppVersionGate as MobileAppVersionGateService,
     );

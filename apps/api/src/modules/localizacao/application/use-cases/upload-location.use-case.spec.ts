@@ -13,7 +13,7 @@ describe('UploadLocationUseCase', () => {
   const makeSut = () => {
     const repository: jest.Mocked<LocationUploadRepositoryPort> = {
       findTurnoById: jest.fn(),
-      createLocation: jest.fn(),
+      createLocation: jest.fn().mockResolvedValue('created'),
     };
     const logger = {
       info: jest.fn(),
@@ -98,6 +98,16 @@ describe('UploadLocationUseCase', () => {
     expect(result).toEqual({ status: 'ok', alreadyExisted: false });
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(repository.createLocation).not.toHaveBeenCalled();
+  });
+
+  it('returns alreadyExisted when location signature already exists', async () => {
+    const { sut, repository } = makeSut();
+    repository.findTurnoById.mockResolvedValue({ id: 12, dataFim: null });
+    repository.createLocation.mockResolvedValue('already_existed');
+
+    const result = await sut.execute(basePayload);
+
+    expect(result).toEqual({ status: 'ok', alreadyExisted: true });
   });
 
   it('returns alreadyExisted on unique signature violation', async () => {
