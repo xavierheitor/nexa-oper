@@ -29,4 +29,5 @@ export interface AuthSessionRepositoryPort {
   ): Promise<AuthRefreshTokenRowPort | null>;
   storeRefreshToken(input: StoreRefreshTokenInputPort): Promise<void>;
   revokeRefreshToken(tokenId: number): Promise<boolean>;
+  listActiveModulePermissionKeys(userId: number): Promise<string[]>;
 }

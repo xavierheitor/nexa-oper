@@ -46,6 +46,14 @@ export class LoginUseCase {
       refreshTokenExpiresAt: issued.refreshTokenExpiresAt,
     });
 
-    return issued.tokenPair;
+    const permissions = await this.sessions.listActiveModulePermissionKeys(
+      user.id,
+    );
+
+    return {
+      ...issued.tokenPair,
+      permissions,
+      navigationPermissions: permissions,
+    };
   }
 }

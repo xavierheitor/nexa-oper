@@ -39,6 +39,14 @@ export class RefreshTokenUseCase {
       refreshTokenExpiresAt: issued.refreshTokenExpiresAt,
     });
 
-    return issued.tokenPair;
+    const permissions = await this.sessions.listActiveModulePermissionKeys(
+      row.mobileUser.id,
+    );
+
+    return {
+      ...issued.tokenPair,
+      permissions,
+      navigationPermissions: permissions,
+    };
   }
 }

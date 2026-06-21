@@ -14,9 +14,47 @@ model MobileUser {
 
   MobileToken MobileToken[]
 
-  MobileContratoPermissao MobileContratoPermissao[]
+  MobileContratoPermissao    MobileContratoPermissao[]
+  MobileUserModulePermission MobileUserModulePermission[]
 
   projViabilizacaos ProjViabilizacao[]
+}
+
+model MobileModule {
+  id        Int     @id @default(autoincrement())
+  key       String  @unique @db.VarChar(100)
+  nome      String  @db.VarChar(255)
+  descricao String? @db.VarChar(500)
+  ativo     Boolean @default(true)
+  ordem     Int     @default(0)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  MobileUserModulePermission MobileUserModulePermission[]
+
+  @@index([ativo, ordem], map: "idx_mobile_module_active_order")
+}
+
+model MobileUserModulePermission {
+  id Int @id @default(autoincrement())
+
+  mobileUserId Int
+  mobileUser   MobileUser @relation(fields: [mobileUserId], references: [id], onDelete: Cascade)
+
+  mobileModuleId Int
+  mobileModule   MobileModule @relation(fields: [mobileModuleId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  createdBy String   @db.VarChar(255)
+
+  @@unique([mobileUserId, mobileModuleId], map: "uk_mobile_user_module_permission")
+  @@index([mobileUserId], map: "idx_mobile_user_module_permission_user")
+  @@index([mobileModuleId], map: "idx_mobile_user_module_permission_module")
 }
 
 model MobileSession {

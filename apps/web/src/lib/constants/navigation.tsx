@@ -390,6 +390,12 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             requiredPermission: PERMISSIONS.MOBILE_USERS_VIEW,
           },
           {
+            key: '/dashboard/cadastro/modulo-mobile',
+            label: 'Módulos do App',
+            path: '/dashboard/cadastro/modulo-mobile',
+            requiredPermission: PERMISSIONS.MOBILE_USERS_VIEW,
+          },
+          {
             key: '/dashboard/cadastro/grupo-permissao',
             label: 'Grupos de Permissão',
             icon: <KeyOutlined />,
@@ -651,17 +657,13 @@ export const filterMenuByPermissions = (
     if (
       requiredPermissions &&
       requiredPermissions.length > 0 &&
-      !requiredPermissions.some((permission) => permissions.includes(permission))
+      !requiredPermissions.some(permission => permissions.includes(permission))
     ) {
       return [];
     }
 
     const children = item.children
-      ? filterMenuByPermissions(
-          item.children,
-          permissions,
-          requiredPermissions
-        )
+      ? filterMenuByPermissions(item.children, permissions, requiredPermissions)
       : undefined;
 
     if (item.children && (!children || children.length === 0)) {

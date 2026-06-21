@@ -89,4 +89,21 @@ export class AuthService implements AuthSessionRepositoryPort {
     });
     return result.count > 0;
   }
+
+  async listActiveModulePermissionKeys(userId: number): Promise<string[]> {
+    const rows = await this.prisma.mobileUserModulePermission.findMany({
+      where: {
+        mobileUserId: userId,
+        mobileModule: {
+          ativo: true,
+          deletedAt: null,
+        },
+      },
+      select: {
+        mobileModule: { select: { key: true } },
+      },
+      orderBy: { mobileModule: { ordem: 'asc' } },
+    });
+    return rows.map((row) => row.mobileModule.key);
+  }
 }

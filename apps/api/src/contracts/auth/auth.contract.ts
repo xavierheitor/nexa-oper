@@ -15,4 +15,6 @@ export interface TokenPairContract {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
+  permissions?: string[];
+  navigationPermissions?: string[];
 }

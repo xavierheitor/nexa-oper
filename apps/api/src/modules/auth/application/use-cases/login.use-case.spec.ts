@@ -20,6 +20,9 @@ describe('LoginUseCase', () => {
       findValidRefreshToken: jest.fn(),
       storeRefreshToken: jest.fn(),
       revokeRefreshToken: jest.fn(),
+      listActiveModulePermissionKeys: jest
+        .fn()
+        .mockResolvedValue(['mobile.turno.access']),
     };
 
     const tokenPairFactory = {
@@ -97,6 +100,8 @@ describe('LoginUseCase', () => {
       accessToken: 'access-token',
       refreshToken: 'refresh-token',
       expiresIn: 604800,
+      permissions: ['mobile.turno.access'],
+      navigationPermissions: ['mobile.turno.access'],
     });
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(tokenPairFactory.issue).toHaveBeenCalledTimes(1);
