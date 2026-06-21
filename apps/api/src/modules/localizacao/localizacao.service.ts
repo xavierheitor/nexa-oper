@@ -34,6 +34,7 @@ export class LocalizacaoService implements LocationUploadRepositoryPort {
         batteryLevel: data.batteryLevel,
         tagType: data.tagType,
         tagDetail: data.tagDetail,
+        eventCategory: data.eventCategory,
         capturedAt: data.capturedAt,
         signature: data.signature,
         createdBy: data.createdBy,

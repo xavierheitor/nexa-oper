@@ -16,6 +16,7 @@ export interface CreateLocationRecordPort {
   batteryLevel: number | null;
   tagType: string | null;
   tagDetail: string | null;
+  eventCategory: string | null;
   capturedAt: Date;
   signature: string;
   createdBy: string;

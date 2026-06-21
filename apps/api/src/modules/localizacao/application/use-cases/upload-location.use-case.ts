@@ -9,6 +9,7 @@ import {
   LOCATION_UPLOAD_REPOSITORY,
   type LocationUploadRepositoryPort,
 } from '../../domain/ports/location-upload-repository.port';
+import { normalizeLocationUpload } from '../normalize-location-upload';
 
 @Injectable()
 export class UploadLocationUseCase {
@@ -23,6 +24,7 @@ export class UploadLocationUseCase {
     userId?: number,
   ): Promise<LocationUploadResponseContract> {
     const signature = this.buildSignature(payload);
+    const normalized = normalizeLocationUpload(payload);
 
     try {
       const turno = await this.repository.findTurnoById(payload.turnoId);
@@ -52,11 +54,10 @@ export class UploadLocationUseCase {
         accuracy: payload.accuracy ?? null,
         provider: payload.provider ?? null,
         batteryLevel: payload.batteryLevel ?? null,
-        tagType: payload.tagType ?? null,
-        tagDetail: payload.tagDetail ?? null,
-        capturedAt: payload.capturedAt
-          ? new Date(payload.capturedAt)
-          : new Date(),
+        tagType: normalized.tagType,
+        tagDetail: normalized.tagDetail,
+        eventCategory: normalized.eventCategory,
+        capturedAt: normalized.capturedAt,
         signature,
         createdBy: userId != null ? String(userId) : 'system',
       });
@@ -154,6 +155,7 @@ export class UploadLocationUseCase {
   }
 
   private buildSignature(payload: LocationUploadRequestContract): string {
+    const normalized = normalizeLocationUpload(payload);
     const components = [
       payload.turnoId,
       payload.veiculoRemoteId ?? 'null',
@@ -162,9 +164,9 @@ export class UploadLocationUseCase {
       payload.longitude,
       payload.accuracy ?? 'null',
       payload.provider ?? 'null',
-      payload.tagType ?? 'null',
-      payload.tagDetail ?? 'null',
-      payload.capturedAt ?? 'null',
+      normalized.eventCategory ?? 'null',
+      normalized.tagDetail ?? 'null',
+      normalized.capturedAt.toISOString(),
     ];
 
     return createHash('sha256').update(components.join('|')).digest('hex');

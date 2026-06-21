@@ -109,6 +109,37 @@ function parseDateOrNull(value?: string | null): Date | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
+function resolveAprLocationFields(apr: AtividadeUploadAprContract): {
+  iniciadaEm: Date | null;
+  latitudeInicio: number | null;
+  longitudeInicio: number | null;
+  preenchidaEm: Date;
+  latitude: number | null;
+  longitude: number | null;
+} {
+  const iniciadaEm = parseDateOrNull(
+    apr.iniciadaEm ?? apr.localizacaoInicio?.capturadaEm,
+  );
+  const latitudeInicio =
+    apr.latitudeInicio ?? apr.localizacaoInicio?.latitude ?? null;
+  const longitudeInicio =
+    apr.longitudeInicio ?? apr.localizacaoInicio?.longitude ?? null;
+  const preenchidaEm =
+    parseDateOrNull(apr.preenchidaEm ?? apr.localizacaoFim?.capturadaEm) ??
+    new Date();
+  const latitude = apr.latitude ?? apr.localizacaoFim?.latitude ?? null;
+  const longitude = apr.longitude ?? apr.localizacaoFim?.longitude ?? null;
+
+  return {
+    iniciadaEm,
+    latitudeInicio,
+    longitudeInicio,
+    preenchidaEm,
+    latitude,
+    longitude,
+  };
+}
+
 function sha256Hex(buffer: Buffer): string {
   return createHash('sha256').update(buffer).digest('hex');
 }
@@ -519,7 +550,14 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
         turnoEletricistasByEletricistaId,
       );
 
-      const preenchidaEm = parseDateOrNull(apr.preenchidaEm) ?? new Date();
+      const {
+        iniciadaEm,
+        latitudeInicio,
+        longitudeInicio,
+        preenchidaEm,
+        latitude,
+        longitude,
+      } = resolveAprLocationFields(apr);
       const vinculadaAoServico = apr.vinculadaAoServico ?? true;
       const aprSignature = sha256Text(
         `${apr.aprUuid}|${preenchidaEm.toISOString()}|${normalizeString(apr.observacoes) ?? ''}`,
@@ -538,9 +576,12 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
           tipoAtividadeServicoId:
             apr.tipoServicoRemoteId ?? payload.tipoServicoRemoteId ?? null,
           observacoes: normalizeString(apr.observacoes),
+          iniciadaEm,
+          latitudeInicio,
+          longitudeInicio,
           preenchidaEm,
-          latitude: apr.latitude ?? null,
-          longitude: apr.longitude ?? null,
+          latitude,
+          longitude,
           vinculadaAoServico,
           signature: aprSignature,
           createdBy,
@@ -555,9 +596,12 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
           tipoAtividadeServicoId:
             apr.tipoServicoRemoteId ?? payload.tipoServicoRemoteId ?? null,
           observacoes: normalizeString(apr.observacoes),
+          iniciadaEm,
+          latitudeInicio,
+          longitudeInicio,
           preenchidaEm,
-          latitude: apr.latitude ?? null,
-          longitude: apr.longitude ?? null,
+          latitude,
+          longitude,
           vinculadaAoServico,
           signature: aprSignature,
           updatedBy: createdBy,

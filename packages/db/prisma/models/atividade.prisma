@@ -402,6 +402,9 @@ model AtividadeAprPreenchida {
   tipoAtividadeServico   TipoAtividadeServico? @relation(fields: [tipoAtividadeServicoId], references: [id])
 
   observacoes        String?  @db.Text
+  iniciadaEm         DateTime?
+  latitudeInicio     Float?
+  longitudeInicio    Float?
   preenchidaEm       DateTime @default(now())
   latitude           Float?
   longitude          Float?

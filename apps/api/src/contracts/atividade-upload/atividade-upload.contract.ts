@@ -84,6 +84,12 @@ export interface AtividadeUploadAprAssinaturaContract {
   assinanteExtra?: boolean;
 }
 
+export interface AtividadeUploadAprLocalizacaoContract {
+  capturadaEm?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
 export interface AtividadeUploadAprContract {
   aprUuid: string;
   aprRemoteId?: number | null;
@@ -93,6 +99,11 @@ export interface AtividadeUploadAprContract {
   tipoServicoRemoteId?: number | null;
   vinculadaAoServico?: boolean;
   observacoes?: string | null;
+  iniciadaEm?: string;
+  latitudeInicio?: number | null;
+  longitudeInicio?: number | null;
+  localizacaoInicio?: AtividadeUploadAprLocalizacaoContract | null;
+  localizacaoFim?: AtividadeUploadAprLocalizacaoContract | null;
   preenchidaEm?: string;
   latitude?: number | null;
   longitude?: number | null;

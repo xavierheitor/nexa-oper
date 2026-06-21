@@ -365,6 +365,25 @@ export class AtividadeUploadAprAssinaturaDto {
   assinanteExtra?: boolean;
 }
 
+export class AtividadeUploadAprLocalizacaoDto {
+  @ApiPropertyOptional({ example: '2026-02-21T19:34:00.000Z' })
+  @IsOptional()
+  @IsString()
+  capturadaEm?: string;
+
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  latitude?: number | null;
+
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  longitude?: number | null;
+}
+
 export class AtividadeUploadAprDto {
   @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440001' })
   @IsUUID()
@@ -409,6 +428,35 @@ export class AtividadeUploadAprDto {
   @IsOptional()
   @IsString()
   observacoes?: string | null;
+
+  @ApiPropertyOptional({ example: '2026-02-21T19:34:00.000Z' })
+  @IsOptional()
+  @IsString()
+  iniciadaEm?: string;
+
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  latitudeInicio?: number | null;
+
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  longitudeInicio?: number | null;
+
+  @ApiPropertyOptional({ type: AtividadeUploadAprLocalizacaoDto })
+  @Type(() => AtividadeUploadAprLocalizacaoDto)
+  @IsOptional()
+  @ValidateNested()
+  localizacaoInicio?: AtividadeUploadAprLocalizacaoDto | null;
+
+  @ApiPropertyOptional({ type: AtividadeUploadAprLocalizacaoDto })
+  @Type(() => AtividadeUploadAprLocalizacaoDto)
+  @IsOptional()
+  @ValidateNested()
+  localizacaoFim?: AtividadeUploadAprLocalizacaoDto | null;
 
   @ApiPropertyOptional({ example: '2026-02-21T20:00:00.000Z' })
   @IsOptional()
