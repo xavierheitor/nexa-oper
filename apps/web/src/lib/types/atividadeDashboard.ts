@@ -168,6 +168,9 @@ export interface AtividadeAprPreenchidaDetalhe {
   id: number;
   aprUuid: string;
   observacoes?: string | null;
+  iniciadaEm?: Date | string | null;
+  latitudeInicio?: number | null;
+  longitudeInicio?: number | null;
   preenchidaEm: Date | string;
   latitude?: number | null;
   longitude?: number | null;
