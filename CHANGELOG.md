@@ -4,7 +4,55 @@
 
 ### 📝 Em preparação
 
-- Sem alterações publicadas após a `v1.1.0`.
+- Sem alterações publicadas após a `v1.2.0`.
+
+## [1.2.0] - 2026-06-26
+
+### 🎯 Novas Funcionalidades
+
+#### 📱 Versões do App Mobile
+
+- Painel **Cadastro → Usuários → Versões do App** para publicar APKs Android
+- Manifesto público para auto-update: `GET /api/public/mobile-app-version/manifest`
+- Políticas por build: login, abertura de turno, upload e wipe local
+- Permissões dedicadas: `mobile-app-version:view` e `mobile-app-version:manage`
+- Bloqueio de versão antiga no login e na abertura de turno
+
+#### 🔐 Módulos e permissões mobile
+
+- Cadastro de **módulos do app** e permissões por usuário mobile
+- Login e refresh token passam a retornar permissões de módulos ao app
+
+#### 📋 APR e turnos
+
+- Visualização detalhada da APR preenchida no modal do turno
+- Agrupamento de respostas APR por grupo de perguntas
+- Novos campos de rastreamento de APR no sync mobile
+
+#### 🏗️ Projetos (viabilização)
+
+- Alinhamento do schema legado ao modelo atual de projetos
+- Migration corretiva para ambientes com tabelas antigas (`ProjetoProgramacao`, etc.)
+
+#### 🛠️ Operação e deploy
+
+- Templates de `.env` e scripts de deploy para produção (`deploy/production/`)
+- Comando `npm run snapshot:server` para diagnóstico do servidor
+- Documentação de deploy PM2, uploads e auto-update mobile
+
+### 🔧 Melhorias
+
+- Sync de checklist na abertura de turno
+- Campos extras em localização e categorização de eventos no upload mobile
+- Melhor tratamento de medidas de controle "Outros" na APR
+- Supressão de hints do `prisma generate` (`--no-hints`)
+- Limite e mensagens de erro para upload de APK grande (até 200 MB na API)
+
+### 🐛 Correções
+
+- Build do Next.js na página de versões mobile (`dynamic` + Server Components)
+- Mapeamento de permissão da rota `/dashboard/cadastro/mobile-app-version`
+- Migration `MobileAppVersion` em bancos que não tinham a tabela criada
 
 ## [1.1.0] - 2026-03-05
 
