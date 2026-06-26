@@ -24,6 +24,8 @@
     "db:migrate": "npm run migrate:dev --workspace=packages/db",
     "db:migrate:dev": "npm run migrate:dev --workspace=packages/db",
     "db:migrate:deploy": "npm run migrate:deploy --workspace=packages/db",
+    "deploy:env": "bash deploy/production/install-env.sh",
+    "deploy:prod": "bash deploy/production/deploy.sh",
     "db:studio": "npm run studio --workspace=packages/db",
     "db:reset": "npm run db:reset --workspace=packages/db",
     "db:seed": "npm run seed --workspace=packages/db",
