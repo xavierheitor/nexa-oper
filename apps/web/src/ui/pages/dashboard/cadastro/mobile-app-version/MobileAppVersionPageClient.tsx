@@ -151,8 +151,19 @@ export default function MobileAppVersionPageClient() {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Erro ao subir o arquivo');
+        const contentType = res.headers.get('content-type') ?? '';
+        if (res.status === 413) {
+          throw new Error(
+            'Arquivo muito grande. O servidor (Nginx) precisa permitir uploads de APK — veja docs/07-deploy-producao-pm2.md (client_max_body_size 250m).'
+          );
+        }
+        if (contentType.includes('application/json')) {
+          const errorData = await res.json();
+          throw new Error(
+            errorData.error || errorData.message || 'Erro ao subir o arquivo'
+          );
+        }
+        throw new Error(`Erro ao subir o arquivo (HTTP ${res.status})`);
       }
 
       msgApp.success('Versão cadastrada com sucesso!');

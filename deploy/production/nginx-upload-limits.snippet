@@ -1,0 +1,9 @@
+# Cole dentro de cada server { } do Nginx (web nexa.xsys.team e api.nexa.xsys.team)
+# Necessário para upload de APK no painel (rota /api/mobile-app-version).
+#
+#   sudo nano /etc/nginx/sites-enabled/<seu-site>
+#   sudo nginx -t && sudo systemctl reload nginx
+
+client_max_body_size 250m;
+proxy_read_timeout 300s;
+proxy_send_timeout 300s;

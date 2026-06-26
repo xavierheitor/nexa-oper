@@ -62,8 +62,14 @@ function resolveUploadProxyTarget(): string | null {
 
 loadMonorepoEnv();
 const uploadProxyTarget = resolveUploadProxyTarget();
+const APK_UPLOAD_BODY_SIZE_LIMIT = '250mb';
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      bodySizeLimit: APK_UPLOAD_BODY_SIZE_LIMIT,
+    },
+  },
   /* config options here */
   // Configuração para servir arquivos estáticos de uploads
   async rewrites() {

@@ -8,6 +8,10 @@ import { join, dirname } from 'path';
 import { existsSync } from 'fs';
 import { createHash } from 'crypto';
 
+export const maxDuration = 300;
+
+const APK_MAX_BYTES = 200 * 1024 * 1024;
+
 const UPLOAD_ROOT = process.env.UPLOAD_ROOT
   ? join(process.env.UPLOAD_ROOT, 'mobile')
   : join(process.cwd(), 'uploads', 'mobile');
@@ -87,6 +91,14 @@ export async function POST(req: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    if (buffer.byteLength > APK_MAX_BYTES) {
+      return NextResponse.json(
+        {
+          error: `APK excede o limite de ${Math.floor(APK_MAX_BYTES / (1024 * 1024))} MB`,
+        },
+        { status: 413 }
+      );
+    }
     const sha256 = createHash('sha256').update(buffer).digest('hex');
     const safeFilename = sanitizeFilename(file.name);
     const fileName = `${Date.now()}-${safeFilename}`;

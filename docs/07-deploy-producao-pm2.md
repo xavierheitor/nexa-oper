@@ -134,6 +134,47 @@ Se usar storage local:
 - `UPLOAD_STORAGE=local`
 - `UPLOAD_ROOT=/var/www/apps/nexa-oper/uploads`
 
+### Limite de upload (APK e arquivos grandes)
+
+O Nginx bloqueia uploads acima de **1 MB** por padrão (`413 Request Entity Too Large`).
+Para publicar APKs pelo painel (**Cadastro → Versões do App**), aumente o limite nos dois `server` blocks (web e API):
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name nexa.xsys.team;
+
+    client_max_body_size 250m;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        # ... demais headers proxy ...
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    server_name api.nexa.xsys.team;
+
+    client_max_body_size 250m;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+
+    location / {
+        proxy_pass http://127.0.0.1:3001;
+        # ... demais headers proxy ...
+    }
+}
+```
+
+Aplicar:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
 Exposição de fotos:
 
 1. Via API (`/uploads/*`) e proxy para API.
