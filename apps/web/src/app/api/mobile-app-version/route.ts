@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/db.service';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/utils/auth.config';
+import { PERMISSIONS } from '@/lib/authz/permissions';
 import { writeFile, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { existsSync } from 'fs';
@@ -32,6 +33,13 @@ export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (
+    !(session.user.permissions ?? []).includes(
+      PERMISSIONS.MOBILE_APP_VERSION_VIEW
+    )
+  ) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   const versions = await prisma.mobileAppVersion.findMany({
     orderBy: { createdAt: 'desc' },
@@ -44,6 +52,13 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (
+    !(session.user.permissions ?? []).includes(
+      PERMISSIONS.MOBILE_APP_VERSION_MANAGE
+    )
+  ) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   try {
     const formData = await req.formData();

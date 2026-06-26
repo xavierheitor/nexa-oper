@@ -396,6 +396,12 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             requiredPermission: PERMISSIONS.MOBILE_USERS_VIEW,
           },
           {
+            key: '/dashboard/cadastro/mobile-app-version',
+            label: 'Versões do App',
+            path: '/dashboard/cadastro/mobile-app-version',
+            requiredPermission: PERMISSIONS.MOBILE_APP_VERSION_VIEW,
+          },
+          {
             key: '/dashboard/cadastro/grupo-permissao',
             label: 'Grupos de Permissão',
             icon: <KeyOutlined />,
@@ -403,13 +409,6 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             requiredPermission: PERMISSIONS.USERS_UPDATE,
           },
         ],
-      },
-      {
-        key: '/dashboard/cadastro/mobile-app-version',
-        label: 'Versões do App',
-        icon: <AppstoreOutlined />,
-        path: '/dashboard/cadastro/mobile-app-version',
-        requiredPermission: undefined, // Ajuste para a permissão correta depois se houver (ex: ADMIN)
       },
     ],
   },

@@ -2,10 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/db.service';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/utils/auth.config';
+import { PERMISSIONS } from '@/lib/authz/permissions';
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (
+    !(session.user.permissions ?? []).includes(
+      PERMISSIONS.MOBILE_APP_VERSION_MANAGE
+    )
+  ) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   const id = parseInt(params.id, 10);
   if (isNaN(id)) return NextResponse.json({ error: 'ID inválido' }, { status: 400 });
@@ -18,6 +26,13 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (
+    !(session.user.permissions ?? []).includes(
+      PERMISSIONS.MOBILE_APP_VERSION_MANAGE
+    )
+  ) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   const id = parseInt(params.id, 10);
   if (isNaN(id)) return NextResponse.json({ error: 'ID inválido' }, { status: 400 });

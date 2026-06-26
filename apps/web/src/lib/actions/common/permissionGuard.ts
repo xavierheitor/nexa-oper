@@ -200,6 +200,8 @@ export function requireContractLookupPermission(session: Session): void {
       PERMISSIONS.MOBILE_USERS_CREATE,
       PERMISSIONS.MOBILE_USERS_UPDATE,
       PERMISSIONS.MOBILE_USERS_DELETE,
+      PERMISSIONS.MOBILE_APP_VERSION_VIEW,
+      PERMISSIONS.MOBILE_APP_VERSION_MANAGE,
       PERMISSIONS.REPORTS_VIEW,
     ],
     'Você não tem permissão para consultar contratos.',

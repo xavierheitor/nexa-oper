@@ -43,6 +43,8 @@ export type Permission =
   | 'mobile-users:create'
   | 'mobile-users:update'
   | 'mobile-users:delete'
+  | 'mobile-app-version:view'
+  | 'mobile-app-version:manage'
   | 'shifts:view'
   | 'activities:view'
   | 'attendance:view'
@@ -131,6 +133,8 @@ export const PERMISSIONS = {
   MOBILE_USERS_CREATE: 'mobile-users:create' as const,
   MOBILE_USERS_UPDATE: 'mobile-users:update' as const,
   MOBILE_USERS_DELETE: 'mobile-users:delete' as const,
+  MOBILE_APP_VERSION_VIEW: 'mobile-app-version:view' as const,
+  MOBILE_APP_VERSION_MANAGE: 'mobile-app-version:manage' as const,
   SHIFTS_VIEW: 'shifts:view' as const,
   ACTIVITIES_VIEW: 'activities:view' as const,
   ATTENDANCE_VIEW: 'attendance:view' as const,
@@ -451,6 +455,18 @@ export const PERMISSION_CATALOG: PermissionCatalogItem[] = [
     description: 'Exclui usuários móveis.',
   },
   {
+    permission: PERMISSIONS.MOBILE_APP_VERSION_VIEW,
+    label: 'Ver versões do app mobile',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de versões do aplicativo mobile.',
+  },
+  {
+    permission: PERMISSIONS.MOBILE_APP_VERSION_MANAGE,
+    label: 'Gerenciar versões do app mobile',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Publica, ativa e exclui versões do aplicativo mobile.',
+  },
+  {
     permission: PERMISSIONS.SHIFTS_VIEW,
     label: 'Ver turnos',
     group: PERMISSION_GROUP_LABELS.shifts,
@@ -655,6 +671,8 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.MOBILE_USERS_CREATE,
     PERMISSIONS.MOBILE_USERS_UPDATE,
     PERMISSIONS.MOBILE_USERS_DELETE,
+    PERMISSIONS.MOBILE_APP_VERSION_VIEW,
+    PERMISSIONS.MOBILE_APP_VERSION_MANAGE,
     PERMISSIONS.SHIFTS_VIEW,
     PERMISSIONS.ACTIVITIES_VIEW,
     PERMISSIONS.ATTENDANCE_VIEW,

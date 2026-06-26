@@ -154,6 +154,20 @@ export function canManageMobileUserPermissions(
   return canUpdateMobileUsers(roles, permissions);
 }
 
+export function canViewMobileAppVersion(
+  _roles: readonly Role[],
+  permissions: readonly Permission[],
+): boolean {
+  return hasPermission(permissions, PERMISSIONS.MOBILE_APP_VERSION_VIEW);
+}
+
+export function canManageMobileAppVersion(
+  _roles: readonly Role[],
+  permissions: readonly Permission[],
+): boolean {
+  return hasPermission(permissions, PERMISSIONS.MOBILE_APP_VERSION_MANAGE);
+}
+
 export function canResetMobileUserPasswords(
   roles: readonly Role[],
   permissions: readonly Permission[],
