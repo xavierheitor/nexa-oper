@@ -1,7 +1,68 @@
-import { defTable } from './sync-collection.types';
-import type { SyncCollectionDefInput } from './sync-collection.types';
+import {
+  computeProjetosParaViabilizacaoEtag,
+  listProjetosParaViabilizacao,
+} from '../projetos/projeto-viabilizacao.query';
+
+import {
+  defCustom,
+  defTable,
+  type SyncCollectionDefInput,
+} from './sync-collection.types';
 
 export const SYNC_DEFINITIONS: SyncCollectionDefInput[] = [
+  defTable({
+    name: 'projeto-tipo-poste',
+    model: 'projTipoPoste',
+    mode: 'snapshot',
+    contractField: false,
+    select: {
+      id: true,
+      nome: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'projeto-estrutura',
+    model: 'projEstrutura',
+    mode: 'snapshot',
+    contractField: false,
+    select: {
+      id: true,
+      nome: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'projeto-tipo-ramal',
+    model: 'projTipoRamal',
+    mode: 'snapshot',
+    contractField: false,
+    select: {
+      id: true,
+      nome: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defCustom({
+    name: 'projeto-viabilizacao',
+    mode: 'snapshot',
+    computeEtag: (prisma, scope) =>
+      computeProjetosParaViabilizacaoEtag(prisma, scope.contractIds),
+    resolver: async (prisma, scope) => {
+      const result = await listProjetosParaViabilizacao(
+        prisma,
+        scope.contractIds,
+      );
+      return { items: result.items };
+    },
+  }),
+
   defTable({
     name: 'eletricista',
     model: 'eletricista',
@@ -203,6 +264,37 @@ export const SYNC_DEFINITIONS: SyncCollectionDefInput[] = [
     select: {
       id: true,
       nome: true,
+      geraPendencia: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'apr-medida-controle',
+    model: 'aprMedidaControle',
+    mode: 'snapshot',
+    contractField:
+      'AprGrupoPerguntaMedidaControleRelacao.some.aprGrupoPergunta.AprGrupoRelacao.some.apr.AprTipoAtividadeRelacao.some.tipoAtividade.contratoId',
+    select: {
+      id: true,
+      nome: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'apr-grupo-pergunta-medida-controle-relacao',
+    model: 'aprGrupoPerguntaMedidaControleRelacao',
+    mode: 'snapshot',
+    contractField:
+      'aprGrupoPergunta.AprGrupoRelacao.some.apr.AprTipoAtividadeRelacao.some.tipoAtividade.contratoId',
+    select: {
+      id: true,
+      aprGrupoPerguntaId: true,
+      aprPerguntaId: true,
+      aprMedidaControleId: true,
       createdAt: true,
       updatedAt: true,
     },

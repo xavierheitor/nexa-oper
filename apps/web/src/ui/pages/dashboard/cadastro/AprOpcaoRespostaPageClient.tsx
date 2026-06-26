@@ -14,7 +14,7 @@ import { useTableColumnsWithActions } from '@/lib/hooks/useTableColumnsWithActio
 import type { PaginatedResult } from '@/lib/types/common';
 import { getTextFilter } from '@/ui/components/tableFilters';
 import { AprOpcaoResposta } from '@nexa-oper/db';
-import { Spin } from 'antd';
+import { Spin, Tag } from 'antd';
 import AprOpcaoRespostaForm from '@/ui/pages/dashboard/cadastro/apr-opcao-resposta/form';
 
 interface AprOpcaoRespostaPageClientProps {
@@ -56,6 +56,14 @@ export default function AprOpcaoRespostaPageClient({
         key: 'nome',
         sorter: true,
         ...getTextFilter<AprOpcaoResposta>('nome', 'nome da opcao'),
+      },
+      {
+        title: 'Gera Pendência',
+        dataIndex: 'geraPendencia',
+        key: 'geraPendencia',
+        width: 150,
+        render: (value?: boolean) =>
+          value ? <Tag color='orange'>Sim</Tag> : <Tag>Não</Tag>,
       },
     ],
     {

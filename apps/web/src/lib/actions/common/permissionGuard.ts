@@ -166,6 +166,9 @@ export function requireContractLookupPermission(session: Session): void {
   assertAnyPermission(
     session,
     [
+      PERMISSIONS.PROJECTS_VIEW,
+      PERMISSIONS.PROJETOS_PROGRAMAS_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
       PERMISSIONS.CONTRATOS_VIEW,
       PERMISSIONS.CONTRATOS_CREATE,
       PERMISSIONS.CONTRATOS_UPDATE,
@@ -188,6 +191,11 @@ export function requireContractLookupPermission(session: Session): void {
       PERMISSIONS.FORMULARIOS_ATIVIDADE_VIEW,
       PERMISSIONS.FORMULARIOS_ATIVIDADE_PERGUNTA_VIEW,
       PERMISSIONS.MATERIAIS_CATALOGO_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW,
+      PERMISSIONS.PROJETOS_MOTIVOS_OCORRENCIA_VIEW,
+      PERMISSIONS.PROJETOS_MATERIAIS_ESTRUTURA_VIEW,
+      PERMISSIONS.PROJETOS_MATERIAIS_RAMAL_VIEW,
       PERMISSIONS.MOBILE_USERS_VIEW,
       PERMISSIONS.MOBILE_USERS_CREATE,
       PERMISSIONS.MOBILE_USERS_UPDATE,
@@ -195,6 +203,22 @@ export function requireContractLookupPermission(session: Session): void {
       PERMISSIONS.REPORTS_VIEW,
     ],
     'Você não tem permissão para consultar contratos.',
+  );
+}
+
+export function requireProjectsPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [
+      PERMISSIONS.PROJECTS_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW,
+      PERMISSIONS.PROJETOS_MOTIVOS_OCORRENCIA_VIEW,
+      PERMISSIONS.PROJETOS_MATERIAIS_ESTRUTURA_VIEW,
+      PERMISSIONS.PROJETOS_MATERIAIS_RAMAL_VIEW,
+    ],
+    'Você não tem permissão para acessar projetos.',
   );
 }
 
@@ -262,6 +286,65 @@ export function requireTiposEquipePermission(session: Session): void {
   );
 }
 
+export function requireProjetosTiposPostePermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW],
+    'Você não tem permissão para acessar tipos de poste dos projetos.',
+  );
+}
+
+export function requireProjetosProgramasPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.PROJETOS_PROGRAMAS_VIEW],
+    'Você não tem permissão para acessar programas dos projetos.',
+  );
+}
+
+export function requireProjetosTiposEstruturaPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW],
+    'Você não tem permissão para acessar tipos de estrutura dos projetos.',
+  );
+}
+
+export function requireProjetosTiposRamalPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW],
+    'Você não tem permissão para acessar tipos de ramal dos projetos.',
+  );
+}
+
+export function requireProjetosMotivosOcorrenciaPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.PROJETOS_MOTIVOS_OCORRENCIA_VIEW],
+    'Você não tem permissão para acessar motivos de ocorrência dos projetos.',
+  );
+}
+
+export function requireProjetosMateriaisEstruturaPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [
+      PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
+      PERMISSIONS.PROJETOS_MATERIAIS_ESTRUTURA_VIEW,
+    ],
+    'Você não tem permissão para acessar composições por estrutura dos projetos.',
+  );
+}
+
+export function requireProjetosMateriaisRamalPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.PROJETOS_MATERIAIS_RAMAL_VIEW],
+    'Você não tem permissão para acessar composições por ramal dos projetos.',
+  );
+}
+
 export function requireTiposVeiculoPermission(session: Session): void {
   assertAnyPermission(
     session,
@@ -275,6 +358,19 @@ export function requireMateriaisCatalogoPermission(session: Session): void {
     session,
     [PERMISSIONS.MATERIAIS_CATALOGO_VIEW],
     'Você não tem permissão para acessar materiais de catálogo.',
+  );
+}
+
+export function requireMateriaisCatalogoLookupPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [
+      PERMISSIONS.MATERIAIS_CATALOGO_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
+      PERMISSIONS.PROJETOS_MATERIAIS_ESTRUTURA_VIEW,
+      PERMISSIONS.PROJETOS_MATERIAIS_RAMAL_VIEW,
+    ],
+    'Você não tem permissão para consultar materiais de catálogo.',
   );
 }
 

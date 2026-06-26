@@ -11,6 +11,14 @@ import { CANONICAL_PHOTO_METADATA_OPTIONAL_FIELDS } from './common-metadata-spec
 import { normalizeStoredUploadResult } from '../storage/upload-url';
 import { UploadEvidenceLinkService } from './upload-evidence-link.service';
 
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { code?: string }).code === 'P2002'
+  );
+}
+
 @Injectable()
 export class ChecklistAssinaturaEvidenceHandler implements EvidenceHandler {
   readonly type = 'checklist-assinatura';
@@ -128,37 +136,11 @@ export class ChecklistAssinaturaEvidenceHandler implements EvidenceHandler {
     const idempotencyKey = this.buildIdempotencyKey(ctx, fingerprint);
     if (!idempotencyKey) return normalizedUpload;
 
-    const evidence = await this.prisma.uploadEvidence.upsert({
-      where: { idempotencyKey },
-      create: {
-        tipo: this.type,
-        entityType: ctx.entityType ?? 'checklistPreenchido',
-        entityId: String(ctx.entityId),
-        url: normalizedUpload.url,
-        path: normalizedUpload.path,
-        tamanho: normalizedUpload.size,
-        mimeType: normalizedUpload.mimeType,
-        nomeArquivo: normalizedUpload.filename,
-        checksum: fingerprint.checksum,
-        idempotencyKey,
-        createdBy: 'system',
-      },
-      update: {
-        url: normalizedUpload.url,
-        path: normalizedUpload.path,
-        tamanho: normalizedUpload.size,
-        mimeType: normalizedUpload.mimeType,
-        nomeArquivo: normalizedUpload.filename,
-        checksum: fingerprint.checksum,
-      },
-      select: {
-        id: true,
-        url: true,
-        path: true,
-        tamanho: true,
-        mimeType: true,
-        nomeArquivo: true,
-      },
+    const evidence = await this.upsertEvidenceByIdempotencyKey({
+      ctx,
+      upload: normalizedUpload,
+      fingerprint,
+      idempotencyKey,
     });
 
     await this.linkService.upsertFromEvidence({
@@ -174,5 +156,64 @@ export class ChecklistAssinaturaEvidenceHandler implements EvidenceHandler {
       mimeType: evidence.mimeType ?? undefined,
       filename: evidence.nomeArquivo ?? undefined,
     });
+  }
+
+  private async upsertEvidenceByIdempotencyKey(params: {
+    ctx: EvidenceContext;
+    upload: UploadResult;
+    fingerprint: UploadFingerprint;
+    idempotencyKey: string;
+  }) {
+    const select = {
+      id: true,
+      url: true,
+      path: true,
+      tamanho: true,
+      mimeType: true,
+      nomeArquivo: true,
+    } as const;
+
+    try {
+      return await this.prisma.uploadEvidence.upsert({
+        where: { idempotencyKey: params.idempotencyKey },
+        create: {
+          tipo: this.type,
+          entityType: params.ctx.entityType ?? 'checklistPreenchido',
+          entityId: String(params.ctx.entityId),
+          url: params.upload.url,
+          path: params.upload.path,
+          tamanho: params.upload.size,
+          mimeType: params.upload.mimeType,
+          nomeArquivo: params.upload.filename,
+          checksum: params.fingerprint.checksum,
+          idempotencyKey: params.idempotencyKey,
+          createdBy: 'system',
+        },
+        update: {
+          url: params.upload.url,
+          path: params.upload.path,
+          tamanho: params.upload.size,
+          mimeType: params.upload.mimeType,
+          nomeArquivo: params.upload.filename,
+          checksum: params.fingerprint.checksum,
+        },
+        select,
+      });
+    } catch (error) {
+      if (!isUniqueConstraintError(error)) {
+        throw error;
+      }
+
+      const existing = await this.prisma.uploadEvidence.findUnique({
+        where: { idempotencyKey: params.idempotencyKey },
+        select,
+      });
+
+      if (!existing) {
+        throw error;
+      }
+
+      return existing;
+    }
   }
 }

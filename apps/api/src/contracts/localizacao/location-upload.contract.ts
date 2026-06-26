@@ -9,7 +9,10 @@ export interface LocationUploadRequestContract {
   batteryLevel?: number;
   tagType?: string;
   tagDetail?: string;
+  eventCategory?: string;
   capturedAt?: string;
+  /** Alias legado de capturedAt */
+  timestamp?: string;
 }
 
 export interface LocationUploadResponseContract {

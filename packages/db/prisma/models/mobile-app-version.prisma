@@ -1,0 +1,27 @@
+model MobileAppVersion {
+  id         Int    @id @default(autoincrement())
+  versao     String @db.VarChar(50)
+  build      Int    @default(0)
+  plataforma String @default("android") @db.VarChar(20) // 'android' ou 'ios'
+
+  notas       String? @db.Text
+  arquivoUrl  String  @db.VarChar(1024)
+  arquivoPath String? @db.VarChar(1024)
+
+  apkSizeBytes Int?
+  sha256       String? @db.VarChar(128)
+
+  ativo        Boolean @default(false)
+  wipeRequired Boolean @default(false)
+
+  minSupportedBuild Int?
+  minLoginBuild     Int?
+  minOpenTurnoBuild Int?
+  minUploadBuild    Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([plataforma, ativo])
+  @@index([plataforma, build])
+}

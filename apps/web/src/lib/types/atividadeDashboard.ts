@@ -146,6 +146,14 @@ export interface AtividadeAprRespostaDetalhe {
   ordemGrupo: number;
   ordemPergunta: number;
   dataResposta: Date | string;
+  AtividadeAprRespostaMedidaControle: AtividadeAprRespostaMedidaControleDetalhe[];
+}
+
+export interface AtividadeAprRespostaMedidaControleDetalhe {
+  id: number;
+  aprMedidaControleId?: number | null;
+  medidaControleNomeSnapshot: string;
+  textoLivre?: string | null;
 }
 
 export interface AtividadeAprAssinaturaDetalhe {
@@ -160,6 +168,9 @@ export interface AtividadeAprPreenchidaDetalhe {
   id: number;
   aprUuid: string;
   observacoes?: string | null;
+  iniciadaEm?: Date | string | null;
+  latitudeInicio?: number | null;
+  longitudeInicio?: number | null;
   preenchidaEm: Date | string;
   latitude?: number | null;
   longitude?: number | null;

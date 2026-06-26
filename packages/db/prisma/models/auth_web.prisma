@@ -15,10 +15,11 @@ model User {
   deletedAt DateTime?
   deletedBy String?   @db.VarChar(255)
 
-  Session  Session[]
-  Account  Account[]
-  RoleUser RoleUser[]
-  UserPermissionGrant UserPermissionGrant[]
+  Session                    Session[]
+  Account                    Account[]
+  RoleUser                   RoleUser[]
+  UserPermissionGrant        UserPermissionGrant[]
+  projValidacaoViabilizacaos ProjValidacaoViabilizacao[]
 
   @@index([username])
   @@index([email])

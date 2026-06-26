@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { AppstoreOutlined, ReloadOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, EyeOutlined, ReloadOutlined } from '@ant-design/icons';
 import {
   Alert,
   Button,
@@ -18,6 +18,7 @@ import {
   Table,
   Tabs,
   Tag,
+  Tooltip,
   Typography,
 } from 'antd';
 import { listAtividadeExecucoes } from '@/lib/actions/atividade/listExecucoes';
@@ -33,6 +34,7 @@ import type {
 import { handleRedirectToLogin } from '@/lib/utils/redirectHandler';
 import { buildPhotoUrl } from '@/lib/utils/photos';
 import { getTextFilter } from '@/ui/components/tableFilters';
+import AtividadeAprPreenchidaDetalhesModal from '@/ui/components/AtividadeAprPreenchidaDetalhesModal';
 
 const { Text } = Typography;
 
@@ -95,6 +97,11 @@ export default function TurnoAtividadesModal({
   const [materiais, setMateriais] = useState<AtividadeMaterialListItem[]>([]);
   const [aprs, setAprs] = useState<AtividadeAprTurnoRow[]>([]);
   const [fotos, setFotos] = useState<AtividadeFotoTurnoRow[]>([]);
+  const [aprVisualizacao, setAprVisualizacao] = useState<{
+    aprId: number;
+    aprNome?: string | null;
+    numeroDocumento?: string | null;
+  } | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!turnoId) return;
@@ -216,6 +223,7 @@ export default function TurnoAtividadesModal({
   const totalFotos = fotos.length;
 
   return (
+    <>
     <Modal
       title={
         <Space>
@@ -576,6 +584,33 @@ export default function TurnoAtividadesModal({
                                 'pt-BR'
                               ),
                           },
+                          {
+                            title: 'Ações',
+                            key: 'acoes',
+                            width: 72,
+                            align: 'center',
+                            fixed: 'right',
+                            render: (_, record) => {
+                              return (
+                                <Tooltip title='Visualizar APR'>
+                                  <Button
+                                    type='text'
+                                    size='small'
+                                    icon={<EyeOutlined />}
+                                    onClick={() =>
+                                      setAprVisualizacao({
+                                        aprId: record.id,
+                                        aprNome: record.apr?.nome,
+                                        numeroDocumento:
+                                          record.atividadeExecucao
+                                            ?.numeroDocumento,
+                                      })
+                                    }
+                                  />
+                                </Tooltip>
+                              );
+                            },
+                          },
                         ]}
                       />
                     ),
@@ -687,5 +722,14 @@ export default function TurnoAtividadesModal({
         </Text>
       </div>
     </Modal>
+
+    <AtividadeAprPreenchidaDetalhesModal
+      open={aprVisualizacao != null}
+      aprPreenchidaId={aprVisualizacao?.aprId ?? null}
+      aprNome={aprVisualizacao?.aprNome}
+      numeroDocumento={aprVisualizacao?.numeroDocumento}
+      onClose={() => setAprVisualizacao(null)}
+    />
+    </>
   );
 }

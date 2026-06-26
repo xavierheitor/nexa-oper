@@ -32,20 +32,23 @@ export interface MenuItemConfig {
   path?: string; // Se definido, envolve o label em um Link
   pathPrefix?: string;
   requiredPermission?: Permission;
+  requiredPermissionsAny?: Permission[];
   children?: MenuItemConfig[];
   onClick?: () => void;
 }
 
 interface RoutePermissionRule {
-  permission?: Permission;
+  permissions?: Permission[];
   specificity: number;
   type: 'exact' | 'prefix';
 }
 
-const resolveRequiredPermission = (
+const resolveRequiredPermissions = (
   item: MenuItemConfig,
-  inheritedPermission?: Permission
-): Permission | undefined => item.requiredPermission ?? inheritedPermission;
+  inheritedPermissions?: Permission[]
+): Permission[] | undefined =>
+  item.requiredPermissionsAny ??
+  (item.requiredPermission ? [item.requiredPermission] : inheritedPermissions);
 
 const isPrefixMatch = (pathname: string, prefix: string): boolean =>
   pathname === prefix || pathname.startsWith(`${prefix}/`);
@@ -53,16 +56,16 @@ const isPrefixMatch = (pathname: string, prefix: string): boolean =>
 const getRoutePermissionRule = (
   pathname: string,
   items: MenuItemConfig[],
-  inheritedPermission?: Permission
+  inheritedPermissions?: Permission[]
 ): RoutePermissionRule | undefined => {
   let bestMatch: RoutePermissionRule | undefined;
 
   for (const item of items) {
-    const permission = resolveRequiredPermission(item, inheritedPermission);
+    const permissions = resolveRequiredPermissions(item, inheritedPermissions);
 
     if (item.path === pathname) {
       const match: RoutePermissionRule = {
-        permission,
+        permissions,
         specificity: item.path.length,
         type: 'exact',
       };
@@ -78,7 +81,7 @@ const getRoutePermissionRule = (
 
     if (item.pathPrefix && isPrefixMatch(pathname, item.pathPrefix)) {
       const match: RoutePermissionRule = {
-        permission,
+        permissions,
         specificity: item.pathPrefix.length,
         type: 'prefix',
       };
@@ -96,7 +99,7 @@ const getRoutePermissionRule = (
       const childMatch = getRoutePermissionRule(
         pathname,
         item.children,
-        permission
+        permissions
       );
 
       if (
@@ -198,6 +201,37 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
         ],
       },
       {
+        key: 'projetos-cadastro-menu',
+        label: 'Projetos',
+        icon: <AppstoreOutlined />,
+        children: [
+          {
+            key: '/dashboard/cadastro/projetos/programas',
+            label: 'Programas',
+            path: '/dashboard/cadastro/projetos/programas',
+            requiredPermission: PERMISSIONS.PROJETOS_PROGRAMAS_VIEW,
+          },
+          {
+            key: '/dashboard/cadastro/projetos/tipo-poste',
+            label: 'Tipos de Poste',
+            path: '/dashboard/cadastro/projetos/tipo-poste',
+            requiredPermission: PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
+          },
+          {
+            key: '/dashboard/cadastro/projetos/tipo-estrutura',
+            label: 'Tipos de Estrutura',
+            path: '/dashboard/cadastro/projetos/tipo-estrutura',
+            requiredPermission: PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
+          },
+          {
+            key: '/dashboard/cadastro/projetos/tipo-ramal',
+            label: 'Tipos de Ramal',
+            path: '/dashboard/cadastro/projetos/tipo-ramal',
+            requiredPermission: PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW,
+          },
+        ],
+      },
+      {
         key: '/dashboard/cadastro/cargo',
         label: 'Cargos',
         path: '/dashboard/cadastro/cargo',
@@ -288,6 +322,12 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             requiredPermission: PERMISSIONS.APR_OPCOES_VIEW,
           },
           {
+            key: '/dashboard/cadastro/apr-medida-controle',
+            label: 'Medidas de Controle',
+            path: '/dashboard/cadastro/apr-medida-controle',
+            requiredPermission: PERMISSIONS.APR_GRUPOS_VIEW,
+          },
+          {
             key: '/dashboard/cadastro/apr-grupo-pergunta',
             label: 'Grupos de Perguntas',
             path: '/dashboard/cadastro/apr-grupo-pergunta',
@@ -350,6 +390,12 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             requiredPermission: PERMISSIONS.MOBILE_USERS_VIEW,
           },
           {
+            key: '/dashboard/cadastro/modulo-mobile',
+            label: 'Módulos do App',
+            path: '/dashboard/cadastro/modulo-mobile',
+            requiredPermission: PERMISSIONS.MOBILE_USERS_VIEW,
+          },
+          {
             key: '/dashboard/cadastro/grupo-permissao',
             label: 'Grupos de Permissão',
             icon: <KeyOutlined />,
@@ -357,6 +403,13 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
             requiredPermission: PERMISSIONS.USERS_UPDATE,
           },
         ],
+      },
+      {
+        key: '/dashboard/cadastro/mobile-app-version',
+        label: 'Versões do App',
+        icon: <AppstoreOutlined />,
+        path: '/dashboard/cadastro/mobile-app-version',
+        requiredPermission: undefined, // Ajuste para a permissão correta depois se houver (ex: ADMIN)
       },
     ],
   },
@@ -430,6 +483,25 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
         key: '/dashboard/frequencia/aderencia-escala',
         label: 'Aderência de Escala',
         path: '/dashboard/frequencia/aderencia-escala',
+      },
+    ],
+  },
+  {
+    key: 'projetos-menu',
+    icon: <AppstoreOutlined />,
+    label: 'Projetos',
+    pathPrefix: '/dashboard/projetos',
+    requiredPermissionsAny: [
+      PERMISSIONS.PROJECTS_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
+      PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW,
+    ],
+    children: [
+      {
+        key: '/dashboard/projetos/cadastro',
+        label: 'Cadastro de Projetos',
+        path: '/dashboard/projetos/cadastro',
       },
     ],
   },
@@ -575,26 +647,23 @@ export const getAntdMenuItems = (
 export const filterMenuByPermissions = (
   config: MenuItemConfig[],
   permissions: Permission[],
-  inheritedPermission?: Permission
+  inheritedPermissions?: Permission[]
 ): MenuItemConfig[] => {
   return config.flatMap(item => {
-    const requiredPermission = resolveRequiredPermission(
+    const requiredPermissions = resolveRequiredPermissions(
       item,
-      inheritedPermission
+      inheritedPermissions
     );
     if (
-      requiredPermission &&
-      !permissions.includes(requiredPermission)
+      requiredPermissions &&
+      requiredPermissions.length > 0 &&
+      !requiredPermissions.some(permission => permissions.includes(permission))
     ) {
       return [];
     }
 
     const children = item.children
-      ? filterMenuByPermissions(
-          item.children,
-          permissions,
-          requiredPermission
-        )
+      ? filterMenuByPermissions(item.children, permissions, requiredPermissions)
       : undefined;
 
     if (item.children && (!children || children.length === 0)) {
@@ -610,10 +679,10 @@ export const filterMenuByPermissions = (
   });
 };
 
-export const getRequiredPermissionForPath = (
+export const getRequiredPermissionsForPath = (
   pathname: string
-): Permission | undefined => {
-  return getRoutePermissionRule(pathname, MENU_STRUCTURE)?.permission;
+): Permission[] | undefined => {
+  return getRoutePermissionRule(pathname, MENU_STRUCTURE)?.permissions;
 };
 
 /**

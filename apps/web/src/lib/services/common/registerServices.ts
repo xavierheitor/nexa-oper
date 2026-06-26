@@ -22,6 +22,7 @@
  */
 
 import { AprOpcaoRespostaService } from '../apr/AprOpcaoRespostaService';
+import { AprMedidaControleService } from '../apr/AprMedidaControleService';
 import { AprPerguntaService } from '../apr/AprPerguntaService';
 import { AprGrupoPerguntaService } from '../apr/AprGrupoPerguntaService';
 import { AprService } from '../apr/AprService';
@@ -45,6 +46,11 @@ import { EquipeSupervisorService } from '../infraestrutura/EquipeSupervisorServi
 import { TipoEquipeService } from '../infraestrutura/TipoEquipeService';
 import { TipoVeiculoService } from '../infraestrutura/TipoVeiculoService';
 import { VeiculoService } from '../infraestrutura/VeiculoService';
+import { ProjProgramaService } from '../projetos/ProjProgramaService';
+import { ProjProjetoService } from '../projetos/ProjProjetoService';
+import { ProjTipoEstruturaService } from '../projetos/ProjTipoEstruturaService';
+import { ProjTipoPosteService } from '../projetos/ProjTipoPosteService';
+import { ProjTipoRamalService } from '../projetos/ProjTipoRamalService';
 import { CargoService } from '../pessoas/CargoService';
 import { EletricistaService } from '../pessoas/EletricistaService';
 import { SupervisorService } from '../pessoas/SupervisorService';
@@ -77,6 +83,14 @@ export function registerServices(): void {
   container.register('baseService', () => new BaseService());
   container.register('cargoService', () => new CargoService());
   container.register('tipoEquipeService', () => new TipoEquipeService());
+  container.register('projProgramaService', () => new ProjProgramaService());
+  container.register('projProjetoService', () => new ProjProjetoService());
+  container.register('projTipoPosteService', () => new ProjTipoPosteService());
+  container.register(
+    'projTipoEstruturaService',
+    () => new ProjTipoEstruturaService()
+  );
+  container.register('projTipoRamalService', () => new ProjTipoRamalService());
   container.register('equipeService', () => new EquipeService());
   container.register('tipoVeiculoService', () => new TipoVeiculoService());
   container.register('veiculoService', () => new VeiculoService());
@@ -89,6 +103,10 @@ export function registerServices(): void {
   container.register(
     'aprOpcaoRespostaService',
     () => new AprOpcaoRespostaService()
+  );
+  container.register(
+    'aprMedidaControleService',
+    () => new AprMedidaControleService()
   );
   container.register('aprPerguntaService', () => new AprPerguntaService());
   container.register(

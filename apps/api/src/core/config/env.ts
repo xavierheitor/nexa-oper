@@ -39,6 +39,14 @@ const csvOrJsonArray = z
       .filter(Boolean);
   });
 
+const trimmedOptional = z
+  .string()
+  .optional()
+  .transform((v) => {
+    const trimmed = v?.trim();
+    return trimmed && trimmed.length > 0 ? trimmed : undefined;
+  });
+
 export const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
@@ -60,6 +68,11 @@ export const envSchema = z.object({
   REQUEST_TIMEOUT_MS: z.coerce.number().default(60_000),
   JSON_LIMIT: z.string().default('2mb'),
   ATIVIDADE_UPLOAD_JSON_LIMIT: z.string().default('12mb'),
+  ATIVIDADE_UPLOAD_TX_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(60_000),
   URLENCODED_LIMIT: z.string().default('2mb'),
 
   // CORS (CSV ou JSON array)
@@ -76,6 +89,14 @@ export const envSchema = z.object({
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60_000),
   RATE_LIMIT_MAX_PER_IP: z.coerce.number().default(20),
   RATE_LIMIT_MAX_PER_USER: z.coerce.number().default(5),
+
+  // Bloqueio opcional por versão mínima do app mobile
+  MOBILE_MIN_VERSION_ANDROID: trimmedOptional,
+  MOBILE_MIN_VERSION_ANDROID_LOGIN: trimmedOptional,
+  MOBILE_MIN_VERSION_ANDROID_OPEN_TURNO: trimmedOptional,
+  MOBILE_MIN_VERSION_IOS: trimmedOptional,
+  MOBILE_MIN_VERSION_IOS_LOGIN: trimmedOptional,
+  MOBILE_MIN_VERSION_IOS_OPEN_TURNO: trimmedOptional,
 
   // Upload storage: local | s3
   UPLOAD_STORAGE: z.enum(['local', 's3']).default('local'),
@@ -129,6 +150,24 @@ export const envSchema = z.object({
     .default(500),
   // Opcional: roots customizados (CSV/JSON). Cada root deve apontar para a pasta base de uploads.
   CHECKLIST_PHOTO_RECONCILE_SCAN_ROOTS: csvOrJsonArray,
+
+  // Reconciliação automática de escala vs turnos realizados
+  TURNO_RECONCILE_ENABLED: bool.default(false),
+  TURNO_RECONCILE_CRON: z.string().default('0 2 * * *'), // Default: 2 AM
+  TURNO_RECONCILE_LOCK_TTL_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(600_000), // 10 minutes
+
+  // Fila de checklists enviados na abertura de turno
+  TURNO_CHECKLIST_SYNC_ENABLED: bool.default(true),
+  TURNO_CHECKLIST_SYNC_CRON: z.string().default('*/1 * * * *'),
+  TURNO_CHECKLIST_SYNC_LOCK_TTL_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(120_000),
 });
 
 export type Env = z.infer<typeof envSchema>;

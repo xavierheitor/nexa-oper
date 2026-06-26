@@ -52,6 +52,8 @@ import type { IncludeConfig } from '../types/common';
 export const aprOpcaoRespostaCreateSchema = z.object({
   /** Nome/texto da opção de resposta APR (obrigatório, 1-255 caracteres) */
   nome: z.string().min(1, 'Nome é obrigatório').max(255, 'Nome deve ter no máximo 255 caracteres'),
+  /** Define se a opção exige medida de controle no preenchimento */
+  geraPendencia: z.boolean().optional().default(false),
 });
 
 /**

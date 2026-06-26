@@ -2,7 +2,8 @@ import type { EventEmitter2 } from '@nestjs/event-emitter';
 import type { PrismaService } from '../../../../database/prisma.service';
 import type { AppLogger } from '../../../../core/logger/app-logger';
 import type { AbrirTurnoRequestContract } from '../../../../contracts/turno/abrir-turno.contract';
-import type { ChecklistPreenchidoService } from '../../checklist-preenchido/checklist-preenchido.service';
+import type { MobileAppVersionGateService } from '../../../../core/mobile-app-version/mobile-app-version-gate.service';
+import type { TurnoChecklistSyncQueueService } from '../../checklist-preenchido/turno-checklist-sync-queue.service';
 import type { TurnoRepositoryPort } from '../../domain/repositories/turno-repository.port';
 import { OpenTurnoUseCase } from './open-turno.use-case';
 
@@ -239,23 +240,31 @@ describe('OpenTurnoUseCase (concurrency)', () => {
       operation: jest.fn(),
     };
 
-    const checklistPreenchidoService: Pick<
-      ChecklistPreenchidoService,
-      'salvarChecklistsDoTurno'
+    const checklistSyncQueue: Pick<
+      TurnoChecklistSyncQueueService,
+      'enqueueInTransaction' | 'processPendingForTurno'
     > = {
-      salvarChecklistsDoTurno: jest.fn(),
+      enqueueInTransaction: jest.fn(),
+      processPendingForTurno: jest.fn(),
     };
 
     const eventEmitter: Pick<EventEmitter2, 'emit'> = {
       emit: jest.fn(),
+    };
+    const mobileAppVersionGate: Pick<
+      MobileAppVersionGateService,
+      'assertSupportedVersion'
+    > = {
+      assertSupportedVersion: jest.fn(),
     };
 
     const useCase = new OpenTurnoUseCase(
       repo as TurnoRepositoryPort,
       prisma as unknown as PrismaService,
       logger as AppLogger,
-      checklistPreenchidoService as ChecklistPreenchidoService,
+      checklistSyncQueue as TurnoChecklistSyncQueueService,
       eventEmitter as EventEmitter2,
+      mobileAppVersionGate as MobileAppVersionGateService,
     );
 
     const input: AbrirTurnoRequestContract = {
@@ -307,23 +316,31 @@ describe('OpenTurnoUseCase (concurrency)', () => {
       operation: jest.fn(),
     };
 
-    const checklistPreenchidoService: Pick<
-      ChecklistPreenchidoService,
-      'salvarChecklistsDoTurno'
+    const checklistSyncQueue: Pick<
+      TurnoChecklistSyncQueueService,
+      'enqueueInTransaction' | 'processPendingForTurno'
     > = {
-      salvarChecklistsDoTurno: jest.fn(),
+      enqueueInTransaction: jest.fn(),
+      processPendingForTurno: jest.fn(),
     };
 
     const eventEmitter: Pick<EventEmitter2, 'emit'> = {
       emit: jest.fn(),
+    };
+    const mobileAppVersionGate: Pick<
+      MobileAppVersionGateService,
+      'assertSupportedVersion'
+    > = {
+      assertSupportedVersion: jest.fn(),
     };
 
     const useCase = new OpenTurnoUseCase(
       repo as TurnoRepositoryPort,
       prisma as unknown as PrismaService,
       logger as AppLogger,
-      checklistPreenchidoService as ChecklistPreenchidoService,
+      checklistSyncQueue as TurnoChecklistSyncQueueService,
       eventEmitter as EventEmitter2,
+      mobileAppVersionGate as MobileAppVersionGateService,
     );
 
     await expect(
@@ -339,6 +356,70 @@ describe('OpenTurnoUseCase (concurrency)', () => {
       status: 409,
       message:
         'Já existe um turno aberto para o veículo, equipe ou eletricista',
+    });
+
+    expect(repo.createTurno).not.toHaveBeenCalled();
+    expect(eventEmitter.emit).not.toHaveBeenCalled();
+  });
+
+  it('blocks turno opening when app version is below the configured minimum', async () => {
+    const prisma = new TurnoTransactionPrismaFake();
+
+    const repo: Pick<TurnoRepositoryPort, 'createTurno'> = {
+      createTurno: jest.fn(),
+    };
+
+    const logger: Pick<AppLogger, 'operation'> = {
+      operation: jest.fn(),
+    };
+
+    const checklistSyncQueue: Pick<
+      TurnoChecklistSyncQueueService,
+      'enqueueInTransaction' | 'processPendingForTurno'
+    > = {
+      enqueueInTransaction: jest.fn(),
+      processPendingForTurno: jest.fn(),
+    };
+
+    const eventEmitter: Pick<EventEmitter2, 'emit'> = {
+      emit: jest.fn(),
+    };
+
+    const mobileAppVersionGate: Pick<
+      MobileAppVersionGateService,
+      'assertSupportedVersion'
+    > = {
+      assertSupportedVersion: jest.fn(() => {
+        throw {
+          code: 'FORBIDDEN',
+          status: 403,
+          message: 'Versão do aplicativo não suportada para abertura de turno.',
+        };
+      }),
+    };
+
+    const useCase = new OpenTurnoUseCase(
+      repo as TurnoRepositoryPort,
+      prisma as unknown as PrismaService,
+      logger as AppLogger,
+      checklistSyncQueue as TurnoChecklistSyncQueueService,
+      eventEmitter as EventEmitter2,
+      mobileAppVersionGate as MobileAppVersionGateService,
+    );
+
+    await expect(
+      useCase.execute({
+        veiculoId: 1,
+        equipeId: 10,
+        kmInicio: 1000,
+        versaoApp: '1.0.0',
+        plataformaApp: 'android',
+        dataInicio: new Date('2026-02-22T10:00:00.000Z'),
+        eletricistas: [{ eletricistaId: 100, motorista: true }],
+      }),
+    ).rejects.toMatchObject({
+      code: 'FORBIDDEN',
+      status: 403,
     });
 
     expect(repo.createTurno).not.toHaveBeenCalled();

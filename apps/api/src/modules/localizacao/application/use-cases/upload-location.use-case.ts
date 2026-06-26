@@ -9,6 +9,7 @@ import {
   LOCATION_UPLOAD_REPOSITORY,
   type LocationUploadRepositoryPort,
 } from '../../domain/ports/location-upload-repository.port';
+import { normalizeLocationUpload } from '../normalize-location-upload';
 
 @Injectable()
 export class UploadLocationUseCase {
@@ -23,6 +24,7 @@ export class UploadLocationUseCase {
     userId?: number,
   ): Promise<LocationUploadResponseContract> {
     const signature = this.buildSignature(payload);
+    const normalized = normalizeLocationUpload(payload);
 
     try {
       const turno = await this.repository.findTurnoById(payload.turnoId);
@@ -43,7 +45,7 @@ export class UploadLocationUseCase {
         });
       }
 
-      await this.repository.createLocation({
+      const createResult = await this.repository.createLocation({
         turnoId: payload.turnoId,
         veiculoRemoteId: payload.veiculoRemoteId ?? null,
         equipeRemoteId: payload.equipeRemoteId ?? null,
@@ -52,14 +54,21 @@ export class UploadLocationUseCase {
         accuracy: payload.accuracy ?? null,
         provider: payload.provider ?? null,
         batteryLevel: payload.batteryLevel ?? null,
-        tagType: payload.tagType ?? null,
-        tagDetail: payload.tagDetail ?? null,
-        capturedAt: payload.capturedAt
-          ? new Date(payload.capturedAt)
-          : new Date(),
+        tagType: normalized.tagType,
+        tagDetail: normalized.tagDetail,
+        eventCategory: normalized.eventCategory,
+        capturedAt: normalized.capturedAt,
         signature,
         createdBy: userId != null ? String(userId) : 'system',
       });
+
+      if (createResult === 'already_existed') {
+        this.logger.warn(
+          'Localização já existia (retry/idempotência); reenvio ignorado.',
+          { turnoId: payload.turnoId, signature },
+        );
+        return { status: 'ok', alreadyExisted: true };
+      }
 
       this.logger.info('Localização armazenada com sucesso', {
         turnoId: payload.turnoId,
@@ -79,9 +88,9 @@ export class UploadLocationUseCase {
     const knownError = this.extractKnownPrismaError(error);
 
     if (this.isDuplicateSignatureError(knownError)) {
-      this.logger.debug(
-        'Localização duplicada detectada (signature), ignorando.',
-        { signature },
+      this.logger.warn(
+        'Localização duplicada detectada (signature); reenvio ignorado.',
+        { signature, turnoId },
       );
       return { status: 'ok', alreadyExisted: true };
     }
@@ -154,6 +163,7 @@ export class UploadLocationUseCase {
   }
 
   private buildSignature(payload: LocationUploadRequestContract): string {
+    const normalized = normalizeLocationUpload(payload);
     const components = [
       payload.turnoId,
       payload.veiculoRemoteId ?? 'null',
@@ -162,9 +172,9 @@ export class UploadLocationUseCase {
       payload.longitude,
       payload.accuracy ?? 'null',
       payload.provider ?? 'null',
-      payload.tagType ?? 'null',
-      payload.tagDetail ?? 'null',
-      payload.capturedAt ?? 'null',
+      normalized.eventCategory ?? 'null',
+      normalized.tagDetail ?? 'null',
+      normalized.capturedAt.toISOString(),
     ];
 
     return createHash('sha256').update(components.join('|')).digest('hex');

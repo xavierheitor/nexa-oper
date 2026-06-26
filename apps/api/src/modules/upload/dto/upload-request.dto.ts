@@ -8,9 +8,9 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
  */
 export class UploadRequestDto {
   @ApiProperty({
-    example: 'checklist-reprova',
+    example: 'projeto-viabilizacao-poste',
     description:
-      'Tipo de evidência. Tipos disponíveis: checklist-reprova, checklist-assinatura, atividade-turno, apr-evidence, medidor.',
+      'Tipo de evidência. Tipos disponíveis: checklist-reprova, checklist-assinatura, atividade-turno, apr-evidence, medidor, projeto-viabilizacao-poste.',
   })
   @IsString()
   @IsNotEmpty()

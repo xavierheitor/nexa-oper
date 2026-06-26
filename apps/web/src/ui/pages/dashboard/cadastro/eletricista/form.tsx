@@ -39,6 +39,7 @@ export default function EletricistaForm({
   loading = false, // Estado de loading (padrão: false)
 }: EletricistaFormProps) {
   const { message } = App.useApp();
+  const isEditing = Boolean(initialValues);
   // Hook do Ant Design para controlar o formulário
   const [form] = Form.useForm();
 
@@ -216,21 +217,22 @@ export default function EletricistaForm({
         <Select placeholder="Selecione a base" loading={loadingSelects} showSearch filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())} options={bases.map(base => ({ value: base.id, label: base.nome }))} />
       </Form.Item>
 
-      {/* Campo Status */}
-      <Form.Item
-        name="status"
-        label="Status Inicial"
-        tooltip="Status inicial do eletricista ao ser criado. Padrão: Ativo (Trabalhando)"
-        initialValue="ATIVO"
-      >
-        <Select
-          placeholder="Selecione o status inicial"
-          options={Object.entries(StatusEletricistaLabels).map(([value, label]) => ({
-            value,
-            label,
-          }))}
-        />
-      </Form.Item>
+      {!isEditing && (
+        <Form.Item
+          name="status"
+          label="Status Inicial"
+          tooltip="Status inicial do eletricista ao ser criado. Padrão: Ativo (Trabalhando)"
+          initialValue="ATIVO"
+        >
+          <Select
+            placeholder="Selecione o status inicial"
+            options={Object.entries(StatusEletricistaLabels).map(([value, label]) => ({
+              value,
+              label,
+            }))}
+          />
+        </Form.Item>
+      )}
 
       {/* Botão de Submit */}
       <Form.Item>

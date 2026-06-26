@@ -13,6 +13,7 @@ describe('ValidateAuthUserUseCase', () => {
       findValidRefreshToken: jest.fn(),
       storeRefreshToken: jest.fn(),
       revokeRefreshToken: jest.fn(),
+      listActiveModulePermissionKeys: jest.fn(),
     };
 
     const sut = new ValidateAuthUserUseCase(sessions);

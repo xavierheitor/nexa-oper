@@ -25,9 +25,11 @@ model Contrato {
 
   Base Base[]
 
-  TipoAtividade TipoAtividade[]
+  TipoAtividade         TipoAtividade[]
   AtividadeFormTemplate AtividadeFormTemplate[]
-  MaterialCatalogo MaterialCatalogo[]
+  MaterialCatalogo      MaterialCatalogo[]
+
+  projProgramas ProjPrograma[]
 }
 
 model MobileContratoPermissao {

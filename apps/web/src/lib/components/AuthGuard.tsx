@@ -41,6 +41,9 @@ interface AuthGuardProps {
   /** Permissão necessária para acessar (opcional) */
   requiredPermission?: Permission;
 
+  /** Aceita acesso se o usuário possuir qualquer uma das permissões */
+  requiredPermissions?: Permission[];
+
   /** Se deve redirecionar para login quando não autenticado (padrão: true) */
   redirectToLogin?: boolean;
 
@@ -57,12 +60,14 @@ interface AuthGuardProps {
 export default function AuthGuard({
   children,
   requiredPermission,
+  requiredPermissions,
   redirectToLogin = true,
   loadingComponent,
 }: AuthGuardProps) {
-  const { isAuthenticated, isLoading, hasPermission } = useAuth({
+  const { isAuthenticated, isLoading, hasPermission, hasAnyPermission } = useAuth({
     redirectToLogin,
     requiredPermission,
+    requiredPermissions,
   });
   const [isChecking, setIsChecking] = useState(true);
 
@@ -100,7 +105,12 @@ export default function AuthGuard({
   }
 
   // Verifica permissão se especificada
-  if (requiredPermission && !hasPermission(requiredPermission)) {
+  if (
+    (requiredPermission && !hasPermission(requiredPermission)) ||
+    (requiredPermissions &&
+      requiredPermissions.length > 0 &&
+      !hasAnyPermission(requiredPermissions))
+  ) {
     // TODO: Mostrar página de acesso negado quando implementado
     return (
       <div

@@ -43,6 +43,7 @@ Ambiente local padrão:
 - Web: `http://localhost:3000`
 - API: `http://localhost:3001`
 - Health API: `http://localhost:3001/__ping`
+- Mobile Dist (APK Releases): `http://localhost:3001/api/public/mobile-app-version/releases`
 
 ## Fluxos principais
 
@@ -94,6 +95,7 @@ Comece por `docs/README.md`.
 - upload/fotos: `docs/05-upload-fotos-e-arquivos.md`
 - build/release: `docs/06-build-release.md`
 - deploy PM2: `docs/07-deploy-producao-pm2.md`
+- reconciliação de turnos: `docs/08-reconciliacao-turnos-escala.md`
 
 ## Histórico
 

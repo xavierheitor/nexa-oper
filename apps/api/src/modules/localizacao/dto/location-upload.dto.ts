@@ -94,8 +94,17 @@ export class LocationUploadDto {
   tagType?: string;
 
   @ApiPropertyOptional({
+    description: 'Categoria canônica do evento (preferida sobre tagType)',
+    example: 'apr_inicio',
+  })
+  @IsString()
+  @MaxLength(100)
+  @IsOptional()
+  eventCategory?: string;
+
+  @ApiPropertyOptional({
     description: 'Detalhes adicionais da marcação',
-    example: 'ronda noturna',
+    example: 'activity_photo:medidor_instalado',
   })
   @IsString()
   @MaxLength(255)
@@ -110,6 +119,15 @@ export class LocationUploadDto {
   @IsOptional()
   @IsISO8601()
   capturedAt?: string;
+
+  @ApiPropertyOptional({
+    description: 'Alias legado de capturedAt',
+    example: '2025-10-26T16:20:01.000Z',
+  })
+  @IsString()
+  @IsOptional()
+  @IsISO8601()
+  timestamp?: string;
 }
 
 export class LocationUploadResponseDto {

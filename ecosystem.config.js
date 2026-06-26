@@ -89,7 +89,7 @@ module.exports = {
         PORT: 3001,
         LOG_PATH: LOG_DIR,
         TRUST_PROXY: 'true',
-        HAS_HTTPS: 'false',
+        HAS_HTTPS: 'true',
         NEXT_PUBLIC_API_URL: API_BASE_URL,
         UPLOAD_PROXY_TARGET: API_BASE_URL,
         UPLOAD_BASE_URL: API_UPLOADS_BASE_URL,

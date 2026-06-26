@@ -21,6 +21,9 @@ packages/db/prisma/generated/
 .env.test.local
 .env.production.local
 
+# Server diagnostics snapshots (podem conter metadados de produção)
+diagnostics/*.txt
+
 # Logs (todos os arquivos .log e pastas logs/)
 **/logs/
 logs/

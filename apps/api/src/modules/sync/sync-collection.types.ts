@@ -1,4 +1,5 @@
 import type { Prisma } from '@nexa-oper/db';
+
 import type { PrismaService } from '../../database/prisma.service';
 
 export type SyncMode = 'snapshot' | 'delta';
@@ -11,11 +12,13 @@ export interface SyncScope {
 /** Models Prisma usados em sync (camelCase, como no client) */
 export type SyncModelName =
   | 'apr'
+  | 'aprMedidaControle'
   | 'aprPergunta'
   | 'aprOpcaoResposta'
   | 'aprGrupoPergunta'
   | 'aprGrupoRelacao'
   | 'aprGrupoPerguntaRelacao'
+  | 'aprGrupoPerguntaMedidaControleRelacao'
   | 'aprGrupoOpcaoRespostaRelacao'
   | 'aprTipoAtividadeRelacao'
   | 'atividadeFormPergunta'
@@ -33,6 +36,9 @@ export type SyncModelName =
   | 'materialCatalogo'
   | 'causaImprodutiva'
   | 'veiculo'
+  | 'projTipoPoste'
+  | 'projEstrutura'
+  | 'projTipoRamal'
   | 'tipoAtividade'
   | 'tipoAtividadeServico'
   | 'tipoEquipe'
@@ -41,11 +47,13 @@ export type SyncModelName =
 /** Mapeia model → Prisma Select. Adicione aqui ao incluir novo model em sync. */
 export interface SyncModelSelectMap {
   apr: Prisma.AprSelect;
+  aprMedidaControle: Prisma.AprMedidaControleSelect;
   aprPergunta: Prisma.AprPerguntaSelect;
   aprOpcaoResposta: Prisma.AprOpcaoRespostaSelect;
   aprGrupoPergunta: Prisma.AprGrupoPerguntaSelect;
   aprGrupoRelacao: Prisma.AprGrupoRelacaoSelect;
   aprGrupoPerguntaRelacao: Prisma.AprGrupoPerguntaRelacaoSelect;
+  aprGrupoPerguntaMedidaControleRelacao: Prisma.AprGrupoPerguntaMedidaControleRelacaoSelect;
   aprGrupoOpcaoRespostaRelacao: Prisma.AprGrupoOpcaoRespostaRelacaoSelect;
   aprTipoAtividadeRelacao: Prisma.AprTipoAtividadeRelacaoSelect;
   atividadeFormPergunta: Prisma.AtividadeFormPerguntaSelect;
@@ -63,6 +71,9 @@ export interface SyncModelSelectMap {
   materialCatalogo: Prisma.MaterialCatalogoSelect;
   causaImprodutiva: Prisma.CausaImprodutivaSelect;
   veiculo: Prisma.VeiculoSelect;
+  projTipoPoste: Prisma.ProjTipoPosteSelect;
+  projEstrutura: Prisma.ProjEstruturaSelect;
+  projTipoRamal: Prisma.ProjTipoRamalSelect;
   tipoAtividade: Prisma.TipoAtividadeSelect;
   tipoAtividadeServico: Prisma.TipoAtividadeServicoSelect;
   tipoEquipe: Prisma.TipoEquipeSelect;
@@ -72,11 +83,13 @@ export interface SyncModelSelectMap {
 /** Mapeia model → Prisma Include. Adicione aqui ao incluir novo model em sync. */
 export interface SyncModelIncludeMap {
   apr: Prisma.AprInclude;
+  aprMedidaControle: Prisma.AprMedidaControleInclude;
   aprPergunta: Prisma.AprPerguntaInclude;
   aprOpcaoResposta: Prisma.AprOpcaoRespostaInclude;
   aprGrupoPergunta: Prisma.AprGrupoPerguntaInclude;
   aprGrupoRelacao: Prisma.AprGrupoRelacaoInclude;
   aprGrupoPerguntaRelacao: Prisma.AprGrupoPerguntaRelacaoInclude;
+  aprGrupoPerguntaMedidaControleRelacao: Prisma.AprGrupoPerguntaMedidaControleRelacaoInclude;
   aprGrupoOpcaoRespostaRelacao: Prisma.AprGrupoOpcaoRespostaRelacaoInclude;
   aprTipoAtividadeRelacao: Prisma.AprTipoAtividadeRelacaoInclude;
   atividadeFormPergunta: Prisma.AtividadeFormPerguntaInclude;
@@ -94,6 +107,9 @@ export interface SyncModelIncludeMap {
   materialCatalogo: Prisma.MaterialCatalogoInclude;
   causaImprodutiva: never;
   veiculo: Prisma.VeiculoInclude;
+  projTipoPoste: Prisma.ProjTipoPosteInclude;
+  projEstrutura: Prisma.ProjEstruturaInclude;
+  projTipoRamal: Prisma.ProjTipoRamalInclude;
   tipoAtividade: Prisma.TipoAtividadeInclude;
   tipoAtividadeServico: Prisma.TipoAtividadeServicoInclude;
   tipoEquipe: Prisma.TipoEquipeInclude;
@@ -183,8 +199,7 @@ export function defTable<M extends SyncModelName>(
     mode: def.mode,
     select: def.select as Record<string, unknown> | undefined,
     include: def.include as Record<string, unknown> | undefined,
-    contractField:
-      def.contractField !== undefined ? def.contractField : 'contratoId',
+    contractField: def.contractField ?? 'contratoId',
   };
 }
 

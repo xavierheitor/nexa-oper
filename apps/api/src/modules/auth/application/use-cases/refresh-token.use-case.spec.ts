@@ -10,6 +10,9 @@ describe('RefreshTokenUseCase', () => {
       findValidRefreshToken: jest.fn(),
       storeRefreshToken: jest.fn(),
       revokeRefreshToken: jest.fn(),
+      listActiveModulePermissionKeys: jest
+        .fn()
+        .mockResolvedValue(['mobile.turno.access']),
     };
 
     const tokenPairFactory = {
@@ -58,6 +61,8 @@ describe('RefreshTokenUseCase', () => {
       accessToken: 'access-token',
       refreshToken: 'new-refresh-token',
       expiresIn: 604800,
+      permissions: ['mobile.turno.access'],
+      navigationPermissions: ['mobile.turno.access'],
     });
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(sessions.revokeRefreshToken).toHaveBeenCalledWith(55);
@@ -126,6 +131,8 @@ describe('RefreshTokenUseCase', () => {
         revoked = true;
         return Promise.resolve(true);
       },
+      listActiveModulePermissionKeys: () =>
+        Promise.resolve(['mobile.turno.access']),
     };
 
     const tokenPairFactory = {

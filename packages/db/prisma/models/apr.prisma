@@ -29,6 +29,7 @@ model AprPergunta {
 
   AprPerguntaRelacao      AprPerguntaRelacao[]
   AprGrupoPerguntaRelacao AprGrupoPerguntaRelacao[]
+  AprGrupoPerguntaMedidaControleRelacao AprGrupoPerguntaMedidaControleRelacao[]
   AtividadeAprRespostas   AtividadeAprResposta[]
 }
 
@@ -54,6 +55,7 @@ model AprPerguntaRelacao {
 model AprOpcaoResposta {
   id   Int    @id @default(autoincrement())
   nome String @db.VarChar(255)
+  geraPendencia Boolean @default(false)
 
   createdAt DateTime  @default(now())
   createdBy String    @db.VarChar(255)
@@ -75,6 +77,7 @@ model AprGrupoPergunta {
 
   AprGrupoRelacao              AprGrupoRelacao[]
   AprGrupoPerguntaRelacao      AprGrupoPerguntaRelacao[]
+  AprGrupoPerguntaMedidaControleRelacao AprGrupoPerguntaMedidaControleRelacao[]
   AprGrupoOpcaoRespostaRelacao AprGrupoOpcaoRespostaRelacao[]
   AtividadeAprRespostas        AtividadeAprResposta[]
 
@@ -132,6 +135,30 @@ model AprGrupoPerguntaRelacao {
   @@index([aprGrupoPerguntaId, ordem])
 }
 
+model AprGrupoPerguntaMedidaControleRelacao {
+  id Int @id @default(autoincrement())
+
+  aprGrupoPerguntaId Int
+  aprGrupoPergunta   AprGrupoPergunta @relation(fields: [aprGrupoPerguntaId], references: [id])
+
+  aprPerguntaId Int
+  aprPergunta   AprPergunta @relation(fields: [aprPerguntaId], references: [id])
+
+  aprMedidaControleId Int
+  aprMedidaControle   AprMedidaControle @relation(fields: [aprMedidaControleId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([aprGrupoPerguntaId, aprPerguntaId, aprMedidaControleId, deletedAt], map: "uq_apr_grupo_pergunta_medida_rel_ativo")
+  @@index([aprGrupoPerguntaId, aprPerguntaId])
+  @@index([aprMedidaControleId])
+}
+
 model AprGrupoOpcaoRespostaRelacao {
   id Int @id @default(autoincrement())
 
@@ -187,4 +214,20 @@ model AprTipoAtividadeRelacao {
 
   // Índice único condicional: apenas um apr ativo por tipo de atividade
   @@unique([tipoAtividadeId, deletedAt], map: "unique_active_apr_tipo_atividade")
+}
+
+model AprMedidaControle {
+  id Int @id @default(autoincrement())
+
+  nome String @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  AprGrupoPerguntaMedidaControleRelacao AprGrupoPerguntaMedidaControleRelacao[]
+  AtividadeAprRespostaMedidaControle    AtividadeAprRespostaMedidaControle[]
 }

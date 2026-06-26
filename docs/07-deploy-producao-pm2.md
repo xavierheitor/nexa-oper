@@ -12,27 +12,61 @@ Este guia usa o `ecosystem.config.js` da raiz como base.
 ## Estrutura esperada no servidor
 
 ```text
-/var/www/nexa-oper/
+/var/www/apps/nexa-oper/
 ├── apps/
+│   ├── api/.env
+│   └── web/.env.local
 ├── packages/
+├── uploads/
 ├── logs/
 └── ecosystem.config.js
 ```
 
-O `ecosystem.config.js` atual está parametrizado com caminhos absolutos em `/var/www/nexa-oper`.
+Domínios configurados no `ecosystem.config.js`:
+
+- Web: `https://nexa.xsys.team`
+- API: `https://api.nexa.xsys.team`
+
+## Preparar variáveis de ambiente (primeira vez)
+
+No servidor, dentro do repositório:
+
+```bash
+npm run deploy:env
+```
+
+Isso copia os templates de `deploy/production/` para:
+
+- `apps/api/.env`
+- `apps/web/.env.local`
+- `packages/db/.env`
+
+Edite os arquivos e preencha:
+
+1. `DATABASE_URL` (MySQL de produção)
+2. `JWT_SECRET` na API (`openssl rand -base64 48`)
+3. `NEXTAUTH_SECRET` no Web (outro secret, diferente do JWT)
 
 ## Passo a passo
 
 1. Atualizar código.
 
 ```bash
-cd /var/www/nexa-oper
+cd /var/www/apps/nexa-oper
 git fetch --all
 git checkout main
 git pull --ff-only
 ```
 
-2. Instalar dependências.
+2. Deploy automatizado (recomendado):
+
+```bash
+npm run deploy:prod
+```
+
+O script valida `.env`, roda `npm ci`, migrations, build e `pm2 reload`.
+
+### Passo a passo manual (alternativa)
 
 ```bash
 npm ci
@@ -84,19 +118,21 @@ pm2 restart nexa-web
 
 ## Variáveis e arquivos de env em produção
 
-O `ecosystem.config.js` atual lê:
+O `ecosystem.config.js` lê:
 
-- API: `/var/www/nexa-oper/apps/api/.env`
-- Web: `/var/www/nexa-oper/apps/web/.env.local`
+- API: `/var/www/apps/nexa-oper/apps/api/.env`
+- Web: `/var/www/apps/nexa-oper/apps/web/.env.local`
 
-Garanta que esses arquivos existam com valores de produção.
+Templates versionados em `deploy/production/*.template`.
+
+O PM2 também injeta em runtime: `TRUST_PROXY`, `HAS_HTTPS`, URLs públicas e `LOG_PATH`.
 
 ## Uploads em produção
 
 Se usar storage local:
 
 - `UPLOAD_STORAGE=local`
-- `UPLOAD_ROOT=/var/www/nexa-oper/uploads` (ou volume dedicado)
+- `UPLOAD_ROOT=/var/www/apps/nexa-oper/uploads`
 
 Exposição de fotos:
 
@@ -107,7 +143,7 @@ Exemplo Nginx:
 
 ```nginx
 location /uploads/ {
-  alias /var/www/nexa-oper/uploads/;
+  alias /var/www/apps/nexa-oper/uploads/;
   add_header Cache-Control "public, max-age=31536000";
 }
 ```

@@ -83,6 +83,14 @@ export class AprGrupoPerguntaRepository extends AbstractCrudRepository<
         where: { deletedAt: null },
         select: { id: true, aprPerguntaId: true },
       },
+      AprGrupoPerguntaMedidaControleRelacao: {
+        where: { deletedAt: null },
+        select: {
+          id: true,
+          aprPerguntaId: true,
+          aprMedidaControleId: true,
+        },
+      },
       AprGrupoOpcaoRespostaRelacao: {
         where: { deletedAt: null },
         select: { id: true, aprOpcaoRespostaId: true },
@@ -169,6 +177,69 @@ export class AprGrupoPerguntaRepository extends AbstractCrudRepository<
           data: {
             aprGrupoPergunta: { connect: { id: aprGrupoPerguntaId } },
             aprOpcaoResposta: { connect: { id: opcaoId } },
+            createdAt: new Date(),
+            createdBy: userId,
+          },
+        })
+      )
+    );
+  }
+
+  async setMedidasControlePorPergunta(
+    aprGrupoPerguntaId: number,
+    medidasControlePorPergunta: Record<string, number[]>,
+    userId: string
+  ): Promise<void> {
+    const existing = await prisma.aprGrupoPerguntaMedidaControleRelacao.findMany({
+      where: { aprGrupoPerguntaId, deletedAt: null },
+      select: { id: true, aprPerguntaId: true, aprMedidaControleId: true },
+    });
+
+    const currentKeys = new Set(
+      existing.map((item) => `${item.aprPerguntaId}:${item.aprMedidaControleId}`)
+    );
+
+    const targetEntries = Object.entries(medidasControlePorPergunta).flatMap(
+      ([aprPerguntaId, aprMedidaControleIds]) =>
+        Array.from(new Set(aprMedidaControleIds)).map((aprMedidaControleId) => ({
+          aprPerguntaId: Number(aprPerguntaId),
+          aprMedidaControleId,
+        }))
+    );
+
+    const targetKeys = new Set(
+      targetEntries.map(
+        (item) => `${item.aprPerguntaId}:${item.aprMedidaControleId}`
+      )
+    );
+
+    const toRemove = existing.filter(
+      (item) => !targetKeys.has(`${item.aprPerguntaId}:${item.aprMedidaControleId}`)
+    );
+
+    await Promise.all(
+      toRemove.map((item) =>
+        prisma.aprGrupoPerguntaMedidaControleRelacao.update({
+          where: { id: item.id },
+          data: {
+            deletedAt: new Date(),
+            deletedBy: userId,
+          },
+        })
+      )
+    );
+
+    const toAdd = targetEntries.filter(
+      (item) => !currentKeys.has(`${item.aprPerguntaId}:${item.aprMedidaControleId}`)
+    );
+
+    await Promise.all(
+      toAdd.map((item) =>
+        prisma.aprGrupoPerguntaMedidaControleRelacao.create({
+          data: {
+            aprGrupoPergunta: { connect: { id: aprGrupoPerguntaId } },
+            aprPergunta: { connect: { id: item.aprPerguntaId } },
+            aprMedidaControle: { connect: { id: item.aprMedidaControleId } },
             createdAt: new Date(),
             createdBy: userId,
           },

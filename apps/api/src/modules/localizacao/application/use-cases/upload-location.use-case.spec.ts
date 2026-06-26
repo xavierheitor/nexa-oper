@@ -13,7 +13,7 @@ describe('UploadLocationUseCase', () => {
   const makeSut = () => {
     const repository: jest.Mocked<LocationUploadRepositoryPort> = {
       findTurnoById: jest.fn(),
-      createLocation: jest.fn(),
+      createLocation: jest.fn().mockResolvedValue('created'),
     };
     const logger = {
       info: jest.fn(),
@@ -46,6 +46,49 @@ describe('UploadLocationUseCase', () => {
     );
   });
 
+  it('normalizes eventCategory and timestamp before persisting', async () => {
+    const { sut, repository } = makeSut();
+    repository.findTurnoById.mockResolvedValue({ id: 12, dataFim: null });
+
+    await sut.execute({
+      turnoId: 12,
+      latitude: -16.73,
+      longitude: -18.83,
+      eventCategory: 'apr_inicio',
+      tagType: 'apr_inicio',
+      timestamp: '2025-06-01T16:34:00.000Z',
+    });
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.createLocation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventCategory: 'apr_inicio',
+        tagType: 'apr_inicio',
+        capturedAt: new Date('2025-06-01T16:34:00.000Z'),
+      }),
+    );
+  });
+
+  it('maps legacy turnoOpen to turno_inicio', async () => {
+    const { sut, repository } = makeSut();
+    repository.findTurnoById.mockResolvedValue({ id: 12, dataFim: null });
+
+    await sut.execute({
+      turnoId: 12,
+      latitude: -16.73,
+      longitude: -18.83,
+      tagType: 'turnoOpen',
+    });
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.createLocation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventCategory: 'turno_inicio',
+        tagType: 'turno_inicio',
+      }),
+    );
+  });
+
   it('returns ok without persisting when turno does not exist', async () => {
     const { sut, repository } = makeSut();
     repository.findTurnoById.mockResolvedValue(null);
@@ -55,6 +98,16 @@ describe('UploadLocationUseCase', () => {
     expect(result).toEqual({ status: 'ok', alreadyExisted: false });
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(repository.createLocation).not.toHaveBeenCalled();
+  });
+
+  it('returns alreadyExisted when location signature already exists', async () => {
+    const { sut, repository } = makeSut();
+    repository.findTurnoById.mockResolvedValue({ id: 12, dataFim: null });
+    repository.createLocation.mockResolvedValue('already_existed');
+
+    const result = await sut.execute(basePayload);
+
+    expect(result).toEqual({ status: 'ok', alreadyExisted: true });
   });
 
   it('returns alreadyExisted on unique signature violation', async () => {

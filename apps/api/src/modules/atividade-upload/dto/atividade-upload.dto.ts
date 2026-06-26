@@ -234,6 +234,24 @@ export class AtividadeUploadEventoDto {
   capturadoEm?: string;
 }
 
+export class AtividadeUploadAprRespostaMedidaControleDto {
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsInt()
+  aprMedidaControleId?: number | null;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  aprMedidaControleNomeSnapshot!: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  textoLivre?: string | null;
+}
+
 export class AtividadeUploadAprRespostaDto {
   @ApiPropertyOptional()
   @Type(() => Number)
@@ -299,6 +317,13 @@ export class AtividadeUploadAprRespostaDto {
   @IsOptional()
   @IsString()
   dataResposta?: string;
+
+  @ApiPropertyOptional({ type: [AtividadeUploadAprRespostaMedidaControleDto] })
+  @Type(() => AtividadeUploadAprRespostaMedidaControleDto)
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  medidasControle?: AtividadeUploadAprRespostaMedidaControleDto[];
 }
 
 export class AtividadeUploadAprAssinaturaDto {
@@ -338,6 +363,25 @@ export class AtividadeUploadAprAssinaturaDto {
   @IsOptional()
   @IsBoolean()
   assinanteExtra?: boolean;
+}
+
+export class AtividadeUploadAprLocalizacaoDto {
+  @ApiPropertyOptional({ example: '2026-02-21T19:34:00.000Z' })
+  @IsOptional()
+  @IsString()
+  capturadaEm?: string;
+
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  latitude?: number | null;
+
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  longitude?: number | null;
 }
 
 export class AtividadeUploadAprDto {
@@ -384,6 +428,35 @@ export class AtividadeUploadAprDto {
   @IsOptional()
   @IsString()
   observacoes?: string | null;
+
+  @ApiPropertyOptional({ example: '2026-02-21T19:34:00.000Z' })
+  @IsOptional()
+  @IsString()
+  iniciadaEm?: string;
+
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  latitudeInicio?: number | null;
+
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  longitudeInicio?: number | null;
+
+  @ApiPropertyOptional({ type: AtividadeUploadAprLocalizacaoDto })
+  @Type(() => AtividadeUploadAprLocalizacaoDto)
+  @IsOptional()
+  @ValidateNested()
+  localizacaoInicio?: AtividadeUploadAprLocalizacaoDto | null;
+
+  @ApiPropertyOptional({ type: AtividadeUploadAprLocalizacaoDto })
+  @Type(() => AtividadeUploadAprLocalizacaoDto)
+  @IsOptional()
+  @ValidateNested()
+  localizacaoFim?: AtividadeUploadAprLocalizacaoDto | null;
 
   @ApiPropertyOptional({ example: '2026-02-21T20:00:00.000Z' })
   @IsOptional()

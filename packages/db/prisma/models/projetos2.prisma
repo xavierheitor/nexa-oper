@@ -1,0 +1,896 @@
+// /// ===============================================
+// /// ENUMS
+// /// ===============================================
+
+// enum ProjTipoConsumoMaterial {
+//   FIXO
+//   VARIAVEL
+// }
+
+// enum ProjStatusProjeto {
+//   PENDENTE
+//   EM_VIABILIZACAO
+//   AGUARDANDO_VALIDACAO
+//   EM_CORRECAO
+//   VIABILIZADO_PARCIAL
+//   VIABILIZADO_TOTAL
+//   EM_PLANEJAMENTO
+//   EM_EXECUCAO
+//   FINALIZADO
+//   CANCELADO
+// }
+
+// enum ProjResultadoViabilizacao {
+//   PARCIAL
+//   TOTAL
+// }
+
+// enum ProjResultadoValidacaoViabilizacao {
+//   APROVADA
+//   CORRIGIDA
+//   REJEITADA
+// }
+
+// enum ProjStatusProgramacao {
+//   PENDENTE
+//   PLANEJADA
+//   AVISOS_ENTREGUES
+//   DESLIGAMENTO_CONFIRMADO
+//   LIBERADA
+//   EM_EXECUCAO
+//   PARCIAL
+//   CONCLUIDA
+//   CANCELADA
+// }
+
+// enum ProjResultadoExecucao {
+//   EXECUTADO
+//   PARCIAL
+//   TERCEIROS
+//   IMPEDIDO
+//   NAO_EXECUTADO
+// }
+
+// enum ProjResultadoExecucaoIntegral {
+//   EXECUTADO
+//   TERCEIROS
+//   IMPEDIDO
+//   NAO_EXECUTADO
+// }
+
+// enum ProjTipoEvidencia {
+//   FOTO
+//   VIDEO
+//   DOCUMENTO
+// }
+
+// enum ProjTipoMotivoOcorrencia {
+//   CANCELAMENTO_PROGRAMACAO
+//   NAO_EXECUCAO_ITEM
+// }
+
+// enum ProjAlvoEvidencia {
+//   VIABILIZACAO
+//   POSTE
+//   VAO
+//   EXECUCAO
+//   EXECUCAO_POSTE
+//   EXECUCAO_VAO
+//   EXECUCAO_RAMAL
+// }
+
+// /// ===============================================
+// /// CATALOGOS TECNICOS
+// /// ===============================================
+
+// model ProjCadastroPoste {
+//   id Int @id @default(autoincrement())
+
+//   contratoId Int
+//   contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+//   viabilizacaoId Int
+//   viabilizacao   ProjViabilizacao @relation(fields: [viabilizacaoId], references: [id])
+
+//   tipoPosteId Int
+//   tipoPoste   ProjTipoPoste @relation(fields: [tipoPosteId], references: [id])
+
+//   posteUuid   String @db.VarChar(100)
+//   numeroPoste String @db.VarChar(100)
+
+//   latitude  Decimal? @db.Decimal(10, 8)
+//   longitude Decimal? @db.Decimal(11, 8)
+
+//   observacao String? @db.Text
+
+//   validado   Boolean   @default(false)
+//   validadoAt DateTime?
+//   validadoBy String?   @db.VarChar(255)
+
+//   createdAt                   DateTime                      @default(now())
+//   createdBy                   String                        @db.VarChar(255)
+//   updatedAt                   DateTime?                     @updatedAt
+//   updatedBy                   String?                       @db.VarChar(255)
+//   deletedAt                   DateTime?
+//   deletedBy                   String?                       @db.VarChar(255)
+//   projCadastroPosteEstruturas ProjCadastroPosteEstruturas[]
+//   projCadastroPosteRamais     ProjCadastroPosteRamais[]
+
+//   @@unique([contratoId, posteUuid], map: "uq_proj_cadastro_poste_contrato_uuid")
+//   @@unique([contratoId, numeroPoste], map: "uq_proj_cadastro_poste_contrato_numero")
+//   @@index([contratoId])
+//   @@index([viabilizacaoId])
+//   @@index([tipoPosteId])
+//   @@index([numeroPoste])
+//   @@index([validado])
+//   @@index([deletedAt])
+// }
+
+// model ProjTipoPoste {
+//   id   Int    @id @default(autoincrement())
+//   nome String @db.VarChar(255) // ex: 12/300
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   projCadastroPostes ProjCadastroPoste[]
+
+//   @@index([nome])
+//   @@index([deletedAt])
+// }
+
+// model ProjTipoEstrutura {
+//   id   Int    @id @default(autoincrement())
+//   nome String @db.VarChar(255) // ex: N4, N1+S1
+
+//   contratoId Int
+//   contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+//   estruturaMateriais ProjTipoEstruturaMaterial[]
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   projCadastroPosteEstruturas ProjCadastroPosteEstruturas[]
+
+//   @@unique([contratoId, nome], map: "uq_proj_tipo_estrutura_contrato_nome")
+//   @@index([contratoId])
+//   @@index([nome])
+//   @@index([deletedAt])
+// }
+
+// model ProjTipoRamal {
+//   id   Int    @id @default(autoincrement())
+//   nome String @db.VarChar(255) // ex: MONO, BI, TRI
+
+//   tipoRamalMateriais ProjTipoRamalMaterial[]
+//   execucoesRamais    ProjExecucaoRamal[]
+//   programacoesRamais ProjProgramacaoRamal[]
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   projCadastroPosteRamais ProjCadastroPosteRamais[]
+
+//   @@index([nome])
+//   @@index([deletedAt])
+// }
+
+// model ProjCadastroPosteEstruturas {
+//   id Int @id @default(autoincrement())
+
+//   cadastroPosteId Int
+//   cadastroPoste   ProjCadastroPoste @relation(fields: [cadastroPosteId], references: [id])
+
+//   tipoEstruturaId Int
+//   tipoEstrutura   ProjTipoEstrutura @relation(fields: [tipoEstruturaId], references: [id])
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   @@unique([cadastroPosteId, tipoEstruturaId], map: "uq_proj_cadastro_poste_estrutura")
+//   @@index([cadastroPosteId])
+//   @@index([tipoEstruturaId])
+//   @@index([deletedAt])
+// }
+
+// model ProjCadastroPosteRamais {
+//   id Int @id @default(autoincrement())
+
+//   cadastroPosteId Int
+//   cadastroPoste   ProjCadastroPoste @relation(fields: [cadastroPosteId], references: [id])
+
+//   tipoRamalId Int
+//   tipoRamal   ProjTipoRamal @relation(fields: [tipoRamalId], references: [id])
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   @@unique([cadastroPosteId, tipoRamalId], map: "uq_proj_cadastro_poste_ramal")
+//   @@index([cadastroPosteId])
+//   @@index([tipoRamalId])
+//   @@index([deletedAt])
+// }
+
+// model ProjMotivoOcorrencia {
+//   id Int @id @default(autoincrement())
+
+//   codigo    String                   @db.VarChar(100)
+//   descricao String                   @db.VarChar(255)
+//   tipo      ProjTipoMotivoOcorrencia
+//   ativo     Boolean                  @default(true)
+
+//   programacoesCanceladas ProjProgramacao[]
+//   execucaoPostes         ProjExecucaoPoste[]
+//   execucaoVaos           ProjExecucaoVao[]
+//   execucaoRamais         ProjExecucaoRamal[]
+
+//   createdAt                 DateTime                   @default(now())
+//   createdBy                 String                     @db.VarChar(255)
+//   updatedAt                 DateTime?                  @updatedAt
+//   updatedBy                 String?                    @db.VarChar(255)
+//   deletedAt                 DateTime?
+//   deletedBy                 String?                    @db.VarChar(255)
+//   projHistoricoProjetos     ProjHistoricoProjeto[]
+//   projHistoricoProgramacaos ProjHistoricoProgramacao[]
+
+//   @@unique([codigo], map: "uq_proj_motivo_ocorrencia_codigo")
+//   @@index([tipo])
+//   @@index([ativo])
+//   @@index([deletedAt])
+// }
+
+// /// ===============================================
+// /// COMPOSICAO DE MATERIAIS POR TIPO
+// /// ===============================================
+
+// model ProjTipoEstruturaMaterial {
+//   id Int @id @default(autoincrement())
+
+//   tipoEstruturaId Int
+//   materialId      Int
+
+//   quantidadeBase Decimal                 @db.Decimal(10, 4)
+//   tipoConsumo    ProjTipoConsumoMaterial
+
+//   tipoEstrutura ProjTipoEstrutura @relation(fields: [tipoEstruturaId], references: [id])
+//   material      MaterialCatalogo  @relation(fields: [materialId], references: [id])
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   @@unique([tipoEstruturaId, materialId], map: "uq_proj_tipo_estrutura_material")
+//   @@index([tipoEstruturaId])
+//   @@index([materialId])
+//   @@index([deletedAt])
+// }
+
+// model ProjTipoRamalMaterial {
+//   id Int @id @default(autoincrement())
+
+//   contratoId  Int
+//   tipoRamalId Int
+//   materialId  Int
+
+//   quantidadeBase Decimal                 @db.Decimal(10, 4)
+//   tipoConsumo    ProjTipoConsumoMaterial
+
+//   contrato  Contrato         @relation(fields: [contratoId], references: [id])
+//   tipoRamal ProjTipoRamal    @relation(fields: [tipoRamalId], references: [id])
+//   material  MaterialCatalogo @relation(fields: [materialId], references: [id])
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   @@unique([contratoId, tipoRamalId, materialId], map: "uq_proj_tipo_ramal_material")
+//   @@index([contratoId])
+//   @@index([tipoRamalId])
+//   @@index([materialId])
+//   @@index([deletedAt])
+// }
+
+// /// ===============================================
+// /// PROJETO
+// /// ===============================================
+
+// model ProjViabilizacao {
+//   id Int @id @default(autoincrement())
+
+//   projetoId Int
+//   projeto   ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+
+//   resultado ProjResultadoViabilizacao // abrangencia do envio de campo
+
+//   dataViabilizacao DateTime?
+//   enviadaEm        DateTime?
+//   observacao       String?   @db.Text
+
+//   vaos       ProjVao[]
+//   validacoes ProjValidacaoViabilizacao[]
+//   evidencias ProjEvidencia[]
+
+//   createdAt          DateTime            @default(now())
+//   createdBy          String              @db.VarChar(255)
+//   updatedAt          DateTime?           @updatedAt
+//   updatedBy          String?             @db.VarChar(255)
+//   deletedAt          DateTime?
+//   deletedBy          String?             @db.VarChar(255)
+//   projCadastroPostes ProjCadastroPoste[]
+
+//   @@unique([id, projetoId], map: "uq_proj_viabilizacao_id_projeto")
+//   @@index([projetoId])
+//   @@index([resultado])
+//   @@index([dataViabilizacao])
+//   @@index([enviadaEm])
+//   @@index([deletedAt])
+// }
+
+// model ProjValidacaoViabilizacao {
+//   id Int @id @default(autoincrement())
+
+//   projetoId Int
+//   projeto   ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+
+//   viabilizacaoId Int
+//   viabilizacao   ProjViabilizacao @relation(fields: [viabilizacaoId, projetoId], references: [id, projetoId])
+
+//   resultado ProjResultadoValidacaoViabilizacao // decisao do backoffice sobre a viabilizacao
+
+//   validadaEm DateTime
+//   observacao String?  @db.Text
+
+//   vaosValidados ProjVao[]
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   @@unique([id, projetoId], map: "uq_proj_validacao_viabilizacao_id_projeto")
+//   @@index([projetoId])
+//   @@index([viabilizacaoId])
+//   @@index([resultado])
+//   @@index([validadaEm])
+//   @@index([deletedAt])
+// }
+
+// /// ===============================================
+// /// POSTES
+// /// ===============================================
+
+// model ProjetoProgramacao {
+//   id Int @id @default(autoincrement())
+
+//   numeroProjeto String @db.VarChar(100)
+//   descricao     String @db.Text // descricao administrativa consolidada do projeto
+
+//   contratoId Int
+//   contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+//   status ProjStatusProjeto @default(PENDENTE) // status macro do projeto
+
+//   equipamento    String  @db.VarChar(255)
+//   concessionaria String? @db.VarChar(255)
+//   municipio      String  @db.VarChar(255)
+//   observacao     String? @db.Text
+
+//   viabilizacoes ProjViabilizacao[]
+//   validacoes    ProjValidacaoViabilizacao[]
+//   postes        ProjCadastroPoste[]
+//   vaos          ProjVao[]
+//   programacoes  ProjProgramacao[]
+//   execucoes     ProjExecucao[]
+//   evidencias    ProjEvidencia[]
+
+//   createdAt                 DateTime                   @default(now())
+//   createdBy                 String                     @db.VarChar(255)
+//   updatedAt                 DateTime?                  @updatedAt
+//   updatedBy                 String?                    @db.VarChar(255)
+//   deletedAt                 DateTime?
+//   deletedBy                 String?                    @db.VarChar(255)
+//   projHistoricoProjetos     ProjHistoricoProjeto[]
+//   projHistoricoProgramacaos ProjHistoricoProgramacao[]
+
+//   @@unique([contratoId, numeroProjeto], map: "uq_projeto_programacao_contrato_numero_projeto")
+//   @@index([contratoId])
+//   @@index([equipamento])
+//   @@index([municipio])
+//   @@index([status])
+//   @@index([deletedAt])
+// }
+
+// /// ===============================================
+// /// VAOS
+// /// ===============================================
+
+// model ProjVao {
+//   id Int @id @default(autoincrement())
+
+//   projetoId Int
+//   projeto   ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+
+//   viabilizacaoId Int?
+//   viabilizacao   ProjViabilizacao? @relation(fields: [viabilizacaoId, projetoId], references: [id, projetoId])
+
+//   validacaoId Int? // validacao que liberou a versao atual do vao para programacao
+//   validacao   ProjValidacaoViabilizacao? @relation(fields: [validacaoId, projetoId], references: [id, projetoId])
+
+//   posteOrigemId  Int
+//   posteDestinoId Int
+
+//   posteOrigem  ProjCadastroPoste @relation("ProjVaoOrigem", fields: [posteOrigemId, projetoId], references: [id, projetoId])
+//   posteDestino ProjCadastroPoste @relation("ProjVaoDestino", fields: [posteDestinoId, projetoId], references: [id, projetoId])
+
+//   materialCondutorId Int
+//   materialCondutor   MaterialCatalogo @relation("ProjVaoMaterialCondutor", fields: [materialCondutorId], references: [id])
+
+//   observacao String? @db.Text
+
+//   execucoesVao ProjExecucaoVao[]
+//   programacoes ProjProgramacaoVao[]
+//   evidencias   ProjEvidencia[]
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   @@unique([projetoId, posteOrigemId, posteDestinoId], map: "uq_proj_vao_extremos")
+//   @@unique([id, projetoId], map: "uq_proj_vao_id_projeto")
+//   @@index([projetoId])
+//   @@index([viabilizacaoId])
+//   @@index([validacaoId])
+//   @@index([posteOrigemId])
+//   @@index([posteDestinoId])
+//   @@index([materialCondutorId])
+//   @@index([deletedAt])
+// }
+
+// /// ===============================================
+// /// PROGRAMACAO
+// /// ===============================================
+// model ProjProgramacao {
+//   id Int @id @default(autoincrement())
+
+//   projetoId Int
+//   projeto   ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+
+//   status ProjStatusProgramacao @default(PENDENTE)
+
+//   siNumero           String    @db.VarChar(100) // SI pertence a programacao, nunca ao projeto
+//   dataProgramada     DateTime?
+//   percentualPrevisto Decimal?  @db.Decimal(5, 2)
+//   reprogramadaDeId   Int? // programacao anterior do mesmo projeto, quando esta tentativa for reprogramacao
+
+//   avisosEntregues        Boolean @default(false)
+//   desligamentoNecessario Boolean @default(false)
+//   desligamentoConfirmado Boolean @default(false)
+
+//   protocoloConcessionaria String? @db.VarChar(255)
+//   observacao              String? @db.Text
+
+//   motivoCancelamentoId  Int?
+//   motivoCancelamento    ProjMotivoOcorrencia? @relation(fields: [motivoCancelamentoId], references: [id])
+//   motivoCancelamentoObs String?               @db.Text
+//   canceladaEm           DateTime?
+
+//   reprogramadaDe ProjProgramacao?  @relation("ProjProgramacaoReprogramacao", fields: [reprogramadaDeId, projetoId], references: [id, projetoId])
+//   reprogramacoes ProjProgramacao[] @relation("ProjProgramacaoReprogramacao")
+
+//   postesPlanejados ProjProgramacaoPoste[]
+//   vaosPlanejados   ProjProgramacaoVao[]
+//   ramaisPlanejados ProjProgramacaoRamal[]
+
+//   execucoes ProjExecucao[]
+
+//   createdAt                 DateTime                   @default(now())
+//   createdBy                 String                     @db.VarChar(255)
+//   updatedAt                 DateTime?                  @updatedAt
+//   updatedBy                 String?                    @db.VarChar(255)
+//   deletedAt                 DateTime?
+//   deletedBy                 String?                    @db.VarChar(255)
+//   projHistoricoProgramacaos ProjHistoricoProgramacao[]
+
+//   @@unique([id, projetoId], map: "uq_proj_programacao_id_projeto")
+//   @@index([projetoId])
+//   @@index([siNumero])
+//   @@index([status])
+//   @@index([dataProgramada])
+//   @@index([reprogramadaDeId])
+//   @@index([motivoCancelamentoId])
+//   @@index([canceladaEm])
+//   @@index([deletedAt])
+// }
+
+// model ProjProgramacaoPoste {
+//   id Int @id @default(autoincrement())
+
+//   projetoId     Int
+//   programacaoId Int
+//   posteId       Int
+
+//   ordemPlanejamento Int?
+
+//   programacao ProjProgramacao @relation(fields: [programacaoId, projetoId], references: [id, projetoId])
+//   poste       ProjCadastroPoste       @relation(fields: [posteId, projetoId], references: [id, projetoId])
+
+//   execucoes ProjExecucaoPoste[]
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   @@unique([programacaoId, posteId], map: "uq_proj_programacao_poste")
+//   @@unique([id, projetoId], map: "uq_proj_programacao_poste_id_projeto")
+//   @@index([projetoId])
+//   @@index([programacaoId])
+//   @@index([posteId])
+//   @@index([deletedAt])
+// }
+
+// model ProjProgramacaoVao {
+//   id Int @id @default(autoincrement())
+
+//   projetoId     Int
+//   programacaoId Int
+//   vaoId         Int
+
+//   ordemPlanejamento Int?
+
+//   programacao ProjProgramacao @relation(fields: [programacaoId, projetoId], references: [id, projetoId])
+//   vao         ProjVao         @relation(fields: [vaoId, projetoId], references: [id, projetoId])
+
+//   execucoes ProjExecucaoVao[]
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   @@unique([programacaoId, vaoId], map: "uq_proj_programacao_vao")
+//   @@unique([id, projetoId], map: "uq_proj_programacao_vao_id_projeto")
+//   @@index([projetoId])
+//   @@index([programacaoId])
+//   @@index([vaoId])
+//   @@index([deletedAt])
+// }
+
+// model ProjProgramacaoRamal {
+//   id Int @id @default(autoincrement())
+
+//   projetoId     Int
+//   programacaoId Int
+//   posteId       Int
+//   tipoRamalId   Int
+
+//   quantidadePlanejada Int @default(0) @db.UnsignedInt
+
+//   programacao ProjProgramacao @relation(fields: [programacaoId, projetoId], references: [id, projetoId])
+//   poste       ProjCadastroPoste       @relation(fields: [posteId, projetoId], references: [id, projetoId])
+//   tipoRamal   ProjTipoRamal   @relation(fields: [tipoRamalId], references: [id])
+//   posteRamal  ProjCadastroPosteRamais  @relation(fields: [posteId, tipoRamalId], references: [posteId, tipoRamalId])
+
+//   execucoes ProjExecucaoRamal[]
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   @@unique([programacaoId, posteId, tipoRamalId], map: "uq_proj_programacao_ramal")
+//   @@unique([id, projetoId], map: "uq_proj_programacao_ramal_id_projeto")
+//   @@index([projetoId])
+//   @@index([programacaoId])
+//   @@index([posteId])
+//   @@index([tipoRamalId])
+//   @@index([deletedAt])
+// }
+
+// /// ===============================================
+// /// EXECUCAO
+// /// ===============================================
+
+// model ProjExecucao {
+//   id Int @id @default(autoincrement())
+
+//   projetoId Int
+//   projeto   ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+
+//   programacaoId Int?
+//   programacao   ProjProgramacao? @relation(fields: [programacaoId, projetoId], references: [id, projetoId])
+
+//   turnoId Int?
+//   turno   Turno? @relation(fields: [turnoId], references: [id])
+
+//   dataExecucao DateTime?
+//   enviadaEm    DateTime?
+
+//   statusGeral ProjResultadoExecucao?
+//   observacao  String?                @db.Text
+
+//   postes     ProjExecucaoPoste[]
+//   vaos       ProjExecucaoVao[]
+//   ramais     ProjExecucaoRamal[]
+//   evidencias ProjEvidencia[]
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   @@unique([id, projetoId], map: "uq_proj_execucao_id_projeto")
+//   @@index([projetoId])
+//   @@index([programacaoId])
+//   @@index([turnoId])
+//   @@index([dataExecucao])
+//   @@index([enviadaEm])
+//   @@index([deletedAt])
+// }
+
+// model ProjExecucaoPoste {
+//   id Int @id @default(autoincrement())
+
+//   projetoId  Int
+//   execucaoId Int
+//   posteId    Int
+
+//   programacaoPosteId Int?
+//   programacaoPoste   ProjProgramacaoPoste? @relation(fields: [programacaoPosteId, projetoId], references: [id, projetoId])
+
+//   resultado ProjResultadoExecucaoIntegral
+
+//   motivoOcorrenciaId  Int?
+//   motivoOcorrencia    ProjMotivoOcorrencia? @relation(fields: [motivoOcorrenciaId], references: [id])
+//   motivoOcorrenciaObs String?               @db.Text
+//   observacao          String?               @db.Text
+
+//   execucao ProjExecucao @relation(fields: [execucaoId, projetoId], references: [id, projetoId])
+//   poste    ProjPoste    @relation(fields: [posteId, projetoId], references: [id, projetoId])
+
+//   evidencias ProjEvidencia[]
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   @@unique([id, projetoId], map: "uq_proj_execucao_poste_id_projeto")
+//   @@index([projetoId])
+//   @@index([execucaoId])
+//   @@index([posteId])
+//   @@index([programacaoPosteId])
+//   @@index([motivoOcorrenciaId])
+//   @@index([resultado])
+//   @@index([deletedAt])
+// }
+
+// model ProjExecucaoVao {
+//   id Int @id @default(autoincrement())
+
+//   projetoId  Int
+//   execucaoId Int
+//   vaoId      Int
+
+//   programacaoVaoId Int?
+//   programacaoVao   ProjProgramacaoVao? @relation(fields: [programacaoVaoId, projetoId], references: [id, projetoId])
+
+//   motivoOcorrenciaId  Int?
+//   motivoOcorrencia    ProjMotivoOcorrencia?         @relation(fields: [motivoOcorrenciaId], references: [id])
+//   motivoOcorrenciaObs String?                       @db.Text
+//   resultado           ProjResultadoExecucaoIntegral
+//   caboExecutadoMetros Decimal?                      @db.Decimal(10, 2)
+//   observacao          String?                       @db.Text
+
+//   execucao ProjExecucao @relation(fields: [execucaoId, projetoId], references: [id, projetoId])
+//   vao      ProjVao      @relation(fields: [vaoId, projetoId], references: [id, projetoId])
+
+//   evidencias ProjEvidencia[]
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   @@unique([id, projetoId], map: "uq_proj_execucao_vao_id_projeto")
+//   @@index([projetoId])
+//   @@index([execucaoId])
+//   @@index([vaoId])
+//   @@index([programacaoVaoId])
+//   @@index([motivoOcorrenciaId])
+//   @@index([resultado])
+//   @@index([deletedAt])
+// }
+
+// model ProjExecucaoRamal {
+//   id Int @id @default(autoincrement())
+
+//   projetoId   Int
+//   execucaoId  Int
+//   posteId     Int
+//   tipoRamalId Int
+
+//   programacaoRamalId Int?
+//   programacaoRamal   ProjProgramacaoRamal? @relation(fields: [programacaoRamalId, projetoId], references: [id, projetoId])
+
+//   motivoOcorrenciaId  Int?
+//   motivoOcorrencia    ProjMotivoOcorrencia? @relation(fields: [motivoOcorrenciaId], references: [id])
+//   motivoOcorrenciaObs String?               @db.Text
+//   resultado           ProjResultadoExecucao
+//   quantidadeExecutada Int                   @default(0) @db.UnsignedInt
+//   caboExecutadoMetros Decimal?              @db.Decimal(10, 2)
+//   observacao          String?               @db.Text
+
+//   execucao   ProjExecucao   @relation(fields: [execucaoId, projetoId], references: [id, projetoId])
+//   poste      ProjPoste      @relation(fields: [posteId, projetoId], references: [id, projetoId])
+//   tipoRamal  ProjTipoRamal  @relation(fields: [tipoRamalId], references: [id])
+//   posteRamal ProjPosteRamal @relation(fields: [posteId, tipoRamalId], references: [posteId, tipoRamalId])
+
+//   evidencias ProjEvidencia[]
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   @@unique([id, projetoId], map: "uq_proj_execucao_ramal_id_projeto")
+//   @@index([projetoId])
+//   @@index([execucaoId])
+//   @@index([posteId])
+//   @@index([tipoRamalId])
+//   @@index([programacaoRamalId])
+//   @@index([motivoOcorrenciaId])
+//   @@index([resultado])
+//   @@index([deletedAt])
+// }
+
+// /// ===============================================
+// /// EVIDENCIAS
+// /// ===============================================
+// model ProjEvidencia {
+//   id Int @id @default(autoincrement())
+
+//   projetoId Int
+//   projeto   ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+
+//   alvoTipo ProjAlvoEvidencia
+
+//   viabilizacaoId Int?
+//   viabilizacao   ProjViabilizacao? @relation(fields: [viabilizacaoId, projetoId], references: [id, projetoId])
+
+//   posteId Int?
+//   poste   ProjPoste? @relation(fields: [posteId, projetoId], references: [id, projetoId])
+
+//   vaoId Int?
+//   vao   ProjVao? @relation(fields: [vaoId, projetoId], references: [id, projetoId])
+
+//   execucaoId Int?
+//   execucao   ProjExecucao? @relation(fields: [execucaoId, projetoId], references: [id, projetoId])
+
+//   execucaoPosteId Int?
+//   execucaoPoste   ProjExecucaoPoste? @relation(fields: [execucaoPosteId, projetoId], references: [id, projetoId])
+
+//   execucaoVaoId Int?
+//   execucaoVao   ProjExecucaoVao? @relation(fields: [execucaoVaoId, projetoId], references: [id, projetoId])
+
+//   execucaoRamalId Int?
+//   execucaoRamal   ProjExecucaoRamal? @relation(fields: [execucaoRamalId, projetoId], references: [id, projetoId])
+
+//   tipo       ProjTipoEvidencia
+//   arquivo    String            @db.VarChar(500)
+//   latitude   Decimal?          @db.Decimal(10, 7)
+//   longitude  Decimal?          @db.Decimal(10, 7)
+//   observacao String?           @db.Text
+
+//   createdAt DateTime  @default(now())
+//   createdBy String    @db.VarChar(255)
+//   updatedAt DateTime? @updatedAt
+//   updatedBy String?   @db.VarChar(255)
+//   deletedAt DateTime?
+//   deletedBy String?   @db.VarChar(255)
+
+//   @@index([projetoId])
+//   @@index([viabilizacaoId])
+//   @@index([posteId])
+//   @@index([vaoId])
+//   @@index([execucaoId])
+//   @@index([execucaoPosteId])
+//   @@index([execucaoVaoId])
+//   @@index([execucaoRamalId])
+//   @@index([alvoTipo])
+//   @@index([deletedAt])
+// }
+
+// model ProjHistoricoProjeto {
+//   id Int @id @default(autoincrement())
+
+//   projetoId Int
+//   projeto   ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+
+//   statusAnterior ProjStatusProjeto?
+//   statusNovo     ProjStatusProjeto
+//   observacao     String?            @db.Text
+
+//   motivoOcorrenciaId Int?
+//   motivoOcorrencia   ProjMotivoOcorrencia? @relation(fields: [motivoOcorrenciaId], references: [id])
+
+//   createdAt DateTime @default(now())
+//   createdBy String   @db.VarChar(255)
+
+//   @@index([projetoId])
+//   @@index([statusNovo])
+//   @@index([motivoOcorrenciaId])
+//   @@index([createdAt])
+// }
+
+// model ProjHistoricoProgramacao {
+//   id Int @id @default(autoincrement())
+
+//   projetoId     Int
+//   programacaoId Int
+
+//   projeto     ProjetoProgramacao @relation(fields: [projetoId], references: [id])
+//   programacao ProjProgramacao    @relation(fields: [programacaoId, projetoId], references: [id, projetoId])
+
+//   statusAnterior ProjStatusProgramacao?
+//   statusNovo     ProjStatusProgramacao
+//   observacao     String?                @db.Text
+
+//   motivoOcorrenciaId Int?
+//   motivoOcorrencia   ProjMotivoOcorrencia? @relation(fields: [motivoOcorrenciaId], references: [id])
+
+//   createdAt DateTime @default(now())
+//   createdBy String   @db.VarChar(255)
+
+//   @@index([projetoId])
+//   @@index([programacaoId])
+//   @@index([statusNovo])
+//   @@index([motivoOcorrenciaId])
+//   @@index([createdAt])
+// }

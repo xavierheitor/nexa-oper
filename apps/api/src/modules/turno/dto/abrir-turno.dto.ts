@@ -3,6 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsDate,
+  IsIn,
   IsInt,
   IsOptional,
   IsPositive,
@@ -48,6 +49,16 @@ export class AbrirTurnoDto {
   @IsOptional()
   @IsString()
   versaoApp?: string;
+
+  @ApiPropertyOptional({
+    description: 'Plataforma do aplicativo móvel',
+    example: 'android',
+    enum: ['android', 'ios'],
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(['android', 'ios'])
+  plataformaApp?: string;
 
   @ApiProperty({ description: 'Quilometragem inicial', example: 12345 })
   @IsInt()

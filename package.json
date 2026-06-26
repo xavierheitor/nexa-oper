@@ -24,6 +24,9 @@
     "db:migrate": "npm run migrate:dev --workspace=packages/db",
     "db:migrate:dev": "npm run migrate:dev --workspace=packages/db",
     "db:migrate:deploy": "npm run migrate:deploy --workspace=packages/db",
+    "deploy:env": "bash deploy/production/install-env.sh",
+    "deploy:prod": "bash deploy/production/deploy.sh",
+    "snapshot:server": "tsx scripts/server-snapshot/index.ts",
     "db:studio": "npm run studio --workspace=packages/db",
     "db:reset": "npm run db:reset --workspace=packages/db",
     "db:seed": "npm run seed --workspace=packages/db",
@@ -73,6 +76,7 @@
     "lint-staged": "^15.2.10",
     "prettier": "^3.0.0",
     "rimraf": "^6.0.1",
+    "tsx": "^4.20.6",
     "turbo": "^2.0.0"
   },
   "keywords": [

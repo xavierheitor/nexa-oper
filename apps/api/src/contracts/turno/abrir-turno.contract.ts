@@ -25,6 +25,7 @@ export interface AbrirTurnoRequestContract {
   equipeId: number;
   dispositivo?: string;
   versaoApp?: string;
+  plataformaApp?: string;
   kmInicio: number;
   dataInicio?: Date;
   eletricistas: AbrirTurnoEletricistaContract[];
@@ -57,6 +58,7 @@ export interface AbrirTurnoResponseContract extends TurnoCardContract {
   checklists: unknown[];
   turnosRealizados: unknown[];
   checklistsSalvos: number;
+  checklistSyncStatus?: 'pending' | 'completed' | 'failed' | 'dead_letter';
   respostasAguardandoFoto?: number[];
   processamentoAssincrono?: string;
 }

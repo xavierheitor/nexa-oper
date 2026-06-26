@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AppError } from '../../core/errors/app-error';
 import { env } from '../../core/config/env';
+import { MobileAppVersionGateService } from '../../core/mobile-app-version/mobile-app-version-gate.service';
 import { DatabaseModule } from '../../database';
 import { ContractPermissionsModule } from './modules/contract-permissions/contract-permissions.module';
 import { LoginUseCase } from './application/use-cases/login.use-case';
@@ -32,6 +33,7 @@ if (!env.JWT_SECRET || env.JWT_SECRET.length < 32) {
   providers: [
     AuthService,
     TokenPairFactory,
+    MobileAppVersionGateService,
     LoginUseCase,
     RefreshTokenUseCase,
     ValidateAuthUserUseCase,

@@ -1,4 +1,5 @@
 import * as bcrypt from 'bcrypt';
+import { MobileAppVersionGateService } from '../../../../core/mobile-app-version/mobile-app-version-gate.service';
 import { LoginUseCase } from './login.use-case';
 import type { AuthSessionRepositoryPort } from '../../domain/ports/auth-session-repository.port';
 import type { TokenPairFactory } from '../services/token-pair.factory';
@@ -19,6 +20,9 @@ describe('LoginUseCase', () => {
       findValidRefreshToken: jest.fn(),
       storeRefreshToken: jest.fn(),
       revokeRefreshToken: jest.fn(),
+      listActiveModulePermissionKeys: jest
+        .fn()
+        .mockResolvedValue(['mobile.turno.access']),
     };
 
     const tokenPairFactory = {
@@ -33,8 +37,16 @@ describe('LoginUseCase', () => {
       }),
     } as unknown as jest.Mocked<TokenPairFactory>;
 
-    const sut = new LoginUseCase(sessions, tokenPairFactory);
-    return { sut, sessions, tokenPairFactory };
+    const mobileAppVersionGate = {
+      assertSupportedVersion: jest.fn(),
+    } as unknown as jest.Mocked<MobileAppVersionGateService>;
+
+    const sut = new LoginUseCase(
+      sessions,
+      tokenPairFactory,
+      mobileAppVersionGate,
+    );
+    return { sut, sessions, tokenPairFactory, mobileAppVersionGate };
   };
 
   afterEach(() => {
@@ -74,7 +86,7 @@ describe('LoginUseCase', () => {
   });
 
   it('issues tokens and stores refresh token on success', async () => {
-    const { sut, sessions, tokenPairFactory } = makeSut();
+    const { sut, sessions, tokenPairFactory, mobileAppVersionGate } = makeSut();
     sessions.findActiveUserByMatricula.mockResolvedValue({
       id: 10,
       username: '123',
@@ -88,6 +100,8 @@ describe('LoginUseCase', () => {
       accessToken: 'access-token',
       refreshToken: 'refresh-token',
       expiresIn: 604800,
+      permissions: ['mobile.turno.access'],
+      navigationPermissions: ['mobile.turno.access'],
     });
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(tokenPairFactory.issue).toHaveBeenCalledTimes(1);
@@ -97,6 +111,34 @@ describe('LoginUseCase', () => {
       refreshToken: 'refresh-token',
       accessExpiresAt: new Date('2026-01-01T00:00:00.000Z'),
       refreshTokenExpiresAt: new Date('2026-01-24T00:00:00.000Z'),
+    });
+    expect(mobileAppVersionGate.assertSupportedVersion).toHaveBeenCalledWith({
+      action: 'login',
+      versaoApp: undefined,
+      plataformaApp: undefined,
+    });
+  });
+
+  it('blocks login when app version is below the configured minimum', async () => {
+    const { sut, mobileAppVersionGate } = makeSut();
+    mobileAppVersionGate.assertSupportedVersion.mockImplementation(() => {
+      throw {
+        code: 'FORBIDDEN',
+        status: 403,
+        message: 'Versão do aplicativo não suportada para login.',
+      };
+    });
+
+    await expect(
+      sut.execute({
+        matricula: '123',
+        senha: 'ok',
+        versaoApp: '1.0.0',
+        plataformaApp: 'android',
+      }),
+    ).rejects.toMatchObject({
+      code: 'FORBIDDEN',
+      status: 403,
     });
   });
 });

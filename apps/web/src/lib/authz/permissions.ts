@@ -1,6 +1,8 @@
 export type Permission =
   | 'dashboard:view'
   | 'registry:view'
+  | 'projects:view'
+  | 'projetos-programas:view'
   | 'contratos:view'
   | 'contratos:create'
   | 'contratos:update'
@@ -8,6 +10,12 @@ export type Permission =
   | 'tipos-escala:view'
   | 'horarios-equipe:view'
   | 'tipos-equipe:view'
+  | 'projetos-tipos-poste:view'
+  | 'projetos-tipos-estrutura:view'
+  | 'projetos-tipos-ramal:view'
+  | 'projetos-motivos-ocorrencia:view'
+  | 'projetos-materiais-estrutura:view'
+  | 'projetos-materiais-ramal:view'
   | 'tipos-veiculo:view'
   | 'veiculos:view'
   | 'veiculos:create'
@@ -80,6 +88,8 @@ export interface PermissionCatalogItem {
 export const PERMISSIONS = {
   DASHBOARD_VIEW: 'dashboard:view' as const,
   REGISTRY_VIEW: 'registry:view' as const,
+  PROJECTS_VIEW: 'projects:view' as const,
+  PROJETOS_PROGRAMAS_VIEW: 'projetos-programas:view' as const,
   CONTRATOS_VIEW: 'contratos:view' as const,
   CONTRATOS_CREATE: 'contratos:create' as const,
   CONTRATOS_UPDATE: 'contratos:update' as const,
@@ -87,6 +97,12 @@ export const PERMISSIONS = {
   TIPOS_ESCALA_VIEW: 'tipos-escala:view' as const,
   HORARIOS_EQUIPE_VIEW: 'horarios-equipe:view' as const,
   TIPOS_EQUIPE_VIEW: 'tipos-equipe:view' as const,
+  PROJETOS_TIPOS_POSTE_VIEW: 'projetos-tipos-poste:view' as const,
+  PROJETOS_TIPOS_ESTRUTURA_VIEW: 'projetos-tipos-estrutura:view' as const,
+  PROJETOS_TIPOS_RAMAL_VIEW: 'projetos-tipos-ramal:view' as const,
+  PROJETOS_MOTIVOS_OCORRENCIA_VIEW: 'projetos-motivos-ocorrencia:view' as const,
+  PROJETOS_MATERIAIS_ESTRUTURA_VIEW: 'projetos-materiais-estrutura:view' as const,
+  PROJETOS_MATERIAIS_RAMAL_VIEW: 'projetos-materiais-ramal:view' as const,
   TIPOS_VEICULO_VIEW: 'tipos-veiculo:view' as const,
   VEICULOS_VIEW: 'veiculos:view' as const,
   VEICULOS_CREATE: 'veiculos:create' as const,
@@ -155,6 +171,7 @@ export const ALL_PERMISSIONS = Object.values(PERMISSIONS) as Permission[];
 export const PERMISSION_GROUP_LABELS: Record<string, string> = {
   dashboard: 'Dashboard',
   registry: 'Cadastros',
+  projects: 'Projetos',
   shifts: 'Turnos',
   activities: 'Atividades',
   attendance: 'Frequência',
@@ -180,6 +197,18 @@ export const PERMISSION_CATALOG: PermissionCatalogItem[] = [
     label: 'Ver cadastros',
     group: PERMISSION_GROUP_LABELS.registry,
     description: 'Acessa o módulo de cadastros.',
+  },
+  {
+    permission: PERMISSIONS.PROJECTS_VIEW,
+    label: 'Ver projetos',
+    group: PERMISSION_GROUP_LABELS.projects,
+    description: 'Acessa o módulo de projetos e o cadastro administrativo.',
+  },
+  {
+    permission: PERMISSIONS.PROJETOS_PROGRAMAS_VIEW,
+    label: 'Ver programas de projetos',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de programas dos projetos no cadastro.',
   },
   {
     permission: PERMISSIONS.CONTRATOS_VIEW,
@@ -222,6 +251,42 @@ export const PERMISSION_CATALOG: PermissionCatalogItem[] = [
     label: 'Ver tipos de equipe',
     group: PERMISSION_GROUP_LABELS.registry,
     description: 'Acessa a tela de tipos de equipe.',
+  },
+  {
+    permission: PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
+    label: 'Ver tipos de poste',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de tipos de poste dos projetos.',
+  },
+  {
+    permission: PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
+    label: 'Ver tipos de estrutura',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de tipos de estrutura dos projetos.',
+  },
+  {
+    permission: PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW,
+    label: 'Ver tipos de ramal',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de tipos de ramal dos projetos.',
+  },
+  {
+    permission: PERMISSIONS.PROJETOS_MOTIVOS_OCORRENCIA_VIEW,
+    label: 'Ver motivos de ocorrência de projetos',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de motivos de ocorrência dos projetos.',
+  },
+  {
+    permission: PERMISSIONS.PROJETOS_MATERIAIS_ESTRUTURA_VIEW,
+    label: 'Ver composições por estrutura',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de materiais por tipo de estrutura dos projetos.',
+  },
+  {
+    permission: PERMISSIONS.PROJETOS_MATERIAIS_RAMAL_VIEW,
+    label: 'Ver composições por ramal',
+    group: PERMISSION_GROUP_LABELS.registry,
+    description: 'Acessa a tela de materiais por tipo de ramal dos projetos.',
   },
   {
     permission: PERMISSIONS.TIPOS_VEICULO_VIEW,
@@ -548,6 +613,8 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   gerente: [
     PERMISSIONS.DASHBOARD_VIEW,
     PERMISSIONS.REGISTRY_VIEW,
+    PERMISSIONS.PROJECTS_VIEW,
+    PERMISSIONS.PROJETOS_PROGRAMAS_VIEW,
     PERMISSIONS.CONTRATOS_VIEW,
     PERMISSIONS.CONTRATOS_CREATE,
     PERMISSIONS.CONTRATOS_UPDATE,
@@ -555,6 +622,12 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.TIPOS_ESCALA_VIEW,
     PERMISSIONS.HORARIOS_EQUIPE_VIEW,
     PERMISSIONS.TIPOS_EQUIPE_VIEW,
+    PERMISSIONS.PROJETOS_TIPOS_POSTE_VIEW,
+    PERMISSIONS.PROJETOS_TIPOS_ESTRUTURA_VIEW,
+    PERMISSIONS.PROJETOS_TIPOS_RAMAL_VIEW,
+    PERMISSIONS.PROJETOS_MOTIVOS_OCORRENCIA_VIEW,
+    PERMISSIONS.PROJETOS_MATERIAIS_ESTRUTURA_VIEW,
+    PERMISSIONS.PROJETOS_MATERIAIS_RAMAL_VIEW,
     PERMISSIONS.TIPOS_VEICULO_VIEW,
     PERMISSIONS.VEICULOS_VIEW,
     PERMISSIONS.VEICULOS_CREATE,

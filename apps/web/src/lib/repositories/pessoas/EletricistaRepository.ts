@@ -176,12 +176,25 @@ export class EletricistaRepository extends AbstractCrudRepository<
       (eletricistaData as WithAuditFields).updatedAt || new Date();
 
     return prisma.$transaction(async tx => {
+      const {
+        admissao,
+        cargoId,
+        contratoId,
+        status: _status,
+        ...eletricistaScalarData
+      } = eletricistaData;
+
       const eletricista = await tx.eletricista.update({
         where: { id },
         data: {
-          ...eletricistaData,
-          ...(data.admissao && { admissao: data.admissao }),
-          ...(data.cargoId && { cargoId: data.cargoId }),
+          ...eletricistaScalarData,
+          ...(admissao && { admissao }),
+          ...(typeof cargoId === 'number' && {
+            cargo: { connect: { id: cargoId } },
+          }),
+          ...(typeof contratoId === 'number' && {
+            contrato: { connect: { id: contratoId } },
+          }),
           updatedBy,
           updatedAt,
         },

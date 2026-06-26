@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { isPrismaUniqueConstraintError } from '../../../core/database/prisma-error.util';
 import { PrismaService } from '../../../database/prisma.service';
 import { AppLogger } from '../../../core/logger/app-logger';
 import type { ChecklistPreenchidoItemDto } from '../dto/checklist-preenchido.dto';
@@ -47,25 +48,51 @@ export class ChecklistPreenchidoService {
 
     const opcoesMap = new Map(opcoes.map((o) => [o.id, o]));
 
+    const existingPreenchidos = await tx.checklistPreenchido.findMany({
+      where: { uuid: { in: checklists.map((cp) => cp.uuid) } },
+      select: {
+        id: true,
+        uuid: true,
+        _count: { select: { ChecklistResposta: true } },
+      },
+    });
+    const existingByUuid = new Map(
+      existingPreenchidos.map((item) => [item.uuid, item]),
+    );
+
     for (const cp of checklists) {
-      const preenchido = await tx.checklistPreenchido.create({
-        data: {
-          uuid: cp.uuid,
-          turnoId,
-          checklistId: cp.checklistId,
-          eletricistaId: cp.eletricistaId,
-          dataPreenchimento,
-          latitude: cp.latitude,
-          longitude: cp.longitude,
-          createdBy,
-        },
-      });
+      const existing = existingByUuid.get(cp.uuid);
+      if (existing && existing._count.ChecklistResposta > 0) {
+        checklistPreenchidoIds.push(existing.id);
+        await this.collectRespostasAguardandoFoto(
+          tx,
+          existing.id,
+          opcoesMap,
+          respostasAguardandoFoto,
+        );
+        continue;
+      }
+
+      const preenchido =
+        existing ??
+        (await tx.checklistPreenchido.create({
+          data: {
+            uuid: cp.uuid,
+            turnoId,
+            checklistId: cp.checklistId,
+            eletricistaId: cp.eletricistaId,
+            dataPreenchimento,
+            latitude: cp.latitude,
+            longitude: cp.longitude,
+            createdBy,
+          },
+        }));
+
       checklistPreenchidoIds.push(preenchido.id);
 
-      for (const r of cp.respostas) {
-        const opcao = opcoesMap.get(r.opcaoRespostaId);
-        const resposta = await tx.checklistResposta.create({
-          data: {
+      if (cp.respostas.length > 0) {
+        await tx.checklistResposta.createMany({
+          data: cp.respostas.map((r) => ({
             checklistPreenchidoId: preenchido.id,
             perguntaId: r.perguntaId,
             opcaoRespostaId: r.opcaoRespostaId,
@@ -73,12 +100,16 @@ export class ChecklistPreenchidoService {
             aguardandoFoto: false,
             fotosSincronizadas: 0,
             createdBy,
-          },
+          })),
         });
-        if (opcao?.geraPendencia) {
-          respostasAguardandoFoto.push(resposta.id);
-        }
       }
+
+      await this.collectRespostasAguardandoFoto(
+        tx,
+        preenchido.id,
+        opcoesMap,
+        respostasAguardandoFoto,
+      );
     }
 
     this.logger.operation('Checklists salvos no turno', {
@@ -87,7 +118,28 @@ export class ChecklistPreenchidoService {
       respostasAguardandoFoto: respostasAguardandoFoto.length,
     });
 
-    return { checklistPreenchidoIds, respostasAguardandoFoto };
+    return {
+      checklistPreenchidoIds: [...new Set(checklistPreenchidoIds)],
+      respostasAguardandoFoto: [...new Set(respostasAguardandoFoto)],
+    };
+  }
+
+  private async collectRespostasAguardandoFoto(
+    tx: PrismaService,
+    checklistPreenchidoId: number,
+    opcoesMap: Map<number, { id: number; geraPendencia: boolean }>,
+    respostasAguardandoFoto: number[],
+  ) {
+    const respostas = await tx.checklistResposta.findMany({
+      where: { checklistPreenchidoId },
+      select: { id: true, opcaoRespostaId: true },
+    });
+
+    for (const resposta of respostas) {
+      if (opcoesMap.get(resposta.opcaoRespostaId)?.geraPendencia) {
+        respostasAguardandoFoto.push(resposta.id);
+      }
+    }
   }
 
   /**
@@ -97,7 +149,9 @@ export class ChecklistPreenchidoService {
   async processarChecklistsAssincrono(
     checklistPreenchidoIds: number[],
   ): Promise<void> {
-    for (const cpId of checklistPreenchidoIds) {
+    const uniqueIds = [...new Set(checklistPreenchidoIds)];
+
+    for (const cpId of uniqueIds) {
       await this.processarPendenciasAutomaticas(cpId);
       await this.marcarRespostasAguardandoFoto(cpId);
     }
@@ -126,15 +180,32 @@ export class ChecklistPreenchidoService {
       });
       if (!cp) continue;
 
-      await this.prisma.checklistPendencia.create({
-        data: {
-          checklistRespostaId: r.id,
-          checklistPreenchidoId,
-          turnoId: cp.turnoId,
-          status: 'AGUARDANDO_TRATAMENTO',
-          createdBy: 'system',
-        },
-      });
+      try {
+        await this.prisma.checklistPendencia.create({
+          data: {
+            checklistRespostaId: r.id,
+            checklistPreenchidoId,
+            turnoId: cp.turnoId,
+            status: 'AGUARDANDO_TRATAMENTO',
+            createdBy: 'system',
+          },
+        });
+      } catch (error: unknown) {
+        if (
+          isPrismaUniqueConstraintError(error, 'checklistrespostaid')
+        ) {
+          this.logger.warn(
+            'Pendência já existia para a resposta (retry/idempotência); reenvio ignorado.',
+            {
+              checklistPreenchidoId,
+              checklistRespostaId: r.id,
+            },
+          );
+          continue;
+        }
+
+        throw error;
+      }
     }
   }
 

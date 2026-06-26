@@ -1,7 +1,7 @@
 'use client';
 
 import AuthGuard from '@/lib/components/AuthGuard';
-import { getRequiredPermissionForPath } from '@/lib/constants/navigation';
+import { getRequiredPermissionsForPath } from '@/lib/constants/navigation';
 import { useHydrated } from '@/lib/hooks/useHydrated';
 import SessionRenewer from '@/ui/components/SessionRenewer';
 import SidebarMenu from '@/ui/components/SidebarMenu';
@@ -24,8 +24,8 @@ export default function DashboardLayoutClient({
   const pathname = usePathname();
 
   const { token } = theme.useToken();
-  const requiredPermission = getRequiredPermissionForPath(pathname);
-  const isKnownDashboardPath = requiredPermission !== undefined;
+  const requiredPermissions = getRequiredPermissionsForPath(pathname);
+  const isKnownDashboardPath = requiredPermissions !== undefined;
 
   if (!hydrated) {
     return (
@@ -40,7 +40,7 @@ export default function DashboardLayoutClient({
   }
 
   return (
-    <AuthGuard requiredPermission={requiredPermission}>
+    <AuthGuard requiredPermissions={requiredPermissions}>
       {!isKnownDashboardPath ? (
         <Row
           justify='center'

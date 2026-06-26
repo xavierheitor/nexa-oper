@@ -20,7 +20,6 @@ import {
 import { useEffect } from 'react';
 
 const { Text } = Typography;
-const permissionGroups: PermissionCatalogGroup[] = buildPermissionCatalogGroups();
 
 export interface PermissionProfileFormData {
   key?: string;
@@ -52,6 +51,7 @@ export default function PermissionProfileForm({
   loading = false,
 }: PermissionProfileFormProps) {
   const [form] = Form.useForm<PermissionProfileFormData>();
+  const permissionGroups: PermissionCatalogGroup[] = buildPermissionCatalogGroups();
 
   useEffect(() => {
     form.setFieldsValue({

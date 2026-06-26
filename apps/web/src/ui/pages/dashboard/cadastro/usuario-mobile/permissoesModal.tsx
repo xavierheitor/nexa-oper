@@ -1,7 +1,19 @@
 'use client';
 
-import { Form, Select, Button, Spin, Card, Table, App } from 'antd';
+import {
+  Form,
+  Select,
+  Button,
+  Spin,
+  Card,
+  Table,
+  App,
+  Tabs,
+  Checkbox,
+  Empty,
+} from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
+import { useEffect, useState } from 'react';
 
 import { listContratosLookup } from '@/lib/actions/contrato/listLookup';
 import { setMobileContratoPermissao } from '@/lib/actions/mobileContratoPermissao/setPermissao';
@@ -10,6 +22,9 @@ import { deleteMobileContratoPermissao } from '@/lib/actions/mobileContratoPermi
 import { MobileContratoPermissao } from '@nexa-oper/db';
 import type { CrudController } from '@/lib/hooks/useCrudController';
 import { useDataFetch } from '@/lib/hooks/useDataFetch';
+import { listMobileModules } from '@/lib/actions/mobileModule/list';
+import { listMobileUserModulePermissions } from '@/lib/actions/mobileUserModulePermission/list';
+import { setMobileUserModulePermissions } from '@/lib/actions/mobileUserModulePermission/set';
 
 interface PermissoesModalProps {
   mobileUserId: number;
@@ -22,23 +37,57 @@ export default function PermissoesModal({
   mobileUserId,
   mobileUserName,
   onSaved,
-  controllerExec
+  controllerExec,
 }: PermissoesModalProps) {
   const { message } = App.useApp();
   const [form] = Form.useForm();
+  const [selectedModuleIds, setSelectedModuleIds] = useState<number[]>([]);
 
   // Carregar contratos e permissões
-  const { data: contratosData, loading: loadingContratos, refetch: refetchContratos } = useDataFetch(
+  const {
+    data: contratosData,
+    loading: loadingContratos,
+    refetch: refetchContratos,
+  } = useDataFetch(
     async () => {
-      const [contratosResult, permissoesResult] = await Promise.all([
-        listContratosLookup({ page: 1, pageSize: 200, orderBy: 'nome', orderDir: 'asc' }),
-        listMobileContratoPermissoes({ mobileUserId, page: 1, pageSize: 200 })
+      const [
+        contratosResult,
+        permissoesResult,
+        modulesResult,
+        modulePermissionsResult,
+      ] = await Promise.all([
+        listContratosLookup({
+          page: 1,
+          pageSize: 200,
+          orderBy: 'nome',
+          orderDir: 'asc',
+        }),
+        listMobileContratoPermissoes({ mobileUserId, page: 1, pageSize: 200 }),
+        listMobileModules({
+          page: 1,
+          pageSize: 200,
+          orderBy: 'ordem',
+          orderDir: 'asc',
+          onlyActive: true,
+        }),
+        listMobileUserModulePermissions({ mobileUserId }),
       ]);
 
-      if (contratosResult.success && contratosResult.data && permissoesResult.success && permissoesResult.data) {
+      if (
+        contratosResult.success &&
+        contratosResult.data &&
+        permissoesResult.success &&
+        permissoesResult.data &&
+        modulesResult.success &&
+        modulesResult.data &&
+        modulePermissionsResult.success &&
+        modulePermissionsResult.data
+      ) {
         return {
           contratos: contratosResult.data.data || [],
           permissoes: permissoesResult.data.data || [],
+          modules: modulesResult.data.data || [],
+          modulePermissions: modulePermissionsResult.data || [],
         };
       }
       throw new Error('Erro ao carregar dados');
@@ -47,20 +96,29 @@ export default function PermissoesModal({
     {
       onError: () => {
         message.error('Erro ao carregar dados');
-      }
+      },
     }
   );
 
   const contratos = contratosData?.contratos || [];
   const permissoes = contratosData?.permissoes || [];
+  const modules = contratosData?.modules || [];
+  const modulePermissions = contratosData?.modulePermissions;
   const loading = loadingContratos;
+
+  useEffect(() => {
+    setSelectedModuleIds(
+      (modulePermissions ?? []).map(permission => permission.mobileModuleId)
+    );
+  }, [modulePermissions]);
 
   const handleSubmit = (values: { contratoId: number }) => {
     controllerExec(
-      () => setMobileContratoPermissao({
-        mobileUserId,
-        contratoId: values.contratoId
-      }),
+      () =>
+        setMobileContratoPermissao({
+          mobileUserId,
+          contratoId: values.contratoId,
+        }),
       'Permissão adicionada com sucesso!'
     ).then(() => {
       form.resetFields();
@@ -73,6 +131,20 @@ export default function PermissoesModal({
     controllerExec(
       () => deleteMobileContratoPermissao({ id: permissaoId }),
       'Permissão removida com sucesso!'
+    ).then(() => {
+      refetchContratos();
+      onSaved();
+    });
+  };
+
+  const handleSaveModules = () => {
+    controllerExec(
+      () =>
+        setMobileUserModulePermissions({
+          mobileUserId,
+          moduleIds: selectedModuleIds,
+        }),
+      'Permissões de módulos atualizadas com sucesso!'
     ).then(() => {
       refetchContratos();
       onSaved();
@@ -95,7 +167,7 @@ export default function PermissoesModal({
       key: 'actions',
       render: (_: unknown, record: MobileContratoPermissao) => (
         <Button
-          type="link"
+          type='link'
           danger
           icon={<DeleteOutlined />}
           onClick={() => handleDelete(record.id)}
@@ -111,29 +183,29 @@ export default function PermissoesModal({
     contrato => !permissoes.some(p => p.contratoId === contrato.id)
   );
 
-  return (
-    <Spin spinning={loading} style={{ display: 'block', minHeight: '200px' }}>
-      <div>
-        <Card title={`Adicionar Permissão - ${mobileUserName}`} style={{ marginBottom: 16 }}>
-          <Form
-            form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-        >
+  const contractTab = (
+    <div>
+      <Card
+        title={`Adicionar Permissão - ${mobileUserName}`}
+        style={{ marginBottom: 16 }}
+      >
+        <Form form={form} layout='vertical' onFinish={handleSubmit}>
           <Form.Item
-            name="contratoId"
-            label="Contrato"
+            name='contratoId'
+            label='Contrato'
             rules={[{ required: true, message: 'Selecione um contrato' }]}
           >
             <Select
               showSearch
-              placeholder="Selecione um contrato"
+              placeholder='Selecione um contrato'
               filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                (option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
               }
               options={contratosDisponiveis.map(c => ({
                 value: c.id,
-                label: `${c.nome} (${c.numero})`
+                label: `${c.nome} (${c.numero})`,
               }))}
               disabled={contratosDisponiveis.length === 0}
             />
@@ -141,18 +213,20 @@ export default function PermissoesModal({
 
           <Form.Item>
             <Button
-              type="primary"
-              htmlType="submit"
+              type='primary'
+              htmlType='submit'
               block
               disabled={contratosDisponiveis.length === 0}
             >
-              {contratosDisponiveis.length === 0 ? 'Todos os contratos já estão vinculados' : 'Adicionar Permissão'}
+              {contratosDisponiveis.length === 0
+                ? 'Todos os contratos já estão vinculados'
+                : 'Adicionar Permissão'}
             </Button>
           </Form.Item>
         </Form>
       </Card>
 
-      <Card title="Permissões Atuais">
+      <Card title='Permissões Atuais'>
         {permissoes.length === 0 ? (
           <p style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
             Nenhuma permissão encontrada
@@ -161,13 +235,61 @@ export default function PermissoesModal({
           <Table
             columns={columns}
             dataSource={permissoes}
-            rowKey="id"
+            rowKey='id'
             pagination={false}
-            size="small"
+            size='small'
           />
         )}
       </Card>
     </div>
+  );
+
+  const modulesTab = (
+    <Card title={`Módulos disponíveis para ${mobileUserName}`}>
+      {modules.length === 0 ? (
+        <Empty description='Nenhum módulo mobile ativo cadastrado.' />
+      ) : (
+        <>
+          <Checkbox.Group
+            value={selectedModuleIds}
+            onChange={values => setSelectedModuleIds(values as number[])}
+            style={{ display: 'grid', gap: 12 }}
+          >
+            {modules.map(module => (
+              <Checkbox key={module.id} value={module.id}>
+                <strong>{module.nome}</strong>
+                <span style={{ marginLeft: 8, color: '#666' }}>
+                  {module.key}
+                </span>
+                {module.descricao ? (
+                  <div style={{ color: '#666', fontSize: 12 }}>
+                    {module.descricao}
+                  </div>
+                ) : null}
+              </Checkbox>
+            ))}
+          </Checkbox.Group>
+          <Button
+            type='primary'
+            block
+            style={{ marginTop: 20 }}
+            onClick={handleSaveModules}
+          >
+            Salvar módulos permitidos
+          </Button>
+        </>
+      )}
+    </Card>
+  );
+
+  return (
+    <Spin spinning={loading} style={{ display: 'block', minHeight: '200px' }}>
+      <Tabs
+        items={[
+          { key: 'contracts', label: 'Contratos', children: contractTab },
+          { key: 'modules', label: 'Módulos do App', children: modulesTab },
+        ]}
+      />
     </Spin>
   );
 }

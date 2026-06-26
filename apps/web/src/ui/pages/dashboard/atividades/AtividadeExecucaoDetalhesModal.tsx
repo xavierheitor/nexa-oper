@@ -6,7 +6,6 @@ import { useDataFetch } from '@/lib/hooks/useDataFetch';
 import type {
   AtividadeAprAssinaturaDetalhe,
   AtividadeAprPreenchidaDetalhe,
-  AtividadeAprRespostaDetalhe,
   AtividadeEventoDetalhe,
   AtividadeExecucaoDetalhe,
   AtividadeFormRespostaDetalhe,
@@ -14,6 +13,7 @@ import type {
   AtividadeUploadEvidenceDetalhe,
 } from '@/lib/types/atividadeDashboard';
 import { buildPhotoUrl } from '@/lib/utils/photos';
+import AprRespostasAgrupadas from '@/ui/components/AprRespostasAgrupadas';
 import {
   Alert,
   Button,
@@ -31,7 +31,7 @@ import {
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const { Text, Paragraph } = Typography;
 
@@ -39,6 +39,8 @@ interface AtividadeExecucaoDetalhesModalProps {
   open: boolean;
   atividadeId: number | null;
   onClose: () => void;
+  initialTabKey?: string;
+  initialAprId?: number | null;
 }
 
 function formatDateTime(value?: Date | string | null) {
@@ -182,20 +184,16 @@ function renderMediaPreview(
   );
 }
 
-function mapRespostaTexto(aprResposta: AtividadeAprRespostaDetalhe) {
-  if (aprResposta.respostaTexto) return aprResposta.respostaTexto;
-  if (typeof aprResposta.marcado === 'boolean') {
-    return aprResposta.marcado ? 'Marcado' : 'Não marcado';
-  }
-  if (aprResposta.opcaoNomeSnapshot) return aprResposta.opcaoNomeSnapshot;
-  return '-';
-}
-
 export default function AtividadeExecucaoDetalhesModal({
   open,
   atividadeId,
   onClose,
+  initialTabKey = 'medidor',
+  initialAprId = null,
 }: AtividadeExecucaoDetalhesModalProps) {
+  const [activeTabKey, setActiveTabKey] = useState(initialTabKey);
+  const [expandedAprKeys, setExpandedAprKeys] = useState<string[]>([]);
+
   const {
     data: detalhe,
     loading,
@@ -221,11 +219,29 @@ export default function AtividadeExecucaoDetalhesModal({
 
   useEffect(() => {
     if (open && atividadeId) {
+      setActiveTabKey(initialTabKey);
       void refetch();
     } else if (!open) {
       reset();
+      setExpandedAprKeys([]);
     }
-  }, [open, atividadeId, refetch, reset]);
+  }, [open, atividadeId, initialTabKey, refetch, reset]);
+
+  useEffect(() => {
+    if (!open || !detalhe) return;
+
+    if (initialAprId != null) {
+      setExpandedAprKeys([String(initialAprId)]);
+      return;
+    }
+
+    if (
+      initialTabKey === 'apr' &&
+      detalhe.atividadeAprPreenchidas.length === 1
+    ) {
+      setExpandedAprKeys([String(detalhe.atividadeAprPreenchidas[0].id)]);
+    }
+  }, [open, detalhe, initialAprId, initialTabKey]);
 
   const materiaisColumns: ColumnsType<AtividadeMaterialDetalhe> = [
     { title: 'Código', dataIndex: 'materialCodigoSnapshot', width: 150 },
@@ -453,30 +469,6 @@ export default function AtividadeExecucaoDetalhesModal({
     );
   }, [detalhe]);
 
-  const aprRespostaColumns: ColumnsType<AtividadeAprRespostaDetalhe> = [
-    {
-      title: 'Grupo',
-      dataIndex: 'grupoNomeSnapshot',
-      width: 220,
-      render: (value: string | null | undefined) => value || '-',
-    },
-    {
-      title: 'Pergunta',
-      dataIndex: 'perguntaNomeSnapshot',
-      width: 320,
-    },
-    {
-      title: 'Resposta',
-      key: 'resposta',
-      render: (_, record) => mapRespostaTexto(record),
-    },
-    {
-      title: 'Tipo',
-      dataIndex: 'tipoRespostaSnapshot',
-      width: 120,
-    },
-  ];
-
   const aprAssinaturasColumns: ColumnsType<AtividadeAprAssinaturaDetalhe> = [
     { title: 'Assinante', dataIndex: 'nomeAssinante' },
     {
@@ -527,14 +519,7 @@ export default function AtividadeExecucaoDetalhesModal({
           </Card>
 
           <Card size='small' title={`Respostas (${apr.respostas.length})`}>
-            <Table<AtividadeAprRespostaDetalhe>
-              size='small'
-              rowKey='id'
-              pagination={false}
-              columns={aprRespostaColumns}
-              dataSource={apr.respostas}
-              locale={{ emptyText: 'Sem respostas na APR.' }}
-            />
+            <AprRespostasAgrupadas respostas={apr.respostas} />
           </Card>
 
           <Card size='small' title={`Assinaturas (${apr.assinaturas.length})`}>
@@ -719,6 +704,8 @@ export default function AtividadeExecucaoDetalhesModal({
           ) : null}
 
           <Tabs
+            activeKey={activeTabKey}
+            onChange={setActiveTabKey}
             items={[
               {
                 key: 'medidor',
@@ -931,7 +918,15 @@ export default function AtividadeExecucaoDetalhesModal({
                 key: 'apr',
                 label: `APR (${detalhe.atividadeAprPreenchidas.length})`,
                 children: aprItems.length ? (
-                  <Collapse items={aprItems} />
+                  <Collapse
+                    items={aprItems}
+                    activeKey={expandedAprKeys}
+                    onChange={keys =>
+                      setExpandedAprKeys(
+                        Array.isArray(keys) ? keys : [String(keys)]
+                      )
+                    }
+                  />
                 ) : (
                   <Empty description='Atividade sem APR preenchida.' />
                 ),

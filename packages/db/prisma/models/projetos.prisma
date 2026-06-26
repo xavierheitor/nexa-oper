@@ -1,0 +1,263 @@
+enum ProjStatusProjeto {
+    PENDENTE
+    EM_VIABILIZACAO
+    AGUARDANDO_VALIDACAO
+    EM_CORRECAO
+    VIABILIZADO_PARCIAL
+    VIABILIZADO_TOTAL
+    EM_PLANEJAMENTO
+    EM_EXECUCAO
+    FINALIZADO
+    CANCELADO
+}
+
+model ProjPrograma {
+    id   Int    @id @default(autoincrement())
+    nome String @db.VarChar(255)
+
+    contratoId Int
+    contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+    projetos ProjProjeto[]
+
+    createdAt DateTime  @default(now())
+    createdBy String    @db.VarChar(255)
+    updatedAt DateTime? @updatedAt
+    updatedBy String?   @db.VarChar(255)
+    deletedAt DateTime?
+    deletedBy String?   @db.VarChar(255)
+
+    @@index([nome])
+    @@index([deletedAt])
+}
+
+model ProjProjeto {
+    id Int @id @default(autoincrement())
+
+    programaId Int
+    programa   ProjPrograma @relation(fields: [programaId], references: [id])
+
+    numeroProjeto String @db.VarChar(255)
+    descricao     String @db.Text
+    equipamento   String @db.VarChar(255)
+    municipio     String @db.VarChar(255)
+
+    status ProjStatusProjeto @default(PENDENTE)
+
+    viabilizacoes ProjViabilizacao[]
+
+    createdAt DateTime  @default(now())
+    createdBy String    @db.VarChar(255)
+    updatedAt DateTime? @updatedAt
+    updatedBy String?   @db.VarChar(255)
+    deletedAt DateTime?
+    deletedBy String?   @db.VarChar(255)
+
+    @@index([numeroProjeto])
+    @@index([deletedAt])
+}
+
+model ProjViabilizacao {
+    id Int @id @default(autoincrement())
+
+    projetoId Int
+    projeto   ProjProjeto @relation(fields: [projetoId], references: [id])
+
+    data       String @db.VarChar(255)
+    observacao String @db.Text
+
+    autorId Int
+    autor   MobileUser @relation(fields: [autorId], references: [id])
+
+    postes ProjPoste[]
+    vaos   ProjVao[]
+
+    createdAt DateTime  @default(now())
+    createdBy String    @db.VarChar(255)
+    updatedAt DateTime? @updatedAt
+    updatedBy String?   @db.VarChar(255)
+    deletedAt DateTime?
+    deletedBy String?   @db.VarChar(255)
+
+    @@index([projetoId])
+    @@index([deletedAt])
+}
+
+model ProjTipoPoste {
+    id Int @id @default(autoincrement())
+
+    nome String @db.VarChar(255)
+
+    postes ProjPoste[]
+
+    createdAt DateTime  @default(now())
+    createdBy String    @db.VarChar(255)
+    updatedAt DateTime? @updatedAt
+    updatedBy String?   @db.VarChar(255)
+    deletedAt DateTime?
+    deletedBy String?   @db.VarChar(255)
+
+    @@index([nome])
+    @@index([deletedAt])
+}
+
+model ProjPoste {
+    id Int @id @default(autoincrement())
+
+    viabilizacaoId Int
+    viabilizacao   ProjViabilizacao @relation(fields: [viabilizacaoId], references: [id])
+
+    tipoPosteId Int
+    tipoPoste   ProjTipoPoste @relation(fields: [tipoPosteId], references: [id])
+
+    cadastro  String   @db.VarChar(255)
+    uuid      String   @db.VarChar(255)
+    latitude  Decimal? @db.Decimal(10, 8)
+    longitude Decimal? @db.Decimal(11, 8)
+
+    estruturas ProjPosteEstruturas[]
+    ramais     ProjPosteRamais[]
+
+    vaosComoInicio ProjVao[] @relation("VaoPosteInicio")
+    vaosComoFim    ProjVao[] @relation("VaoPosteFim")
+
+    createdAt                  DateTime                    @default(now())
+    createdBy                  String                      @db.VarChar(255)
+    updatedAt                  DateTime?                   @updatedAt
+    updatedBy                  String?                     @db.VarChar(255)
+    deletedAt                  DateTime?
+    deletedBy                  String?                     @db.VarChar(255)
+    projValidacaoViabilizacaos ProjValidacaoViabilizacao[]
+
+    @@index([viabilizacaoId])
+    @@index([deletedAt])
+}
+
+model ProjEstrutura {
+    id Int @id @default(autoincrement())
+
+    nome String @db.VarChar(255)
+
+    postes ProjPosteEstruturas[]
+
+    createdAt DateTime  @default(now())
+    createdBy String    @db.VarChar(255)
+    updatedAt DateTime? @updatedAt
+    updatedBy String?   @db.VarChar(255)
+    deletedAt DateTime?
+    deletedBy String?   @db.VarChar(255)
+
+    @@index([nome])
+    @@index([deletedAt])
+}
+
+model ProjTipoRamal {
+    id Int @id @default(autoincrement())
+
+    nome String @db.VarChar(255)
+
+    postes ProjPosteRamais[]
+
+    createdAt DateTime  @default(now())
+    createdBy String    @db.VarChar(255)
+    updatedAt DateTime? @updatedAt
+    updatedBy String?   @db.VarChar(255)
+    deletedAt DateTime?
+    deletedBy String?   @db.VarChar(255)
+
+    @@index([nome])
+    @@index([deletedAt])
+}
+
+model ProjPosteEstruturas {
+    id Int @id @default(autoincrement())
+
+    posteId Int
+    poste   ProjPoste @relation(fields: [posteId], references: [id])
+
+    estruturaId Int
+    estrutura   ProjEstrutura @relation(fields: [estruturaId], references: [id])
+
+    createdAt DateTime  @default(now())
+    createdBy String    @db.VarChar(255)
+    updatedAt DateTime? @updatedAt
+    updatedBy String?   @db.VarChar(255)
+    deletedAt DateTime?
+    deletedBy String?   @db.VarChar(255)
+
+    @@index([posteId])
+    @@index([estruturaId])
+    @@index([deletedAt])
+}
+
+model ProjPosteRamais {
+    id Int @id @default(autoincrement())
+
+    posteId Int
+    poste   ProjPoste @relation(fields: [posteId], references: [id])
+
+    tipoRamalId Int
+    tipoRamal   ProjTipoRamal @relation(fields: [tipoRamalId], references: [id])
+
+    createdAt DateTime  @default(now())
+    createdBy String    @db.VarChar(255)
+    updatedAt DateTime? @updatedAt
+    updatedBy String?   @db.VarChar(255)
+    deletedAt DateTime?
+    deletedBy String?   @db.VarChar(255)
+
+    @@index([posteId])
+    @@index([tipoRamalId])
+    @@index([deletedAt])
+}
+
+model ProjVao {
+    id Int @id @default(autoincrement())
+
+    viabilizacaoId Int
+    viabilizacao   ProjViabilizacao @relation(fields: [viabilizacaoId], references: [id])
+
+    posteInicioId Int
+    posteInicio   ProjPoste @relation("VaoPosteInicio", fields: [posteInicioId], references: [id])
+
+    posteFimId Int
+    posteFim   ProjPoste @relation("VaoPosteFim", fields: [posteFimId], references: [id])
+
+    materialCondutorId Int
+    materialCondutor   MaterialCatalogo @relation(fields: [materialCondutorId], references: [id])
+
+    createdAt DateTime  @default(now())
+    createdBy String    @db.VarChar(255)
+    updatedAt DateTime? @updatedAt
+    updatedBy String?   @db.VarChar(255)
+    deletedAt DateTime?
+    deletedBy String?   @db.VarChar(255)
+
+    @@index([viabilizacaoId])
+    @@index([posteInicioId])
+    @@index([posteFimId])
+    @@index([deletedAt])
+}
+
+model ProjValidacaoViabilizacao {
+    id Int @id @default(autoincrement())
+
+    posteId Int
+    poste   ProjPoste @relation(fields: [posteId], references: [id])
+
+    data       DateTime @default(now())
+    observacao String?  @db.Text
+
+    autorId Int
+    autor   User @relation(fields: [autorId], references: [id])
+
+    createdAt DateTime  @default(now())
+    createdBy String    @db.VarChar(255)
+    updatedAt DateTime? @updatedAt
+    updatedBy String?   @db.VarChar(255)
+    deletedAt DateTime?
+    deletedBy String?   @db.VarChar(255)
+
+    @@index([posteId])
+    @@index([deletedAt])
+}

@@ -4,8 +4,10 @@ import {
   Injectable,
   type NestInterceptor,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import type { Response } from 'express';
 import { map, type Observable } from 'rxjs';
+import { BYPASS_ENVELOPE_KEY } from '../decorators/bypass-envelope.decorator';
 import {
   type ApiEnvelope,
   isEnvelopePayload,
@@ -33,12 +35,23 @@ function isExpressResponse(value: unknown): value is Response {
  */
 @Injectable()
 export class ResponseEnvelopeInterceptor implements NestInterceptor {
+  constructor(private readonly reflector: Reflector) {}
+
   intercept(
-    _context: ExecutionContext,
+    context: ExecutionContext,
     next: CallHandler,
-  ): Observable<ApiEnvelope<unknown> | undefined | Response> {
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  ): Observable<ApiEnvelope<unknown> | undefined | Response | any> {
+    const bypass = this.reflector.getAllAndOverride<boolean>(
+      BYPASS_ENVELOPE_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
     return next.handle().pipe(
       map((value: unknown) => {
+        if (bypass) {
+          return value;
+        }
         if (value === undefined || value === null) {
           return undefined;
         }

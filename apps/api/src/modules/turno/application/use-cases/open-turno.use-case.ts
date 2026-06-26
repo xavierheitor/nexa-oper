@@ -4,9 +4,10 @@ import type {
   AbrirTurnoRequestContract,
   AbrirTurnoResponseContract,
 } from '../../../../contracts/turno/abrir-turno.contract';
+import { MobileAppVersionGateService } from '../../../../core/mobile-app-version/mobile-app-version-gate.service';
 import { AppLogger } from '../../../../core/logger/app-logger';
 import { PrismaService } from '../../../../database/prisma.service';
-import { ChecklistPreenchidoService } from '../../checklist-preenchido/checklist-preenchido.service';
+import { TurnoChecklistSyncQueueService } from '../../checklist-preenchido/turno-checklist-sync-queue.service';
 import { AbrirTurnoDto } from '../../dto/abrir-turno.dto';
 import { TurnoAbertoEvent } from '../../events/turno-aberto.event';
 import {
@@ -21,41 +22,47 @@ export class OpenTurnoUseCase {
     @Inject(TURNO_REPOSITORY) private readonly repo: TurnoRepositoryPort,
     private readonly prisma: PrismaService,
     private readonly logger: AppLogger,
-    private readonly checklistPreenchidoService: ChecklistPreenchidoService,
+    private readonly checklistSyncQueue: TurnoChecklistSyncQueueService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly mobileAppVersionGate: MobileAppVersionGateService,
   ) {}
 
   async execute(
     input: AbrirTurnoRequestContract,
   ): Promise<AbrirTurnoResponseContract> {
     const dto: AbrirTurnoDto = input;
+    const createdBy = 'system';
 
-    let checklistPreenchidoIds: number[] = [];
-    let respostasAguardandoFoto: number[] = [];
+    this.mobileAppVersionGate.assertSupportedVersion({
+      action: 'open-turno',
+      versaoApp: dto.versaoApp,
+      plataformaApp: dto.plataformaApp,
+    });
 
-    const turno = await this.prisma.$transaction(
-      async (tx) => {
-        await validateAbrirTurno(dto, tx as PrismaService);
+    let checklistQueueId: number | null = null;
 
-        const created = await this.repo.createTurno(dto, tx as PrismaService);
+    const turno = await this.prisma.$transaction(async (tx) => {
+      await validateAbrirTurno(dto, tx as PrismaService);
 
-        if (dto.checklists?.length) {
-          const result =
-            await this.checklistPreenchidoService.salvarChecklistsDoTurno(
-              {
-                turnoId: created.id,
-                checklists: dto.checklists,
-              },
-              tx as PrismaService,
-            );
-          checklistPreenchidoIds = result.checklistPreenchidoIds;
-          respostasAguardandoFoto = result.respostasAguardandoFoto;
-        }
+      const created = await this.repo.createTurno(dto, tx as PrismaService);
 
-        return created;
-      },
-      { timeout: 15000 },
-    );
+      if (dto.checklists?.length) {
+        checklistQueueId = await this.checklistSyncQueue.enqueueInTransaction(
+          tx,
+          {
+            turnoId: created.id,
+            checklists: dto.checklists,
+            createdBy,
+          },
+        );
+      }
+
+      return created;
+    });
+
+    if (checklistQueueId != null) {
+      this.checklistSyncQueue.processPendingForTurno(turno.id);
+    }
 
     const dataInicio = dto.dataInicio ?? new Date();
     const dataReferencia = new Date(dataInicio);
@@ -70,21 +77,24 @@ export class OpenTurnoUseCase {
         dto.eletricistas,
         dto.dispositivo,
         dto.versaoApp,
-        checklistPreenchidoIds,
-        respostasAguardandoFoto,
+        [],
+        [],
       ),
     );
 
-    this.logger.operation('Turno aberto', { turnoId: turno.id });
+    this.logger.operation('Turno aberto', {
+      turnoId: turno.id,
+      checklistQueueId,
+    });
 
     const response = {
       ...turno,
       status: turno.dataFim == null ? 'ABERTO' : 'FECHADO',
       remoteId: turno.id,
-      checklistsSalvos: checklistPreenchidoIds.length,
-      ...(respostasAguardandoFoto.length > 0 && {
-        respostasAguardandoFoto,
-        processamentoAssincrono: 'Em andamento',
+      checklistsSalvos: 0,
+      ...(checklistQueueId != null && {
+        checklistSyncStatus: 'pending' as const,
+        processamentoAssincrono: 'Checklists em processamento',
       }),
     } satisfies AbrirTurnoResponseContract;
 
