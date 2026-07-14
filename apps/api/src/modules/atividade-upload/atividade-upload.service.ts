@@ -67,6 +67,17 @@ interface PreparedAprResposta {
   }>;
 }
 
+interface AprOpcaoRespostaSnapshot {
+  id: number;
+  nome: string;
+  geraPendencia: boolean;
+}
+
+interface AprMedidaControleSnapshot {
+  id: number;
+  nome: string;
+}
+
 function sanitizeFilename(filename: string): string {
   const base = path.basename(filename);
   const ascii = base.replace(/[^\x20-\x7E]/g, '');
@@ -702,7 +713,6 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
       ? await tx.aprOpcaoResposta.findMany({
           where: {
             id: { in: opcaoIds },
-            deletedAt: null,
           },
           select: {
             id: true,
@@ -714,23 +724,9 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
 
     const opcoesById = new Map(opcoes.map((opcao) => [opcao.id, opcao]));
 
-    const pairKeys = new Set<string>();
-    const grupoIds = new Set<number>();
-    const perguntaIds = new Set<number>();
     const medidaIds = new Set<number>();
 
     for (const resposta of apr.respostas) {
-      if (
-        resposta.aprGrupoPerguntaId != null &&
-        resposta.aprPerguntaId != null
-      ) {
-        pairKeys.add(
-          `${resposta.aprGrupoPerguntaId}:${resposta.aprPerguntaId}`,
-        );
-        grupoIds.add(resposta.aprGrupoPerguntaId);
-        perguntaIds.add(resposta.aprPerguntaId);
-      }
-
       for (const medida of resposta.medidasControle ?? []) {
         if (medida.aprMedidaControleId != null) {
           medidaIds.add(medida.aprMedidaControleId);
@@ -742,7 +738,6 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
       ? await tx.aprMedidaControle.findMany({
           where: {
             id: { in: Array.from(medidaIds) },
-            deletedAt: null,
           },
           select: {
             id: true,
@@ -751,33 +746,6 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
         })
       : [];
     const medidasById = new Map(medidas.map((medida) => [medida.id, medida]));
-
-    const medidasPermitidas = pairKeys.size
-      ? await tx.aprGrupoPerguntaMedidaControleRelacao.findMany({
-          where: {
-            deletedAt: null,
-            aprGrupoPerguntaId: { in: Array.from(grupoIds) },
-            aprPerguntaId: { in: Array.from(perguntaIds) },
-          },
-          select: {
-            aprGrupoPerguntaId: true,
-            aprPerguntaId: true,
-            aprMedidaControleId: true,
-          },
-        })
-      : [];
-
-    const medidasPermitidasPorPergunta = new Map<string, Set<number>>();
-    for (const relacao of medidasPermitidas) {
-      const key = `${relacao.aprGrupoPerguntaId}:${relacao.aprPerguntaId}`;
-      if (!pairKeys.has(key)) continue;
-
-      if (!medidasPermitidasPorPergunta.has(key)) {
-        medidasPermitidasPorPergunta.set(key, new Set<number>());
-      }
-
-      medidasPermitidasPorPergunta.get(key)?.add(relacao.aprMedidaControleId);
-    }
 
     return apr.respostas.map((resposta, idx) =>
       this.prepareAprResposta(
@@ -789,7 +757,6 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
         createdBy,
         opcoesById,
         medidasById,
-        medidasPermitidasPorPergunta,
       ),
     );
   }
@@ -801,12 +768,8 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
     atividadeAprPreenchidaId: number,
     preenchidaEm: Date,
     createdBy: string,
-    opcoesById: Map<
-      number,
-      { id: number; nome: string; geraPendencia: boolean }
-    >,
-    medidasById: Map<number, { id: number; nome: string }>,
-    medidasPermitidasPorPergunta: Map<string, Set<number>>,
+    opcoesById: Map<number, AprOpcaoRespostaSnapshot>,
+    medidasById: Map<number, AprMedidaControleSnapshot>,
   ): PreparedAprResposta {
     const perguntaNomeSnapshot = normalizeString(
       resposta.aprPerguntaNomeSnapshot,
@@ -828,8 +791,13 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
     const opcao = opcaoId != null ? (opcoesById.get(opcaoId) ?? null) : null;
 
     if (opcaoId != null && !opcao) {
-      throw AppError.validation(
-        `APR ${apr.aprUuid} com opção de resposta inválida (${opcaoId}) na resposta ${idx}`,
+      this.logger.warn(
+        'APR recebida com opção de resposta ausente no catálogo atual; persistindo snapshot histórico',
+        {
+          aprUuid: apr.aprUuid,
+          respostaIndex: idx,
+          aprOpcaoRespostaId: opcaoId,
+        },
       );
     }
 
@@ -840,14 +808,13 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
       createdBy,
       opcao?.geraPendencia ?? false,
       medidasById,
-      medidasPermitidasPorPergunta,
     );
 
     return {
       atividadeAprPreenchidaId,
       aprGrupoPerguntaId: resposta.aprGrupoPerguntaId ?? null,
       aprPerguntaId: resposta.aprPerguntaId ?? null,
-      aprOpcaoRespostaId: opcaoId,
+      aprOpcaoRespostaId: opcao?.id ?? null,
       grupoNomeSnapshot: normalizeString(resposta.aprGrupoPerguntaNomeSnapshot),
       perguntaNomeSnapshot,
       tipoRespostaSnapshot,
@@ -871,30 +838,15 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
     idx: number,
     createdBy: string,
     exigeMedidaControle: boolean,
-    medidasById: Map<number, { id: number; nome: string }>,
-    medidasPermitidasPorPergunta: Map<string, Set<number>>,
+    medidasById: Map<number, AprMedidaControleSnapshot>,
   ) {
     const medidasSelecionadas = this.normalizeMedidasControleSelecionadas(
       resposta.medidasControle,
     );
 
-    if (!exigeMedidaControle) {
-      if (medidasSelecionadas.length > 0) {
-        throw AppError.validation(
-          `APR ${apr.aprUuid} com medidas de controle informadas para uma resposta que não gera pendência (índice ${idx})`,
-        );
-      }
+    if (!exigeMedidaControle && medidasSelecionadas.length === 0) {
       return [];
     }
-
-    if (resposta.aprGrupoPerguntaId == null || resposta.aprPerguntaId == null) {
-      throw AppError.validation(
-        `APR ${apr.aprUuid} exige grupo e pergunta para validar medidas de controle (índice ${idx})`,
-      );
-    }
-
-    const pairKey = `${resposta.aprGrupoPerguntaId}:${resposta.aprPerguntaId}`;
-    const medidasPermitidas = medidasPermitidasPorPergunta.get(pairKey);
 
     if (medidasSelecionadas.length === 0) {
       return [];
@@ -927,24 +879,26 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
         );
       }
 
-      if (
-        medidasPermitidas?.size &&
-        !medidasPermitidas.has(medidaSelecionada.aprMedidaControleId)
-      ) {
-        throw AppError.validation(
-          `APR ${apr.aprUuid} com medida de controle inválida para a pergunta ${resposta.aprPerguntaId} na resposta ${idx}`,
-        );
-      }
-
       const medida = medidasById.get(medidaSelecionada.aprMedidaControleId);
       if (!medida) {
-        throw AppError.validation(
-          `APR ${apr.aprUuid} com medida de controle inexistente (${medidaSelecionada.aprMedidaControleId}) na resposta ${idx}`,
+        this.logger.warn(
+          'APR recebida com medida de controle ausente no catálogo atual; persistindo snapshot histórico sem vínculo',
+          {
+            aprUuid: apr.aprUuid,
+            respostaIndex: idx,
+            aprMedidaControleId: medidaSelecionada.aprMedidaControleId,
+          },
         );
       }
 
       const medidaControleNomeSnapshot =
-        medidaControleNomeInformado ?? medida.nome;
+        medidaControleNomeInformado ?? medida?.nome;
+
+      if (!medidaControleNomeSnapshot) {
+        throw AppError.validation(
+          `APR ${apr.aprUuid} com medida de controle sem snapshot de nome na resposta ${idx}`,
+        );
+      }
 
       if (isOutrasMedidaControle(medidaControleNomeSnapshot) && !textoLivre) {
         throw AppError.validation(
@@ -953,7 +907,7 @@ export class AtividadeUploadService implements AtividadeUploadRepositoryPort {
       }
 
       return {
-        aprMedidaControleId: medida.id,
+        aprMedidaControleId: medida?.id ?? null,
         medidaControleNomeSnapshot,
         textoLivre,
         createdBy,

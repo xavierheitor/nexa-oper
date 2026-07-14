@@ -249,10 +249,12 @@ describe('AtividadeUploadService', () => {
       atividadeExecucaoId: 77,
     });
 
-    expect(tx.atividadeAprResposta.create).toHaveBeenCalledWith({
-      data: expect.not.objectContaining({
-        AtividadeAprRespostaMedidaControle: expect.anything(),
-      }),
+    expect(tx.atividadeAprResposta.createMany).toHaveBeenCalledWith({
+      data: [
+        expect.not.objectContaining({
+          AtividadeAprRespostaMedidaControle: expect.anything(),
+        }),
+      ],
     });
   });
 
@@ -539,6 +541,222 @@ describe('AtividadeUploadService', () => {
               aprMedidaControleId: 88,
               medidaControleNomeSnapshot: 'Isolar área',
               createdBy: '55',
+            }),
+          ],
+        },
+      }),
+    });
+  });
+
+  it('persists selected medida de controle even when current pergunta relation changed', async () => {
+    const { service, tx } = makeSut();
+
+    tx.atividadeAprPreenchida.upsert.mockResolvedValue({ id: 901 });
+    tx.aprOpcaoResposta.findMany.mockResolvedValue([
+      {
+        id: 12,
+        nome: 'Não conforme',
+        geraPendencia: true,
+      },
+    ]);
+    tx.aprMedidaControle.findMany.mockResolvedValue([
+      {
+        id: 88,
+        nome: 'Isolar área',
+      },
+    ]);
+    tx.aprGrupoPerguntaMedidaControleRelacao.findMany.mockResolvedValue([
+      {
+        aprGrupoPerguntaId: 1,
+        aprPerguntaId: 7,
+        aprMedidaControleId: 99,
+      },
+    ]);
+    tx.atividadeAprResposta.create.mockResolvedValue({ id: 3001 });
+
+    await expect(
+      service.persistUpload(
+        {
+          ...payload,
+          aprs: [
+            {
+              aprUuid: 'apr-uuid-6',
+              respostas: [
+                {
+                  aprGrupoPerguntaId: 1,
+                  aprPerguntaId: 7,
+                  aprPerguntaNomeSnapshot: 'Isolamento da área',
+                  tipoRespostaSnapshot: 'opcao',
+                  aprOpcaoRespostaId: 12,
+                  aprOpcaoRespostaNomeSnapshot: 'Não conforme',
+                  medidasControle: [
+                    {
+                      aprMedidaControleId: 88,
+                      aprMedidaControleNomeSnapshot: 'Isolar área',
+                    },
+                  ],
+                },
+              ],
+              assinaturas: [
+                {
+                  nomeAssinante: 'Eletricista 1',
+                },
+              ],
+            },
+          ],
+        },
+        55,
+      ),
+    ).resolves.toMatchObject({
+      status: 'ok',
+      atividadeExecucaoId: 77,
+    });
+
+    expect(tx.atividadeAprResposta.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        AtividadeAprRespostaMedidaControle: {
+          create: [
+            expect.objectContaining({
+              aprMedidaControleId: 88,
+              medidaControleNomeSnapshot: 'Isolar área',
+              createdBy: '55',
+            }),
+          ],
+        },
+      }),
+    });
+  });
+
+  it('preserves medidas de controle from field even when option no longer generates pendencia', async () => {
+    const { service, tx } = makeSut();
+
+    tx.atividadeAprPreenchida.upsert.mockResolvedValue({ id: 901 });
+    tx.aprOpcaoResposta.findMany.mockResolvedValue([
+      {
+        id: 12,
+        nome: 'Não conforme',
+        geraPendencia: false,
+      },
+    ]);
+    tx.aprMedidaControle.findMany.mockResolvedValue([
+      {
+        id: 88,
+        nome: 'Isolar área',
+      },
+    ]);
+    tx.atividadeAprResposta.create.mockResolvedValue({ id: 3001 });
+
+    await expect(
+      service.persistUpload(
+        {
+          ...payload,
+          aprs: [
+            {
+              aprUuid: 'apr-uuid-7',
+              respostas: [
+                {
+                  aprGrupoPerguntaId: 1,
+                  aprPerguntaId: 7,
+                  aprPerguntaNomeSnapshot: 'Isolamento da área',
+                  tipoRespostaSnapshot: 'opcao',
+                  aprOpcaoRespostaId: 12,
+                  aprOpcaoRespostaNomeSnapshot: 'Não conforme',
+                  medidasControle: [
+                    {
+                      aprMedidaControleId: 88,
+                      aprMedidaControleNomeSnapshot: 'Isolar área',
+                    },
+                  ],
+                },
+              ],
+              assinaturas: [
+                {
+                  nomeAssinante: 'Eletricista 1',
+                },
+              ],
+            },
+          ],
+        },
+        55,
+      ),
+    ).resolves.toMatchObject({
+      status: 'ok',
+      atividadeExecucaoId: 77,
+    });
+
+    expect(tx.atividadeAprResposta.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        AtividadeAprRespostaMedidaControle: {
+          create: [
+            expect.objectContaining({
+              aprMedidaControleId: 88,
+              medidaControleNomeSnapshot: 'Isolar área',
+            }),
+          ],
+        },
+      }),
+    });
+  });
+
+  it('preserves medida de controle snapshot without FK when medida is absent from current catalog', async () => {
+    const { service, tx } = makeSut();
+
+    tx.atividadeAprPreenchida.upsert.mockResolvedValue({ id: 901 });
+    tx.aprOpcaoResposta.findMany.mockResolvedValue([
+      {
+        id: 12,
+        nome: 'Não conforme',
+        geraPendencia: true,
+      },
+    ]);
+    tx.aprMedidaControle.findMany.mockResolvedValue([]);
+    tx.atividadeAprResposta.create.mockResolvedValue({ id: 3001 });
+
+    await expect(
+      service.persistUpload(
+        {
+          ...payload,
+          aprs: [
+            {
+              aprUuid: 'apr-uuid-8',
+              respostas: [
+                {
+                  aprGrupoPerguntaId: 1,
+                  aprPerguntaId: 7,
+                  aprPerguntaNomeSnapshot: 'Isolamento da área',
+                  tipoRespostaSnapshot: 'opcao',
+                  aprOpcaoRespostaId: 12,
+                  aprOpcaoRespostaNomeSnapshot: 'Não conforme',
+                  medidasControle: [
+                    {
+                      aprMedidaControleId: 88,
+                      aprMedidaControleNomeSnapshot: 'Isolar área',
+                    },
+                  ],
+                },
+              ],
+              assinaturas: [
+                {
+                  nomeAssinante: 'Eletricista 1',
+                },
+              ],
+            },
+          ],
+        },
+        55,
+      ),
+    ).resolves.toMatchObject({
+      status: 'ok',
+      atividadeExecucaoId: 77,
+    });
+
+    expect(tx.atividadeAprResposta.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        AtividadeAprRespostaMedidaControle: {
+          create: [
+            expect.objectContaining({
+              aprMedidaControleId: null,
+              medidaControleNomeSnapshot: 'Isolar área',
             }),
           ],
         },
