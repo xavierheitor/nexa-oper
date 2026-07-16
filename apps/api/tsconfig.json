@@ -1,8 +1,8 @@
 {
   "include": ["src/**/*", "test/**/*"],
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "node16",
+    "moduleResolution": "node16",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -12,14 +12,12 @@
     "target": "ES2022",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false,
-    "downlevelIteration": true
+    "noFallthroughCasesInSwitch": false
   }
 }
