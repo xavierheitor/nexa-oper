@@ -460,6 +460,46 @@ export function requireChecklistModelosPermission(session: Session): void {
   );
 }
 
+export function requireInspecaoSegurancaTiposPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.INSPECAO_SEGURANCA_TIPOS_VIEW],
+    'Você não tem permissão para acessar tipos de inspeção de segurança.',
+  );
+}
+
+export function requireInspecaoSegurancaPerguntasPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.INSPECAO_SEGURANCA_PERGUNTAS_VIEW],
+    'Você não tem permissão para acessar perguntas de inspeção de segurança.',
+  );
+}
+
+export function requireInspecaoSegurancaOpcoesPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.INSPECAO_SEGURANCA_OPCOES_VIEW],
+    'Você não tem permissão para acessar opções de inspeção de segurança.',
+  );
+}
+
+export function requireInspecaoSegurancaGruposPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.INSPECAO_SEGURANCA_GRUPOS_VIEW],
+    'Você não tem permissão para acessar grupos de inspeção de segurança.',
+  );
+}
+
+export function requireInspecaoSegurancaModelosPermission(session: Session): void {
+  assertAnyPermission(
+    session,
+    [PERMISSIONS.INSPECAO_SEGURANCA_MODELOS_VIEW],
+    'Você não tem permissão para acessar modelos de inspeção de segurança.',
+  );
+}
+
 export function requireActivitiesPermission(session: Session): void {
   assertAnyPermission(
     session,

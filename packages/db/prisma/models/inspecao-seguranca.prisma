@@ -1,0 +1,372 @@
+enum InspecaoSegurancaContexto {
+  GERAL
+  COLABORADOR
+  EPC
+  VEICULO
+}
+
+enum InspecaoSegurancaTipoResposta {
+  opcao
+  checkbox
+  texto
+  numero
+}
+
+enum InspecaoSegurancaPendenciaStatus {
+  AGUARDANDO_TRATAMENTO
+  SANADA_EM_CAMPO
+  EM_TRATAMENTO
+  TRATADA
+  REGISTRO_INCORRETO
+}
+
+enum InspecaoSegurancaEvidenciaTipo {
+  PROBLEMA
+  TRATAMENTO
+}
+
+model InspecaoSegurancaTipo {
+  id Int @id @default(autoincrement())
+
+  nome      String                     @db.VarChar(255)
+  chave     String                     @unique @db.VarChar(100)
+  contexto  InspecaoSegurancaContexto  @default(GERAL)
+  descricao String?                    @db.VarChar(500)
+  ativo     Boolean                    @default(true)
+
+  contratoId Int?
+  contrato   Contrato? @relation(fields: [contratoId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  modelos       InspecaoSegurancaModelo[]
+  preenchidas   InspecaoSegurancaPreenchida[]
+
+  @@index([ativo, contexto])
+  @@index([contratoId])
+}
+
+model InspecaoSegurancaModelo {
+  id Int @id @default(autoincrement())
+
+  nome      String  @db.VarChar(255)
+  descricao String? @db.VarChar(500)
+  ativo     Boolean @default(true)
+
+  tipoId Int
+  tipo   InspecaoSegurancaTipo @relation(fields: [tipoId], references: [id])
+
+  contratoId Int?
+  contrato   Contrato? @relation(fields: [contratoId], references: [id])
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  gruposRelacao InspecaoSegurancaModeloGrupoRelacao[]
+  preenchidas   InspecaoSegurancaPreenchida[]
+
+  @@index([tipoId])
+  @@index([contratoId])
+  @@index([ativo])
+}
+
+model InspecaoSegurancaGrupoPergunta {
+  id Int @id @default(autoincrement())
+
+  nome         String                       @db.VarChar(255)
+  tipoResposta InspecaoSegurancaTipoResposta @default(opcao)
+  ativo        Boolean                      @default(true)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  modelosRelacao   InspecaoSegurancaModeloGrupoRelacao[]
+  perguntasRelacao InspecaoSegurancaGrupoPerguntaRelacao[]
+  opcoesRelacao    InspecaoSegurancaGrupoOpcaoRespostaRelacao[]
+  respostas        InspecaoSegurancaResposta[]
+
+  @@index([ativo, tipoResposta])
+}
+
+model InspecaoSegurancaPergunta {
+  id Int @id @default(autoincrement())
+
+  nome        String  @db.VarChar(255)
+  obrigatoria Boolean @default(true)
+  ativo       Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  gruposRelacao InspecaoSegurancaGrupoPerguntaRelacao[]
+  respostas     InspecaoSegurancaResposta[]
+
+  @@index([ativo])
+}
+
+model InspecaoSegurancaOpcaoResposta {
+  id Int @id @default(autoincrement())
+
+  nome           String  @db.VarChar(255)
+  geraPendencia  Boolean @default(false)
+  exigeFoto      Boolean @default(false)
+  ativo          Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  gruposRelacao InspecaoSegurancaGrupoOpcaoRespostaRelacao[]
+  respostas     InspecaoSegurancaResposta[]
+
+  @@index([ativo, geraPendencia])
+}
+
+model InspecaoSegurancaModeloGrupoRelacao {
+  id Int @id @default(autoincrement())
+
+  modeloId Int
+  modelo   InspecaoSegurancaModelo @relation(fields: [modeloId], references: [id])
+
+  grupoPerguntaId Int
+  grupoPergunta   InspecaoSegurancaGrupoPergunta @relation(fields: [grupoPerguntaId], references: [id])
+
+  ordem Int @default(0)
+  ativo Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([modeloId, grupoPerguntaId, deletedAt], map: "uq_insp_seg_modelo_grupo_ativo")
+  @@index([modeloId, ordem])
+}
+
+model InspecaoSegurancaGrupoPerguntaRelacao {
+  id Int @id @default(autoincrement())
+
+  grupoPerguntaId Int
+  grupoPergunta   InspecaoSegurancaGrupoPergunta @relation(fields: [grupoPerguntaId], references: [id])
+
+  perguntaId Int
+  pergunta   InspecaoSegurancaPergunta @relation(fields: [perguntaId], references: [id])
+
+  ordem Int @default(0)
+  ativo Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([grupoPerguntaId, perguntaId, deletedAt], map: "uq_insp_seg_grupo_pergunta_ativo")
+  @@index([grupoPerguntaId, ordem], map: "idx_insp_seg_grp_opc_ord")
+}
+
+model InspecaoSegurancaGrupoOpcaoRespostaRelacao {
+  id Int @id @default(autoincrement())
+
+  grupoPerguntaId Int
+  grupoPergunta   InspecaoSegurancaGrupoPergunta @relation(fields: [grupoPerguntaId], references: [id])
+
+  opcaoRespostaId Int
+  opcaoResposta   InspecaoSegurancaOpcaoResposta @relation(fields: [opcaoRespostaId], references: [id])
+
+  ordem Int @default(0)
+  ativo Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([grupoPerguntaId, opcaoRespostaId, deletedAt], map: "uq_insp_seg_grupo_opcao_ativo")
+  @@index([grupoPerguntaId, ordem])
+}
+
+model InspecaoSegurancaPreenchida {
+  id Int @id @default(autoincrement())
+
+  uuid String @unique @db.VarChar(36)
+
+  turnoId Int
+  turno   Turno @relation(fields: [turnoId], references: [id], onDelete: Cascade)
+
+  modeloId Int?
+  modelo   InspecaoSegurancaModelo? @relation(fields: [modeloId], references: [id], onDelete: SetNull)
+
+  tipoId Int?
+  tipo   InspecaoSegurancaTipo? @relation(fields: [tipoId], references: [id], onDelete: SetNull)
+
+  modeloNomeSnapshot String? @db.VarChar(255)
+  tipoNomeSnapshot   String? @db.VarChar(255)
+  tipoChaveSnapshot  String? @db.VarChar(100)
+  contextoSnapshot   String? @db.VarChar(100)
+
+  inspetorMobileUserId Int?
+  inspetorNomeSnapshot String? @db.VarChar(255)
+
+  colaboradorNomeSnapshot String? @db.VarChar(255)
+  epcNomeSnapshot         String? @db.VarChar(255)
+
+  veiculoId Int?
+  veiculo   Veiculo? @relation(fields: [veiculoId], references: [id], onDelete: SetNull)
+  placaVeiculoSnapshot String? @db.VarChar(20)
+
+  observacoes String? @db.Text
+
+  realizadaEm DateTime
+  latitude    Float?
+  longitude   Float?
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  respostas  InspecaoSegurancaResposta[]
+  pendencias InspecaoSegurancaPendencia[]
+
+  @@index([turnoId, realizadaEm])
+  @@index([modeloId])
+  @@index([tipoId])
+  @@index([veiculoId])
+}
+
+model InspecaoSegurancaResposta {
+  id Int @id @default(autoincrement())
+
+  inspecaoPreenchidaId Int
+  inspecaoPreenchida   InspecaoSegurancaPreenchida @relation(fields: [inspecaoPreenchidaId], references: [id], onDelete: Cascade)
+
+  grupoPerguntaId Int?
+  grupoPergunta   InspecaoSegurancaGrupoPergunta? @relation(fields: [grupoPerguntaId], references: [id], onDelete: SetNull)
+
+  perguntaId Int?
+  pergunta   InspecaoSegurancaPergunta? @relation(fields: [perguntaId], references: [id], onDelete: SetNull)
+
+  opcaoRespostaId Int?
+  opcaoResposta   InspecaoSegurancaOpcaoResposta? @relation(fields: [opcaoRespostaId], references: [id], onDelete: SetNull)
+
+  grupoNomeSnapshot    String?  @db.VarChar(255)
+  perguntaNomeSnapshot String   @db.VarChar(255)
+  tipoRespostaSnapshot String   @db.VarChar(30)
+  opcaoNomeSnapshot    String?  @db.VarChar(255)
+  respostaTexto        String?  @db.Text
+  marcado              Boolean?
+  ordemGrupo           Int      @default(0)
+  ordemPergunta        Int      @default(0)
+  dataResposta         DateTime @default(now())
+
+  aguardandoFoto     Boolean @default(false)
+  fotosSincronizadas Int     @default(0)
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  pendencia InspecaoSegurancaPendencia?
+  evidencias InspecaoSegurancaEvidencia[]
+
+  @@index([inspecaoPreenchidaId, ordemGrupo, ordemPergunta], map: "idx_insp_seg_resp_ord")
+  @@index([grupoPerguntaId])
+  @@index([perguntaId])
+  @@index([opcaoRespostaId])
+}
+
+model InspecaoSegurancaPendencia {
+  id Int @id @default(autoincrement())
+
+  respostaId Int @unique
+  resposta   InspecaoSegurancaResposta @relation(fields: [respostaId], references: [id], onDelete: Cascade)
+
+  inspecaoPreenchidaId Int
+  inspecaoPreenchida   InspecaoSegurancaPreenchida @relation(fields: [inspecaoPreenchidaId], references: [id], onDelete: Cascade)
+
+  turnoId Int
+  turno   Turno @relation(fields: [turnoId], references: [id], onDelete: Cascade)
+
+  status       InspecaoSegurancaPendenciaStatus @default(AGUARDANDO_TRATAMENTO)
+  sanadaEmCampo Boolean @default(false)
+
+  observacaoProblema   String? @db.Text
+  observacaoTratamento String? @db.Text
+
+  tratadoPor String?   @db.VarChar(255)
+  tratadoEm  DateTime?
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  evidencias InspecaoSegurancaEvidencia[]
+
+  @@index([turnoId, status])
+  @@index([inspecaoPreenchidaId])
+}
+
+model InspecaoSegurancaEvidencia {
+  id Int @id @default(autoincrement())
+
+  respostaId Int?
+  resposta   InspecaoSegurancaResposta? @relation(fields: [respostaId], references: [id], onDelete: Cascade)
+
+  pendenciaId Int?
+  pendencia   InspecaoSegurancaPendencia? @relation(fields: [pendenciaId], references: [id], onDelete: Cascade)
+
+  tipo InspecaoSegurancaEvidenciaTipo @default(PROBLEMA)
+
+  caminhoArquivo String  @db.VarChar(500)
+  urlPublica     String? @db.VarChar(500)
+  tamanhoBytes   BigInt
+  mimeType       String  @db.VarChar(100)
+  checksum       String? @db.VarChar(64)
+
+  sincronizadoEm DateTime
+  metadados      Json?
+
+  createdAt DateTime  @default(now())
+  createdBy String    @db.VarChar(255)
+  updatedAt DateTime? @updatedAt
+  updatedBy String?   @db.VarChar(255)
+  deletedAt DateTime?
+  deletedBy String?   @db.VarChar(255)
+
+  @@unique([respostaId, tipo, checksum], map: "uk_insp_seg_evidencia_checksum")
+  @@index([pendenciaId, tipo])
+}

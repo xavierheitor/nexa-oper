@@ -36,6 +36,7 @@ model Veiculo {
   VeiculoBaseHistorico VeiculoBaseHistorico[]
 
   Turno Turno[]
+  InspecoesSeguranca InspecaoSegurancaPreenchida[]
 
   @@unique([placa])
   @@index([placa])

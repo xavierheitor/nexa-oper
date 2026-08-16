@@ -31,6 +31,14 @@ export type SyncModelName =
   | 'checklistOpcaoRespostaRelacao'
   | 'checklistTipoVeiculoRelacao'
   | 'checklistTipoEquipeRelacao'
+  | 'inspecaoSegurancaTipo'
+  | 'inspecaoSegurancaModelo'
+  | 'inspecaoSegurancaGrupoPergunta'
+  | 'inspecaoSegurancaPergunta'
+  | 'inspecaoSegurancaOpcaoResposta'
+  | 'inspecaoSegurancaModeloGrupoRelacao'
+  | 'inspecaoSegurancaGrupoPerguntaRelacao'
+  | 'inspecaoSegurancaGrupoOpcaoRespostaRelacao'
   | 'eletricista'
   | 'equipe'
   | 'materialCatalogo'
@@ -66,6 +74,14 @@ export interface SyncModelSelectMap {
   checklistOpcaoRespostaRelacao: Prisma.ChecklistOpcaoRespostaRelacaoSelect;
   checklistTipoVeiculoRelacao: Prisma.ChecklistTipoVeiculoRelacaoSelect;
   checklistTipoEquipeRelacao: Prisma.ChecklistTipoEquipeRelacaoSelect;
+  inspecaoSegurancaTipo: Prisma.InspecaoSegurancaTipoSelect;
+  inspecaoSegurancaModelo: Prisma.InspecaoSegurancaModeloSelect;
+  inspecaoSegurancaGrupoPergunta: Prisma.InspecaoSegurancaGrupoPerguntaSelect;
+  inspecaoSegurancaPergunta: Prisma.InspecaoSegurancaPerguntaSelect;
+  inspecaoSegurancaOpcaoResposta: Prisma.InspecaoSegurancaOpcaoRespostaSelect;
+  inspecaoSegurancaModeloGrupoRelacao: Prisma.InspecaoSegurancaModeloGrupoRelacaoSelect;
+  inspecaoSegurancaGrupoPerguntaRelacao: Prisma.InspecaoSegurancaGrupoPerguntaRelacaoSelect;
+  inspecaoSegurancaGrupoOpcaoRespostaRelacao: Prisma.InspecaoSegurancaGrupoOpcaoRespostaRelacaoSelect;
   eletricista: Prisma.EletricistaSelect;
   equipe: Prisma.EquipeSelect;
   materialCatalogo: Prisma.MaterialCatalogoSelect;
@@ -102,6 +118,14 @@ export interface SyncModelIncludeMap {
   checklistOpcaoRespostaRelacao: Prisma.ChecklistOpcaoRespostaRelacaoInclude;
   checklistTipoVeiculoRelacao: Prisma.ChecklistTipoVeiculoRelacaoInclude;
   checklistTipoEquipeRelacao: Prisma.ChecklistTipoEquipeRelacaoInclude;
+  inspecaoSegurancaTipo: Prisma.InspecaoSegurancaTipoInclude;
+  inspecaoSegurancaModelo: Prisma.InspecaoSegurancaModeloInclude;
+  inspecaoSegurancaGrupoPergunta: Prisma.InspecaoSegurancaGrupoPerguntaInclude;
+  inspecaoSegurancaPergunta: Prisma.InspecaoSegurancaPerguntaInclude;
+  inspecaoSegurancaOpcaoResposta: Prisma.InspecaoSegurancaOpcaoRespostaInclude;
+  inspecaoSegurancaModeloGrupoRelacao: Prisma.InspecaoSegurancaModeloGrupoRelacaoInclude;
+  inspecaoSegurancaGrupoPerguntaRelacao: Prisma.InspecaoSegurancaGrupoPerguntaRelacaoInclude;
+  inspecaoSegurancaGrupoOpcaoRespostaRelacao: Prisma.InspecaoSegurancaGrupoOpcaoRespostaRelacaoInclude;
   eletricista: Prisma.EletricistaInclude;
   equipe: Prisma.EquipeInclude;
   materialCatalogo: Prisma.MaterialCatalogoInclude;

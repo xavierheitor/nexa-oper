@@ -69,6 +69,13 @@ import { JustificativaService } from '../justificativas/JustificativaService';
 import { TipoJustificativaService } from '../justificativas/TipoJustificativaService';
 import { FaltaService } from '../turnos/FaltaService';
 import { HoraExtraService } from '../turnos/HoraExtraService';
+import {
+  InspecaoSegurancaGrupoPerguntaService,
+  InspecaoSegurancaModeloService,
+  InspecaoSegurancaOpcaoRespostaService,
+  InspecaoSegurancaPerguntaService,
+  InspecaoSegurancaTipoService,
+} from '../inspecao-seguranca/InspecaoSegurancaServices';
 import { container } from './ServiceContainer';
 
 /**
@@ -114,6 +121,26 @@ export function registerServices(): void {
     () => new AprGrupoPerguntaService()
   );
   container.register('aprService', () => new AprService());
+  container.register(
+    'inspecaoSegurancaTipoService',
+    () => new InspecaoSegurancaTipoService()
+  );
+  container.register(
+    'inspecaoSegurancaPerguntaService',
+    () => new InspecaoSegurancaPerguntaService()
+  );
+  container.register(
+    'inspecaoSegurancaOpcaoRespostaService',
+    () => new InspecaoSegurancaOpcaoRespostaService()
+  );
+  container.register(
+    'inspecaoSegurancaGrupoPerguntaService',
+    () => new InspecaoSegurancaGrupoPerguntaService()
+  );
+  container.register(
+    'inspecaoSegurancaModeloService',
+    () => new InspecaoSegurancaModeloService()
+  );
   container.register(
     'aprTipoAtividadeVinculoService',
     () => new AprTipoAtividadeVinculoService()

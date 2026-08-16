@@ -11,6 +11,7 @@ import { DatabaseModule } from './database';
 import { AtividadeUploadModule } from './modules/atividade-upload/atividade-upload.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { InspecaoSegurancaUploadModule } from './modules/inspecao-seguranca-upload/inspecao-seguranca-upload.module';
 import { LocalizacaoModule } from './modules/localizacao/localizacao.module';
 import { ProjetosModule } from './modules/projetos/projetos.module';
 import { SyncModule } from './modules/sync/sync.module';
@@ -31,6 +32,7 @@ import { MobileAppVersionModule } from './modules/mobile-app-version/mobile-app-
     UploadModule,
     LocalizacaoModule,
     AtividadeUploadModule,
+    InspecaoSegurancaUploadModule,
     ProjetosModule,
     MobileAppVersionModule,
   ],

@@ -373,6 +373,50 @@ export const MENU_STRUCTURE: MenuItemConfig[] = [
         ],
       },
       {
+        key: 'inspecoes-seguranca',
+        icon: <SafetyOutlined />,
+        label: 'Inspeções',
+        requiredPermissionsAny: [
+          PERMISSIONS.INSPECAO_SEGURANCA_TIPOS_VIEW,
+          PERMISSIONS.INSPECAO_SEGURANCA_PERGUNTAS_VIEW,
+          PERMISSIONS.INSPECAO_SEGURANCA_OPCOES_VIEW,
+          PERMISSIONS.INSPECAO_SEGURANCA_GRUPOS_VIEW,
+          PERMISSIONS.INSPECAO_SEGURANCA_MODELOS_VIEW,
+        ],
+        children: [
+          {
+            key: '/dashboard/cadastro/inspecao-seguranca-tipo',
+            label: 'Tipos de Inspeção',
+            path: '/dashboard/cadastro/inspecao-seguranca-tipo',
+            requiredPermission: PERMISSIONS.INSPECAO_SEGURANCA_TIPOS_VIEW,
+          },
+          {
+            key: '/dashboard/cadastro/inspecao-seguranca-pergunta',
+            label: 'Perguntas',
+            path: '/dashboard/cadastro/inspecao-seguranca-pergunta',
+            requiredPermission: PERMISSIONS.INSPECAO_SEGURANCA_PERGUNTAS_VIEW,
+          },
+          {
+            key: '/dashboard/cadastro/inspecao-seguranca-opcao-resposta',
+            label: 'Opções de Resposta',
+            path: '/dashboard/cadastro/inspecao-seguranca-opcao-resposta',
+            requiredPermission: PERMISSIONS.INSPECAO_SEGURANCA_OPCOES_VIEW,
+          },
+          {
+            key: '/dashboard/cadastro/inspecao-seguranca-grupo-pergunta',
+            label: 'Grupos de Perguntas',
+            path: '/dashboard/cadastro/inspecao-seguranca-grupo-pergunta',
+            requiredPermission: PERMISSIONS.INSPECAO_SEGURANCA_GRUPOS_VIEW,
+          },
+          {
+            key: '/dashboard/cadastro/inspecao-seguranca-modelo',
+            label: 'Modelos',
+            path: '/dashboard/cadastro/inspecao-seguranca-modelo',
+            requiredPermission: PERMISSIONS.INSPECAO_SEGURANCA_MODELOS_VIEW,
+          },
+        ],
+      },
+      {
         key: 'usuarios',
         label: 'Usuários',
         icon: <UserOutlined />,

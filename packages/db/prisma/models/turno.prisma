@@ -32,6 +32,8 @@ model Turno {
   AtividadeExecucoes      AtividadeExecucao[]
   AtividadeAprPreenchidas AtividadeAprPreenchida[]
   TurnoChecklistSyncQueue TurnoChecklistSyncQueue[]
+  InspecoesSeguranca      InspecaoSegurancaPreenchida[]
+  InspecoesSegurancaPendencias InspecaoSegurancaPendencia[]
 }
 
 model TurnoEletricista {

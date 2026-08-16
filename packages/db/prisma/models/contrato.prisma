@@ -28,6 +28,8 @@ model Contrato {
   TipoAtividade         TipoAtividade[]
   AtividadeFormTemplate AtividadeFormTemplate[]
   MaterialCatalogo      MaterialCatalogo[]
+  InspecaoSegurancaTipos   InspecaoSegurancaTipo[]
+  InspecaoSegurancaModelos InspecaoSegurancaModelo[]
 
   projProgramas ProjPrograma[]
 }

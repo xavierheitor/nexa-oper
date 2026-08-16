@@ -39,6 +39,11 @@ export type Permission =
   | 'checklist-perguntas:view'
   | 'checklist-opcoes:view'
   | 'checklist-modelos:view'
+  | 'inspecao-seguranca-tipos:view'
+  | 'inspecao-seguranca-perguntas:view'
+  | 'inspecao-seguranca-opcoes:view'
+  | 'inspecao-seguranca-grupos:view'
+  | 'inspecao-seguranca-modelos:view'
   | 'mobile-users:view'
   | 'mobile-users:create'
   | 'mobile-users:update'
@@ -129,6 +134,15 @@ export const PERMISSIONS = {
   CHECKLIST_PERGUNTAS_VIEW: 'checklist-perguntas:view' as const,
   CHECKLIST_OPCOES_VIEW: 'checklist-opcoes:view' as const,
   CHECKLIST_MODELOS_VIEW: 'checklist-modelos:view' as const,
+  INSPECAO_SEGURANCA_TIPOS_VIEW: 'inspecao-seguranca-tipos:view' as const,
+  INSPECAO_SEGURANCA_PERGUNTAS_VIEW:
+    'inspecao-seguranca-perguntas:view' as const,
+  INSPECAO_SEGURANCA_OPCOES_VIEW:
+    'inspecao-seguranca-opcoes:view' as const,
+  INSPECAO_SEGURANCA_GRUPOS_VIEW:
+    'inspecao-seguranca-grupos:view' as const,
+  INSPECAO_SEGURANCA_MODELOS_VIEW:
+    'inspecao-seguranca-modelos:view' as const,
   MOBILE_USERS_VIEW: 'mobile-users:view' as const,
   MOBILE_USERS_CREATE: 'mobile-users:create' as const,
   MOBILE_USERS_UPDATE: 'mobile-users:update' as const,
@@ -184,6 +198,7 @@ export const PERMISSION_GROUP_LABELS: Record<string, string> = {
   reports: 'Relatórios',
   apr: 'APR',
   checklist: 'Checklist',
+  safetyInspection: 'Inspeções de Segurança',
   users: 'Usuários',
   teams: 'Equipes',
   electricians: 'Eletricistas',
@@ -431,6 +446,36 @@ export const PERMISSION_CATALOG: PermissionCatalogItem[] = [
     description: 'Acessa a tela de modelos de checklist.',
   },
   {
+    permission: PERMISSIONS.INSPECAO_SEGURANCA_TIPOS_VIEW,
+    label: 'Ver tipos de inspeção',
+    group: PERMISSION_GROUP_LABELS.safetyInspection,
+    description: 'Acessa a tela de tipos de inspeção de segurança.',
+  },
+  {
+    permission: PERMISSIONS.INSPECAO_SEGURANCA_PERGUNTAS_VIEW,
+    label: 'Ver perguntas de inspeção',
+    group: PERMISSION_GROUP_LABELS.safetyInspection,
+    description: 'Acessa a tela de perguntas de inspeção de segurança.',
+  },
+  {
+    permission: PERMISSIONS.INSPECAO_SEGURANCA_OPCOES_VIEW,
+    label: 'Ver opções de inspeção',
+    group: PERMISSION_GROUP_LABELS.safetyInspection,
+    description: 'Acessa a tela de opções de resposta de inspeção de segurança.',
+  },
+  {
+    permission: PERMISSIONS.INSPECAO_SEGURANCA_GRUPOS_VIEW,
+    label: 'Ver grupos de inspeção',
+    group: PERMISSION_GROUP_LABELS.safetyInspection,
+    description: 'Acessa a tela de grupos de perguntas de inspeção de segurança.',
+  },
+  {
+    permission: PERMISSIONS.INSPECAO_SEGURANCA_MODELOS_VIEW,
+    label: 'Ver modelos de inspeção',
+    group: PERMISSION_GROUP_LABELS.safetyInspection,
+    description: 'Acessa a tela de modelos de inspeção de segurança.',
+  },
+  {
     permission: PERMISSIONS.MOBILE_USERS_VIEW,
     label: 'Ver usuários móveis',
     group: PERMISSION_GROUP_LABELS.registry,
@@ -667,6 +712,11 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.CHECKLIST_PERGUNTAS_VIEW,
     PERMISSIONS.CHECKLIST_OPCOES_VIEW,
     PERMISSIONS.CHECKLIST_MODELOS_VIEW,
+    PERMISSIONS.INSPECAO_SEGURANCA_TIPOS_VIEW,
+    PERMISSIONS.INSPECAO_SEGURANCA_PERGUNTAS_VIEW,
+    PERMISSIONS.INSPECAO_SEGURANCA_OPCOES_VIEW,
+    PERMISSIONS.INSPECAO_SEGURANCA_GRUPOS_VIEW,
+    PERMISSIONS.INSPECAO_SEGURANCA_MODELOS_VIEW,
     PERMISSIONS.MOBILE_USERS_VIEW,
     PERMISSIONS.MOBILE_USERS_CREATE,
     PERMISSIONS.MOBILE_USERS_UPDATE,

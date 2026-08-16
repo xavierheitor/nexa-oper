@@ -315,6 +315,136 @@ export const SYNC_DEFINITIONS: SyncCollectionDefInput[] = [
     },
   }),
 
+  // Inspeções de segurança
+  defTable({
+    name: 'inspecao-seguranca-tipo',
+    model: 'inspecaoSegurancaTipo',
+    mode: 'snapshot',
+    select: {
+      id: true,
+      contratoId: true,
+      nome: true,
+      chave: true,
+      contexto: true,
+      descricao: true,
+      ativo: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'inspecao-seguranca-modelo',
+    model: 'inspecaoSegurancaModelo',
+    mode: 'snapshot',
+    select: {
+      id: true,
+      contratoId: true,
+      tipoId: true,
+      nome: true,
+      descricao: true,
+      ativo: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'inspecao-seguranca-grupo-pergunta',
+    model: 'inspecaoSegurancaGrupoPergunta',
+    mode: 'snapshot',
+    contractField: 'modelosRelacao.some.modelo.contratoId',
+    select: {
+      id: true,
+      nome: true,
+      tipoResposta: true,
+      ativo: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'inspecao-seguranca-modelo-grupo-relacao',
+    model: 'inspecaoSegurancaModeloGrupoRelacao',
+    mode: 'snapshot',
+    contractField: 'modelo.contratoId',
+    select: {
+      id: true,
+      modeloId: true,
+      grupoPerguntaId: true,
+      ordem: true,
+      ativo: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'inspecao-seguranca-pergunta',
+    model: 'inspecaoSegurancaPergunta',
+    mode: 'snapshot',
+    contractField:
+      'gruposRelacao.some.grupoPergunta.modelosRelacao.some.modelo.contratoId',
+    select: {
+      id: true,
+      nome: true,
+      obrigatoria: true,
+      ativo: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'inspecao-seguranca-grupo-pergunta-relacao',
+    model: 'inspecaoSegurancaGrupoPerguntaRelacao',
+    mode: 'snapshot',
+    contractField: 'grupoPergunta.modelosRelacao.some.modelo.contratoId',
+    select: {
+      id: true,
+      grupoPerguntaId: true,
+      perguntaId: true,
+      ordem: true,
+      ativo: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'inspecao-seguranca-opcao-resposta',
+    model: 'inspecaoSegurancaOpcaoResposta',
+    mode: 'snapshot',
+    contractField:
+      'gruposRelacao.some.grupoPergunta.modelosRelacao.some.modelo.contratoId',
+    select: {
+      id: true,
+      nome: true,
+      geraPendencia: true,
+      exigeFoto: true,
+      ativo: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
+  defTable({
+    name: 'inspecao-seguranca-grupo-opcao-resposta-relacao',
+    model: 'inspecaoSegurancaGrupoOpcaoRespostaRelacao',
+    mode: 'snapshot',
+    contractField: 'grupoPergunta.modelosRelacao.some.modelo.contratoId',
+    select: {
+      id: true,
+      grupoPerguntaId: true,
+      opcaoRespostaId: true,
+      ordem: true,
+      ativo: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  }),
+
   defTable({
     name: 'material-catalogo',
     model: 'materialCatalogo',
