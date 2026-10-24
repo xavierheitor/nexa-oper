@@ -1,51 +1,56 @@
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  type GetObjectCommandInput,
+} from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
-import { AppError } from '../../../core/errors/app-error';
-import type { StorageAdapter } from './storage.adapter';
-import type { StorageUploadInput } from './storage.adapter';
-import type { StorageUploadResult } from './storage.adapter';
+
+import type {
+  StorageAdapter,
+  StorageUploadInput,
+  StorageUploadResult,
+} from './storage.adapter';
 import { buildStoredUploadUrl } from './upload-url';
 
-/**
- * S3 Storage Adapter.
- * Requires @aws-sdk/client-s3 and env: AWS_S3_BUCKET, AWS_REGION.
- * Optional: AWS_S3_ENDPOINT (for MinIO/R2), AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY.
- */
 @Injectable()
 export class S3StorageAdapter implements StorageAdapter {
-  async upload(input: StorageUploadInput): Promise<StorageUploadResult> {
-    // Lazy load to avoid requiring @aws-sdk/client-s3 when using local storage
-    const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
-    const bucket = process.env.AWS_S3_BUCKET ?? '';
-    const region = process.env.AWS_REGION ?? 'us-east-1';
-    const endpoint = process.env.AWS_S3_ENDPOINT;
+  private readonly bucket: string;
+  private readonly client: S3Client;
 
-    if (!bucket) {
-      throw AppError.internal(
-        'AWS_S3_BUCKET é obrigatório para uso do storage S3',
-      );
+  constructor() {
+    this.bucket = process.env.AWS_S3_BUCKET?.trim() ?? '';
+    if (!this.bucket) {
+      throw new Error('AWS_S3_BUCKET é obrigatório para uso do storage S3');
     }
-
-    const client = new S3Client({
-      region,
-      ...(endpoint && { endpoint }),
-      ...(process.env.AWS_ACCESS_KEY_ID && {
-        credentials: {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
-        },
-      }),
+    const endpoint = process.env.AWS_S3_ENDPOINT?.trim();
+    this.client = new S3Client({
+      region: process.env.AWS_REGION?.trim()
+        ? process.env.AWS_REGION.trim()
+        : 'us-east-1',
+      endpoint: endpoint ? endpoint : undefined,
+      forcePathStyle:
+        process.env.AWS_S3_FORCE_PATH_STYLE === undefined
+          ? Boolean(endpoint)
+          : process.env.AWS_S3_FORCE_PATH_STYLE === 'true',
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+      responseChecksumValidation: 'WHEN_REQUIRED',
     });
+  }
 
-    const key = input.path.replace(/^\//, '');
-    await client.send(
+  async upload(input: StorageUploadInput): Promise<StorageUploadResult> {
+    const key = input.path.replace(/^[/\\]+/, '');
+    await this.client.send(
       new PutObjectCommand({
-        Bucket: bucket,
+        Bucket: this.bucket,
         Key: key,
         Body: input.buffer,
-        ContentType: input.mimeType ?? 'application/octet-stream',
+        ContentLength: input.buffer.length,
+        ContentType: input.mimeType || 'application/octet-stream',
       }),
     );
-
     return {
       path: key,
       size: input.size,
@@ -56,36 +61,33 @@ export class S3StorageAdapter implements StorageAdapter {
   }
 
   async delete(filePath: string): Promise<void> {
-    const { S3Client, DeleteObjectCommand } = await import(
-      '@aws-sdk/client-s3'
-    );
-    const bucket = process.env.AWS_S3_BUCKET ?? '';
-    const region = process.env.AWS_REGION ?? 'us-east-1';
-    const endpoint = process.env.AWS_S3_ENDPOINT;
-
-    if (!bucket) {
-      throw AppError.internal(
-        'AWS_S3_BUCKET é obrigatório para uso do storage S3',
-      );
-    }
-
-    const client = new S3Client({
-      region,
-      ...(endpoint && { endpoint }),
-      ...(process.env.AWS_ACCESS_KEY_ID && {
-        credentials: {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
-        },
-      }),
-    });
-
-    const key = String(filePath).replace(/^[/\\]+/, '');
-    await client.send(
+    await this.client.send(
       new DeleteObjectCommand({
-        Bucket: bucket,
-        Key: key,
+        Bucket: this.bucket,
+        Key: filePath.replace(/^[/\\]+/, ''),
       }),
+    );
+  }
+
+  read(
+    key: string,
+    options: Omit<GetObjectCommandInput, 'Bucket' | 'Key'>,
+    signal: AbortSignal,
+  ) {
+    return this.client.send(
+      new GetObjectCommand({ ...options, Bucket: this.bucket, Key: key }),
+      { abortSignal: signal },
+    );
+  }
+
+  head(
+    key: string,
+    options: Omit<GetObjectCommandInput, 'Bucket' | 'Key'>,
+    signal: AbortSignal,
+  ) {
+    return this.client.send(
+      new HeadObjectCommand({ ...options, Bucket: this.bucket, Key: key }),
+      { abortSignal: signal },
     );
   }
 }

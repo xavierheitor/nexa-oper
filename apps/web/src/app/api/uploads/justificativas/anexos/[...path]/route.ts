@@ -23,6 +23,41 @@ export async function GET(
   { params }: { params: { path: string[] } }
 ) {
   try {
+    if (
+      params.path.some(
+        part => !part || part.startsWith('.') || /[/\\\0]/.test(part)
+      )
+    ) {
+      return new NextResponse('Arquivo não encontrado', { status: 404 });
+    }
+    if (process.env.UPLOAD_STORAGE === 's3') {
+      const base =
+        process.env.UPLOAD_PROXY_TARGET || process.env.NEXT_PUBLIC_API_URL;
+      if (!base)
+        return new NextResponse('Storage indisponível', { status: 503 });
+      const url = new URL(base);
+      url.pathname = `/uploads/justificativas/anexos/${params.path.map(encodeURIComponent).join('/')}`;
+      url.search = '';
+      const upstream = await fetch(url, {
+        cache: 'no-store',
+        signal: request.signal,
+      });
+      const headers = new Headers();
+      for (const name of [
+        'content-type',
+        'content-length',
+        'cache-control',
+        'etag',
+        'last-modified',
+      ]) {
+        const value = upstream.headers.get(name);
+        if (value) headers.set(name, value);
+      }
+      return new NextResponse(upstream.body, {
+        status: upstream.status,
+        headers,
+      });
+    }
     const filePath = join(UPLOAD_ROOT, ...params.path);
 
     // Verificar se o arquivo existe
@@ -56,4 +91,3 @@ export async function GET(
     return new NextResponse('Erro ao servir arquivo', { status: 500 });
   }
 }
-

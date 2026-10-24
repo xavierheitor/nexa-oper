@@ -1,28 +1,28 @@
 // src/core/config/configure-app.ts
-import type { INestApplication } from '@nestjs/common';
-import { ValidationPipe } from '@nestjs/common';
-import type { ValidationError } from 'class-validator';
-
-import type { Express, RequestHandler } from 'express';
-import * as express from 'express';
-import helmet from 'helmet';
 import * as path from 'node:path';
 
+import { ValidationPipe, type INestApplication } from '@nestjs/common';
 import {
   DocumentBuilder,
   type OpenAPIObject,
   SwaggerModule,
 } from '@nestjs/swagger';
+import type { ValidationError } from 'class-validator';
+import type { Express, RequestHandler } from 'express';
+import * as express from 'express';
+import helmet from 'helmet';
+
+import type { S3StorageAdapter } from '../../modules/upload/storage/s3-storage.adapter';
+import { mountS3Uploads } from '../../modules/upload/storage/serve-s3-uploads';
+import { AppError } from '../errors/app-error';
+import { Messages } from '../errors/messages';
+import { NestPinoLogger } from '../logger';
 
 import { env, isProd } from './env';
 import {
   resolveAdditionalUploadRoots,
   resolveUploadRoot,
 } from './workspace-paths';
-import { NestPinoLogger } from '../logger';
-
-import { AppError } from '../errors/app-error';
-import { Messages } from '../errors/messages';
 
 /** Opções do Helmet (contentSecurityPolicy, crossOriginEmbedderPolicy, hsts, etc.). */
 interface HelmetOptions {
@@ -62,7 +62,7 @@ export function configureApp(app: INestApplication) {
   }
 
   // Limite dedicado para payload de atividade (fotos inline em base64)
-  const normalizedPrefix = env.GLOBAL_PREFIX.replace(/^\/+|\/+$/g, '');
+  const normalizedPrefix = env.GLOBAL_PREFIX.replaceAll(/^\/+|\/+$/g, '');
   const atividadeUploadRoute = normalizedPrefix
     ? `/${normalizedPrefix}/mobile/uploads/activities`
     : '/mobile/uploads/activities';
@@ -108,26 +108,31 @@ export function configureApp(app: INestApplication) {
   expressApp.get('/__ping', (_req, res) => res.status(200).send('ok'));
 
   // Arquivos de upload (fora do prefixo /api)
-  const uploadsDir = resolveUploadRoot(env.UPLOAD_ROOT);
-  const additionalUploadRoots = resolveAdditionalUploadRoots(
-    env.UPLOAD_ROOT,
-    env.UPLOAD_LEGACY_ROOTS,
-  );
-  const uploadRoots = [uploadsDir, ...additionalUploadRoots];
+  if (env.UPLOAD_STORAGE === 's3') {
+    mountS3Uploads(expressApp, app.get<S3StorageAdapter>('STORAGE_ADAPTER'));
+    logger.log('Uploads servidos pela API via storage S3 privado');
+  } else {
+    const uploadsDir = resolveUploadRoot(env.UPLOAD_ROOT);
+    const additionalUploadRoots = resolveAdditionalUploadRoots(
+      env.UPLOAD_ROOT,
+      env.UPLOAD_LEGACY_ROOTS,
+    );
+    const uploadRoots = [uploadsDir, ...additionalUploadRoots];
 
-  mountStaticRoots(expressApp, '/uploads', uploadRoots);
-  logger.log(
-    `Uploads locais expostos em /uploads -> ${uploadRoots.join(', ')}`,
-  );
+    mountStaticRoots(expressApp, '/uploads', uploadRoots);
+    logger.log(
+      `Uploads locais expostos em /uploads -> ${uploadRoots.join(', ')}`,
+    );
 
-  // Compatibilidade com URLs legadas "/mobile/photos/*"
-  const mobilePhotoRoots = uploadRoots.map((root) =>
-    path.join(root, 'mobile', 'photos'),
-  );
-  mountStaticRoots(expressApp, '/mobile/photos', mobilePhotoRoots);
-  logger.log(
-    `Uploads legados expostos em /mobile/photos -> ${mobilePhotoRoots.join(', ')}`,
-  );
+    // Compatibilidade com URLs legadas "/mobile/photos/*"
+    const mobilePhotoRoots = uploadRoots.map((root) =>
+      path.join(root, 'mobile', 'photos'),
+    );
+    mountStaticRoots(expressApp, '/mobile/photos', mobilePhotoRoots);
+    logger.log(
+      `Uploads legados expostos em /mobile/photos -> ${mobilePhotoRoots.join(', ')}`,
+    );
+  }
 
   // Swagger (dev/staging)
   if (env.SWAGGER_ENABLED && !isProd) {
@@ -184,13 +189,19 @@ function configureCors(app: INestApplication, logger: NestPinoLogger) {
   // Lista definida: valida por match exato e por base protocol+host
   app.enableCors({
     origin: (origin: string | undefined, cb: CorsCallback) => {
-      if (!origin) return cb(null, true);
-      if (allowed.includes(origin)) return cb(null, true);
+      if (!origin) {
+        return cb(null, true);
+      }
+      if (allowed.includes(origin)) {
+        return cb(null, true);
+      }
 
       try {
         const parsed = new URL(origin);
         const base = `${parsed.protocol}//${parsed.host}`;
-        if (allowed.includes(base)) return cb(null, true);
+        if (allowed.includes(base)) {
+          return cb(null, true);
+        }
       } catch {
         // URL inválido, rejeitar
       }
@@ -216,7 +227,9 @@ function configureSecurity(app: INestApplication, logger: NestPinoLogger) {
   });
   app.use(securityMiddleware);
 
-  if (useHsts) logger.log('HSTS habilitado (produção + HTTPS)');
+  if (useHsts) {
+    logger.log('HSTS habilitado (produção + HTTPS)');
+  }
 }
 
 function configureSwagger(app: INestApplication, logger: NestPinoLogger) {

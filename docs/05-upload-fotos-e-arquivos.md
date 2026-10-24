@@ -83,14 +83,32 @@ O script:
 - normaliza referências no banco para `url=/uploads/...` e `path` relativo
 - mantém compatibilidade com registros antigos
 
-## Storage S3
+## Storage S3 privado / Garage
 
-Variáveis:
+Com `UPLOAD_STORAGE=s3`, a API lê os objetos com credenciais e transmite o
+conteúdo em `/uploads/*` e `/mobile/photos/*`. O cliente nunca recebe um link
+S3 nem credenciais. O bucket não precisa de acesso anônimo. Esses caminhos
+preservam o acesso público por URL que já existia; não adicionam autorização
+por usuário/contrato.
 
-- `UPLOAD_STORAGE=s3`
-- `AWS_S3_BUCKET`
-- `AWS_REGION`
-- opcionais: `AWS_S3_ENDPOINT`, `AWS_S3_PUBLIC_URL`, credenciais
+Configure **API e backend Web** com `UPLOAD_STORAGE=s3`, `AWS_S3_BUCKET`,
+`AWS_REGION`, `AWS_S3_ENDPOINT`, `AWS_S3_FORCE_PATH_STYLE=true`,
+`AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY`. Não use prefixo `NEXT_PUBLIC_`.
+A Web também grava APKs e anexos por código de servidor. A API centraliza
+as leituras. Não há fallback silencioso para o disco em modo S3.
+
+O endpoint é independente das URLs armazenadas: pode passar do HTTPS público
+para a VPN sem alterar os registros do banco nem as URLs dos clientes.
+`AWS_S3_PUBLIC_URL` não é usado. O SDK reutiliza o cliente e usa endereçamento
+por caminho automaticamente quando há endpoint customizado (sobrescrevível
+por `AWS_S3_FORCE_PATH_STYLE=true|false`).
+
+GET/HEAD suportam metadados, ETag, Last-Modified, respostas 304 e um intervalo
+de bytes por requisição. A resposta é transmitida sem carregar o objeto todo
+na memória. Com `If-Range`, retorna o objeto completo. Erros internos do S3
+não são repassados aos clientes.
+
+Roteiro de produção: [migração Garage](12-migracao-garage.md).
 
 ## Como o web acessa as fotos
 

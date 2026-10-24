@@ -2,7 +2,7 @@
  * Utilitários para upload de arquivos
  */
 
-import { writeFile, mkdir } from 'fs/promises';
+import { storeServerUpload } from './server-upload-storage';
 import { existsSync, readFileSync } from 'fs';
 import { dirname, isAbsolute, join } from 'path';
 import { randomUUID } from 'crypto';
@@ -139,13 +139,15 @@ export async function uploadFile(
   const relativePath = `${justificativaId}/${fileName}`;
   const absolutePath = join(UPLOAD_ROOT, relativePath);
 
-  // Garantir que o diretório existe
-  await mkdir(dirname(absolutePath), { recursive: true });
-
   // Converter File para Buffer e salvar
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-  await writeFile(absolutePath, buffer);
+  await storeServerUpload(
+    `justificativas/anexos/${relativePath}`,
+    buffer,
+    file.type,
+    absolutePath
+  );
 
   // Montar path relativo para o banco (sem UPLOAD_ROOT, apenas o caminho relativo)
   const dbPath = `/justificativas/anexos/${relativePath}`;

@@ -3,9 +3,8 @@ import { prisma } from '@/lib/db/db.service';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/utils/auth.config';
 import { PERMISSIONS } from '@/lib/authz/permissions';
-import { writeFile, mkdir } from 'fs/promises';
-import { join, dirname } from 'path';
-import { existsSync } from 'fs';
+import { storeServerUpload } from '@/lib/utils/server-upload-storage';
+import { join } from 'path';
 import { createHash } from 'crypto';
 
 export const maxDuration = 300;
@@ -104,13 +103,12 @@ export async function POST(req: NextRequest) {
     const fileName = `${Date.now()}-${safeFilename}`;
     const filePath = join(UPLOAD_ROOT, 'apks', fileName);
 
-    // Ensure dir exists
-    const dir = dirname(filePath);
-    if (!existsSync(dir)) {
-      await mkdir(dir, { recursive: true });
-    }
-
-    await writeFile(filePath, buffer);
+    await storeServerUpload(
+      `mobile/apks/${fileName}`,
+      buffer,
+      'application/vnd.android.package-archive',
+      filePath
+    );
     const arquivoUrl = `/uploads/mobile/apks/${fileName}`; // Proxied via next.config.ts
     const arquivoPath = join('mobile', 'apks', fileName);
 
