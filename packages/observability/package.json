@@ -1,0 +1,13 @@
+{
+  "name": "@nexa-oper/observability",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "node --test test.cjs"
+  },
+  "dependencies": {
+    "@sentry/core": "10.22.0"
+  }
+}

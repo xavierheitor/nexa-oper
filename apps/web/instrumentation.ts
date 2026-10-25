@@ -24,10 +24,14 @@
  * Registra handlers de graceful shutdown para encerramento limpo da aplicação.
  */
 export async function register() {
-  // Apenas no servidor (não no cliente)
-  if (typeof window === 'undefined') {
+  if (process.env.NEXT_RUNTIME === 'edge') {
+    await import('./sentry.edge.config');
+  }
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    await import('./sentry.server.config');
     const { setupGracefulShutdown } = await import('./src/lib/utils/shutdown');
     setupGracefulShutdown();
   }
 }
 
+export { captureRequestError as onRequestError } from '@sentry/nextjs';

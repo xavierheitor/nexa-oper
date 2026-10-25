@@ -1,3 +1,5 @@
+import { captureUnexpected } from '../monitoring';
+import { RequestContext } from '../logger/request-context';
 // src/core/errors/global-exception.filter.ts
 import {
   ArgumentsHost,
@@ -75,6 +77,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       exception,
       req,
     );
+
+    const route = req.route as { path?: unknown } | undefined;
+    if (status >= 500) {
+      captureUnexpected(exception, {
+        'http.method': req.method,
+        'http.route':
+          typeof route?.path === 'string' ? route.path : '[unmatched]',
+        request_id: RequestContext.getRequestId() ?? '',
+      });
+    }
 
     if (logLevel === 'error') this.log.error('Request failed', errForLog, body);
     else this.log.warn('Request failed', body);
