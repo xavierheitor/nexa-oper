@@ -36,5 +36,6 @@
       "cache": false,
       "outputs": []
     }
-  }
+  },
+  "globalEnv": ["GLITCHTIP_*", "NEXT_PUBLIC_GLITCHTIP_*"]
 }

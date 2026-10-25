@@ -1,3 +1,4 @@
+import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 import { existsSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
@@ -88,4 +89,10 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  silent: true,
+  sourcemaps: { disable: true },
+  telemetry: false,
+  suppressOnRouterTransitionStartWarning: true,
+  disableLogger: true,
+});

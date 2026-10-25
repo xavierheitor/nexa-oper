@@ -1,3 +1,4 @@
+import './core/monitoring';
 import './core/config/load-env';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';

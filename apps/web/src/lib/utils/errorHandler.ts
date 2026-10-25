@@ -1,3 +1,4 @@
+import { captureUnexpected } from './monitoring';
 /**
  * Utilitário Centralizado de Tratamento de Erros
  *
@@ -209,6 +210,7 @@ class ErrorHandler {
    * @param options - Opções de tratamento
    */
   private static logError(error: unknown, options: ErrorHandlerOptions = {}): void {
+    captureUnexpected(error);
     const normalizedError = this.normalizeError(error);
 
     // Monta contexto completo para o log
