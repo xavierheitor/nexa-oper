@@ -1,5 +1,30 @@
 # Nexa Oper
 
+> Plataforma para apoiar operações de campo, organização de turnos, registros e acompanhamento de atividades. Este repositório público permite avaliar a arquitetura e a implementação de uma aplicação web com API backend.
+
+## Visão rápida para avaliação técnica
+
+| Área | Implementação |
+| --- | --- |
+| Backend | Node.js, TypeScript, NestJS 11, APIs REST |
+| Persistência | Prisma ORM, MySQL/MariaDB, migrations |
+| Arquitetura | Módulos de domínio, controllers, DTOs, casos de uso, portas e adaptadores |
+| Segurança e contratos | Módulo de autenticação, JWT, validação de entrada, documentação Swagger |
+| Qualidade | Jest (unitários/e2e), ESLint, formatação e workflow GitHub Actions |
+| Aplicação web | Next.js, React, TypeScript; monorepo com npm workspaces e Turborepo |
+
+### Onde começar pelo código
+
+- **[Módulos de backend](apps/api/src/modules)**: autenticação, turnos, sincronização, projetos, uploads e localização.
+- **[Padrões e decisões de arquitetura](docs/01-arquitetura-monorepo.md)**: responsabilidades, limites entre camadas e integração com o banco.
+- **[Guia de implementação de um módulo API](docs/03-guia-criacao-modulo-api.md)**: controllers, DTOs, casos de uso, injeção de dependências e erros.
+- **[Configuração de testes](apps/api/package.json)** e **[testes e2e](apps/api/test)**.
+- **[CI da API](.github/workflows/api-ci.yml)** e **[documentação](docs/README.md)**.
+
+*Observação:* a existência de scripts e testes não equivale à garantia de cobertura completa. Consulte o código, os testes e os workflows para avaliar o escopo implementado.
+
+---
+
 Monorepo oficial do Nexa Oper.
 
 ## Aplicações
